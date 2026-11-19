@@ -389,7 +389,7 @@
       if (iso === state.todayISO) cls.push('is-today');
       if (iso === state.sel) cls.push('is-sel');
 
-      // 셀 배경 틴트는 주의·기회에만 — 계약·재물·절기는 배지로만 표시해 색을 아낀다
+      // 셀 배경 틴트는 입단속·럭키에만 — 결정·머니·리셋은 배지로만 표시해 색을 아낀다
       var lead = badges.length ? badges[0].cat : '';
       if (lead === 'red' || lead === 'gold') cls.push('day--t-' + lead);
 
@@ -413,10 +413,10 @@
     $('#calGrid').innerHTML = html;
 
     var bits = [];
-    if (stat.gold) bits.push('기회 ' + stat.gold);
-    if (stat.red) bits.push('주의 ' + stat.red);
-    if (stat.blue) bits.push('계약·재물 ' + stat.blue);
-    if (stat.gray) bits.push('절기 ' + stat.gray);
+    if (stat.gold) bits.push('럭키 ' + stat.gold);
+    if (stat.red) bits.push('입단속 ' + stat.red);
+    if (stat.blue) bits.push('결정·머니 ' + stat.blue);
+    if (stat.gray) bits.push('리셋 ' + stat.gray);
     $('#calSummary').textContent = bits.length ? bits.join('  ·  ') : '이 달은 표시할 신호가 적은 달이에요';
 
     $('#prevMonth').disabled = (v.y === 2026 && v.m === 11);
@@ -509,7 +509,7 @@
       '<p class="lock__sub">(정미년 패스 / 윤이세 1:1 상담)</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + freeEnd.m + '월 ' + freeEnd.d + '일까지) 밖이에요. ' +
-      '2027 정미년 12개월 전체 캘린더와 절기 알람은 정미년 패스에서 열립니다.</p>' +
+      '2027 정미년 12개월 전체 캘린더와 리셋 알람은 정미년 패스에서 열립니다.</p>' +
       '<div class="lock__actions">' +
       '<a class="btn btn--cream" href="' + KAKAO + '" target="_blank" rel="noopener">카카오톡으로 1:1 상담</a>' +
       '<a class="btn btn--ghost-light" href="' + LITTLY + '" target="_blank" rel="noopener">정미년 패스 안내 보기</a>' +
@@ -534,7 +534,7 @@
     var end = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     $('#icsStatus').textContent = exportable.length
       ? '오늘 ~ ' + end.m + '.' + end.d + ' 중 ' + exportable.length + '일이 담깁니다. 기기 캘린더에 넣으면 전날 저녁과 당일 오전에 알림이 떠요.'
-      : '이번 3일은 담을 만한 변동일·추진일이 없어요. 잔잔한 날은 알림 없이 넘어갑니다.';
+      : '이번 3일은 담을 만한 럭키·입단속 날이 없어요. 잔잔한 날은 알림 없이 넘어갑니다.';
   }
 
   function downloadICS() {

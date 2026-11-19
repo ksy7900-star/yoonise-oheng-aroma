@@ -384,7 +384,7 @@ form { margin-top: 22px; }
 
 /* 무료 구간(오늘~D+2)은 은은한 테두리로 */
 .day--free { box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .22); }
-/* 중요한 날의 파스텔 틴트 — 주의는 코랄, 기회는 골드 */
+/* 중요한 날의 파스텔 틴트 — 입단속은 코랄, 럭키는 골드 */
 .day--t-red { background: rgba(191, 106, 91, .085); }
 .day--t-gold { background: rgba(196, 154, 80, .12); }
 

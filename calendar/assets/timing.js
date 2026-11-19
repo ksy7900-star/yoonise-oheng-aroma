@@ -4,7 +4,7 @@
  *
  * 원칙
  *  - 모든 판정은 내 원국(일간·일지·월지)과 그날 일진의 실제 관계로만 계산한다.
- *  - 색 배지 4종: 기회·귀인(금) / 주의·변동(적) / 재물·문서(청) / 절기(회)
+ *  - 색 배지 4색 5단어: 럭키(금) / 입단속(적) / 결정·머니(청) / 리셋(회)
  *  - 처방 문구는 미리 써 둔 표에서 고른다(즉석 생성하지 않음). 같은 날은 항상 같은 문구.
  *  - 계산은 브라우저 안에서만. 어디로도 전송하지 않는다.
  */
@@ -38,10 +38,10 @@
   var HYEONG_SELF = [4, 6, 9, 11];
 
   var CAT = {
-    red:  { label: '주의·변동', color: '#C0563F', icon: '🔴', order: 0 },
-    gold: { label: '기회·귀인', color: '#C08B32', icon: '🟡', order: 1 },
-    blue: { label: '재물·문서', color: '#5C7E9E', icon: '🔵', order: 2 },
-    gray: { label: '절기',      color: '#A9A296', icon: '⚪', order: 3 }
+    red:  { label: '입단속',   color: '#C0563F', icon: '🔴', order: 0 },
+    gold: { label: '럭키',     color: '#C08B32', icon: '🟡', order: 1 },
+    blue: { label: '결정·머니', color: '#5C7E9E', icon: '🔵', order: 2 },
+    gray: { label: '리셋',     color: '#A9A296', icon: '⚪', order: 3 }
   };
 
   /* ── 작은 도우미 ───────────────────────────────────── */
@@ -182,7 +182,7 @@
       marks.push({ cat: cat, kind: kind, weight: weight, label: label, detail: detail, minor: !!minor });
     }
 
-    // ── 주의·변동 ──
+    // ── 입단속: 충·형·해 ──
     if (chungOf(tz) === dz) {
       add('red', 'chung', 60, '일지 충', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 충(沖), 자리와 관계가 흔들리는 날');
     } else if (chungOf(tz) === mz) {
@@ -199,7 +199,7 @@
       add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날', true);
     }
 
-    // ── 기회·귀인 ──
+    // ── 럭키: 귀인·합 ──
     if (CHEONEUL[dg].indexOf(tz) >= 0) {
       add('gold', 'gwiyin', 65, '천을귀인',
         '천을귀인(天乙貴人) — 일간 ' + GAN[dg] + '의 귀인 자리 ' +
@@ -233,10 +233,10 @@
       }
     }
 
-    // ── 재물·문서 (십신) ──
+    // ── 머니·결정: 재물·문서(십신) ──
     var tgName = TEN(dg, tg);
     if (tgName === '정재' || tgName === '편재') {
-      add('blue', 'wealth', 32, '재물', '일진 천간 ' + GAN[tg] + ' — 내 일간 ' + GAN[dg] + ' 기준 ' + tgName + '(財), 돈이 오가는 신호');
+      add('blue', 'wealth', 32, '머니', '일진 천간 ' + GAN[tg] + ' — 내 일간 ' + GAN[dg] + ' 기준 ' + tgName + '(財), 돈이 오가는 신호');
     }
     if (tgName === '정인' || tgName === '편인') {
       add('blue', 'doc', 32, '문서', '일진 천간 ' + GAN[tg] + ' — 내 일간 ' + GAN[dg] + ' 기준 ' + tgName + '(印), 문서·공부의 신호');
@@ -244,13 +244,13 @@
     var mainStem = HIDDEN[gz.zhi][0];
     var zgName = TEN(dg, GAN.indexOf(mainStem));
     if ((zgName === '정재' || zgName === '편재') && tgName !== '정재' && tgName !== '편재') {
-      add('blue', 'wealth', 20, '재물', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(財), 재물 자리가 열린 날', true);
+      add('blue', 'wealth', 20, '머니', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(財), 재물 자리가 열린 날', true);
     }
     if ((zgName === '정인' || zgName === '편인') && tgName !== '정인' && tgName !== '편인') {
       add('blue', 'doc', 20, '문서', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(印), 문서 자리가 열린 날', true);
     }
 
-    // ── 절기 ──
+    // ── 리셋: 24절기 ──
     var term = terms && terms.byDate ? terms.byDate[iso] : null;
     if (term) {
       add('gray', 'jie', 12, term.ko,
@@ -269,30 +269,30 @@
     if (!strongRed && !strongGold && strongBlue) dots.push({ cat: 'blue' });
 
     // 배지: 달력 셀에 바로 보이는 짧은 한글 (하루 최대 2개)
-    //  주의 = 충·형이 걸린 날 / 기회 = 귀인·합이 들어온 날 / 계약·재물 = 문서·돈의 신호 / 절기 = 월운 전환일
+    //  입단속 = 충·형이 걸린 날 / 럭키 = 귀인·합이 들어온 날 / 결정·머니 = 문서·돈의 신호 / 리셋 = 월운 전환일
     var maxWeight = function (cat) {
       var w = 0;
       marks.forEach(function (mk) { if (mk.cat === cat && !mk.minor && mk.weight > w) w = mk.weight; });
       return w;
     };
     var badges = [];
-    if (strongRed) badges.push({ cat: 'red', text: '주의', weight: maxWeight('red') });
-    if (strongGold) badges.push({ cat: 'gold', text: '기회', weight: maxWeight('gold') });
+    if (strongRed) badges.push({ cat: 'red', text: '입단속', weight: maxWeight('red') });
+    if (strongGold) badges.push({ cat: 'gold', text: '럭키', weight: maxWeight('gold') });
     if (!strongRed && !strongGold && strongBlue) {
       var isDoc = marks.some(function (mk) { return mk.cat === 'blue' && mk.kind === 'doc' && !mk.minor; });
-      badges.push({ cat: 'blue', text: isDoc ? '계약' : '재물', weight: maxWeight('blue') });
+      badges.push({ cat: 'blue', text: isDoc ? '결정' : '머니', weight: maxWeight('blue') });
     }
-    if (term) badges.push({ cat: 'gray', text: '절기', weight: term.isJie ? 14 : 12 });
+    if (term) badges.push({ cat: 'gray', text: '리셋', weight: term.isJie ? 14 : 12 });
     var BADGE_ORDER = { red: 0, gold: 1, blue: 2, gray: 3 };
     badges.sort(function (a, b) { return BADGE_ORDER[a.cat] - BADGE_ORDER[b.cat]; });
     if (badges.length > 2) badges = badges.slice(0, 2);
 
     var headline, tone;
-    if (strongRed && strongGold) { headline = '기회와 변동이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
-    else if (strongRed) { headline = '속도 조절 · 결정은 하루 뒤로'; tone = 'red'; }
-    else if (strongGold) { headline = '추진하기 좋은 날 · 먼저 손 내밀기'; tone = 'gold'; }
-    else if (strongBlue) { headline = '계약·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
-    else if (term) { headline = '절기 전환 · 새 달의 기준이 서는 날'; tone = 'gray'; }
+    if (strongRed && strongGold) { headline = '럭키와 입단속이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
+    else if (strongRed) { headline = '입단속 · 결정은 하루 뒤로'; tone = 'red'; }
+    else if (strongGold) { headline = '럭키한 날 · 먼저 손 내밀기'; tone = 'gold'; }
+    else if (strongBlue) { headline = '결정·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
+    else if (term) { headline = '리셋 · 새 달의 기준이 서는 날'; tone = 'gray'; }
     else { headline = '잔잔한 날 · 흐름 정리'; tone = 'none'; }
 
     var lines = prescribe(marks, term, gz);
@@ -358,7 +358,7 @@
       '공부·강의·자료 정리에 집중하기 좋습니다.'
     ],
     jie: [
-      '절기가 바뀌는 날 — 이번 달 기준이 새로 섭니다.',
+      '달의 기준이 바뀌는 날 — 이번 달 흐름이 새로 섭니다.',
       '이번 달 목표를 오늘 한 줄로 적어 두세요.',
       '새 달의 첫 결정은 하루 뒤에.',
       '몸의 리듬이 바뀌는 때 — 잠을 먼저 챙기세요.',
@@ -469,8 +469,8 @@
       strong.sort(function (a, b) { return b.weight - a.weight; });
       var primary = strong.length ? strong[0] : null;
       var tag = primary
-        ? (primary.cat === 'red' ? '속도 조절' : '타이밍 ON') + ' · ' + primary.label
-        : (info.term.isJie ? '절입' : '절기') + ' · ' + info.term.ko + (info.term.isJie ? ' ' + info.term.time : '');
+        ? (primary.cat === 'red' ? '입단속' : '럭키') + ' · ' + primary.label
+        : '리셋 · ' + info.term.ko + (info.term.isJie ? ' ' + info.term.time : '');
       var icon = primary ? ICS_ICON[primary.cat] : '⚪';
       var summary = icon + ' ' + tag + ' — ' + info.gz.text + '일';
       var desc = info.headline + '\n' +
