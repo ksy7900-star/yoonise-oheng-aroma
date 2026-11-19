@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261119v">
+<link rel="stylesheet" href="assets/style.css?v=20261119w">
 </head>
 <body>
 
@@ -198,7 +198,7 @@
         </ul>
         <p class="howto__free js-trial">오늘부터 <b>3일</b>은 날짜를 눌러 상세 처방을 바로 볼 수 있어요.</p>
         <p class="howto__free js-open">지금은 <b>정미년 1년 전체</b> 날짜가 열려 있어요. 아무 날이나 눌러 보세요.</p>
-        <p class="howto__free howto__free--ritual">날짜를 누르면 그날의 부적이 <b>팝업으로 크게</b> 떠요. 부적을 <b>톡·톡·톡 세 번</b> 두드리면 달력에 금색 완료 도장이 찍힙니다.</p>
+        <p class="howto__free howto__free--ritual">날짜를 누르면 그날의 부적이 <b>팝업으로 크게</b> 떠요. 부적을 <b>톡·톡·톡 세 번</b> 두드리면 달력에 <b>주홍 낙관 도장</b>이 쾅 찍힙니다.</p>
       </div>
 
       <div class="cal__dow" aria-hidden="true">
@@ -218,8 +218,9 @@
       </div>
       <p class="ics__lead js-trial">무료 구간의 <b>럭키·입단속·리셋</b> 날짜를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
       <p class="ics__lead js-open">앞으로 3일의 <b>럭키·입단속·리셋</b> 날짜를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
-      <button type="button" class="btn btn--primary" id="icsBtn">
-        <span>3일 타이밍 알림 받기</span><span class="btn__sub">.ics</span>
+      <p class="ics__howto">버튼을 누르면 <b>.ics</b> 캘린더 파일이 저장돼요.<br>내려받은 파일을 한 번 열면 폰 달력에 알림이 자동 등록됩니다.</p>
+      <button type="button" class="btn btn--primary btn--ics" id="icsBtn">
+        <span>📅 내 폰 캘린더 파일(.ics) 내려받기</span>
       </button>
       <p class="ics__status" id="icsStatus"></p>
       <details class="guide">
@@ -232,18 +233,26 @@
       </details>
     </section>
 
-    <!-- CTA -->
-    <section class="cta" aria-label="윤이세 1:1 상담">
-      <p class="cta__eyebrow">얼리버드 12+2개월 · 윤이세 1:1 상담</p>
+    <!-- CTA — 1. 패스 · 2. 오행 아이템 · 3. 1:1 상담 (모두 앱 안 결제 안내 팝업) -->
+    <section class="cta" aria-label="정미년 패스 · 오행 아이템 · 1:1 상담">
+      <p class="cta__eyebrow">정미년 1년 패스 · 오행 아이템 · 1:1 상담</p>
       <h2 class="cta__title">정미년 1년 전체와<br>내 원국을 겹쳐 보기</h2>
       <p class="cta__sub js-trial">무료 3일은 맛보기예요. 지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체 캘린더와 리셋 알람, 내 원국에 맞춘 월별 해석까지 함께 풀어 드립니다.</p>
-      <p class="cta__sub js-open">지금 열린 캘린더는 2027 정미년 1년 전체 흐름이에요. 1:1 상담에서는 내 원국과 겹쳐 월별로 어떻게 쓰면 좋을지까지 함께 풀어 드립니다.</p>
-      <a class="btn btn--cream" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener">
-        <span>카카오톡으로 1:1 상담</span>
-      </a>
-      <a class="btn btn--ghost-light" href="https://litt.ly/yoonise" target="_blank" rel="noopener">
-        <span>정미년 패스 안내 보기</span>
-      </a>
+      <p class="cta__sub js-open">지금 열린 캘린더는 2027 정미년 1년 전체 흐름이에요. 아래에서 내 원국에 맞춘 패스·아이템·1:1 상담을 바로 이어서 볼 수 있어요.</p>
+      <div class="cta__steps">
+        <button type="button" class="btn btn--cream shop-btn" data-shop="pass">
+          <span class="shop-btn__no">1</span>
+          <span class="shop-btn__label">🎟️ 정미년 1년 패스 결제하기</span>
+        </button>
+        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="goods">
+          <span class="shop-btn__no">2</span>
+          <span class="shop-btn__label">🧿 오행 아이템 · 굿즈 결제하기</span>
+        </button>
+        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="consult">
+          <span class="shop-btn__no">3</span>
+          <span class="shop-btn__label">💬 윤이세 1:1 상담 결제하기</span>
+        </button>
+      </div>
     </section>
 
     <footer class="foot">
@@ -266,9 +275,18 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261119v"></script>
-<script src="assets/manse.js?v=20261119v"></script>
-<script src="assets/timing.js?v=20261119v"></script>
-<script src="assets/calendar.js?v=20261119v"></script>
+<!-- ───────── 구입 안내 팝업 (패스 · 아이템 · 1:1 상담) ───────── -->
+<div class="modal modal--shop" id="shopModal" hidden>
+  <div class="modal__backdrop" data-shop-close></div>
+  <div class="modal__dialog modal__dialog--shop" id="shopDialog" role="dialog" aria-modal="true" aria-labelledby="shopTitle" tabindex="-1">
+    <button type="button" class="modal__close" data-shop-close aria-label="팝업 닫기">✕</button>
+    <div class="modal__content" id="shopBody"></div>
+  </div>
+</div>
+
+<script src="vendor/lunar.js?v=20261119w"></script>
+<script src="assets/manse.js?v=20261119w"></script>
+<script src="assets/timing.js?v=20261119w"></script>
+<script src="assets/calendar.js?v=20261119w"></script>
 </body>
 </html>

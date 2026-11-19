@@ -23,12 +23,37 @@
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
-  var LITTLY = 'https://litt.ly/yoonise';
+  /* ── 구입 동선 링크 ────────────────────────────────────────────────
+     앱 안 구입 팝업의 버튼이 여는 주소입니다. 실제 결제 페이지·쇼핑몰이 열리면
+     아래 두 줄만 그 주소로 바꾸면 팝업 문구·버튼은 그대로 두고 바로 연결됩니다.
+     (지금은 카카오톡 채널 1:1 문의로 신청·결제를 안내하는 단계) */
+  var PASS_CHECKOUT_URL = KAKAO;    // 🎟️ 정미년 1년 패스 — 신청·결제
+  var GOODS_CHECKOUT_URL = KAKAO;   // 🧿 오행 아이템·굿즈 — 주문·문의
 
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
+  /* 달력 칸에 쾅 찍히는 동그란 낙관(도장) — 44px 뷰박스 하나를 여러 크기로 재사용 */
+  var SEAL_SVG = '<svg class="seal" viewBox="0 0 44 44" aria-hidden="true" focusable="false">' +
+    '<circle class="seal__ring" cx="22" cy="22" r="19.4" stroke-dasharray="116 6" stroke-dashoffset="18"/>' +
+    '<circle class="seal__ring2" cx="22" cy="22" r="14.9"/>' +
+    '<g class="seal__spark">' +
+    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z"/>' +
+    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(90 22 22)"/>' +
+    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(180 22 22)"/>' +
+    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(270 22 22)"/>' +
+    '</g>' +
+    '</svg>';
   var TALIS_PATH = 'assets/talisman/';
-  var TALIS_VER = '?v=20261119v';   // 부적 이미지를 새로 뽑았을 때 폰 캐시까지 즉시 갱신되도록
+  var TALIS_VER = '?v=20261119w';   // 부적 이미지를 새로 뽑았을 때 폰 캐시까지 즉시 갱신되도록
+  /* 오행별 기운 색·표정 배지·파티클 — 0타 대기 / 1타 / 2타 / 3타 완료에서 확확 바뀐다 */
+  var TAP_BADGE = ['✨', '⚡', '🔥'];
+  var EL_THEME = {
+    목: { color: '#6FAE5B', badge: '🌱', parts: ['🍃', '🌿', '✦', '✧'], cheer: '새싹이 쑥!' },
+    화: { color: '#F0714E', badge: '💖', parts: ['💗', '🔥', '✦', '✧'], cheer: '불꽃이 활활!' },
+    토: { color: '#D9A83C', badge: '⭐', parts: ['⭐', '✨', '✦', '✧'], cheer: '황금빛으로!' },
+    금: { color: '#9FB0C0', badge: '💎', parts: ['💎', '✧', '✦', '❖'], cheer: '크리스탈처럼!' },
+    수: { color: '#54A8C6', badge: '💧', parts: ['💧', '🌊', '✦', '✧'], cheer: '물결이 찰랑!' }
+  };
   // 날짜 배지 5개 ↔ 오행 부적 5장 (plan 확정 매칭)
   var BADGE_TO_EL = { '럭키': '목', '입단속': '수', '결정': '화', '머니': '금', '리셋': '토' };
   var EL_ORDER = ['목', '화', '토', '금', '수'];
@@ -512,6 +537,7 @@
     var auto = dayElement(info);
     var el = (st && st.el && TALIS[st.el]) ? st.el : auto;
     var t = TALIS[el];
+    var th = EL_THEME[el] || EL_THEME['화'];
     var lot = lotOf(el, info.iso);            // 날짜 시드로 고른 오늘의 멘트
     var done = !!st;
     var n = done ? 3 : (ritual[info.iso] || 0);
@@ -522,35 +548,105 @@
       ? esc(lot.done) + '<small>' + esc(lot.sub) + '</small>'
       : (n > 0 ? lot.taps[n - 1] : '부적을 톡톡톡 세 번 두드리면 ' +
         (info.iso === state.todayISO ? '오늘' : '그날') + ' 기운이 켜져요.');
-    return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso + '" data-el="' + el + '">' +
+    var badge = done ? th.badge : (TAP_BADGE[n] || TAP_BADGE[0]);
+    return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso +
+      '" data-el="' + el + '" data-stage="' + n + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + ' · ' + esc(tag) + '</p>' +
+      '<div class="ritual__stage">' +
+      '<span class="ritual__aura" aria-hidden="true"></span>' +
+      '<span class="ritual__ring" aria-hidden="true"></span>' +
       '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(t.label) + ' 부적 두드리기 (' + n + '/3)">' +
+      '<span class="ritual__char">' +
       '<img class="ritual__img" src="' + TALIS_PATH + t.key + '.jpg' + TALIS_VER + '" width="112" height="112" ' +
       'alt="' + esc(t.label) + ' 수호 부적 캐릭터, 세 번 두드려 오늘의 기운을 켜는 부적">' +
+      '<span class="ritual__blush" aria-hidden="true"></span>' +
+      '</span>' +
+      '<span class="ritual__fx" aria-hidden="true"></span>' +
       '</button>' +
+      '<span class="ritual__badge" aria-hidden="true">' + badge + '</span>' +
+      '<span class="ritual__pop" aria-hidden="true"></span>' +
+      '</div>' +
       '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +
       '<p class="ritual__msg" aria-live="polite">' + msg + '</p>' +
       '</div>';
   }
 
-  function bop(btn) {
-    var img = btn.querySelector('.ritual__img');
-    if (!img) return;
-    img.classList.remove('is-bop');
-    void img.offsetWidth;   // 애니메이션 재시작
-    img.classList.add('is-bop');
+  /* ── 손맛: 젤리 바운스 · 파문 · 파티클 폭발 · 화면 흔들림 ────── */
+  function jelly(btn, big) {
+    var char = btn.querySelector('.ritual__char');
+    if (!char) return;
+    char.classList.remove('is-jelly', 'is-jelly--big');
+    void char.offsetWidth;                       // 애니메이션 재시작
+    char.classList.add(big ? 'is-jelly--big' : 'is-jelly');
+    // 끝나면 클래스를 풀어 둥실둥실(idle) 애니메이션이 다시 이어지게
+    setTimeout(function () { char.classList.remove('is-jelly', 'is-jelly--big'); }, big ? 740 : 620);
   }
 
-  function spawnFx(btn) {
-    var old = btn.querySelector('.ritual__fx');
-    if (old && old.parentNode) old.parentNode.removeChild(old);
+  function ripple(btn, ev) {                     // 터치 지점에서 퍼져 나가는 파동 링
+    var old = btn.querySelectorAll('.ritual__fx');
+    for (var i = 0; i < old.length; i++) { if (old[i].parentNode) old[i].parentNode.removeChild(old[i]); }
     var s = document.createElement('span');
     s.className = 'ritual__fx';
+    var r = btn.getBoundingClientRect();
+    var x = (ev && ev.clientX) ? ev.clientX - r.left : r.width / 2;
+    var y = (ev && ev.clientY) ? ev.clientY - r.top : r.height / 2;
+    s.style.left = Math.max(8, Math.min(r.width - 8, x)) + 'px';
+    s.style.top = Math.max(8, Math.min(r.height - 8, y)) + 'px';
     btn.appendChild(s);
-    setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 720);
+    setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 860);
   }
 
-  function onRitualTap(btn) {
+  function burst(wrap, el, stage) {              // 오행 기운 파티클 폭발
+    var st = wrap.querySelector('.ritual__stage');
+    if (!st) return;
+    var th = EL_THEME[el] || EL_THEME['화'];
+    var big = stage >= 3;
+    var count = big ? 26 : (stage === 2 ? 16 : 11);
+    var box = document.createElement('span');
+    box.className = 'ritual__parts';
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('span');
+      var ang = Math.random() * Math.PI * 2;
+      var dist = (big ? 76 : 44) + Math.random() * (big ? 104 : 52);
+      p.className = 'ritual__p' + (big ? ' ritual__p--big' : '');
+      p.textContent = th.parts[i % th.parts.length];
+      p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      p.style.setProperty('--dy', (Math.sin(ang) * dist - 12) + 'px');
+      p.style.setProperty('--rot', (Math.random() * 260 - 130) + 'deg');
+      p.style.setProperty('--dur', (0.66 + Math.random() * 0.52) + 's');
+      p.style.setProperty('--dl', (Math.random() * 0.1) + 's');
+      p.style.setProperty('--sz', (big ? 15 : 11) + Math.round(Math.random() * 6) + 'px');
+      box.appendChild(p);
+    }
+    st.appendChild(box);
+    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1600);
+  }
+
+  function quake(big) {                          // 모달이 덜컹 — 손맛의 절반
+    if (!modalDialog) return;
+    modalDialog.classList.remove('is-quake', 'is-quake--big');
+    void modalDialog.offsetWidth;
+    modalDialog.classList.add(big ? 'is-quake--big' : 'is-quake');
+    setTimeout(function () {
+      if (modalDialog) modalDialog.classList.remove('is-quake', 'is-quake--big');
+    }, big ? 640 : 430);
+  }
+
+  function setStage(wrap, n) {                   // 0타 → 1타 → 2타 → 3타 표정·기운 교체
+    var el = wrap.getAttribute('data-el');
+    var th = EL_THEME[el] || EL_THEME['화'];
+    wrap.setAttribute('data-stage', String(n));
+    if (n >= 3) wrap.classList.add('is-done');
+    var b = wrap.querySelector('.ritual__badge');
+    if (b) {
+      b.textContent = n >= 3 ? th.badge : (TAP_BADGE[n] || TAP_BADGE[0]);
+      b.classList.remove('is-pop');
+      void b.offsetWidth;
+      b.classList.add('is-pop');
+    }
+  }
+
+  function onRitualTap(btn, ev) {
     var wrap = btn.closest('[data-ritual-wrap]');
     if (!wrap) return;
     var iso = wrap.getAttribute('data-ritual-wrap');
@@ -559,11 +655,15 @@
     if (!t) return;
     var lot = lotOf(el, iso);
     var n = stampOf(iso) ? 3 : (ritual[iso] || 0);
-    bop(btn);
-    if (n >= 3) return;                       // 이미 찍힌 날 — 살짝 튀기기만
+    if (n >= 3) { jelly(btn, false); sfxTap(1); return; }   // 이미 찍힌 날 — 살짝 튀기기만
     n += 1;
     ritual[iso] = n;
-    spawnFx(btn);
+
+    setStage(wrap, n);
+    jelly(btn, n >= 3);
+    ripple(btn, ev);
+    burst(wrap, el, n);
+    quake(n >= 3);
     if (n >= 3) sfxDone(); else sfxTap(n);
 
     var countEl = wrap.querySelector('.ritual__count b');
@@ -573,16 +673,15 @@
     var msgEl = wrap.querySelector('.ritual__msg');
     if (n >= 3) {
       saveStamp(iso, el);
-      wrap.classList.add('is-done');
       if (msgEl) msgEl.innerHTML = esc(lot.done) + '<small>' + esc(lot.sub) + '</small>';
       if (modalEl && !modalEl.hidden) {
-        // 팝업이 닫히는 순간 달력 셀에 도장이 쾅 찍히도록 미뤄 둔다
+        // 팝업이 닫히는 순간 달력 셀에 낙관이 쾅 찍히도록 미뤄 둔다
         state.pendingStamp = iso;
         var note = modalBody && modalBody.querySelector('.modal__stamp-note');
         if (note) note.hidden = false;
       } else {
         state.justStamped = iso;
-        renderCalendar();                     // 달력 셀에 도장이 쾅
+        renderCalendar();                     // 달력 셀에 낙관이 쾅
       }
     } else if (msgEl) {
       msgEl.textContent = lot.taps[n - 1] || ('한 번 더 — ' + (3 - n) + '번 남았어요.');
@@ -698,7 +797,7 @@
         (open ? '' : ' tabindex="-1"') +
         ' aria-label="' + esc(label) + '">' +
         '<span class="day__num">' + d + '</span>' +
-        (stamp ? '<span class="day__stamp' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">✓</span>' : '') +
+        (stamp ? '<span class="day__seal' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">' + SEAL_SVG + '</span>' : '') +
         '<span class="day__badges">' + badgeHtml + '</span>' +
         '</button>';
     }
@@ -800,7 +899,7 @@
       modalBody.innerHTML = '';
       modalClosing = false;
       if (state.pendingStamp) {
-        // 팝업이 사라진 자리에서 달력 셀에 금색 ✓가 쾅
+        // 팝업이 사라진 자리에서 달력 셀에 주홍 낙관이 쾅
         state.justStamped = state.pendingStamp;
         state.pendingStamp = null;
         renderCalendar();
@@ -847,7 +946,8 @@
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       saeunHtml +
       ritualHTML(info) +
-      '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>✓ 달력에 금색 도장 쾅 — 한 칸 채웠어요.</p>' +
+      '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
+      '<span class="seal-mini" aria-hidden="true">' + SEAL_SVG + '</span>달력에 주홍 낙관이 쾅 — 한 칸 채웠어요.</p>' +
       '<div class="brief__gz modal__gz">' +
       '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
       '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
@@ -879,16 +979,122 @@
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>정미년 1년 전체 열기</p>' +
-      '<p class="lock__sub">정미년 패스 / 윤이세 1:1 상담</p>' +
+      '<p class="lock__sub">정미년 패스 / 오행 아이템 / 1:1 상담</p>' +
       '<p class="lock__early">얼리버드 12+2개월 · 2026 연말·1월 보너스 포함</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
       '지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체와 리셋 알람까지 이어집니다.</p>' +
       '<div class="lock__actions">' +
-      '<a class="btn btn--cream" href="' + KAKAO + '" target="_blank" rel="noopener">카카오톡으로 1:1 상담</a>' +
-      '<a class="btn btn--ghost-light" href="' + LITTLY + '" target="_blank" rel="noopener">정미년 패스 안내 보기</a>' +
+      '<button type="button" class="btn btn--cream shop-btn" data-shop="pass">' +
+      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 정미년 1년 패스 결제하기</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="goods">' +
+      '<span class="shop-btn__no">2</span><span class="shop-btn__label">🧿 오행 아이템 · 극즈 결제하기</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="consult">' +
+      '<span class="shop-btn__no">3</span><span class="shop-btn__label">💬 윤이세 1:1 상담 결제하기</span></button>' +
       '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>';
+  }
+
+  /* ── 앱 안 구입 팝업 (패스 · 오행 아이템 · 1:1 상담) ──────────
+     버튼을 누르면 리틀리로 튕기지 않고 이 팝업이 열립니다.
+     실제 결제·주문 링크가 생기면 위쪽 PASS_CHECKOUT_URL / GOODS_CHECKOUT_URL /
+     CONSULT_CHECKOUT_URL 한 줄씩만 바꾸면 팝업 그대로 결제로 넘어갑니다. */
+  var CONSULT_CHECKOUT_URL = KAKAO;
+  /* 가격 표시 — 실제 금액이 정해지면 아래 문자열만 채우면 팝업에 그대로 나옵니다.
+     비워 두면 '카카오톡 채널에서 안내'로 표시됩니다. */
+  var PASS_PRICE = '';
+  var GOODS_PRICE = '';
+  var CONSULT_PRICE = '';
+  var PRICE_TBD = '카카오톡 채널에서 안내';
+
+  var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
+
+  function priceHTML(label, price) {
+    return '<div class="shop__price"><span>' + esc(label) + '</span>' +
+      '<b>' + esc(price || PRICE_TBD) + '</b></div>';
+  }
+
+  function passShopHTML() {
+    return '<p class="modal__eyebrow">丁未年 PASS · 얼리버드 12+2개월</p>' +
+      '<h2 class="shop__title" id="shopTitle">정미년 1년 패스</h2>' +
+      '<p class="shop__sub">2027 정미년 입춘부터 1년 — 내 원국 위에 하루씩 얹어 보는 캘린더예요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>2027 정미년 1년 전체 흐름</b><span>2027.2.4 입춘 ~ 2028.2.3까지, 하루씩 전부</span></li>' +
+      '<li><b>2026 연말 · 1월 보너스</b><span>정미년이 들어오기 전 석 달을 먼저 열어 드려요</span></li>' +
+      '<li><b>내 원국 맞춤 리셋 알람</b><span>24절기 월운이 바뀌는 날을 내 사주 기준으로</span></li>' +
+      '</ul>' +
+      priceHTML('얼리버드 패스 가격', PASS_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 바로 결제하기</a>' +
+      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+  }
+
+  function goodsShopHTML() {
+    var r = state.res ? repElement() : null;
+    var el = r ? r.el : '화';
+    var t = TALIS[el] || TALIS['화'];
+    var th = EL_THEME[el] || EL_THEME['화'];
+    var who = (state.res && state.res.input && state.res.input.name) ? state.res.input.name + ' 님' : '내';
+    var total = (state.res && state.res.total) || 8;
+    var why = r
+      ? (r.count === 0 ? total + '글자에 ' + el + t.josa + ' 하나도 없어요.'
+        : total + '글자 중 ' + el + t.josa + ' ' + r.count + '개로 가장 적어요.')
+      : '내 원국에 모자란 기운을 골라 드려요.';
+    return '<p class="modal__eyebrow">OHENG ITEM · 오행 아이템</p>' +
+      '<h2 class="shop__title" id="shopTitle">내게 없는 기운을 채우는 아이템</h2>' +
+      '<p class="shop__sub">' + esc(who) + '의 사주에서 <b>' + esc(t.label) + '</b>이 가장 약해요. ' + esc(why) + '</p>' +
+      '<div class="shop__talis">' +
+      '<img src="' + TALIS_PATH + t.key + '.jpg' + TALIS_VER + '" width="72" height="72" alt="' + esc(t.label) + ' 수호 부적 캐릭터">' +
+      '<p><b>' + esc(th.cheer) + '</b><span>' + esc(t.why) + '</span></p>' +
+      '</div>' +
+      '<ul class="shop__list">' +
+      '<li><b>포토카드</b><span>내 부족 오행 수호 부적 카드 — 책상·지갑에 세워 두는 용도</span></li>' +
+      '<li><b>폰 배경화면</b><span>잠금화면에 두는 오행 이미지 (바로 받는 디지털 파일)</span></li>' +
+      '<li><b>실물 굿즈</b><span>부적 스티커 · 키링 — 주문을 모아 순차 제작해요</span></li>' +
+      '</ul>' +
+      priceHTML('아이템 가격', GOODS_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + GOODS_CHECKOUT_URL + '" target="_blank" rel="noopener">🧿 바로 주문하기</a>' +
+      '<p class="shop__note">어떤 아이템을 원하시는지 채널에 남겨 주시면, 내 원국에 맞춰 골라 드리고 결제를 안내드려요.</p>';
+  }
+
+  function consultShopHTML() {
+    return '<p class="modal__eyebrow">1:1 CONSULT · 윤이세</p>' +
+      '<h2 class="shop__title" id="shopTitle">윤이세 1:1 상담</h2>' +
+      '<p class="shop__sub">내 원국과 2027 정미년 캘린더를 겹쳐, 월별로 어떻게 쓰면 좋을지 함께 봅니다.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>내 원국 다시 짚기</b><span>강한 기운과 모자란 기운, 지금의 흐름부터</span></li>' +
+      '<li><b>정미년 월별 흐름</b><span>2027 한 해를 달마다 무엇을 할지로 바꿔 드려요</span></li>' +
+      '<li><b>내 캘린더 맞춤 처방</b><span>이 캘린더에서 짚은 날들을 내 일정에 얹는 법</span></li>' +
+      '</ul>' +
+      priceHTML('상담 가격', CONSULT_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + CONSULT_CHECKOUT_URL + '" target="_blank" rel="noopener">💬 바로 결제 · 상담 신청하기</a>' +
+      '<p class="shop__note">상담 일정과 결제는 카카오톡 채널에서 정해요. 원하시는 시간대를 함께 알려 주세요.</p>';
+  }
+
+  function openShop(kind) {
+    if (!shopEl) return;
+    shopLastFocus = document.activeElement;
+    shopBody.innerHTML = kind === 'goods' ? goodsShopHTML() : (kind === 'consult' ? consultShopHTML() : passShopHTML());
+    shopEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    shopBody.scrollTop = 0;
+    sfxOpen();
+    try { shopDialog.focus({ preventScroll: true }); } catch (e) { shopDialog.focus(); }
+  }
+
+  function closeShop() {
+    if (!shopEl || shopEl.hidden || shopClosing) return;
+    shopClosing = true;
+    shopEl.classList.add('is-closing');
+    setTimeout(function () {
+      shopEl.classList.remove('is-closing');
+      shopEl.hidden = true;
+      shopBody.innerHTML = '';
+      shopClosing = false;
+      if (!modalEl || modalEl.hidden) document.body.classList.remove('is-modal-open');
+      var target = shopLastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      shopLastFocus = null;
+    }, 180);
   }
 
   /* ── 효과음 · 진동 (Web Audio 합성, 음원 파일 없음) ── */
@@ -945,14 +1151,14 @@
 
   /* 1) 모달이 뿅 튀어나올 때 — 880→1320Hz 맑은 차임 */
   function sfxOpen() {
-    vibrate(15);
+    vibrate([30, 18, 45]);
     var ctx = audioCtx(); if (!ctx) return;
     tone(ctx, { from: 880, to: 1320, dur: 0.34, glide: 0.13, type: 'sine', gain: 0.13 });
     tone(ctx, { from: 1320, to: 1760, dur: 0.28, type: 'sine', gain: 0.055, at: 0.07, glide: 0.12 });
   }
   /* 2) 부적 두드리기(1/3·2/3) — 420→220Hz 톡, 두 번째는 살짝 높게 */
   function sfxTap(step) {
-    vibrate(25);
+    vibrate([45, 25, 55]);              // 1·2타 — 손끝까지 오는 톡
     var ctx = audioCtx(); if (!ctx) return;
     var base = 420 + (step - 1) * 45;
     tone(ctx, { from: base, to: base * 0.52, dur: 0.14, glide: 0.05, type: 'triangle', gain: 0.2, attack: 0.004 });
@@ -961,7 +1167,7 @@
   }
   /* 3) 3/3 완료 — 도장 '쾅' 저음 타격 + C5-E5-G5-C6 상승 아르페지오 */
   function sfxDone() {
-    vibrate([30, 40, 55]);
+    vibrate([80, 35, 100, 45, 130]);   // 3타 완료 — 쾅! 하고 길게
     var ctx = audioCtx(); if (!ctx) return;
     // 쾅 — 낮게 떨어지는 타격 + 노이즈 임팩트
     tone(ctx, { from: 150, to: 52, dur: 0.26, glide: 0.16, type: 'sine', gain: 0.42, attack: 0.004 });
@@ -1017,9 +1223,9 @@
       document.body.appendChild(a);
       a.click();
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1500);
-      $('#icsStatus').textContent = '파일을 만들었어요 — ' + fileName + ' · 열어서 캘린더에 추가해 주세요.';
+      $('#icsStatus').textContent = '저장했어요 — ' + fileName + ' · 내려받은 파일을 열고 「캘린더에 추가」를 눌러 주세요.';
     } catch (e) {
-      $('#icsStatus').textContent = '이 브라우저에서는 파일 저장이 막혀 있어요. 잠시 뒤 다시 시도해 주세요.';
+      $('#icsStatus').textContent = '이 브라우저에서는 파일 저장이 막혀 있어요. 카카오톡·사파리·크롬에서 다시 눌러 주세요.';
     }
   }
 
@@ -1037,6 +1243,9 @@
     modalEl = $('#dayModal');
     modalBody = $('#modalBody');
     modalDialog = $('#modalDialog');
+    shopEl = $('#shopModal');
+    shopBody = $('#shopBody');
+    shopDialog = $('#shopDialog');
 
     loadSoundPref();
     syncSoundBtn();
@@ -1054,12 +1263,35 @@
     // 팝업 안: 부적 두드리기 / X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (tap) { onRitualTap(tap); return; }
+      if (tap) { onRitualTap(tap, e); return; }
       if (e.target.closest('[data-modal-close]')) closeDayModal();
     });
 
+    // 구입 팝업 — 맨 아래 카드 3개 버튼과 잠금 카드 버튼
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-shop]') : null;
+      if (!b) return;
+      e.preventDefault();
+      var kind = b.getAttribute('data-shop');
+      if (modalEl && !modalEl.hidden) {       // 날짜 팝업에서 열면 그 팝업은 닫고
+        closeDayModal();
+        setTimeout(function () { openShop(kind); }, 190);
+      } else {
+        openShop(kind);
+      }
+    });
+    if (shopEl) {
+      shopEl.addEventListener('click', function (e) {
+        if (e.target.closest('[data-shop-close]')) closeShop();
+      });
+    }
+
     // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
     document.addEventListener('keydown', function (e) {
+      if (shopEl && !shopEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeShop(); }
+        return;
+      }
       if (!modalEl || modalEl.hidden) return;
       if (e.key === 'Escape') { e.preventDefault(); closeDayModal(); return; }
       if (e.key !== 'Tab') return;

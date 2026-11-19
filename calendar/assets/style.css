@@ -623,11 +623,11 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   border-radius: 20px;
   transition: background .3s ease, border-color .3s ease;
 }
-.ritual--목 { --accent: #65824F; --soft: #F3F7EF; --line: rgba(110, 139, 94, .30); }
-.ritual--화 { --accent: #B65D46; --soft: #FCF1ED; --line: rgba(196, 102, 79, .28); }
-.ritual--토 { --accent: #9A8354; --soft: #FAF5EA; --line: rgba(154, 131, 84, .30); }
-.ritual--금 { --accent: #8A7F5E; --soft: #F6F4EE; --line: rgba(138, 127, 94, .30); }
-.ritual--수 { --accent: #4F739A; --soft: #EFF4F9; --line: rgba(90, 124, 153, .28); }
+.ritual--목 { --accent: #65824F; --soft: #F3F7EF; --line: rgba(110, 139, 94, .30); --el: #6FAE5B; --el-1: rgba(111, 174, 91, .34); --el-2: rgba(111, 174, 91, .13); }
+.ritual--화 { --accent: #B65D46; --soft: #FCF1ED; --line: rgba(196, 102, 79, .28); --el: #F0714E; --el-1: rgba(240, 113, 78, .34); --el-2: rgba(240, 113, 78, .13); }
+.ritual--토 { --accent: #9A8354; --soft: #FAF5EA; --line: rgba(154, 131, 84, .30); --el: #D9A83C; --el-1: rgba(217, 168, 60, .36); --el-2: rgba(217, 168, 60, .14); }
+.ritual--금 { --accent: #8A7F5E; --soft: #F6F4EE; --line: rgba(138, 127, 94, .30); --el: #9FB0C0; --el-1: rgba(159, 176, 192, .40); --el-2: rgba(159, 176, 192, .16); }
+.ritual--수 { --accent: #4F739A; --soft: #EFF4F9; --line: rgba(90, 124, 153, .28); --el: #54A8C6; --el-1: rgba(84, 168, 198, .34); --el-2: rgba(84, 168, 198, .13); }
 
 .ritual__eyebrow {
   font-size: 9px; font-weight: 600; letter-spacing: .16em;
@@ -686,35 +686,62 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   margin-top: 4px; font-size: 11px; line-height: 1.6; color: var(--mute);
   min-height: 18px; transition: color .3s;
 }
-.ritual.is-done { background: var(--soft); border-color: var(--accent); }
+.ritual[data-stage="1"] { border-color: var(--el); box-shadow: 0 10px 26px -22px var(--el); }
+.ritual[data-stage="2"] { border-color: var(--el); box-shadow: 0 0 0 1px var(--el), 0 14px 32px -20px var(--el); }
+.ritual[data-stage="1"] .ritual__img { box-shadow: 0 0 0 2px var(--el), 0 14px 26px -14px var(--el); }
+.ritual[data-stage="2"] .ritual__img { box-shadow: 0 0 0 3px var(--el), 0 16px 30px -12px var(--el); }
+.ritual.is-done { background: var(--soft); border-color: var(--el); box-shadow: 0 0 0 2px var(--el), 0 16px 36px -18px var(--el); }
 .ritual.is-done .ritual__img {
-  box-shadow: 0 0 0 2px var(--accent), 0 12px 24px -14px var(--accent);
+  box-shadow: 0 0 0 3px var(--el), 0 18px 34px -12px var(--el);
 }
 .ritual.is-done .ritual__count { color: var(--accent); }
 .ritual.is-done .ritual__msg {
-  color: var(--accent); font-weight: 600; font-size: 12.5px; letter-spacing: -0.01em;
+  color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -0.01em;
+  animation: msgPop .5s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes msgPop {
+  0% { transform: scale(.82); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 .ritual__msg small {
   display: block; margin-top: 3px;
   font-size: 10.5px; font-weight: 400; color: var(--mute); letter-spacing: 0;
 }
 
-/* 달력 셀 스탬프 */
+/* 달력 셀 — 동그란 주홍 낙관 도장 */
 .day { position: relative; }
-.day__stamp {
-  position: absolute; top: 3px; right: 3px;
-  width: 13px; height: 13px; border-radius: 50%;
-  background: var(--gold); color: #fff;
-  font-size: 8px; line-height: 13px; font-weight: 700; text-align: center;
-  box-shadow: 0 0 0 1.5px #fff, 0 2px 4px -1px rgba(29, 28, 25, .3);
-  pointer-events: none;
+.day__seal {
+  position: absolute; left: 50%; top: -2px;
+  width: 34px; height: 34px; margin-left: -17px;
+  pointer-events: none; z-index: 0;
+  color: #B4432C;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .75)) drop-shadow(0 2px 3px rgba(180, 67, 44, .18));
 }
-.day__stamp.is-new { animation: stampIn .5s cubic-bezier(.2, 1.7, .5, 1); }
-@keyframes stampIn {
-  0% { transform: scale(2.6) rotate(-18deg); opacity: 0; }
-  55% { transform: scale(.88) rotate(3deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0); opacity: 1; }
+.day--stamped .day__num {
+  position: relative; z-index: 1;
+  color: #9E3620; font-weight: 700;
 }
+.day--stamped.day--sun .day__num, .day--stamped.day--sat .day__num { color: #9E3620; }
+.day__seal.is-new { animation: sealIn .68s cubic-bezier(.2, 1.5, .4, 1) both; }
+@keyframes sealIn {
+  0% { transform: rotate(-28deg) scale(2.8); opacity: 0; }
+  36% { opacity: .85; }
+  60% { transform: rotate(-2deg) scale(.88); opacity: 1; }
+  80% { transform: rotate(-11deg) scale(1.05); }
+  100% { transform: rotate(-8deg) scale(1); opacity: 1; }
+}
+.seal { display: block; width: 100%; height: 100%; overflow: visible; }
+.seal__ring { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.seal__ring2 { fill: rgba(180, 67, 44, .05); stroke: currentColor; stroke-width: .9; opacity: .42; }
+.seal__spark { fill: #C08B32; }
+.seal-mini {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px;
+  color: #B4432C;
+}
+.seal-mini .seal { width: 16px; height: 16px; }
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
 @media (max-width: 360px) {
@@ -735,7 +762,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__img { width: 126px; height: 126px; }
-  .day__stamp { width: 14px; height: 14px; line-height: 14px; font-size: 8.5px; }
+  .day__seal { width: 36px; height: 36px; margin-left: -18px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
@@ -920,11 +947,292 @@ body.is-modal-open { overflow: hidden; }
 .modal__eyebrow { padding-right: 108px; }
 .modal__date { padding-right: 100px; }
 
-/* 달력 금색 ✓ 스탬프 — 모바일에서도 한눈에 */
-.day__stamp {
-  top: 2px; right: 2px;
-  width: 15px; height: 15px; line-height: 15px; font-size: 9.5px;
+/* 달력 낙관 — 모바일에서도 한눈에 도장이 찍힌 게 보이도록 */
+.day__seal { top: -2px; }
+@media (max-width: 360px) {
+  .day__seal { width: 30px; height: 30px; margin-left: -15px; top: 0; }
 }
-@media (min-width: 520px) {
-  .day__stamp { width: 17px; height: 17px; line-height: 17px; font-size: 10.5px; }
+
+/* ==========================================================
+   v4 — 손맛 강화: 단계별 캐릭터 표정·기운 + 젤리 바운스 + 파동 + 파티클
+   ========================================================== */
+
+/* ── 캐릭터 무대 ─────────────────────────────────── */
+.ritual__stage {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px 0 6px; min-height: 152px;
+}
+.ritual__tap { position: relative; z-index: 2; }
+.ritual__char {
+  position: relative; display: block; border-radius: 26px;
+  animation: charIn .74s cubic-bezier(.18, 1.55, .45, 1) both,
+             floaty 3.6s ease-in-out .74s infinite;
+  will-change: transform;
+}
+.ritual__char.is-jelly { animation: jelly .6s cubic-bezier(.2, 1.5, .4, 1); }
+.ritual__char.is-jelly--big { animation: jellyBig .72s cubic-bezier(.2, 1.5, .4, 1); }
+
+@keyframes charIn {
+  0% { transform: scale(.45) translateY(22px) rotate(-9deg); opacity: 0; }
+  52% { transform: scale(1.14) translateY(-8px) rotate(4deg); opacity: 1; }
+  74% { transform: scale(.95) translateY(3px) rotate(-1.5deg); }
+  100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(-.9deg) scale(1); }
+  50% { transform: translateY(-8px) rotate(.9deg) scale(1.018); }
+}
+/* 젤리 — 찌그러졌다가 팡 튀어오르는 바운스 */
+@keyframes jelly {
+  0% { transform: scale(1, 1) translateY(0); }
+  18% { transform: scale(1.2, .78) translateY(9px); }
+  42% { transform: scale(.86, 1.2) translateY(-16px); }
+  62% { transform: scale(1.08, .93) translateY(4px); }
+  80% { transform: scale(.97, 1.03) translateY(-3px); }
+  100% { transform: scale(1, 1) translateY(0); }
+}
+@keyframes jellyBig {
+  0% { transform: scale(1, 1) rotate(0); }
+  14% { transform: scale(1.28, .7) translateY(14px) rotate(-4deg); }
+  34% { transform: scale(.8, 1.3) translateY(-28px) rotate(5deg); }
+  52% { transform: scale(1.16, .88) translateY(8px) rotate(-3deg); }
+  70% { transform: scale(.93, 1.08) translateY(-10px) rotate(2deg); }
+  86% { transform: scale(1.03, .98) translateY(2px) rotate(-1deg); }
+  100% { transform: scale(1, 1) translateY(0) rotate(0); }
+}
+
+/* ── 기운 오라 ────────────────────────────────────── */
+.ritual__aura {
+  position: absolute; left: 50%; top: 50%;
+  width: 154px; height: 154px; margin: -77px 0 0 -77px;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--el-1) 0%, var(--el-2) 46%, rgba(255, 255, 255, 0) 70%);
+  opacity: .55; transform: scale(.82);
+  transition: opacity .45s ease, transform .55s cubic-bezier(.2, 1.4, .4, 1);
+  animation: auraGlow 3.2s ease-in-out infinite;
+  z-index: 0;
+}
+.ritual[data-stage="1"] .ritual__aura { opacity: .9; transform: scale(1.06); }
+.ritual[data-stage="2"] .ritual__aura { opacity: 1; transform: scale(1.26); animation-duration: 1.5s; }
+.ritual[data-stage="3"] .ritual__aura { opacity: 1; transform: scale(1.4); animation-duration: 2.1s; }
+@keyframes auraGlow {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.22) saturate(1.15); }
+}
+
+/* ── 둥글게 번지는 링 ─────────────────────────────── */
+.ritual__ring {
+  position: absolute; left: 50%; top: 50%;
+  width: 122px; height: 122px; margin: -61px 0 0 -61px;
+  border-radius: 50%; border: 1.5px solid var(--el);
+  opacity: .4; pointer-events: none; z-index: 0;
+  animation: ringPulse 3s ease-out infinite;
+}
+.ritual[data-stage="1"] .ritual__ring { animation-duration: 2s; }
+.ritual[data-stage="2"] .ritual__ring { animation-duration: 1.35s; }
+.ritual[data-stage="3"] .ritual__ring { animation-duration: 1.7s; }
+@keyframes ringPulse {
+  0% { transform: scale(.84); opacity: .5; }
+  70% { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* ── 단계가 바뀔 때 퍼지는 기운 파동 ──────────────── */
+.ritual__pop {
+  position: absolute; left: 50%; top: 50%;
+  width: 132px; height: 132px; margin: -66px 0 0 -66px;
+  border-radius: 50%; border: 3px solid var(--el);
+  opacity: 0; pointer-events: none; z-index: 0;
+}
+.ritual[data-stage="1"] .ritual__pop { animation: waveOut .82s ease-out both; }
+.ritual[data-stage="2"] .ritual__pop { animation: waveOut .9s ease-out both; }
+.ritual[data-stage="3"] .ritual__pop { animation: waveOut 1.2s ease-out both; }
+@keyframes waveOut {
+  0% { transform: scale(.5); opacity: .9; border-width: 6px; }
+  55% { opacity: .38; }
+  100% { transform: scale(2.15); opacity: 0; border-width: 1px; }
+}
+
+/* ── 터치 지점 파문 ──────────────────────────────── */
+.ritual__fx {
+  position: absolute; inset: auto; width: 22px; height: 22px; margin: -11px 0 0 -11px;
+  border-radius: 50%; border: 2.5px solid var(--el);
+  opacity: 0; pointer-events: none; z-index: 3;
+  animation: ripOut .82s cubic-bezier(.15, .7, .3, 1) forwards;
+}
+.ritual__fx::before, .ritual__fx::after { content: none; }
+.ritual__stage .ritual__tap { margin: 0; }
+@keyframes ripOut {
+  0% { transform: scale(.2); opacity: .9; }
+  70% { opacity: .35; }
+  100% { transform: scale(6.4); opacity: 0; }
+}
+
+/* ── 파티클 폭발 ─────────────────────────────────── */
+.ritual__parts {
+  position: absolute; left: 50%; top: 50%;
+  width: 0; height: 0; pointer-events: none; z-index: 3;
+}
+.ritual__p {
+  position: absolute; left: 0; top: 0;
+  font-size: var(--sz, 12px); line-height: 1;
+  transform: translate(-50%, -50%);
+  animation: pFly var(--dur, .8s) var(--dl, 0s) cubic-bezier(.15, .75, .3, 1) forwards;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 1px 2px rgba(29, 28, 25, .18));
+}
+.ritual__p--big { animation-timing-function: cubic-bezier(.1, .8, .3, 1); }
+@keyframes pFly {
+  0% { transform: translate(-50%, -50%) scale(.25) rotate(0deg); opacity: 0; }
+  16% { opacity: 1; }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.08) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* ── 표정 배지 (0타 ✨ → 1타 ⚡ → 2타 🔥 → 3타 완료 오행 배지) ── */
+.ritual__badge {
+  position: absolute; top: 2px; right: 7%; z-index: 4;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; line-height: 1;
+  background: #FFFFFF;
+  box-shadow: 0 5px 14px -7px rgba(29, 28, 25, .5), 0 0 0 1px var(--line),
+              0 0 0 5px rgba(255, 255, 255, .55);
+  pointer-events: none;
+  animation: badgeFloat 2.8s ease-in-out infinite;
+  transition: width .25s ease, height .25s ease, font-size .25s ease;
+}
+.ritual__badge.is-pop {
+  animation: badgePop .52s cubic-bezier(.2, 1.6, .4, 1), badgeFloat 2.8s ease-in-out .52s infinite;
+}
+.ritual[data-stage="3"] .ritual__badge { width: 40px; height: 40px; font-size: 21px; }
+@keyframes badgePop {
+  0% { transform: scale(.25) rotate(-24deg); opacity: 0; }
+  58% { transform: scale(1.3) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+
+/* ── 2타 볼 발그레 ───────────────────────────────── */
+.ritual__blush {
+  position: absolute; inset: 0; border-radius: 26px;
+  opacity: 0; pointer-events: none;
+  mix-blend-mode: multiply;
+  transition: opacity .45s ease;
+  background:
+    radial-gradient(circle at 33% 58%, rgba(240, 108, 128, .55), rgba(240, 108, 128, 0) 14%),
+    radial-gradient(circle at 67% 58%, rgba(240, 108, 128, .55), rgba(240, 108, 128, 0) 14%);
+}
+.ritual[data-stage="2"] .ritual__blush { opacity: .6; }
+.ritual.is-done .ritual__blush { opacity: .38; }
+
+/* ── 2타 이후 캐릭터가 살짝 부들부들 ──────────────── */
+.ritual[data-stage="2"] .ritual__tap { animation: tremble 1.7s ease-in-out infinite; }
+@keyframes tremble {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-1.5px, 1px) rotate(-.7deg); }
+  50% { transform: translate(1.5px, -1px) rotate(.7deg); }
+  75% { transform: translate(-1px, -1px) rotate(-.4deg); }
+}
+
+/* ── 모달 흔들림 ─────────────────────────────────── */
+.modal__dialog.is-quake { animation: quake .44s cubic-bezier(.36, .07, .19, .97) both; }
+.modal__dialog.is-quake--big { animation: quakeBig .66s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes quake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  15% { transform: translate(-2px, 1px) rotate(-.35deg); }
+  30% { transform: translate(3px, -2px) rotate(.4deg); }
+  45% { transform: translate(-3px, 2px) rotate(-.45deg); }
+  62% { transform: translate(3px, -1px) rotate(.35deg); }
+  82% { transform: translate(-1px, 1px) rotate(-.2deg); }
+}
+@keyframes quakeBig {
+  0%, 100% { transform: translate(0, 0) rotate(0) scale(1); }
+  10% { transform: translate(-6px, 3px) rotate(-.9deg) scale(1.006); }
+  22% { transform: translate(7px, -5px) rotate(.95deg) scale(1.006); }
+  34% { transform: translate(-8px, 4px) rotate(-1.1deg) scale(1.004); }
+  47% { transform: translate(7px, -4px) rotate(.9deg) scale(1.004); }
+  60% { transform: translate(-5px, 3px) rotate(-.7deg) scale(1.002); }
+  74% { transform: translate(4px, -2px) rotate(.5deg) scale(1); }
+  88% { transform: translate(-2px, 1px) rotate(-.3deg) scale(1); }
+}
+
+/* ── 모달이 뿅 — 더 크게 튀어나오게 ──────────────── */
+@keyframes modalIn {
+  0% { opacity: 0; transform: translateY(34px) scale(.62); }
+  52% { opacity: 1; transform: translateY(-8px) scale(1.06); }
+  72% { transform: translateY(3px) scale(.975); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── .ics 안내 ───────────────────────────────────── */
+.ics__howto {
+  margin-top: 16px; padding: 11px 13px; text-align: center;
+  background: #FAF6EC; border: 1px solid rgba(174, 138, 80, .22);
+  border-radius: 13px;
+  font-size: 11px; line-height: 1.8; color: #7C6C4C;
+}
+.ics__howto b { color: #6B5526; font-weight: 700; }
+.btn--ics { font-size: 13px; letter-spacing: -0.01em; }
+
+/* ── 맨 아래 카드 — 1·2·3 결제 동선 ──────────────── */
+.cta__steps { margin-top: 18px; }
+.cta__steps .btn:first-child { margin-top: 0; }
+.cta__steps .btn + .btn { margin-top: 8px; }
+.shop-btn { justify-content: flex-start; gap: 10px; padding: 14px 16px; }
+.shop-btn__no {
+  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: rgba(29, 28, 25, .12); color: inherit;
+}
+.btn--cream .shop-btn__no { background: rgba(29, 28, 25, .14); }
+.btn--ghost-light .shop-btn__no { background: rgba(242, 237, 227, .2); }
+.shop-btn__label { text-align: left; }
+
+/* ── 구입 안내 팝업 ──────────────────────────────── */
+.shop__title {
+  font-family: var(--serif); font-size: 23px; line-height: 1.35;
+  margin-top: 6px; letter-spacing: -0.02em; padding-right: 40px;
+}
+.shop__sub { font-size: 12px; line-height: 1.8; color: var(--ink-2); margin-top: 10px; }
+.shop__sub b { color: #9E4A2E; }
+.shop__list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.shop__list li {
+  padding: 11px 13px; border-radius: 14px;
+  background: #FAF7F0; border: 1px solid rgba(29, 28, 25, .06);
+}
+.shop__list b { display: block; font-size: 12.5px; color: var(--ink); letter-spacing: -0.02em; }
+.shop__list span { display: block; font-size: 10.5px; color: var(--mute); line-height: 1.65; margin-top: 3px; }
+.shop__talis {
+  display: flex; gap: 12px; align-items: center;
+  margin-top: 14px; padding: 12px;
+  background: #FBF7EE; border: 1px solid rgba(174, 138, 80, .2); border-radius: 16px;
+}
+.shop__talis img { width: 62px; height: 62px; border-radius: 14px; object-fit: cover; flex: none; }
+.shop__talis b { display: block; font-size: 12px; color: #8E6B2C; }
+.shop__talis span { display: block; font-size: 10.5px; color: var(--mute); line-height: 1.65; margin-top: 3px; }
+.shop__price {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 16px; padding: 13px 15px; border-radius: 14px;
+  background: #1C1B19; color: #F2EDE3;
+}
+.shop__price span { font-size: 10.5px; letter-spacing: .04em; color: rgba(242, 237, 227, .58); }
+.shop__price b { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+.shop__cta { margin-top: 12px; }
+.shop__note { font-size: 10px; color: var(--mute); line-height: 1.7; margin-top: 10px; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual__char, .ritual__aura, .ritual__ring, .ritual__pop, .ritual__badge,
+  .ritual[data-stage="2"] .ritual__tap, .ritual__p, .ritual__fx,
+  .modal__dialog.is-quake, .modal__dialog.is-quake--big {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
