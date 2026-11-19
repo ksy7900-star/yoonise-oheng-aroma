@@ -361,7 +361,7 @@ form { margin-top: 22px; }
 
 /* ── 모아보기 필터 ─────────────────────────────────── */
 .calfilter {
-  display: flex; gap: 4px; margin: 12px 4px 0; padding: 3px;
+  display: flex; gap: 4px; margin: 14px 4px 4px; padding: 3px;
   background: #F2EEE4; border-radius: 999px;
 }
 .calfilter__btn {
@@ -379,7 +379,7 @@ form { margin-top: 22px; }
 .cal .day.day--dim:hover { background-image: none; }
 .cal .day.day--pick { box-shadow: inset 0 0 0 1.4px rgba(29, 28, 25, .14); }
 .cal .day.day--pick--red { background: rgba(191, 106, 91, .16); }
-.cal .day.day--pick--gray { background: rgba(169, 162, 150, .22); }
+.cal .day.day--pick--gray { background: rgba(169, 162, 150, .15); }
 .cal .day.day--pick--gold { background: rgba(196, 154, 80, .20); }
 .cal .day.day--pick--blue { background: rgba(113, 136, 157, .17); }
 
