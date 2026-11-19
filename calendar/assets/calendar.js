@@ -1096,7 +1096,7 @@
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
-      if (stamp && !badges.length) stamp = null;   // 부적은 기운이 서는 날에만 남는다
+      if (stamp && !badges.length) stamp = null;   // 부적은 기운이 흔들리는 날·경고등 켜진 날에만 남는다
       if (stamp) {
         cls.push('day--stamped');
         if (iso >= state.todayISO) label += ', 부적 스티커 붙음';
@@ -1146,8 +1146,8 @@
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     var noteText = FREE_TRIAL_ENABLED
-      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 배지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
-      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 서는 날(색 배지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.';
+      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
+      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.';
     $('#calNote').textContent = noteText;
   }
 
@@ -1499,7 +1499,7 @@
       '<ul class="shop__list">' +
       '<li><b>1년 패스 전부</b><span>2027년 1~12월 365일 + 사전 신청 시 12월 한 달 서비스</span></li>' +
       '<li><b>2027년 내 년수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
-      '<li><b>매일 일진 부적 — 전부</b><span>기운 서는 날마다 튀어나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
+      '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 튀어나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
       '</ul>' +
       '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>년수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
       priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
