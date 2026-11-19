@@ -706,15 +706,17 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .day { position: relative; }
 .day__top { display: flex; align-items: center; justify-content: center; }
 .day__sticker {
-  display: block; flex: none;
-  width: 26px; height: 28px;
-  margin: -7px 0 0 -8px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  display: flex; align-items: center; justify-content: center; flex: none;
+  width: 27px; height: 27px;
+  margin: -8px 0 0 -9px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 34%, #fff 0%, #FFFDF8 68%, #F6F0E2 100%);
+  box-shadow: 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
   transform: rotate(-9deg);
   pointer-events: none;
 }
 .day__sticker .ch {
-  width: 100%; height: 100%; overflow: hidden;   /* 캐릭터만 잘라 쓰는 미니 스티커 */
-  filter: drop-shadow(0 1px 1.6px rgba(28, 27, 25, .30));
+  width: 92%; height: 92%; overflow: hidden;   /* 캐릭터만 잘라 쓰는 미니 스티커 */
 }
 .day__sticker.is-new { animation: stickerIn .72s cubic-bezier(.2, 1.5, .4, 1) both; }
 @keyframes stickerIn {
@@ -727,12 +729,12 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 /* 팝업 안 완료 문구 옆 미니 스티커 */
 .sticker-mini {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 24px; margin-right: 5px; vertical-align: -7px;
+  width: 22px; height: 22px; margin-right: 6px; vertical-align: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 34%, #fff 0%, #FFFDF8 68%, #F6F0E2 100%);
+  box-shadow: 0 1px 2px rgba(28, 27, 25, .18), 0 0 0 .5px rgba(28, 27, 25, .08);
 }
-.sticker-mini .ch {
-  width: 100%; height: 100%; overflow: hidden;
-  filter: drop-shadow(0 1px 1px rgba(28, 27, 25, .22));
-}
+.sticker-mini .ch { width: 92%; height: 92%; overflow: hidden; }
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
 @media (max-width: 360px) {
@@ -753,7 +755,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
-  .day__sticker { width: 30px; height: 33px; margin-left: -9px; }
+  .day__sticker { width: 31px; height: 31px; margin-left: -10px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
@@ -937,7 +939,7 @@ body.is-modal-open { overflow: hidden; }
 
 /* 달력 스티커 — 모바일에서도 한눈에 붙은 게 보이도록 */
 @media (max-width: 360px) {
-  .day__sticker { width: 24px; height: 26px; margin-left: -7px; }
+  .day__sticker { width: 25px; height: 25px; margin-left: -8px; }
 }
 
 /* ==========================================================
