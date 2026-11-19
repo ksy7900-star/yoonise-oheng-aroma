@@ -479,7 +479,10 @@
         '</div>';
     }).join('');
     setTimeout(function () {
-      $$('#legend .legend__fill').forEach(function (f) { f.style.width = Math.max(2, f.dataset.w) + '%'; });
+      $$('#legend .legend__fill').forEach(function (f) {
+        var w = parseFloat(f.dataset.w) || 0;
+        f.style.width = (w > 0 ? Math.max(2, w) : 0) + '%';
+      });
     }, 120);
 
     // 태그
