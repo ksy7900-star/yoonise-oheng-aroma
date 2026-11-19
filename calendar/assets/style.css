@@ -333,8 +333,7 @@ form { margin-top: 22px; }
 .howto__list { margin-top: 9px; display: flex; flex-direction: column; gap: 5px; }
 .howto__list li { display: flex; align-items: center; gap: 7px; }
 .howto__txt { font-size: 10.5px; line-height: 1.55; color: var(--ink-2); }
-.howto__badges { display: inline-flex; gap: 3px; flex: none; }
-.howto .badge { min-width: 32px; flex: none; }
+.howto .badge { min-width: 34px; flex: none; }
 .howto__free {
   margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--hair);
   font-size: 10.5px; color: #8A7B5C; line-height: 1.5;
