@@ -912,3 +912,12 @@ body.is-modal-open { overflow: hidden; }
 }
 .modal__eyebrow { padding-right: 108px; }
 .modal__date { padding-right: 100px; }
+
+/* 달력 금색 ✓ 스탬프 — 모바일에서도 한눈에 */
+.day__stamp {
+  top: 2px; right: 2px;
+  width: 15px; height: 15px; line-height: 15px; font-size: 9.5px;
+}
+@media (min-width: 520px) {
+  .day__stamp { width: 17px; height: 17px; line-height: 17px; font-size: 10.5px; }
+}
