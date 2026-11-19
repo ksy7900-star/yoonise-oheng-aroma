@@ -427,7 +427,11 @@
     renderSaeun(v, dim);
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    $('#calNote').textContent = freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+    var noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+    if (v.y === 2028 && v.m === 2) {
+      noteText = '정미년은 2028년 2월 3일까지예요. 2월 4일 입춘부터는 무신년(戊申)으로 세운이 바뀌어 달력이 여기서 끝납니다.';
+    }
+    $('#calNote').textContent = noteText;
   }
 
   /* ── 세운 줄: 입춘에서 해가 바뀐다 ─────────────────── */
