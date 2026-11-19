@@ -8,7 +8,33 @@
   var GEN = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
   var CONTROL = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
   var PREV = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };
-  var state = { gender: '', calendar: 'solar', last: null, hidden: false };
+  var state = { gender: '', calendar: 'solar', last: null, hidden: false, restored: false };
+
+  /* ───────── 내 정보 기억 (기기에만 저장) ───────── */
+  var STORE_KEY = 'yoonise.oheng.last.v1';
+
+  function saveInput(o) {
+    try {
+      var copy = {};
+      for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) copy[k] = o[k];
+      copy.savedAt = new Date().toISOString();
+      localStorage.setItem(STORE_KEY, JSON.stringify(copy));
+    } catch (e) { /* 저장이 막힌 브라우저도 계산은 그대로 */ }
+  }
+
+  function loadInput() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      var o = JSON.parse(raw);
+      if (!o || !o.y || !o.m || !o.d || !o.gender) return null;
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function clearInput() {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -106,9 +132,78 @@
     }).join('');
 
     $('#birthForm').addEventListener('submit', onSubmit);
-    $('#againBtn').addEventListener('click', function () {
-      $('#formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#againBtn').addEventListener('click', openForm);
+    if ($('#editBtn')) $('#editBtn').addEventListener('click', openForm);
+    if ($('#clearBtn')) $('#clearBtn').addEventListener('click', resetAll);
+  }
+
+  /* 저장된 값을 폼에 그대로 되살린다 */
+  function applyInput(o) {
+    if (!o) return;
+    $('#name').value = o.name || '';
+
+    state.gender = o.gender === 'M' ? 'M' : (o.gender === 'F' ? 'F' : '');
+    $$('#genderChips .chip').forEach(function (c) {
+      var on = c.dataset.gender === state.gender;
+      c.classList.toggle('is-on', on);
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    setGenderError(false);
+
+    state.calendar = o.calendar === 'lunar' ? 'lunar' : 'solar';
+    $$('#calendarSeg .seg').forEach(function (b) {
+      var on = b.dataset.cal === state.calendar;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    $('#leapRow').hidden = state.calendar !== 'lunar';
+    $('#dateLabel').textContent = state.calendar === 'lunar' ? '음력 생년월일' : '생년월일';
+
+    $('#year').value = o.y;
+    $('#month').value = o.m;
+    fillDays();
+    $('#day').value = o.d;
+    $('#leap').checked = !!o.leap;
+
+    $('#timeUnknown').checked = !o.timeKnown;
+    $('#timeBox').hidden = !o.timeKnown;
+    $('#timeUnknownNote').hidden = !!o.timeKnown;
+    $('#hour').value = o.timeKnown ? o.hh : '';
+    $('#minute').value = o.timeKnown ? o.mm : '';
+
+    if (o.region) $('#region').value = o.region;
+    $('#trueSolar').checked = !!o.trueSolar;
+    $('#dst').checked = !!o.dst;
+    $('#ziRule').value = o.ziRule || '23';
+    syncJisi();
+  }
+
+  function openForm() {
+    $('#formCard').hidden = false;
+    $('#formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetAll() {
+    clearInput();
+    location.reload();
+  }
+
+  /* 재방문·새로고침 시: 저장된 사주로 오늘 결과를 바로 연다 */
+  function restoreSaved() {
+    var saved = loadInput();
+    if (!saved) return;
+    applyInput(saved);
+    try {
+      var res = M.compute(saved);
+      state.restored = true;
+      render(res, { noScroll: true });
+      $('#formCard').hidden = true;
+      window.scrollTo(0, 0);
+    } catch (e) {
+      // 저장값이 깨졌거나 존재하지 않는 날짜면 조용히 지우고 폼을 보여 준다
+      clearInput();
+      $('#formCard').hidden = false;
+    }
   }
 
   function fillDays() {
@@ -194,11 +289,13 @@
         res = M.compute(opts);
       } catch (err) {
         btn.classList.remove('is-loading');
-        $('.submit__label', btn).textContent = '내 오행 보기';
+        $('.submit__label', btn).textContent = '오늘 내 기운 보기';
         return fail(err && err.message ? err.message : '계산 중 문제가 생겼어요. 입력을 다시 확인해 주세요.');
       }
       btn.classList.remove('is-loading');
-      $('.submit__label', btn).textContent = '내 오행 보기';
+      $('.submit__label', btn).textContent = '오늘 내 기운 보기';
+      saveInput(opts);
+      state.restored = false;
       render(res);
     }, 620);
 
@@ -210,12 +307,13 @@
   }
 
   /* ───────── 렌더 ───────── */
-  function render(res) {
+  function render(res, opts) {
     state.last = res;
     var name = res.input.name;
     var who = name ? name + '님' : '나';
 
     $('#result').hidden = false;
+    renderSavedBar(res);
 
     // 요약
     $('#summaryEyebrow').textContent = who + '의 사주';
@@ -232,8 +330,8 @@
     renderWonguk(res);
     renderBalance(res);
     renderArchetype(res);
-    renderAroma(res);
     renderToday(res);
+    renderRitual(res);
 
     var jieNote = '';
     var alt = res.jieqi.altYM;
@@ -250,9 +348,11 @@
       (res.input.dst ? ' 서머타임 −60분 적용.' : '');
 
     revealCards();
-    setTimeout(function () {
-      $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
+    if (!(opts && opts.noScroll)) {
+      setTimeout(function () {
+        $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
   }
 
   function p2(n) { return (n < 10 ? '0' : '') + n; }
@@ -440,58 +540,58 @@
       '</div>';
   }
 
-  function renderAroma(res) {
-    var minEl = res._minEl, maxEl = res._maxEl, maxPct = res._maxPct;
-    var oils = D.AROMAS[minEl].slice(0, 2);
-    var flowEl, flowReason;
-    if (maxPct >= 35 && maxEl !== minEl) {
-      flowEl = GEN[maxEl];
-      flowReason = '넘치는 ' + maxEl + '의 기운을 부드럽게 흘려보내는 향';
-    } else {
-      flowEl = PREV[res.dayMaster.element];
-      flowReason = res.dayMaster.element + '의 기운을 채워 주는 향';
-    }
-    var minTwin = (res._minSet || []).filter(function (e) { return e !== minEl; })[0];
-    if (flowEl === minEl) {
-      flowEl = minTwin || PREV[minEl];
-      flowReason = '부족한 ' + flowEl + josa(flowEl, '을를') + ' 함께 채우는 향';
-    } else if (minTwin && flowEl === minTwin) {
-      flowReason = '부족한 ' + flowEl + josa(flowEl, '을를') + ' 함께 채우는 향';
-    }
-    var third = D.AROMAS[flowEl][0];
+  function renderSavedBar(res) {
+    var bar = $('#savedBar');
+    if (!bar) return;
+    var o = res.input;
+    $('#savedBarName').textContent = (o.name ? o.name + '님' : '내 사주') + ' 기준으로 열었어요';
+    $('#savedBarMeta').textContent = [
+      (o.calendar === 'lunar' ? '음력 ' : '') + o.y + '.' + p2(+o.m) + '.' + p2(+o.d),
+      o.timeKnown ? p2(o.hh) + ':' + p2(o.mm) : '시간 모름',
+      o.gender === 'M' ? '남성' : '여성'
+    ].join(' · ');
+    bar.hidden = false;
+  }
 
-    var inMinSet = (res._minSet || []).indexOf(flowEl) >= 0;
-    var thirdPhrase;
-    if (inMinSet) thirdPhrase = '함께 적은 <b>' + flowEl + '</b>의 기운을 채우는 향 1가지';
-    else if (maxPct >= 35 && maxEl !== minEl) thirdPhrase = '넘치는 <b>' + maxEl + '</b>의 기운을 흘려보내는 <b>' + flowEl + '</b>의 향 1가지';
-    else thirdPhrase = '<b>' + res.dayMaster.element + '</b>의 기운을 도와주는 <b>' + flowEl + '</b>의 향 1가지';
-    $('#aromaLead').innerHTML = '가장 적은 <b>' + minEl + '</b>의 기운을 채우는 향 2가지와, ' + thirdPhrase +
-      '를 골랐어요. 오늘 한 가지만 골라 써도 충분해요.';
+  function renderRitual(res) {
+    var minEl = res._minEl;
+    var oil = (D.AROMAS[minEl] || [])[0];
+    var color = D.COLORS[minEl] || { name: minEl };
+    var habit = (D.ROUTINES[minEl] || [])[0];
 
-    var html = oils.map(function (o) {
-      return oilCard(o, minEl, '부족한 ' + minEl + josa(minEl, '을를') + ' 채우는 향');
+    $('#ritualLead').innerHTML = '오늘은 <b>' + minEl + '의 기운</b>이 ' + pct(res.percents[minEl]) +
+      '%로 가장 적어요. 억지로 채우기보다, 향·색·습관 하나로 살짝 도와주면 충분해요.';
+
+    var items = [];
+    if (oil) items.push({
+      k: '향', el: minEl,
+      v: '<b>' + esc(oil.name) + '</b> 향 한 번 — ' + esc(oil.usage)
+    });
+    items.push({
+      k: '색', el: minEl,
+      v: '<b>' + esc(color.name) + '</b> 계열 소품 하나 — 컵·스카프·메모지처럼 눈에 닿는 곳에'
+    });
+    if (habit) items.push({
+      k: '습관', el: minEl,
+      v: esc(habit)
+    });
+
+    $('#ritualList').innerHTML = items.map(function (it) {
+      return '<li class="ritual__item">' +
+        '<span class="ritual__k" style="background:' + D.ELEMENTS[it.el].soft + ';color:' + D.ELEMENTS[it.el].color + '">' + it.k + '</span>' +
+        '<span class="ritual__v">' + it.v + '</span></li>';
     }).join('');
-    html += oilCard(third, flowEl, flowReason);
-    $('#oils').innerHTML = html;
-
-    $('#routineList').innerHTML = D.ROUTINES[minEl].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-
-    function oilCard(o, el, why) {
-      return '<article class="oil" style="--el:' + D.ELEMENTS[el].color + '">' +
-        '<div class="oil__top"><div><h3 class="oil__name">' + esc(o.name) + '</h3>' +
-        '<p class="oil__latin">' + esc(o.latin) + '</p></div>' +
-        '<span class="oil__badge" style="background:' + D.ELEMENTS[el].color + '">' + el + ' ' + D.ELEMENTS[el].hanja + '</span></div>' +
-        '<p class="oil__scent">' + esc(o.scent) + '</p>' +
-        '<p class="oil__usage"><b>이렇게 써 보세요</b>' + esc(o.usage) + '</p>' +
-        '<p class="oil__why">' + esc(why) + ' · ' + esc(o.note) + '</p>' +
-        (o.caution ? '<p class="oil__caution">※ ' + esc(o.caution) + '</p>' : '') +
-        '</article>';
-    }
   }
 
   function renderToday(res) {
     var t = M.todayInfo();
-    var myEl = res.dayMaster.element;
+    var nd = new Date();
+    nd.setDate(nd.getDate() + 1);
+    var tm = M.todayInfo(nd);
+    var weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+    var wd = weekdays[new Date().getDay()];
+
+    var myEl = res.dayMaster.element, myGan = res.dayMaster.gan;
     var rel;
     if (t.ganEl === myEl) rel = D.RELATIONS.same;
     else if (GEN[t.ganEl] === myEl) rel = D.RELATIONS.give;
@@ -499,14 +599,28 @@
     else if (CONTROL[t.ganEl] === myEl) rel = D.RELATIONS.slow;
     else rel = D.RELATIONS.control;
 
+    var advice = (rel.advice || []).map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('');
+
     $('#todayBody').innerHTML =
-      '<div class="today__gz">' +
-      '<span class="today__hanja" style="color:' + D.ELEMENTS[t.ganEl].color + '">' + t.ganZhi.text + '</span>' +
-      '<span class="today__meta">' + esc(t.date) + '<br>음력 ' + esc(t.lunarText) + ' · ' +
-      D.ELEMENTS[t.ganEl].emoji + ' ' + D.ELEMENTS[t.ganEl].title + '이 흐르는 날</span>' +
+      '<div class="today__head">' +
+        '<div>' +
+          '<p class="today__day">' + esc(t.date) + ' (' + wd + ') · 음력 ' + esc(t.lunarText) + '</p>' +
+          '<p class="today__gzlbl">오늘의 일진</p>' +
+        '</div>' +
+        '<div class="today__gz">' +
+          '<span class="today__hanja" style="color:' + D.ELEMENTS[t.ganEl].color + '">' + esc(t.ganZhi.text) + '</span>' +
+          '<span class="today__gzsub">' + esc(t.ganZhi.textKo) + ' · ' + D.ELEMENTS[t.ganEl].emoji + ' ' + D.ELEMENTS[t.ganEl].title + '</span>' +
+        '</div>' +
       '</div>' +
-      '<p class="today__text" style="margin-top:14px"><span class="today__label">' + rel.label + '</span></p>' +
-      '<p class="today__text">' + esc(rel.text) + '</p>';
+      '<div class="today__verse">' +
+        '<span class="today__me">나의 일간 <b>' + myGan + ' · ' + myEl + '</b></span>' +
+        '<span class="today__x" aria-hidden="true">×</span>' +
+        '<span class="today__me">오늘 <b>' + t.ganZhi.gan + ' · ' + t.ganEl + '</b>의 기운</span>' +
+      '</div>' +
+      '<p class="today__rel">' + esc(rel.label) + '</p>' +
+      '<p class="today__text">' + esc(rel.text) + '</p>' +
+      (advice ? '<ul class="today__advice">' + advice + '</ul>' : '') +
+      '<p class="today__next">내일은 <b>' + esc(tm.ganZhi.text) + '(' + esc(tm.ganZhi.textKo) + ')</b> 일진으로 다시 봐 드려요.</p>';
   }
 
   /* ───────── 등장 애니메이션 ───────── */
@@ -553,14 +667,21 @@
     L.push('■ 나의 기질: ' + stem.image + ' (' + res.dayMaster.gan + res.dayMaster.ganKo + ')');
     L.push(stem.tagline);
     L.push('');
-    L.push('■ 오늘의 오행 아로마');
-    var oils = $$('#oils .oil').slice(0, 3);
-    oils.forEach(function (o, i) {
-      var nm = $('.oil__name', o).textContent, us = $('.oil__usage', o).textContent.replace('이렇게 써 보세요', '');
-      L.push((i + 1) + '. ' + nm + ' — ' + us.trim());
+    L.push('■ 오늘의 내 기운');
+    var t = M.todayInfo();
+    L.push(t.date + ' 일진 ' + t.ganZhi.text + '(' + t.ganZhi.textKo + ')');
+    var relLine = $('#todayBody .today__rel'), relText = $('#todayBody .today__text');
+    if (relLine) L.push(relLine.textContent.trim());
+    if (relText) L.push(relText.textContent.trim());
+    L.push('');
+    L.push('■ 오늘의 가벼운 개운 팁');
+    $$('#ritualList .ritual__item').forEach(function (li) {
+      var k = li.querySelector('.ritual__k'), v = li.querySelector('.ritual__v');
+      if (k && v) L.push('- ' + k.textContent.trim() + ' · ' + v.textContent.replace(/\s+/g, ' ').trim());
     });
     L.push('');
-    L.push('▶ 내 사주 더 깊게 풀어보기: ' + D.LINKS.kakao);
+    L.push('■ 윤이세 1:1 상담 — 원포인트 49,000원 / 종합 컨설팅 100,000원');
+    L.push('▶ 카톡 상담: ' + D.LINKS.kakao);
     L.push('▶ 윤이세사주 전체 메뉴: ' + D.LINKS.littly);
     return L.join('\n');
   }
@@ -602,5 +723,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initForm(); initEvents(); syncJisi();
+    restoreSaved();
   });
 })();
