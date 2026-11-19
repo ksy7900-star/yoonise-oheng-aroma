@@ -35,6 +35,26 @@
     '申': ['庚', '壬', '戊'], '酉': ['辛'], '戌': ['戊', '辛', '丁'], '亥': ['壬', '甲']
   };
 
+  // 육친(십신) — 일간과 다른 글자의 오행·음양 관계
+  var ELEM_BIRTH = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };   // 내가 생하는 오행
+  var ELEM_OVER  = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };   // 내가 극하는 오행
+  var ELEM_MOTHER = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };  // 나를 생하는 오행(인성)
+
+  // 일간(dayGanIndex) 기준, 대상 천간(ganIndex)의 십신
+  //  같은 오행: 비견(음양 같음)·겁재(다름) / 내가 생함: 식신(같음)·상관(다름)
+  //  내가 극함: 편재(같음)·정재(다름) / 나를 극함: 편관(같음)·정관(다름)
+  //  나를 생함: 편인(같음)·정인(다름)
+  function tenGodOf(dayGanIndex, ganIndex) {
+    var me = GAN_EL[dayGanIndex], other = GAN_EL[ganIndex];
+    var samePolarity = (dayGanIndex % 2) === (ganIndex % 2); // 0·2·4·6·8 = 양
+    if (me === other) return samePolarity ? '비견' : '겁재';
+    if (ELEM_BIRTH[me] === other) return samePolarity ? '식신' : '상관';
+    if (ELEM_OVER[me] === other) return samePolarity ? '편재' : '정재';
+    if (ELEM_OVER[other] === me) return samePolarity ? '편관' : '정관';
+    if (ELEM_MOTHER[me] === other) return samePolarity ? '편인' : '정인';
+    return '';
+  }
+
   // 12절기 (월을 여는 절). index 0 = 입춘 → 寅월
   var JIE = [
     { hanja: '立春', ko: '입춘', month: '寅' },
@@ -338,6 +358,20 @@
       time: timeP ? HIDDEN[timeP.zhi] : null
     };
 
+    // ---- 육친(십신): 천간은 그 글자, 지지는 본기(지장간 첫 글자) 기준 ----
+    function tenOf(p) {
+      if (!p) return null;
+      var main = HIDDEN[p.zhi][0];
+      return {
+        gan: tenGodOf(dayP.ganIndex, p.ganIndex),
+        zhi: tenGodOf(dayP.ganIndex, GAN.indexOf(main)),
+        zhiMain: main
+      };
+    }
+    var tenGod = {
+      year: tenOf(yearP), month: tenOf(monthP), day: tenOf(dayP), time: tenOf(timeP)
+    };
+
     return {
       input: {
         name: (opts.name || '').trim(), gender: opts.gender || '',
@@ -355,6 +389,7 @@
       },
       counts: counts, percents: percents, total: total,
       hidden: hidden,
+      tenGod: tenGod,
       jieqi: {
         altYM: altYM,
         prev: { name: lastJie.meta.ko, hanja: lastJie.meta.hanja, at: epochToKstText(lastJie.epoch) },
@@ -403,6 +438,7 @@
     JISI: JISI, jisiIndex: jisiIndex, jisiOf: jisiOf,
     GAN: GAN, ZHI: ZHI, GAN_KO: GAN_KO, ZHI_KO: ZHI_KO, GAN_HUN: GAN_HUN,
     ZHI_ANIMAL: ZHI_ANIMAL, GAN_EL: GAN_EL, ZHI_EL: ZHI_EL, HIDDEN: HIDDEN,
+    tenGodOf: tenGodOf,
     JIE: JIE, REGIONS: REGIONS, ganZhiOf: ganZhiOf
   };
 })(typeof window !== 'undefined' ? window : globalThis);

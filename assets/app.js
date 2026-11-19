@@ -359,7 +359,7 @@
 
   function renderWonguk(res) {
     var P = res.pillars;
-    // 연·월·일·시(시간 순서) — 천간 읽기 문장에 사용
+    // 연·월·일·시(시간 순서)
     var chrono = [
       { key: 'year', label: '년', han: '年', p: P.year },
       { key: 'month', label: '월', han: '月', p: P.month },
@@ -374,7 +374,7 @@
         (c.key === 'day' ? '<span class="wg__me">나</span>' : '') + '</div>';
     });
 
-    // 천간
+    // 천간 — 칸 위쪽에 육친(십신)
     html += '<div class="wg__label">천간</div>';
     cols.forEach(function (c) {
       if (!c.p) {
@@ -383,13 +383,14 @@
       }
       var isMe = c.key === 'day';
       html += '<div class="wg__cell' + (isMe ? ' wg__cell--me' : '') + '">' +
+        '<span class="wg__ten' + (isMe ? ' wg__ten--me' : '') + '">' +
+          (isMe ? '일간(나)' : res.tenGod[c.key].gan) + '</span>' +
         '<span class="wg__hanja" style="color:' + D.ELEMENTS[M.GAN_EL[c.p.ganIndex]].color + '">' + c.p.gan + '</span>' +
-        '<span class="wg__ko">' + c.p.ganKo + '</span>' +
         '<span class="wg__el" style="background:' + D.ELEMENTS[M.GAN_EL[c.p.ganIndex]].color + '">' + M.GAN_EL[c.p.ganIndex] + '</span>' +
         '</div>';
     });
 
-    // 지지
+    // 지지 — 칸 아래쪽에 육친(지지 본기 기준)
     html += '<div class="wg__label">지지</div>';
     cols.forEach(function (c) {
       if (!c.p) {
@@ -397,9 +398,9 @@
         return;
       }
       var el = M.ZHI_EL[c.p.zhiIndex];
-      html += '<div class="wg__cell">' +
+      html += '<div class="wg__cell" title="지지 본기 ' + res.tenGod[c.key].zhiMain + '">' +
         '<span class="wg__hanja" style="color:' + D.ELEMENTS[el].color + '">' + c.p.zhi + '</span>' +
-        '<span class="wg__ko">' + c.p.zhiKo + ' · ' + M.ZHI_ANIMAL[c.p.zhiIndex] + '</span>' +
+        '<span class="wg__ten wg__ten--sub">' + res.tenGod[c.key].zhi + '</span>' +
         '<span class="wg__el" style="background:' + D.ELEMENTS[el].color + '">' + el + '</span>' +
         '</div>';
     });
@@ -415,25 +416,9 @@
       }).join(' ') + '</span></div>';
     });
 
-    var readSeen = {};
-    var read = '천간 읽기 — ' + chrono.filter(function (c) { return c.p; }).filter(function (c) {
-      if (readSeen[c.p.ganIndex]) return false;
-      readSeen[c.p.ganIndex] = true; return true;
-    }).map(function (c) {
-      return c.p.gan + ' ' + M.GAN_HUN[c.p.ganIndex];
-    }).join(' · ');
-
     var el = $('#wonguk');
     el.innerHTML = html;
     el.classList.toggle('is-compact', !state.hidden);
-    var readEl = document.getElementById('wongukRead');
-    if (!readEl) {
-      readEl = document.createElement('p');
-      readEl.className = 'wonguk__read';
-      readEl.id = 'wongukRead';
-      el.parentNode.insertBefore(readEl, el.nextSibling);
-    }
-    readEl.innerHTML = read;
   }
 
   function renderBalance(res) {
@@ -683,7 +668,7 @@
       if (k && v) L.push('- ' + k.textContent.trim() + ' · ' + v.textContent.replace(/\s+/g, ' ').trim());
     });
     L.push('');
-    L.push('■ 윤이세 1:1 상담 — 원포인트 49,000원 / 종합 컨설팅 100,000원');
+    L.push('■ 윤이세 1:1 상담 — 카톡으로 바로 물어보세요');
     L.push('▶ 카톡 상담: ' + D.LINKS.kakao);
     L.push('▶ 윤이세사주 전체 메뉴: ' + D.LINKS.littly);
     return L.join('\n');
