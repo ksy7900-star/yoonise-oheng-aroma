@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261120p">
+<link rel="stylesheet" href="assets/style.css?v=20261120q">
 </head>
 <body>
 
@@ -152,6 +152,24 @@
     <!-- 2027 1년 대표 수호 부적 -->
     <section class="talis-banner" id="talisBanner" aria-label="2027 나의 1년 대표 수호 부적"></section>
 
+    <!-- 2027 한 해 한눈에 — 조심할 달 · 치고 나갈 달 -->
+    <section class="card card--year" id="yearAlertSummary" aria-labelledby="yearTitle" hidden>
+      <div class="sec__head">
+        <h2 class="sec__title" id="yearTitle">2027년 한눈에</h2>
+        <p class="sec__meta">MONTHLY OUTLOOK</p>
+      </div>
+      <p class="year__lead" id="yearLead"></p>
+      <div class="year__group">
+        <p class="year__label"><span aria-hidden="true">⚠️</span> 가장 조심해야 할 달</p>
+        <div class="year__chips" id="yearWarnChips"></div>
+      </div>
+      <div class="year__group">
+        <p class="year__label"><span aria-hidden="true">🍀</span> 치고 나가기 좋은 달</p>
+        <div class="year__chips" id="yearGoodChips"></div>
+      </div>
+      <p class="year__note">달을 누르면 그 달 달력으로 바로 넘어가요.</p>
+    </section>
+
     <!-- 월간 타이밍 캘린더 -->
     <section class="card card--cal" aria-labelledby="calTitle">
       <div class="cal__head">
@@ -166,6 +184,13 @@
       <p class="cal__saeun" id="calSaeun"></p>
 
       <p class="cal__summary" id="calSummary"></p>
+
+      <!-- 모아보기 — 조심할 날만 · 좋은 날만 -->
+      <div class="calfilter" id="calFilter" role="group" aria-label="달력에서 모아보기">
+        <button type="button" class="calfilter__btn is-on" data-filter="all" aria-pressed="true">전체</button>
+        <button type="button" class="calfilter__btn" data-filter="bad" aria-pressed="false">⚠️ 조심할 날</button>
+        <button type="button" class="calfilter__btn" data-filter="good" aria-pressed="false">🍀 좋은 날</button>
+      </div>
 
       <div class="cal__tools">
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
@@ -205,6 +230,8 @@
         <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
       </div>
       <div class="cal" id="calGrid" role="grid" aria-label="월간 타이밍 달력"></div>
+
+      <div class="calfocus" id="calFocus" hidden></div>
 
       <p class="cal__note" id="calNote">기운이 서는 날(색 배지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
     </section>
@@ -279,10 +306,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261120p"></script>
-<script src="assets/manse.js?v=20261120p"></script>
-<script src="assets/timing.js?v=20261120p"></script>
-<script src="assets/chars.js?v=20261120p"></script>
-<script src="assets/calendar.js?v=20261120p"></script>
+<script src="vendor/lunar.js?v=20261120q"></script>
+<script src="assets/manse.js?v=20261120q"></script>
+<script src="assets/timing.js?v=20261120q"></script>
+<script src="assets/chars.js?v=20261120q"></script>
+<script src="assets/calendar.js?v=20261120q"></script>
 </body>
 </html>

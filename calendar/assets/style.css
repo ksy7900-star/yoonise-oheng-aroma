@@ -320,7 +320,98 @@ form { margin-top: 22px; }
 .cal__year { font-size: 9.5px; letter-spacing: .22em; color: var(--mute); text-align: center; }
 .cal__title { font-family: var(--serif); font-size: 23px; font-weight: 600; text-align: center; margin-top: 1px; }
 .cal__summary { font-size: 11px; color: var(--mute); text-align: center; margin-top: 8px; }
-/* 세운 줄 — 입춘에서 해가 바뀐다 */
+/* ── 2027 한눈에 — 조심할 달 · 좋은 달 ─────────────── */
+.card--year { padding: 22px 18px 18px; }
+.year__lead { margin-top: 10px; font-size: 12px; line-height: 1.8; color: var(--ink-2); }
+.year__lead b { font-weight: 700; }
+.year__lead .y-bad { color: #9A4A3A; }
+.year__lead .y-good { color: #7C5F1F; }
+.year__group { margin-top: 17px; }
+.year__label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-2);
+}
+.year__label span { font-size: 12px; }
+.year__chips { margin-top: 9px; display: flex; flex-direction: column; gap: 7px; }
+.ychip {
+  appearance: none; width: 100%; text-align: left; border: 1px solid transparent;
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 12px; border-radius: 14px; background: #FBF7EF;
+  transition: transform .16s ease, box-shadow .18s ease;
+}
+.ychip:active { transform: scale(.988); }
+.ychip--warn { background: #FBF1EE; border-color: rgba(191, 106, 91, .26); }
+.ychip--good { background: #FBF6E9; border-color: rgba(196, 154, 80, .30); }
+.ychip__no {
+  flex: none; width: 38px; text-align: center;
+  font-family: var(--serif); font-size: 19px; font-weight: 700; line-height: 1.15; letter-spacing: -0.03em;
+}
+.ychip--warn .ychip__no { color: #9A4A3A; }
+.ychip--good .ychip__no { color: #7C5F1F; }
+.ychip__body { flex: 1; min-width: 0; }
+.ychip__title { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.4; }
+.ychip__title em {
+  font-style: normal; font-family: var(--sans); font-size: 10px; font-weight: 500;
+  color: var(--mute); margin-left: 6px; letter-spacing: 0;
+}
+.ychip__why { display: block; font-size: 11px; color: var(--ink-2); line-height: 1.5; margin-top: 2px; }
+.ychip__go { flex: none; font-size: 12px; color: var(--mute); }
+.year__none { font-size: 11.5px; color: var(--mute); line-height: 1.6; }
+.year__note { margin-top: 14px; font-size: 10px; color: var(--mute); line-height: 1.5; }
+
+/* ── 모아보기 필터 ─────────────────────────────────── */
+.calfilter {
+  display: flex; gap: 4px; margin: 12px 4px 0; padding: 3px;
+  background: #F2EEE4; border-radius: 999px;
+}
+.calfilter__btn {
+  flex: 1; appearance: none; border: 0; background: transparent; border-radius: 999px;
+  padding: 7px 4px; font-size: 11px; font-weight: 600; color: var(--mute);
+  white-space: nowrap; letter-spacing: -0.02em;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.calfilter__btn.is-on { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(29, 28, 25, .10); }
+.calfilter__btn[data-filter="bad"].is-on { color: #9A4A3A; }
+.calfilter__btn[data-filter="good"].is-on { color: #7C5F1F; }
+
+/* 모아보기 중 — 해당 날만 또렷하게, 나머지는 물러나게 */
+.cal .day.day--dim { opacity: .24; }
+.cal .day.day--dim:hover { background-image: none; }
+.cal .day.day--pick { box-shadow: inset 0 0 0 1.4px rgba(29, 28, 25, .16); }
+.cal.is-filtering .day--pick.day--t-red { background: rgba(191, 106, 91, .15); }
+.cal.is-filtering .day--pick.day--t-gold { background: rgba(196, 154, 80, .19); }
+
+/* 달력 아래 — 이 달 조심할 날 · 좋은 날 목록 */
+.calfocus {
+  margin-top: 14px; padding: 13px 12px 11px;
+  background: #FBF8F1; border: 1px solid var(--hair-soft); border-radius: 14px;
+}
+.calfocus__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.calfocus__title { font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--ink-2); }
+.calfocus__count { font-size: 10px; color: var(--mute); }
+.calfocus__list { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px; }
+.fday {
+  appearance: none; display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 9px 6px 10px; border-radius: 10px;
+  border: 1px solid var(--hair-soft); background: var(--paper);
+  font-size: 11px; color: var(--ink); transition: transform .14s ease, box-shadow .16s ease;
+}
+.fday:active { transform: scale(.97); }
+.fday__date { font-weight: 600; font-variant-numeric: tabular-nums; }
+.fday__date em { font-style: normal; font-weight: 500; font-size: 10px; color: var(--mute); margin-left: 1px; }
+.fday .badge { font-size: 9px; padding: 3px 5px; }
+.fday.is-today { box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .32); }
+.calfocus__hint { margin-top: 9px; font-size: 10px; color: var(--mute); line-height: 1.5; }
+.calfocus__empty { font-size: 11px; color: var(--mute); line-height: 1.6; }
+
+/* 요약 카드에서 달로 점프했을 때 — 달 제목이 금색으로 짚인다 */
+.card--cal.is-jump .cal__title { animation: calpulse 1s ease; }
+@keyframes calpulse {
+  0%, 100% { color: var(--ink); }
+  30% { color: var(--gold); }
+}
+
+/* ── 세운 줄 — 입춘에서 해가 바뀐다 */
 .cal__saeun {
   margin: 10px auto 0; width: fit-content; max-width: 100%;
   font-size: 10px; line-height: 1.5; letter-spacing: .01em; text-align: center;

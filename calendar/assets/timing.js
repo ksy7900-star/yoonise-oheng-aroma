@@ -329,6 +329,220 @@
     };
   }
 
+  /* ── 월운(月運) 한눈에 — 2027년에 조심할 달 · 치고 나갈 달 ────────────
+   * 화면의 '1월'과 사주의 '축월'은 겹쳐 있다. 2027-01-01~01-05는 아직 자월(子月),
+   * 01-06 소한부터 축월(丑月). 그래서 달마다 '가장 많은 날을 덮는 월건'을 그 달의 월운으로 본다.
+   * 판정은 월건 지지 ↔ 내 일지·월지의 실제 관계(충·형·해·복음·귀인·육합)와
+   * 그 달에 깔린 일진 신호(입단속·리셋·럭키·결정·머니)의 빈도만 쓴다.
+   * 문장은 미리 써 둔 표에서 고른다 — 같은 사주면 같은 달은 항상 같은 말.
+   */
+  var MONTH_WARN = {
+    chung:   { key: 'chung',   title: '판이 흔들리는 달',      why: '부딪히기 쉬워요 · 계약·이사는 신중히' },
+    hyeong:  { key: 'hyeong',  title: '서류·절차가 엉키는 달', why: '확인 또 확인 · 잔금과 약속 정리' },
+    bokkeum: { key: 'bokkeum', title: '같은 자리가 겹치는 달', why: '일이 두 번 돌아가요 · 서두르지 말기' },
+    hae:     { key: 'hae',     title: '말이 엇갈리는 달',      why: '문자보다 대면 · 부탁은 분명하게' },
+    over:    { key: 'over',    title: '기운이 과열되는 달',    why: '지르지 말고 속도 조절' },
+    hot:     { key: 'hot',     title: '예민·구설 수 높은 달',  why: '말과 계약 조심 · 감정적 대화 피하기' },
+    soft:    { key: 'soft',    title: '잔잔히 흔들리는 달',    why: '중요한 결정은 하루 두고 보기' }
+  };
+  var MONTH_GOOD = {
+    gwiyin: { key: 'gwiyin', title: '귀인이 붙는 달',        why: '먼저 연락하고 부탁하기 좋아요' },
+    hap:    { key: 'hap',    title: '사람·일이 붙는 달',      why: '미팅·제안 밀어붙이기 좋아요' },
+    fill:   { key: 'fill',   title: '비어 있던 기운이 오는 달', why: '새 시작·새 사람에게 열려 있기' },
+    doc:    { key: 'doc',    title: '문서·돈이 트이는 달',    why: '계약·정산·지원서에 힘이 실려요' },
+    flow:   { key: 'flow',   title: '럭키가 넉넉한 달',      why: '먼저 손 내밀면 붙는 달' }
+  };
+
+  /** 그날이 속한 월건(月建) — 12절기가 달을 연다. */
+  function monthGzOf(iso, terms) {
+    if (!terms || !terms.list) return null;
+    var best = null;
+    for (var i = 0; i < terms.list.length; i++) {
+      var t = terms.list[i];
+      if (!t.isJie || !t.monthText) continue;
+      if (t.iso <= iso) best = t;
+      else break;                       // list 는 날짜 오름차순
+    }
+    if (!best) return null;
+    var g = GAN.indexOf(best.monthText.charAt(0));
+    var z = ZHI.indexOf(best.monthText.charAt(1));
+    if (g < 0 || z < 0) return null;
+    return {
+      text: best.monthText, ganIndex: g, zhiIndex: z, from: best.iso, ko: best.ko,
+      gan: GAN[g], zhi: ZHI[z], ganKo: M.GAN_KO[g], zhiKo: M.ZHI_KO[z],
+      ganEl: M.GAN_EL[g], zhiEl: M.ZHI_EL[z]
+    };
+  }
+
+  /** 한 달치 — 주의 날·좋은 날 목록과 월운 관계, 점수, 한 줄 이유 */
+  function monthDigest(year, month, natal, terms, opt) {
+    opt = opt || {};
+    var infoFn = opt.info || function (iso) { return dayInfo(iso, natal, terms); };
+    var counts = opt.counts || null;
+    var dim = daysInMonth(year, month);
+    var dz = natal.dayZhiIndex, mz = natal.monthZhiIndex, dg = natal.dayGanIndex;
+
+    var m = {
+      y: year, m: month, days: dim,
+      red: 0, gold: 0, blue: 0, gray: 0, redStrong: 0, goldStrong: 0,
+      badDays: [], goodDays: [],
+      mzText: '', mzKo: '', mzZhi: -1, mzEl: '', elCount: 0,
+      chungDay: false, hyeongDay: false, haeDay: false, bokkeum: false,
+      chungMonth: false, hyeongMonth: false, haeMonth: false,
+      gwiyin: false, yukhapDay: false, over: false, lack: false,
+      caution: 0, chance: 0, warn: null, good: null
+    };
+    var zBag = {};
+
+    for (var d = 1; d <= dim; d++) {
+      var iso = isoOf(year, month, d);
+      var info = infoFn(iso);
+      if (!info) continue;
+
+      var gz = monthGzOf(iso, terms);
+      if (gz) {
+        var bag = zBag[gz.text] || (zBag[gz.text] = { n: 0, rec: gz });
+        bag.n++;
+      }
+
+      var badges = info.badges || [];
+      var isRed = false, isGray = false, isGold = false, isBlue = false;
+      var badTags = [], goodTags = [];
+      badges.forEach(function (b) {
+        if (b.cat === 'red') { isRed = true; badTags.push('입단속'); }
+        else if (b.cat === 'gray') { isGray = true; badTags.push('리셋'); }
+        else if (b.cat === 'gold') { isGold = true; goodTags.push('럭키'); }
+        else if (b.cat === 'blue') { isBlue = true; goodTags.push(b.text); }
+      });
+      if (isRed) m.red++;
+      if (isGold) m.gold++;
+      if (isBlue) m.blue++;
+      if (isGray) m.gray++;
+
+      var strongRed = false, strongGold = false;
+      (info.marks || []).forEach(function (k) {
+        if (k.minor) return;
+        if (k.cat === 'red' && k.weight >= 30) strongRed = true;
+        if (k.cat === 'gold' && k.weight >= 40) strongGold = true;
+      });
+      if (strongRed) m.redStrong++;
+      if (strongGold) m.goldStrong++;
+
+      if (badTags.length) m.badDays.push({ iso: iso, d: d, dow: info.dow, tags: badTags });
+      if (goodTags.length) m.goodDays.push({ iso: iso, d: d, dow: info.dow, tags: goodTags });
+    }
+
+    // 이 달을 가장 많이 덮는 월건
+    var top = null;
+    for (var k in zBag) {
+      if (!Object.prototype.hasOwnProperty.call(zBag, k)) continue;
+      if (!top || zBag[k].n > top.n) top = zBag[k];
+    }
+    var rec = top ? top.rec : null;
+    if (rec) {
+      m.mzText = rec.text;
+      m.mzKo = rec.zhiKo + '월(' + rec.zhi + ')';
+      m.mzZhi = rec.zhiIndex;
+      m.mzEl = rec.zhiEl;
+      m.chungDay = chungOf(rec.zhiIndex) === dz;
+      m.hyeongDay = isHyeong(rec.zhiIndex, dz);
+      m.haeDay = haeOf(rec.zhiIndex) === dz;
+      m.bokkeum = rec.zhiIndex === dz;
+      m.chungMonth = chungOf(rec.zhiIndex) === mz;
+      m.hyeongMonth = isHyeong(rec.zhiIndex, mz);
+      m.haeMonth = haeOf(rec.zhiIndex) === mz;
+      m.gwiyin = CHEONEUL[dg].indexOf(rec.zhiIndex) >= 0;
+      m.yukhapDay = yukhapOf(rec.zhiIndex) === dz;
+      if (counts) {
+        m.elCount = counts[rec.zhiEl] || 0;
+        m.over = m.elCount >= 3;          // 내 원국에 이미 넘치는 기운이 또 오는 달
+        m.lack = m.elCount === 0;         // 비어 있던 기운이 채워지는 달
+      }
+    }
+
+    m.caution = m.red * 6 + m.redStrong * 5 + m.gray * 2 +
+      (m.chungDay ? 36 : 0) + (m.hyeongDay ? 26 : 0) + (m.bokkeum ? 18 : 0) + (m.haeDay ? 14 : 0) +
+      (m.chungMonth ? 16 : 0) + (m.hyeongMonth ? 12 : 0) + (m.haeMonth ? 8 : 0) +
+      (m.over ? 14 : 0) - (m.gwiyin ? 12 : 0) - (m.yukhapDay ? 8 : 0);
+    m.chance = m.gold * 6 + m.goldStrong * 5 + m.blue * 4 +
+      (m.gwiyin ? 30 : 0) + (m.yukhapDay ? 22 : 0) + (m.lack ? 9 : 0) -
+      (m.chungDay ? 18 : 0) - (m.over ? 10 : 0);
+
+    m.warn = m.chungDay ? MONTH_WARN.chung
+      : (m.hyeongDay ? MONTH_WARN.hyeong
+      : (m.bokkeum ? MONTH_WARN.bokkeum
+      : (m.haeDay ? MONTH_WARN.hae
+      : (m.over ? MONTH_WARN.over
+      : (m.red >= 9 ? MONTH_WARN.hot : MONTH_WARN.soft)))));
+    m.good = m.gwiyin ? MONTH_GOOD.gwiyin
+      : (m.yukhapDay ? MONTH_GOOD.hap
+      : (m.lack ? MONTH_GOOD.fill
+      : (m.blue >= 6 ? MONTH_GOOD.doc : MONTH_GOOD.flow)));
+
+    // 그 달에 해당하는 이유를 순서대로 모아 둠 — 이웃 달과 같은 이유가 겹치지 않게 고를 때 쓴다
+    m.warnAll = [];
+    if (m.chungDay) m.warnAll.push(MONTH_WARN.chung);
+    if (m.hyeongDay) m.warnAll.push(MONTH_WARN.hyeong);
+    if (m.bokkeum) m.warnAll.push(MONTH_WARN.bokkeum);
+    if (m.haeDay) m.warnAll.push(MONTH_WARN.hae);
+    if (m.over) m.warnAll.push(MONTH_WARN.over);
+    if (m.red >= 9) m.warnAll.push(MONTH_WARN.hot);
+    m.warnAll.push(MONTH_WARN.hot);        // 앞 달과 이유가 겹칠 때의 마지막 안전판
+    m.goodAll = [];
+    if (m.gwiyin) m.goodAll.push(MONTH_GOOD.gwiyin);
+    if (m.yukhapDay) m.goodAll.push(MONTH_GOOD.hap);
+    if (m.lack) m.goodAll.push(MONTH_GOOD.fill);
+    if (m.blue >= 6) m.goodAll.push(MONTH_GOOD.doc);
+    m.goodAll.push(MONTH_GOOD.flow);        // 앞 달과 이유가 겹칠 때의 마지막 안전판
+
+    return m;
+  }
+
+  /** 고른 달에 한 줄 이유를 매긴다 — 앞 달에서 쓴 이유면 그 달의 다음 이유로 */
+  function pickReason(list, allKey, outKey) {
+    var used = {};
+    list.forEach(function (x) {
+      var arr = x[allKey] || [];
+      var pick = null;
+      for (var i = 0; i < arr.length; i++) {
+        if (!used[arr[i].key]) { pick = arr[i]; break; }
+      }
+      if (!pick) pick = x[outKey];
+      used[pick.key] = 1;
+      x[outKey] = pick;
+    });
+  }
+
+  /** 1년치 — 조심할 달 TOP 3 · 좋은 달 TOP 2 */
+  function yearDigest(year, natal, terms, opt) {
+    opt = opt || {};
+    var months = [], totals = { red: 0, gold: 0, blue: 0, gray: 0, days: 0, badDays: 0, goodDays: 0 };
+    for (var m = 1; m <= 12; m++) {
+      var d = monthDigest(year, m, natal, terms, opt);
+      months.push(d);
+      totals.red += d.red; totals.gold += d.gold; totals.blue += d.blue; totals.gray += d.gray;
+      totals.days += d.days; totals.badDays += d.badDays.length; totals.goodDays += d.goodDays.length;
+    }
+    var byCaution = months.slice().sort(function (a, b) { return b.caution - a.caution; });
+    var topC = byCaution.length ? byCaution[0].caution : 0;
+    var warn = byCaution.filter(function (x) { return x.caution >= Math.max(60, topC * 0.6); }).slice(0, 3);
+    pickReason(warn, 'warnAll', 'warn');
+
+    var byChance = months.slice().sort(function (a, b) { return b.chance - a.chance; });
+    var topG = byChance.length ? byChance[0].chance : 0;
+    var good = byChance.filter(function (x) {
+      if (warn.indexOf(x) >= 0) return false;                 // 조심할 달이 좋은 달로 겹치지 않게
+      return x.chance >= Math.max(60, topG * 0.75);
+    }).slice(0, 2);
+    pickReason(good, 'goodAll', 'good');
+
+    return {
+      y: year, months: months, totals: totals, warn: warn, good: good,
+      warnMonths: warn.map(function (x) { return x.m; }),
+      goodMonths: good.map(function (x) { return x.m; })
+    };
+  }
+
   /* ── 처방 문구 (미리 써 둔 표) ─────────────────────── */
   var ACT = {
     chung: [
@@ -451,6 +665,11 @@
     dowOf: dowOf,
     daysInMonth: daysInMonth,
     zhiKo: zhiKo,
+    monthGzOf: monthGzOf,
+    monthDigest: monthDigest,
+    yearDigest: yearDigest,
+    MONTH_WARN: MONTH_WARN,
+    MONTH_GOOD: MONTH_GOOD,
     CHEONEUL: CHEONEUL,
     _internal: { isHyeong: isHyeong, chungOf: chungOf, haeOf: haeOf, yukhapOf: yukhapOf, samhapGroupOf: samhapGroupOf }
   };

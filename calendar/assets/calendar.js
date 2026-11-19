@@ -180,7 +180,10 @@
   var state = {
     gender: '', calendar: 'solar', res: null, natal: null,
     terms: null, view: null, sel: null, todayISO: '', cache: {},
-    stamps: {}, justStamped: null, pendingStamp: null
+    stamps: {}, justStamped: null, pendingStamp: null,
+    filter: 'all',        // all | bad | good — 달력의 '조심할 날만 / 좋은 날만' 보기
+    yearDigest: null,     // 2027 한 해 요약(조심할 달·좋은 달). 사주가 바뀌면 다시 계산
+    mDigest: {}           // 달별 주의 날·좋은 날 목록 캐시
   };
 
   /* ── 저장 ──────────────────────────────────────────── */
@@ -378,6 +381,9 @@
         state.res = res;
         state.natal = T.natalOf(res);
         state.cache = {};
+        state.yearDigest = null;
+        state.mDigest = {};
+        state.filter = 'all';
         state.sel = null;
         state.justStamped = null;
         for (var kd in ritual) if (Object.prototype.hasOwnProperty.call(ritual, kd)) delete ritual[kd];
@@ -464,6 +470,88 @@
     var info = T.dayInfo(iso, state.natal, state.terms);
     state.cache[iso] = info;
     return info;
+  }
+
+  /* ── 2027 한눈에 — 조심할 달 · 치고 나갈 달 ────────────────
+     12개월을 넘겨 보지 않아도 '어느 달을 조심하고 어느 달을 밟아야 하는지'가 먼저 보이게. */
+  function digestOpt() {
+    return { counts: state.res ? state.res.counts : null, info: infoFor };
+  }
+  function yearInfo() {
+    if (!state.natal) return null;
+    if (!state.yearDigest) {
+      state.yearDigest = T.yearDigest(2027, state.natal, state.terms, digestOpt());
+      state.yearDigest.months.forEach(function (mm) {
+        state.mDigest[mm.y + '-' + mm.m] = mm;      // 달을 넘길 때 다시 계산하지 않게
+      });
+    }
+    return state.yearDigest;
+  }
+  function monthInfo(y, mm) {
+    var k = y + '-' + mm;
+    if (state.mDigest[k]) return state.mDigest[k];
+    var d = T.monthDigest(y, mm, state.natal, state.terms, digestOpt());
+    state.mDigest[k] = d;
+    return d;
+  }
+
+  function renderYearSummary() {
+    var box = $('#yearAlertSummary');
+    if (!box) return;
+    if (!state.res) { box.hidden = true; return; }
+    var d = yearInfo();
+    if (!d) { box.hidden = true; return; }
+    box.hidden = false;
+
+    var t = d.totals;
+    var first = d.warn[0] ? d.warn[0].m + '월' : '';
+    $('#yearLead').innerHTML =
+      '2027년 365일 가운데 <b class="y-bad">조심할 날 ' + t.badDays + '일</b> · ' +
+      '<b class="y-good">좋은 날 ' + t.goodDays + '일</b>이에요.' +
+      (first ? ' 가장 조심할 달은 <b class="y-bad">' + first + '</b>입니다.' : '');
+
+    function chip(m, isBad) {
+      var meta = isBad ? ('입단속 ' + m.red + '일') : ('럭키 ' + m.gold + '일');
+      var ln1 = isBad ? m.warn : m.good;
+      return '<button type="button" class="ychip ychip--' + (isBad ? 'warn' : 'good') + '" data-jump="' + m.m + '"' +
+        ' aria-label="' + m.m + '월 ' + esc(ln1.title) + ' — 달력에서 이 달 보기">' +
+        '<span class="ychip__no">' + m.m + '월</span>' +
+        '<span class="ychip__body">' +
+        '<span class="ychip__title">' + esc(ln1.title) + '<em>' + meta + '</em></span>' +
+        '<span class="ychip__why">' + esc(ln1.why) + '</span>' +
+        '</span>' +
+        '<span class="ychip__go" aria-hidden="true">→</span>' +
+        '</button>';
+    }
+
+    $('#yearWarnChips').innerHTML = d.warn.length
+      ? d.warn.map(function (m) { return chip(m, true); }).join('')
+      : '<p class="year__none">2027년에는 유난히 부딪히는 달이 없어요. 흐름이 고른 한 해입니다.</p>';
+    $('#yearGoodChips').innerHTML = d.good.length
+      ? d.good.map(function (m) { return chip(m, false); }).join('')
+      : '<p class="year__none">좋은 달이 따로 없이 고르게 열려 있어요.</p>';
+  }
+
+  /** 요약 카드의 달을 누르면 그 달 달력으로 바로 점프 */
+  function jumpToMonth(mm) {
+    var v = clampView(2027, mm);
+    state.view = v;
+    state.sel = null;
+    renderCalendar();
+    var card = $('.card--cal');
+    if (!card) return;
+    card.classList.remove('is-jump');
+    void card.offsetWidth;
+    card.classList.add('is-jump');
+    setTimeout(function () { card.classList.remove('is-jump'); }, 1000);
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function setFilter(f) {
+    if (['all', 'bad', 'good'].indexOf(f) < 0) return;
+    if (state.filter === f) return;
+    state.filter = f;
+    renderCalendar();
   }
 
   /* ── 1년 대표 수호 부적 ──────────────────────────── */
@@ -896,6 +984,7 @@
     renderSavedBar();
     renderNatal();
     renderTalisman();
+    renderYearSummary();
     renderCalendar();
   }
 
@@ -985,6 +1074,12 @@
         return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
       }).join('');
 
+      // 모아보기 — 조심할 날(입단속·리셋) / 좋은 날(럭키·결정·머니)
+      var isBad = badges.some(function (b) { return b.cat === 'red' || b.cat === 'gray'; });
+      var isGood = badges.some(function (b) { return b.cat === 'gold' || b.cat === 'blue'; });
+      if (state.filter === 'bad') cls.push(isBad ? 'day--pick' : 'day--dim');
+      else if (state.filter === 'good') cls.push(isGood ? 'day--pick' : 'day--dim');
+
       var open = isOpenDay(iso);
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
       var pastDay = iso < state.todayISO;
@@ -1022,7 +1117,11 @@
       }
     }
     $('#calGrid').innerHTML = html;
+    $('#calGrid').classList.toggle('is-filtering', state.filter !== 'all');
     state.justStamped = null;
+
+    renderFilter();
+    renderFocusList(v);
 
     var bits = [];
     if (stat.gold) bits.push('럭키 ' + stat.gold);
@@ -1041,6 +1140,57 @@
       ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 배지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
       : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 서는 날(색 배지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.';
     $('#calNote').textContent = noteText;
+  }
+
+  /* ── 달력 아래: 이 달 조심할 날 · 좋은 날 목록 ─────────── */
+  function renderFilter() {
+    $$('#calFilter .calfilter__btn').forEach(function (b) {
+      var on = b.getAttribute('data-filter') === state.filter;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    if ($('#calFilter')) $('#calFilter').classList.toggle('is-on', state.filter !== 'all');
+  }
+
+  function renderFocusList(v) {
+    var box = $('#calFocus');
+    if (!box) return;
+    if (!state.res || state.filter === 'all') {
+      box.hidden = true;
+      box.innerHTML = '';
+      return;
+    }
+    var isBad = state.filter === 'bad';
+    var d = monthInfo(v.y, v.m);
+    var list = isBad ? d.badDays : d.goodDays;
+    box.hidden = false;
+
+    if (!list.length) {
+      box.innerHTML = '<p class="calfocus__empty">' +
+        (isBad ? '이 달은 조심할 날이 따로 없어요. 흐름이 고른 달입니다.' : '이 달은 유난히 좋은 날이 적어요.') +
+        '</p>';
+      return;
+    }
+
+    var TAG_CAT = { '입단속': 'red', '리셋': 'gray', '럭키': 'gold', '결정': 'blue', '머니': 'blue' };
+    box.innerHTML =
+      '<div class="calfocus__head">' +
+        '<p class="calfocus__title">' + (isBad ? '⚠️ 이 달 조심할 날' : '🍀 이 달 좋은 날') + '</p>' +
+        '<p class="calfocus__count">' + list.length + '일</p>' +
+      '</div>' +
+      '<div class="calfocus__list">' +
+        list.map(function (x) {
+          return '<button type="button" class="fday' + (x.iso === state.todayISO ? ' is-today' : '') + '"' +
+            ' data-iso="' + x.iso + '" aria-label="' + v.m + '월 ' + x.d + '일 ' + DOW_KO[x.dow] + '요일 ' +
+            esc(x.tags.join(' ')) + ' — 이 날 부적 보기">' +
+            '<span class="fday__date">' + v.m + '월 ' + x.d + '일<em>(' + DOW_KO[x.dow] + ')</em></span>' +
+            x.tags.map(function (tg) {
+              return '<span class="badge badge--' + (TAG_CAT[tg] || 'gray') + '">' + esc(tg) + '</span>';
+            }).join('') +
+            '</button>';
+        }).join('') +
+      '</div>' +
+      '<p class="calfocus__hint">날짜를 누르면 그날의 부적이 바로 열려요.</p>';
   }
 
   /* ── 세운 줄: 입춘에서 해가 바뀐다 ─────────────────── */
@@ -2474,6 +2624,26 @@
       openDayModal(iso);
     });
 
+    // 2027 한눈에 카드의 달 점프 · 모아보기 탭 · 모아보기 목록의 날짜
+    $('#yearAlertSummary').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-jump]');
+      if (!b) return;
+      e.preventDefault();
+      jumpToMonth(+b.getAttribute('data-jump'));
+    });
+    $('#calFilter').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-filter]');
+      if (!b) return;
+      e.preventDefault();
+      setFilter(b.getAttribute('data-filter'));
+    });
+    $('#calFocus').addEventListener('click', function (e) {
+      var b = e.target.closest('.fday[data-iso]');
+      if (!b) return;
+      e.preventDefault();
+      openDayModal(b.getAttribute('data-iso'));
+    });
+
     var saved = loadInput();
     if (saved) {
       applyInput(saved);
@@ -2491,6 +2661,8 @@
         state.res = M.compute(o);
         state.natal = T.natalOf(state.res);
         state.cache = {};
+        state.yearDigest = null;
+        state.mDigest = {};
         $('#formCard').hidden = true;
         $('#result').hidden = false;
         render();
