@@ -695,7 +695,7 @@ button.talis-plaque:active { transform: scale(.972); }
 .talis-plaque__seal i { font-style: normal; font-size: .72em; }
 
 .talis-plaque__year {
-  position: absolute; left: 1.5em; bottom: 1.05em;
+  position: absolute; left: 2.15em; bottom: 1.02em;
 }
 .talis-plaque__year i {
   font-style: normal; font-size: .42em; letter-spacing: .14em;
