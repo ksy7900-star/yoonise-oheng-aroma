@@ -943,12 +943,17 @@
         (info.saeun.isLichunDay ? ' · <b>이날 입춘, 새 세운 시작</b>' : '') + '</p>'
       : '';
 
+    // 기운을 먼저 느끼게 — 기본 화면은 캐릭터·움직임·한 줄뿐,
+    // 긴 풀이(일진·십신·작용·처방)는 '+ 오늘의 사주 풀이 보기'로 접어 둔다.
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
-      saeunHtml +
       ritualHTML(info) +
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="seal-mini" aria-hidden="true">' + SEAL_SVG + '</span>달력에 주홍 낙관이 쾅 — 한 칸 채웠어요.</p>' +
+      '<details class="brief__more">' +
+      '<summary>' + (when === '오늘' ? '오늘의 사주 풀이 보기' : '이 날의 사주 풀이 보기') + '</summary>' +
+      '<div class="brief__more-body">' +
+      saeunHtml +
       '<div class="brief__gz modal__gz">' +
       '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
       '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
@@ -964,6 +969,8 @@
       '<div class="rx__item"><span class="rx__n">02</span><span>' + esc(info.lines[1]) + '</span></div>' +
       '</div>' +
       termLine +
+      '</div>' +
+      '</details>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 

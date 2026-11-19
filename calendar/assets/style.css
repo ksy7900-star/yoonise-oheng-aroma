@@ -1243,3 +1243,65 @@ body.is-modal-open { overflow: hidden; }
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ==========================================================
+   v4-b — 팝업은 '읽는 글'이 아니라 '기운 받는 화면'
+   ========================================================== */
+/* 캐릭터를 팝업의 주인공으로 크게 */
+.modal .ritual { margin-top: 14px; padding: 16px 14px 14px; }
+.modal .ritual__stage { min-height: 214px; padding: 10px 0 6px; }
+.modal .ritual__img {
+  width: 196px; height: 196px; border-radius: 34px;
+  box-shadow: 0 18px 34px -18px rgba(29, 28, 25, .55);
+}
+.modal .ritual__aura { width: 252px; height: 252px; margin: -126px 0 0 -126px; }
+.modal .ritual__ring { width: 198px; height: 198px; margin: -99px 0 0 -99px; }
+.modal .ritual__pop { width: 206px; height: 206px; margin: -103px 0 0 -103px; }
+.modal .ritual__badge { width: 42px; height: 42px; font-size: 20px; top: -2px; right: 4%; }
+.modal .ritual[data-stage="3"] .ritual__badge { width: 48px; height: 48px; font-size: 25px; }
+.modal .ritual__count { margin-top: 12px; font-size: 13px; letter-spacing: .1em; }
+.modal .ritual__count b { font-size: 16px; }
+.modal .modal__headline { font-size: 20px; margin-top: 10px; }
+
+@media (max-height: 700px) {
+  .modal .ritual__stage { min-height: 186px; }
+  .modal .ritual__img { width: 168px; height: 168px; border-radius: 30px; }
+  .modal .ritual__aura { width: 220px; height: 220px; margin: -110px 0 0 -110px; }
+  .modal .ritual__ring { width: 172px; height: 172px; margin: -86px 0 0 -86px; }
+}
+
+/* 접어 둔 사주 풀이 */
+.brief__more {
+  margin-top: 4px; padding-top: 12px;
+  border-top: 1px solid var(--hair-soft);
+}
+.brief__more summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 13px; border-radius: 13px;
+  background: #FAF7F0; border: 1px solid rgba(29, 28, 25, .06);
+  font-size: 11.5px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: -0.01em;
+  transition: background .18s ease;
+}
+.brief__more summary::-webkit-details-marker { display: none; }
+.brief__more summary::before {
+  content: "+"; flex: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; line-height: 1;
+  color: #8E6B2C; background: #F1E9D9;
+}
+.brief__more[open] summary::before { content: "−"; }
+.brief__more summary::after {
+  content: "일진 · 십신 · 작용 · 처방";
+  margin-left: auto; font-size: 9.5px; font-weight: 400; color: var(--mute); letter-spacing: .02em;
+}
+.brief__more[open] summary { margin-bottom: 6px; }
+.brief__more-body { padding: 0 2px; animation: moreIn .3s ease-out both; }
+.brief__more-body .modal__gz { margin-top: 12px; padding-top: 0; border-top: 0; }
+.brief__more-body .brief__saeun { margin-top: 10px; }
+@keyframes moreIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
