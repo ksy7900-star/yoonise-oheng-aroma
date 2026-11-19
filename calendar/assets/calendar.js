@@ -1432,8 +1432,8 @@
       '<ellipse cx="60" cy="58" rx="22" ry="4.5" fill="#C99C4E"/>' +
       '<path d="M46 64c4 3 9 4 14 4s10-1 14-4" fill="none" stroke="#FFF3CF" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' +
       '<path d="M89 30l2.2 5.6 5.6 2.2-5.6 2.2-2.2 5.6-2.2-5.6-5.6-2.2 5.6-2.2z" fill="#FFF3CF" class="bowl__spark"/>' +
-      '<path d="M84 40l17-13" stroke="#B98F4A" stroke-width="3.8" stroke-linecap="round"/>' +
-      '<circle cx="82" cy="42" r="5.2" fill="#C9A45E" stroke="#A87F3F" stroke-width="1"/>' +
+      '<path d="M101 24L88 39" stroke="#B98F4A" stroke-width="3.6" stroke-linecap="round"/>' +
+      '<rect x="72" y="43" width="18" height="10" rx="5" fill="#C9A45E" stroke="#A87F3F" stroke-width="1" transform="rotate(-36 81 48)"/>' +
       '<path d="M32 96h56" stroke="#C9A45E" stroke-width="4" stroke-linecap="round"/>' +
       '</svg>' +
       '</button>' +
