@@ -707,12 +707,12 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .day__top { display: flex; align-items: center; justify-content: center; }
 .day__sticker {
   display: flex; align-items: center; justify-content: center; flex: none;
-  width: 27px; height: 27px;
-  margin: -8px 0 0 -9px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  width: 23px; height: 23px;
+  margin: -7px 0 0 -4px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
   border-radius: 50%;
   background: radial-gradient(circle at 50% 34%, #fff 0%, #FFFDF8 68%, #F6F0E2 100%);
   box-shadow: 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
-  transform: rotate(-9deg);
+  transform: rotate(-8deg);
   pointer-events: none;
 }
 .day__sticker .ch {
@@ -755,7 +755,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
-  .day__sticker { width: 31px; height: 31px; margin-left: -10px; }
+  .day__sticker { width: 33px; height: 33px; margin-left: -8px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
@@ -939,7 +939,7 @@ body.is-modal-open { overflow: hidden; }
 
 /* 달력 스티커 — 모바일에서도 한눈에 붙은 게 보이도록 */
 @media (max-width: 360px) {
-  .day__sticker { width: 25px; height: 25px; margin-left: -8px; }
+  .day__sticker { width: 21px; height: 21px; margin-left: -3px; }
 }
 
 /* ==========================================================
