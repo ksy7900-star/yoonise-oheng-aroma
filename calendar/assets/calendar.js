@@ -515,17 +515,17 @@
           ? '2027년에 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
           : '2027년은 어느 달도 유난히 치우치지 않고 고르게 열려 있어요.'));
 
+    /* 달 칩은 읽기만 하는 표시 — 누를 수 있는 것처럼 보이지 않게 정적 div로 둔다.
+       (예전에는 누르면 그 달로 달력이 점프해서, 보던 이번 달을 다시 손으로 찾아야 했다는 피드백 2026-11-20) */
     function chip(m, isBad) {
       var ln1 = isBad ? m.warn : m.good;
-      return '<button type="button" class="ychip ychip--' + (isBad ? 'warn' : 'good') + '" data-jump="' + m.m + '"' +
-        ' aria-label="' + m.m + '월 ' + esc(ln1.title) + ' — 달력에서 이 달 보기">' +
+      return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + '">' +
         '<span class="ychip__no">' + m.m + '월</span>' +
         '<span class="ychip__body">' +
         '<span class="ychip__title">' + esc(ln1.title) + '</span>' +
         '<span class="ychip__why">' + esc(ln1.why) + '</span>' +
         '</span>' +
-        '<span class="ychip__go" aria-hidden="true">›</span>' +
-        '</button>';
+        '</div>';
     }
 
     $('#yearWarnChips').innerHTML = d.warn.length
@@ -534,21 +534,6 @@
     $('#yearGoodChips').innerHTML = d.good.length
       ? d.good.map(function (m) { return chip(m, false); }).join('')
       : '<p class="year__none">좋은 달이 따로 없이 고르게 열려 있어요.</p>';
-  }
-
-  /** 요약 카드의 달을 누르면 그 달 달력으로 바로 점프 */
-  function jumpToMonth(mm) {
-    var v = clampView(2027, mm);
-    state.view = v;
-    state.sel = null;
-    renderCalendar();
-    var card = $('.card--cal');
-    if (!card) return;
-    card.classList.remove('is-jump');
-    void card.offsetWidth;
-    card.classList.add('is-jump');
-    setTimeout(function () { card.classList.remove('is-jump'); }, 1000);
-    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function setFilter(f) {
@@ -2635,13 +2620,7 @@
       openDayModal(iso);
     });
 
-    // 2027 한눈에 카드의 달 점프 · 모아보기 탭 · 모아보기 목록의 날짜
-    $('#yearAlertSummary').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-jump]');
-      if (!b) return;
-      e.preventDefault();
-      jumpToMonth(+b.getAttribute('data-jump'));
-    });
+    // 모아보기 탭 (2027 한눈에 카드의 달 칩은 눌러도 달력이 움직이지 않는 정적 표시)
     $('#calFilter').addEventListener('click', function (e) {
       var b = e.target.closest('[data-filter]');
       if (!b) return;
