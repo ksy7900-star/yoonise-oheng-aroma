@@ -493,6 +493,8 @@
     return '<article class="lock">' +
       '<p class="lock__eyebrow">FREE TRIAL · 7 DAYS</p>' +
       '<p class="lock__date">' + fmtMD(info.iso) + ' <span>' + DOW_EN[info.dow] + ' · ' + esc(info.gz.textKo) + '일</span></p>' +
+      (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
+        (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 2027년 전체 1년 타이밍 · 캘린더 알람 열기</p>' +
       '<p class="lock__sub">(정미년 패스 / 윤이세 1:1 상담)</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
