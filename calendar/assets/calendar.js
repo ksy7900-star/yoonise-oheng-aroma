@@ -1088,7 +1088,8 @@
     if (kind === 'card') {
       var url = cardUrlOf(item);
       if (url) {
-        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다.');
+        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다. ' +
+          '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
         try { window.open(url, '_blank', 'noopener'); } catch (e) { window.location.href = url; }
       } else {
         payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
@@ -1864,7 +1865,10 @@
     var bar = careEl('[data-bowl-bar]');
     if (bar) bar.style.width = (el / BOWL.total * 100).toFixed(1) + '%';
     var clock = careEl('[data-bowl-clock]');
-    if (clock) clock.textContent = '00:' + (left < 10 ? '0' + left : left);
+    if (clock) {
+      var mm = Math.floor(left / 60), ss = left % 60;
+      clock.textContent = (mm < 10 ? '0' + mm : mm) + ':' + (ss < 10 ? '0' + ss : ss);
+    }
 
     var beat = -1;
     for (var i = 0; i < BOWL.strikeAt.length; i++) if (el >= BOWL.strikeAt[i] - 0.05) beat = i;
