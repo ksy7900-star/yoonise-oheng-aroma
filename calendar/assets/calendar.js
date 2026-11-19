@@ -503,21 +503,25 @@
     if (!d) { box.hidden = true; return; }
     box.hidden = false;
 
-    var t = d.totals;
-    var first = d.warn[0] ? d.warn[0].m + '월' : '';
-    $('#yearLead').innerHTML =
-      '2027년 365일 가운데 <b class="y-bad">조심할 날 ' + t.badDays + '일</b> · ' +
-      '<b class="y-good">좋은 날 ' + t.goodDays + '일</b>이에요.' +
-      (first ? ' 가장 조심할 달은 <b class="y-bad">' + first + '</b>입니다.' : '');
+    /* 일수 카운트는 쓰지 않는다 — 조심할 날이 많아 보이면 오히려 기가 빠진다는 피드백(2026-11-20).
+       '어느 달을 조심하고 어느 달을 밟을지'만 남긴다. */
+    var firstWarn = d.warn[0] ? d.warn[0].m + '월' : '';
+    var firstGood = d.good[0] ? d.good[0].m + '월' : '';
+    $('#yearLead').innerHTML = firstWarn && firstGood
+      ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
+      : (firstWarn
+        ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>이에요.'
+        : (firstGood
+          ? '2027년에 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
+          : '2027년은 어느 달도 유난히 치우치지 않고 고르게 열려 있어요.'));
 
     function chip(m, isBad) {
-      var meta = isBad ? ('입단속 ' + m.red + '일') : ('럭키 ' + m.gold + '일');
       var ln1 = isBad ? m.warn : m.good;
       return '<button type="button" class="ychip ychip--' + (isBad ? 'warn' : 'good') + '" data-jump="' + m.m + '"' +
         ' aria-label="' + m.m + '월 ' + esc(ln1.title) + ' — 달력에서 이 달 보기">' +
         '<span class="ychip__no">' + m.m + '월</span>' +
         '<span class="ychip__body">' +
-        '<span class="ychip__title">' + esc(ln1.title) + '<em>' + meta + '</em></span>' +
+        '<span class="ychip__title">' + esc(ln1.title) + '</span>' +
         '<span class="ychip__why">' + esc(ln1.why) + '</span>' +
         '</span>' +
         '<span class="ychip__go" aria-hidden="true">›</span>' +
@@ -1180,8 +1184,7 @@
     var TAG_CAT = { '입단속': 'red', '리셋': 'gray', '럭키': 'gold', '결정': 'blue', '머니': 'blue' };
     box.innerHTML =
       '<div class="calfocus__head">' +
-        '<p class="calfocus__title">' + (isBad ? '⚠️ 이 달 조심할 날' : '🍀 이 달 좋은 날') + '</p>' +
-        '<p class="calfocus__count">' + list.length + '일</p>' +
+        '<p class="calfocus__title">' + (isBad ? '⚠️ 이 달 챙겨둘 조심할 날' : '🍀 이 달 기분 좋은 날') + '</p>' +
       '</div>' +
       '<div class="calfocus__list">' +
         list.map(function (x) {
