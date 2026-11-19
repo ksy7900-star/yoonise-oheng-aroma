@@ -11,7 +11,15 @@
   var RANGE_FROM = '2026-11-01';
   var RANGE_TO = '2028-02-03';   // 정미년 마지막 날 — 2028-02-04 입춘부터 무신년
   var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
-  var FREE_DAYS = 3;   // 오늘 포함 3일(D+0·D+1·D+2)만 무료
+  /* ── 무료 체험 잠금 스위치 (판매 세팅은 이 두 줄만 보면 됩니다) ──────────
+     FREE_TRIAL_ENABLED = false → 지금 모드. 2026-11-01 ~ 2028-02-03(정미년 끝)
+        모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·도장·처방이 바로 열립니다.
+     FREE_TRIAL_ENABLED = true  → 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
+        그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 상담 안내)로 바뀝니다.
+     → 나중에 "3일 무료 체험" 판매를 다시 켤 때는 FREE_TRIAL_ENABLED 하나만 true 로 바꾸세요.
+        무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
+  var FREE_TRIAL_ENABLED = false;
+  var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 오늘 포함 3일(D+0·D+1·D+2)
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -413,8 +421,14 @@
     if (v > hi) v = hi;
     return { y: Math.floor(v / 12), m: (v % 12) + 1 };
   }
+  /** 잠금 판정 — 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
+    if (!FREE_TRIAL_ENABLED) return iso >= RANGE_FROM && iso <= RANGE_TO;
     return iso >= state.todayISO && iso <= T.addDays(state.todayISO, FREE_DAYS - 1);
+  }
+  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. */
+  function isOpenDay(iso) {
+    return !FREE_TRIAL_ENABLED || iso >= state.todayISO;
   }
   function infoFor(iso) {
     if (!state.natal) return null;
@@ -655,7 +669,7 @@
       if (info.dow === 0) cls.push('day--sun');
       if (info.dow === 6) cls.push('day--sat');
       if (iso < state.todayISO) cls.push('day--past');
-      else if (inFree(iso)) cls.push('day--free');
+      else if (FREE_TRIAL_ENABLED && inFree(iso)) cls.push('day--free');
       if (iso === state.todayISO) cls.push('is-today');
       if (iso === state.sel) cls.push('is-sel');
 
@@ -669,8 +683,9 @@
         return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
       }).join('');
 
+      var open = isOpenDay(iso);
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
-      if (iso < state.todayISO) label = v.m + '월 ' + d + '일, 지난 날';
+      if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
       if (stamp) {
         cls.push('day--stamped');
@@ -679,7 +694,7 @@
 
       html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
         (iso === state.sel ? ' aria-current="date"' : '') +
-        (iso < state.todayISO ? ' tabindex="-1"' : '') +
+        (open ? '' : ' tabindex="-1"') +
         ' aria-label="' + esc(label) + '">' +
         '<span class="day__num">' + d + '</span>' +
         (stamp ? '<span class="day__stamp' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">✓</span>' : '') +
@@ -702,9 +717,12 @@
     renderSaeun(v, dim);
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    var noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+    var noteText = FREE_TRIAL_ENABLED
+      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
+      : '지금은 2026년 11월부터 정미년 끝(2028년 2월 3일)까지 모든 날짜가 열려 있어요. 어느 날이든 눌러 그날의 부적을 톡톡톡 두드려 보세요.';
     if (v.y === 2028 && v.m === 2) {
-      noteText = '정미년은 2028년 2월 3일까지예요. 2월 4일 입춘부터는 무신년(戊申)으로 세운이 바뀌어 달력이 여기서 끝납니다.';
+      noteText = '정미년은 2028년 2월 3일까지예요. 2월 4일 입춘부터는 무신년(戊申)으로 세운이 바뀌어 달력이 여기서 끝납니다.' +
+        (FREE_TRIAL_ENABLED ? '' : ' 지금은 이 달까지 모든 날짜가 열려 있어요.');
     }
     $('#calNote').textContent = noteText;
   }
@@ -756,7 +774,7 @@
   function openDayModal(iso) {
     var info = infoFor(iso);
     if (!info || !modalEl) return;
-    var lock = !inFree(iso);
+    var lock = FREE_TRIAL_ENABLED && !inFree(iso);
     lastFocus = document.activeElement;
     state.sel = iso;
     renderCalendar();                       // 날짜 칸 선택 표시
@@ -1006,6 +1024,8 @@
 
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
+    // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open)를 스위치에 맞춰 보인다
+    document.body.setAttribute('data-trial', FREE_TRIAL_ENABLED ? 'on' : 'off');
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
@@ -1058,7 +1078,7 @@
       var b = e.target.closest('.day[data-iso]');
       if (!b) return;
       var iso = b.dataset.iso;
-      if (iso < state.todayISO) return;
+      if (!isOpenDay(iso)) return;
       openDayModal(iso);
     });
 

@@ -402,6 +402,13 @@ form { margin-top: 22px; }
 
 .day--past { opacity: .3; background: none; box-shadow: none; }
 .day--past .day__badges { visibility: hidden; }
+
+/* 무료 체험 스위치(calendar/assets/calendar.js 의 FREE_TRIAL_ENABLED)
+   끄면 data-trial="off" — js-trial 문구 숨김 + 지난 날도 눌러 볼 수 있게 흐림 해제 */
+body[data-trial="off"] .js-trial { display: none !important; }
+body[data-trial="on"] .js-open { display: none !important; }
+body[data-trial="off"] .day--past { opacity: 1; }
+body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .day.is-today .day__num { box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .4); }
 .day.is-sel .day__num { background: var(--ink); color: #F9F6EF; box-shadow: none; }
 .day.is-sel.day--sun .day__num, .day.is-sel.day--sat .day__num { color: #F9F6EF; }

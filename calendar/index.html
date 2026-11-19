@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261119t">
+<link rel="stylesheet" href="assets/style.css?v=20261119u">
 </head>
 <body>
 
@@ -23,7 +23,8 @@
     <p class="hero__sub">생년월일 한 번이면, 내 사주에 2026년 11월부터<br>정미년이 끝나는 2028년 2월 입춘 전까지<br>하루씩 짚어 드려요.</p>
     <ul class="hero__facts">
       <li>만세력 절입 시각 반영</li>
-      <li>3일 무료</li>
+      <li class="js-trial">3일 무료</li>
+      <li class="js-open">정미년 1년 전체 오픈</li>
       <li>기기에만 저장</li>
     </ul>
   </div>
@@ -195,7 +196,8 @@
             <span class="howto__txt">24절기 월운 전환일 → 달의 흐름이 바뀌는 기준점</span>
           </li>
         </ul>
-        <p class="howto__free">오늘부터 <b>3일</b>은 날짜를 눌러 상세 처방을 바로 볼 수 있어요.</p>
+        <p class="howto__free js-trial">오늘부터 <b>3일</b>은 날짜를 눌러 상세 처방을 바로 볼 수 있어요.</p>
+        <p class="howto__free js-open">지금은 <b>정미년 1년 전체</b> 날짜가 열려 있어요. 아무 날이나 눌러 보세요.</p>
         <p class="howto__free howto__free--ritual">날짜를 누르면 그날의 부적이 <b>팝업으로 크게</b> 떠요. 부적을 <b>톡·톡·톡 세 번</b> 두드리면 달력에 금색 완료 도장이 찍힙니다.</p>
       </div>
 
@@ -211,9 +213,11 @@
     <section class="card card--ics" aria-labelledby="icsTitle">
       <div class="sec__head">
         <h2 class="sec__title" id="icsTitle">내 캘린더에 넣기</h2>
-        <p class="sec__meta">무료 3일 맛보기</p>
+        <p class="sec__meta js-trial">무료 3일 맛보기</p>
+        <p class="sec__meta js-open">오늘부터 3일</p>
       </div>
-      <p class="ics__lead">무료 구간의 <b>럭키·입단속·리셋</b> 날짜를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
+      <p class="ics__lead js-trial">무료 구간의 <b>럭키·입단속·리셋</b> 날짜를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
+      <p class="ics__lead js-open">앞으로 3일의 <b>럭키·입단속·리셋</b> 날짜를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
       <button type="button" class="btn btn--primary" id="icsBtn">
         <span>3일 타이밍 알림 받기</span><span class="btn__sub">.ics</span>
       </button>
@@ -232,7 +236,8 @@
     <section class="cta" aria-label="윤이세 1:1 상담">
       <p class="cta__eyebrow">얼리버드 12+2개월 · 윤이세 1:1 상담</p>
       <h2 class="cta__title">정미년 1년 전체와<br>내 원국을 겹쳐 보기</h2>
-      <p class="cta__sub">무료 3일은 맛보기예요. 지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체 캘린더와 리셋 알람, 내 원국에 맞춘 월별 해석까지 함께 풀어 드립니다.</p>
+      <p class="cta__sub js-trial">무료 3일은 맛보기예요. 지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체 캘린더와 리셋 알람, 내 원국에 맞춘 월별 해석까지 함께 풀어 드립니다.</p>
+      <p class="cta__sub js-open">지금 열린 캘린더는 2027 정미년 1년 전체 흐름이에요. 1:1 상담에서는 내 원국과 겹쳐 월별로 어떻게 쓰면 좋을지까지 함께 풀어 드립니다.</p>
       <a class="btn btn--cream" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener">
         <span>카카오톡으로 1:1 상담</span>
       </a>
@@ -261,9 +266,9 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261119t"></script>
-<script src="assets/manse.js?v=20261119t"></script>
-<script src="assets/timing.js?v=20261119t"></script>
-<script src="assets/calendar.js?v=20261119t"></script>
+<script src="vendor/lunar.js?v=20261119u"></script>
+<script src="assets/manse.js?v=20261119u"></script>
+<script src="assets/timing.js?v=20261119u"></script>
+<script src="assets/calendar.js?v=20261119u"></script>
 </body>
 </html>
