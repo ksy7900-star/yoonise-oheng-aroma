@@ -520,7 +520,7 @@
         '<span class="ychip__title">' + esc(ln1.title) + '<em>' + meta + '</em></span>' +
         '<span class="ychip__why">' + esc(ln1.why) + '</span>' +
         '</span>' +
-        '<span class="ychip__go" aria-hidden="true">→</span>' +
+        '<span class="ychip__go" aria-hidden="true">›</span>' +
         '</button>';
     }
 

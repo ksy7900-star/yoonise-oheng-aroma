@@ -355,7 +355,7 @@ form { margin-top: 22px; }
   color: var(--mute); margin-left: 6px; letter-spacing: 0;
 }
 .ychip__why { display: block; font-size: 11px; color: var(--ink-2); line-height: 1.5; margin-top: 2px; }
-.ychip__go { flex: none; font-size: 12px; color: var(--mute); }
+.ychip__go { flex: none; font-size: 19px; line-height: 1; color: #B3AA9A; padding-right: 2px; }
 .year__none { font-size: 11.5px; color: var(--mute); line-height: 1.6; }
 .year__note { margin-top: 14px; font-size: 10px; color: var(--mute); line-height: 1.5; }
 
