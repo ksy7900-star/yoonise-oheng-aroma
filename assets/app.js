@@ -75,6 +75,8 @@
         c.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       setGenderError(false);
+      var alertEl = $('#formAlert');
+      if (alertEl && !alertEl.hidden) alertEl.hidden = true;
     });
 
     // 양력/음력
