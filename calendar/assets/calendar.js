@@ -17,9 +17,62 @@
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   var LITTLY = 'https://litt.ly/yoonise';
 
+  /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
+  var STAMP_KEY = 'yoonise.timing.stamp.v1';
+  var TALIS_PATH = 'assets/talisman/';
+  // 날짜 배지 5개 ↔ 오행 부적 5장 (plan 확정 매칭)
+  var BADGE_TO_EL = { '럭키': '목', '입단속': '수', '결정': '화', '머니': '금', '리셋': '토' };
+  var EL_ORDER = ['목', '화', '토', '금', '수'];
+  // 나를 생하는(인성) / 같은 편(비겁) / 내가 생하는(식상) / 내가 극하는(재성) / 나를 극하는(관성)
+  var EL_MOTHER = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
+  var EL_BIRTH = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+  var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };
+  var EL_PRESS = { 목: '금', 화: '수', 토: '목', 금: '화', 수: '토' };
+
+  var TALIS = {
+    목: {
+      key: 'wood', label: '목(木)', badge: '럭키',
+      why: '새로 시작하고 뻗어 나가는 기운 — 기회를 붙잡고 사람에게 먼저 다가가는 힘을 채워 줍니다.',
+      done: '✨ 오늘 럭키 기운 충전 완료!',
+      sub: '별빛이 톡톡 — 오늘은 먼저 손 내밀어 보세요.',
+      taps: ['톡 — 새싹이 올라옵니다', '톡톡 — 마지막 한 번!']
+    },
+    화: {
+      key: 'fire', label: '화(火)', badge: '결정',
+      why: '결정하고 표현하는 기운 — 미루지 않고 밀고 나가는 힘을 채워 줍니다.',
+      done: '🔥 오늘 결정의 불씨 ON!',
+      sub: '오늘 정할 일 하나, 지금 적어 두세요.',
+      taps: ['톡 — 불씨가 붙었어요', '톡톡 — 마지막 한 번!']
+    },
+    토: {
+      key: 'earth', label: '토(土)', badge: '리셋',
+      why: '중심을 잡고 버티는 기운 — 일이 흔들릴 때 내 자리를 지키는 힘을 채워 줍니다.',
+      done: '🌱 오늘 리셋 완료 — 중심 다시 세웠어요.',
+      sub: '새 달의 기준을 한 줄로 적어 두면 오래갑니다.',
+      taps: ['톡 — 중심이 잡혀요', '톡톡 — 마지막 한 번!']
+    },
+    금: {
+      key: 'metal', label: '금(金)', badge: '머니',
+      why: '벌여 둔 일을 매듭짓고 재물을 지키는 기운을 채워 줍니다.',
+      done: '💰 오늘 머니 그릇 채움 완료!',
+      sub: '나가는 돈부터 한 번 확인해 보세요.',
+      taps: ['톡 — 그릇이 단단해져요', '톡톡 — 마지막 한 번!']
+    },
+    수: {
+      key: 'water', label: '수(水)', badge: '입단속',
+      why: '차분히 흐르며 지켜 내는 기운 — 말과 감정을 다스리는 힘을 채워 줍니다.',
+      done: '🛡️ 오늘 입단속 방패 ON!',
+      sub: '보내기 전에 한 번 접어 두세요.',
+      taps: ['톡 — 방패가 올라와요', '톡톡 — 마지막 한 번!']
+    }
+  };
+
+  var ritual = {};   // { iso: 두드린 횟수 } — 같은 화면 안에서만 기억
+
   var state = {
     gender: '', calendar: 'solar', res: null, natal: null,
-    terms: null, view: null, sel: null, todayISO: '', cache: {}, icsDays: []
+    terms: null, view: null, sel: null, todayISO: '', cache: {}, icsDays: [],
+    stamps: {}, justStamped: null
   };
 
   /* ── 저장 ──────────────────────────────────────────── */
@@ -219,6 +272,8 @@
         state.natal = T.natalOf(res);
         state.cache = {};
         state.sel = null;
+        state.justStamped = null;
+        for (var kd in ritual) if (Object.prototype.hasOwnProperty.call(ritual, kd)) delete ritual[kd];
         var today = new Date();
         state.todayISO = T.isoOf(today.getFullYear(), today.getMonth() + 1, today.getDate());
         state.view = clampView(today.getFullYear(), today.getMonth() + 1);
@@ -298,10 +353,147 @@
     return info;
   }
 
+  /* ── 1년 대표 수호 부적 ──────────────────────────── */
+  function sigOf() {
+    if (!state.res) return '';
+    var i = state.res.input;
+    return [i.y, i.m, i.d, i.gender, i.calendar, i.timeKnown ? 1 : 0, i.hh || 0, i.mm || 0].join('|');
+  }
+  function loadStamps() {
+    try { state.stamps = JSON.parse(localStorage.getItem(STAMP_KEY)) || {}; } catch (e) { state.stamps = {}; }
+    if (!state.stamps || typeof state.stamps !== 'object') state.stamps = {};
+  }
+  function stampOf(iso) {
+    var bag = state.stamps[sigOf()];
+    return bag && bag[iso] ? bag[iso] : null;
+  }
+  function saveStamp(iso, el) {
+    var sig = sigOf();
+    if (!sig) return;
+    if (!state.stamps[sig]) state.stamps[sig] = {};
+    state.stamps[sig][iso] = { el: el, at: new Date().toISOString() };
+    try { localStorage.setItem(STAMP_KEY, JSON.stringify(state.stamps)); } catch (e) {}
+  }
+
+  /** 원국 글자에서 가장 적은 오행 → 1년 대표 부적.
+   *  동률이면 나를 도와주는 순서(인성 → 비겁 → 식상 → 재성 → 관성)로 한 가지만 고른다. */
+  function repElement() {
+    var counts = (state.res && state.res.counts) || {};
+    var me = state.res && state.res.dayMaster ? state.res.dayMaster.element : '토';
+    var min = Infinity;
+    EL_ORDER.forEach(function (e) { var c = counts[e] || 0; if (c < min) min = c; });
+    if (min === Infinity) min = 0;
+    var ties = EL_ORDER.filter(function (e) { return (counts[e] || 0) === min; });
+    var pref = [EL_MOTHER[me], me, EL_BIRTH[me], EL_OVER[me], EL_PRESS[me]];
+    var pick = ties[0];
+    for (var i = 0; i < pref.length; i++) {
+      if (ties.indexOf(pref[i]) >= 0) { pick = pref[i]; break; }
+    }
+    return { el: pick, count: min, ties: ties.length };
+  }
+
+  function renderTalisman() {
+    var box = $('#talisBanner');
+    if (!box) return;
+    if (!state.res) { box.innerHTML = ''; return; }
+    var r = repElement(), t = TALIS[r.el];
+    var total = state.res.total || 8;
+    var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
+    var why = (r.count === 0
+      ? total + '글자에 ' + r.el + '이 하나도 없어요. '
+      : total + '글자 중 ' + r.el + '이 ' + r.count + '개로 가장 적어요. ') + t.why;
+    box.innerHTML =
+      '<img class="talis-banner__img" src="' + TALIS_PATH + t.key + '.jpg" width="76" height="76" ' +
+      'alt="' + esc(t.label) + ' 수호 부적 캐릭터">' +
+      '<div class="talis-banner__body">' +
+      '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 1년 대표 부적</p>' +
+      '<p class="talis-banner__title">' + esc(who) + '의 2027 정미년 대표 수호 부적 — <b>' + esc(t.label) + '</b></p>' +
+      '<p class="talis-banner__why">' + esc(why) + '</p>' +
+      '<p class="talis-banner__note">1년 내내 이 기운이 내 사주를 받쳐 주는 부적이에요.' +
+      (r.ties > 1 ? ' 가장 적은 오행이 여럿이라 나를 도와주는 기운부터 골랐어요.' : '') + '</p>' +
+      '</div>';
+  }
+
+  /* ── 톡·톡·톡 리추얼 ───────────────────────────────── */
+  function dayElement(info) {
+    var badges = info.badges || [];
+    if (badges.length && BADGE_TO_EL[badges[0].text]) return BADGE_TO_EL[badges[0].text];
+    return repElement().el;   // 배지 없는 평범한 날은 1년 대표 부적으로
+  }
+
+  function ritualHTML(info) {
+    var st = stampOf(info.iso);
+    var el = (st && st.el && TALIS[st.el]) ? st.el : dayElement(info);
+    var t = TALIS[el];
+    var done = !!st;
+    var n = done ? 3 : (ritual[info.iso] || 0);
+    var msg = done
+      ? esc(t.done) + '<small>' + esc(t.sub) + '</small>'
+      : (n > 0 ? '한 번 더 — ' + (3 - n) + '번 남았어요.' : '부적을 세 번 두드려 오늘의 기운을 켜 보세요.');
+    return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso + '" data-el="' + el + '">' +
+      '<p class="ritual__eyebrow">오늘의 수호 부적 · ' + esc(t.label) + (t.badge ? ' · ' + esc(t.badge) : '') + '</p>' +
+      '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(t.label) + ' 부적 두드리기 (' + n + '/3)">' +
+      '<img class="ritual__img" src="' + TALIS_PATH + t.key + '.jpg" width="112" height="112" ' +
+      'alt="' + esc(t.label) + ' 수호 부적 캐릭터, 세 번 두드려 오늘의 기운을 켜는 부적">' +
+      '</button>' +
+      '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +
+      '<p class="ritual__msg" aria-live="polite">' + msg + '</p>' +
+      '</div>';
+  }
+
+  function bop(btn) {
+    var img = btn.querySelector('.ritual__img');
+    if (!img) return;
+    img.classList.remove('is-bop');
+    void img.offsetWidth;   // 애니메이션 재시작
+    img.classList.add('is-bop');
+  }
+
+  function spawnFx(btn) {
+    var old = btn.querySelector('.ritual__fx');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var s = document.createElement('span');
+    s.className = 'ritual__fx';
+    btn.appendChild(s);
+    setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 720);
+  }
+
+  function onRitualTap(btn) {
+    var wrap = btn.closest('[data-ritual-wrap]');
+    if (!wrap) return;
+    var iso = wrap.getAttribute('data-ritual-wrap');
+    var el = wrap.getAttribute('data-el');
+    var t = TALIS[el];
+    if (!t) return;
+    var n = stampOf(iso) ? 3 : (ritual[iso] || 0);
+    bop(btn);
+    if (n >= 3) return;                       // 이미 찍힌 날 — 살짝 튀기기만
+    n += 1;
+    ritual[iso] = n;
+    spawnFx(btn);
+    if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+
+    var countEl = wrap.querySelector('.ritual__count b');
+    if (countEl) countEl.textContent = n + '/3';
+    btn.setAttribute('aria-label', esc(t.label) + ' 부적 두드리기 (' + n + '/3)');
+
+    var msgEl = wrap.querySelector('.ritual__msg');
+    if (n >= 3) {
+      saveStamp(iso, el);
+      wrap.classList.add('is-done');
+      if (msgEl) msgEl.innerHTML = esc(t.done) + '<small>' + esc(t.sub) + '</small>';
+      state.justStamped = iso;
+      renderCalendar();                       // 달력 셀에 도장이 쾅
+    } else if (msgEl) {
+      msgEl.textContent = t.taps[n - 1] || ('한 번 더 — ' + (3 - n) + '번 남았어요.');
+    }
+  }
+
   /* ── 렌더 ──────────────────────────────────────────── */
   function render() {
     renderSavedBar();
     renderNatal();
+    renderTalisman();
     renderCalendar();
     renderIcs();
     var sel = state.sel || state.todayISO;
@@ -403,16 +595,23 @@
 
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO) label = v.m + '월 ' + d + '일, 지난 날';
+      var stamp = stampOf(iso);
+      if (stamp) {
+        cls.push('day--stamped');
+        if (iso >= state.todayISO) label += ', 부적 완료';
+      }
 
       html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
         (iso === state.sel ? ' aria-current="date"' : '') +
         (iso < state.todayISO ? ' tabindex="-1"' : '') +
         ' aria-label="' + esc(label) + '">' +
         '<span class="day__num">' + d + '</span>' +
+        (stamp ? '<span class="day__stamp' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">✓</span>' : '') +
         '<span class="day__badges">' + badgeHtml + '</span>' +
         '</button>';
     }
     $('#calGrid').innerHTML = html;
+    state.justStamped = null;
 
     var bits = [];
     if (stat.gold) bits.push('럭키 ' + stat.gold);
@@ -536,7 +735,8 @@
       '<p class="rx__label">오늘의 처방</p>' +
       '<div class="rx__item"><span class="rx__n">01</span><span>' + esc(info.lines[0]) + '</span></div>' +
       '<div class="rx__item"><span class="rx__n">02</span><span>' + esc(info.lines[1]) + '</span></div>' +
-      '</div>' + termLine +
+      '</div>' +
+      ritualHTML(info) + termLine +
       '</article>';
   }
 
@@ -609,8 +809,14 @@
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
+    loadStamps();
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
+
+    $('#detail').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (btn) onRitualTap(btn);
+    });
 
     $('#calGrid').addEventListener('click', function (e) {
       var b = e.target.closest('.day[data-iso]');
