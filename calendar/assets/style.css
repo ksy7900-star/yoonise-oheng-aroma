@@ -745,10 +745,10 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .seal__spark { fill: #E4AE55; }
 .seal-mini {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px;
+  width: 18px; height: 18px; margin-right: 5px; vertical-align: -4px;
   color: #B4432C;
 }
-.seal-mini .seal { width: 16px; height: 16px; }
+.seal-mini .seal { width: 18px; height: 18px; }
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
 @media (max-width: 360px) {
@@ -1304,4 +1304,20 @@ body.is-modal-open { overflow: hidden; }
 @keyframes moreIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 3타 완료 뒤에도 기운이 살아 있게 — 잔불 반짝임 */
+.ritual[data-stage="3"] .ritual__stage::before,
+.ritual[data-stage="3"] .ritual__stage::after {
+  position: absolute; color: var(--el); pointer-events: none; z-index: 1;
+  font-size: 15px; line-height: 1; opacity: .9;
+  animation: orbitSpark 3.2s ease-in-out infinite;
+}
+.ritual[data-stage="3"] .ritual__stage::before { content: "✦"; left: 11%; top: 20%; }
+.ritual[data-stage="3"] .ritual__stage::after {
+  content: "✧"; right: 12%; bottom: 24%; font-size: 12px; animation-delay: -1.6s;
+}
+@keyframes orbitSpark {
+  0%, 100% { transform: translateY(0) scale(.9) rotate(0); opacity: .45; }
+  50% { transform: translateY(-11px) scale(1.2) rotate(18deg); opacity: 1; }
 }

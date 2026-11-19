@@ -602,7 +602,7 @@
     if (!st) return;
     var th = EL_THEME[el] || EL_THEME['화'];
     var big = stage >= 3;
-    var count = big ? 26 : (stage === 2 ? 16 : 11);
+    var count = big ? 30 : (stage === 2 ? 17 : 12);
     var box = document.createElement('span');
     box.className = 'ritual__parts';
     for (var i = 0; i < count; i++) {
@@ -614,9 +614,9 @@
       p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
       p.style.setProperty('--dy', (Math.sin(ang) * dist - 12) + 'px');
       p.style.setProperty('--rot', (Math.random() * 260 - 130) + 'deg');
-      p.style.setProperty('--dur', ((big ? 1.05 : 0.82) + Math.random() * 0.75) + 's');
+      p.style.setProperty('--dur', ((big ? 1.25 : 1.0) + Math.random() * 0.8) + 's');
       p.style.setProperty('--dl', (Math.random() * 0.16) + 's');
-      p.style.setProperty('--sz', (big ? 15 : 11) + Math.round(Math.random() * 6) + 'px');
+      p.style.setProperty('--sz', (big ? 16 : 13) + Math.round(Math.random() * 8) + 'px');
       box.appendChild(p);
     }
     st.appendChild(box);
