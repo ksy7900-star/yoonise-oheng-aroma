@@ -28,6 +28,7 @@
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
   var TALIS_PATH = 'assets/talisman/';
+  var TALIS_VER = '?v=20261119v';   // 부적 이미지를 새로 뽑았을 때 폰 캐시까지 즉시 갱신되도록
   // 날짜 배지 5개 ↔ 오행 부적 5장 (plan 확정 매칭)
   var BADGE_TO_EL = { '럭키': '목', '입단속': '수', '결정': '화', '머니': '금', '리셋': '토' };
   var EL_ORDER = ['목', '화', '토', '금', '수'];
@@ -488,7 +489,7 @@
       ? total + '글자에 ' + r.el + t.josa + ' 하나도 없어요. '
       : total + '글자 중 ' + r.el + t.josa + ' ' + r.count + '개로 가장 적어요. ') + t.why;
     box.innerHTML =
-      '<img class="talis-banner__img" src="' + TALIS_PATH + t.key + '.jpg" width="76" height="76" ' +
+      '<img class="talis-banner__img" src="' + TALIS_PATH + t.key + '.jpg' + TALIS_VER + '" width="76" height="76" ' +
       'alt="' + esc(t.label) + ' 수호 부적 캐릭터">' +
       '<div class="talis-banner__body">' +
       '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 1년 대표 부적</p>' +
@@ -524,7 +525,7 @@
     return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso + '" data-el="' + el + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + ' · ' + esc(tag) + '</p>' +
       '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(t.label) + ' 부적 두드리기 (' + n + '/3)">' +
-      '<img class="ritual__img" src="' + TALIS_PATH + t.key + '.jpg" width="112" height="112" ' +
+      '<img class="ritual__img" src="' + TALIS_PATH + t.key + '.jpg' + TALIS_VER + '" width="112" height="112" ' +
       'alt="' + esc(t.label) + ' 수호 부적 캐릭터, 세 번 두드려 오늘의 기운을 켜는 부적">' +
       '</button>' +
       '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +

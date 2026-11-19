@@ -149,4 +149,4 @@ python3 -m http.server 8000
   - `true`(판매 세팅): 오늘 포함 `FREE_DAYS`일만 열리고 그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 상담)로 바뀝니다. **이 값 하나만 `true` 로 바꾸면 3일 무료 잠금이 그대로 복원**됩니다.
 - **문구도 같이 전환**: `index.html` 의 무료 체험 문구는 `class="js-trial"`, 전체 오픈 문구는 `class="js-open"` 으로 두고, `boot()` 이 `body[data-trial="on|off"]` 를 세팅하면 CSS(`style.css`)가 한쪽만 보여 줍니다. 그래서 스위치를 되돌려도 히어로 `3일 무료` · 캘린더 보는 법 · `.ics` 섹션 · CTA 문구가 자동으로 원래대로 돌아옵니다.
 - **부적 이미지 점검**: `calendar/assets/talisman/{wood,fire,earth,metal,water}.jpg` 라이브 200 OK 확인(2026-11-19). 토(土) 카드에 구워져 있던 영문 워드마크 `EARTH` 와 윗줄은 `03_earth.png` 에서 배경색으로 메워 지우고 `make_web_thumbs.py` 로 480px 썸네일을 다시 뽑았습니다(원본 카드는 `../oheng-talisman/03_earth_with_wordmark.png` 로 보관).
-- **캐시**: `?v=20261119u`.
+- **캐시**: `?v=20261119v` (부적 이미지 URL에도 `?v=20261119v`).
