@@ -541,24 +541,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   padding: 2px 7px; border-radius: 999px; background: rgba(246, 242, 234, .14);
 }
 
-/* ── .ics 카드 ────────────────────────────────────── */
-.ics__lead { font-size: 12px; color: var(--mute); line-height: 1.8; margin-top: 12px; }
-.ics__lead b { color: var(--ink-2); font-weight: 600; }
-#icsBtn { margin-top: 16px; }
-.ics__status { font-size: 10.5px; color: var(--mute); margin-top: 10px; line-height: 1.65; }
-.guide { margin-top: 16px; border-top: 1px solid var(--hair-soft); padding-top: 14px; }
-.guide summary {
-  list-style: none; cursor: pointer; font-size: 11.5px; color: var(--ink-2);
-  display: flex; align-items: center; gap: 6px; font-weight: 500;
-}
-.guide summary::-webkit-details-marker { display: none; }
-.guide summary::before { content: "+"; color: var(--gold); font-size: 13px; }
-.guide[open] summary::before { content: "−"; }
-.guide dl { margin: 12px 0 0; }
-.guide dt { font-size: 11px; font-weight: 600; color: var(--ink-2); margin-top: 10px; }
-.guide dd { margin: 3px 0 0; font-size: 11px; color: var(--mute); line-height: 1.7; }
-
-/* ── CTA ──────────────────────────────────────────── */
+/* ── CTA ─────────────────────────────────────────── */
 .cta {
   background: #1C1B19; color: #F2EDE3;
   border-radius: var(--radius); padding: 30px 22px 24px; margin-top: 14px;
@@ -593,11 +576,10 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
-.talis-banner__img {
-  flex: none; width: 76px; height: 76px; border-radius: 17px; object-fit: cover;
-  box-shadow: 0 6px 16px -10px rgba(29, 28, 25, .55), inset 0 0 0 1px rgba(255, 255, 255, .6);
-  background: #F4F1EA;
+.talis-banner__char {
+  flex: none; display: block; width: 78px; height: 78px;
 }
+.talis-banner__char .ch { width: 100%; height: 100%; }
 .talis-banner__body { min-width: 0; }
 .talis-banner__eyebrow {
   font-size: 8.5px; font-weight: 600; letter-spacing: .17em;
@@ -611,23 +593,47 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .talis-banner__why { font-size: 10.5px; color: var(--ink-2); line-height: 1.65; margin-top: 5px; }
 .talis-banner__note { font-size: 9.5px; color: var(--mute); line-height: 1.6; margin-top: 6px; }
 
-/* ── 톡·톡·톡 리추얼 카드 ─────────────────────────── */
+/* ── 톡·톡·톡 리추얼 — 노프레임(배경·테두리 없이 캐릭터만 공중에) ── */
 .ritual {
   --accent: #AE8A50;
-  --soft: #FBF7EE;
-  --line: rgba(174, 138, 80, .28);
-  margin-top: 18px; padding: 15px 14px 14px;
+  --deep: #8A6B2C;
+  --soft: transparent;
+  --line: transparent;
+  margin-top: 12px; padding: 2px 2px 6px;
   text-align: center;
-  background: var(--soft);
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  background: none;
+  border: 0;
+  border-radius: 0;
   transition: background .3s ease, border-color .3s ease;
 }
-.ritual--목 { --accent: #65824F; --soft: #F3F7EF; --line: rgba(110, 139, 94, .30); --el: #6FAE5B; --el-1: rgba(111, 174, 91, .34); --el-2: rgba(111, 174, 91, .13); }
-.ritual--화 { --accent: #B65D46; --soft: #FCF1ED; --line: rgba(196, 102, 79, .28); --el: #F0714E; --el-1: rgba(240, 113, 78, .34); --el-2: rgba(240, 113, 78, .13); }
-.ritual--토 { --accent: #9A8354; --soft: #FAF5EA; --line: rgba(154, 131, 84, .30); --el: #D9A83C; --el-1: rgba(217, 168, 60, .36); --el-2: rgba(217, 168, 60, .14); }
-.ritual--금 { --accent: #8A7F5E; --soft: #F6F4EE; --line: rgba(138, 127, 94, .30); --el: #9FB0C0; --el-1: rgba(159, 176, 192, .40); --el-2: rgba(159, 176, 192, .16); }
-.ritual--수 { --accent: #4F739A; --soft: #EFF4F9; --line: rgba(90, 124, 153, .28); --el: #54A8C6; --el-1: rgba(84, 168, 198, .34); --el-2: rgba(84, 168, 198, .13); }
+.ritual--목 { --accent: #65824F; --deep: #4C6F3A; --soft: #F3F7EF; --line: rgba(110, 139, 94, .30); --el: #6FAE5B; --el-1: rgba(111, 174, 91, .34); --el-2: rgba(111, 174, 91, .13); }
+.ritual--화 { --accent: #B65D46; --deep: #A0442E; --soft: #FCF1ED; --line: rgba(196, 102, 79, .28); --el: #F0714E; --el-1: rgba(240, 113, 78, .34); --el-2: rgba(240, 113, 78, .13); }
+.ritual--토 { --accent: #9A8354; --deep: #806627; --soft: #FAF5EA; --line: rgba(154, 131, 84, .30); --el: #D9A83C; --el-1: rgba(217, 168, 60, .36); --el-2: rgba(217, 168, 60, .14); }
+.ritual--금 { --accent: #8A7F5E; --deep: #55697C; --soft: #F6F4EE; --line: rgba(138, 127, 94, .30); --el: #9FB0C0; --el-1: rgba(159, 176, 192, .40); --el-2: rgba(159, 176, 192, .16); }
+.ritual--수 { --accent: #4F739A; --deep: #2A6683; --soft: #EFF4F9; --line: rgba(90, 124, 153, .28); --el: #54A8C6; --el-1: rgba(84, 168, 198, .34); --el-2: rgba(84, 168, 198, .13); }
+
+/* 무슨 부적인지 한눈에 — 캐릭터 위 굵은 이름표 */
+.ritual__name {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin: 9px auto 0; padding: 8px 17px 9px;
+  border-radius: 999px;
+  font-size: 15.5px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.15;
+  color: #FFF9EC;
+  background: linear-gradient(180deg, var(--accent) 0%, var(--deep) 100%);
+  box-shadow: 0 10px 20px -12px var(--deep), inset 0 1px 0 rgba(255, 255, 255, .24);
+  transform: rotate(-1.2deg);
+  animation: namePop .52s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.modal .ritual__name { font-size: 17px; padding: 9px 20px 10px; margin-top: 12px; }
+.ritual__name-icon { font-size: 1.05em; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .18)); }
+.ritual[data-stage="3"] .ritual__name {
+  box-shadow: 0 0 0 2px rgba(255, 249, 236, .55), 0 12px 24px -10px var(--deep);
+}
+@keyframes namePop {
+  0% { transform: rotate(-1.2deg) scale(.82); opacity: 0; }
+  58% { transform: rotate(1deg) scale(1.06); opacity: 1; }
+  100% { transform: rotate(-1.2deg) scale(1); opacity: 1; }
+}
 
 .ritual__eyebrow {
   font-size: 9px; font-weight: 600; letter-spacing: .16em;
@@ -635,24 +641,12 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 }
 .ritual__tap {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
-  margin: 10px auto 0; padding: 0; border: 0; background: none;
+  width: 158px; height: 158px;
+  margin: 2px auto 0; padding: 0; border: 0; background: none;
   border-radius: 26px; -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 .ritual__tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
-.ritual__img {
-  width: 112px; height: 112px; border-radius: 24px; object-fit: cover;
-  display: block; background: #fff;
-  box-shadow: 0 10px 22px -14px rgba(29, 28, 25, .55);
-  transition: box-shadow .35s ease;
-}
-.ritual__img.is-bop { animation: bop .44s cubic-bezier(.34, 1.56, .64, 1); }
-@keyframes bop {
-  0% { transform: scale(1) translateY(0); }
-  34% { transform: scale(1.075) translateY(-7px); }
-  66% { transform: scale(.975) translateY(1px); }
-  100% { transform: scale(1) translateY(0); }
-}
 
 .ritual__fx {
   position: absolute; inset: -8px; border-radius: 32px;
@@ -686,14 +680,9 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   margin-top: 4px; font-size: 11px; line-height: 1.6; color: var(--mute);
   min-height: 18px; transition: color .3s;
 }
-.ritual[data-stage="1"] { border-color: var(--el); box-shadow: 0 10px 26px -22px var(--el); }
-.ritual[data-stage="2"] { border-color: var(--el); box-shadow: 0 0 0 1px var(--el), 0 14px 32px -20px var(--el); }
-.ritual[data-stage="1"] .ritual__img { box-shadow: 0 0 0 2px var(--el), 0 14px 26px -14px var(--el); }
-.ritual[data-stage="2"] .ritual__img { box-shadow: 0 0 0 3px var(--el), 0 16px 30px -12px var(--el); }
-.ritual.is-done { background: var(--soft); border-color: var(--el); box-shadow: 0 0 0 2px var(--el), 0 16px 36px -18px var(--el); }
-.ritual.is-done .ritual__img {
-  box-shadow: 0 0 0 3px var(--el), 0 18px 34px -12px var(--el);
-}
+.ritual[data-stage="1"] .ch { filter: drop-shadow(0 10px 18px var(--el-2)); }
+.ritual[data-stage="2"] .ch { filter: drop-shadow(0 12px 22px var(--el-1)); }
+.ritual.is-done .ch { filter: drop-shadow(0 14px 26px var(--el-1)); }
 .ritual.is-done .ritual__count { color: var(--accent); }
 .ritual.is-done .ritual__msg {
   color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -0.01em;
@@ -759,8 +748,8 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .day__badge { font-size: 9px; padding: 3px 4px; }
   .natal__tile { width: 36px; height: 36px; font-size: 19px; }
   .talis-banner { gap: 11px; padding: 13px 13px; }
-  .talis-banner__img { width: 64px; height: 64px; border-radius: 14px; }
-  .ritual__img { width: 96px; height: 96px; }
+  .talis-banner__char { width: 66px; height: 66px; }
+  .ritual__tap { width: 134px; height: 134px; }
 }
 @media (min-width: 520px) {
   .day__num { width: 28px; height: 28px; font-size: 13.5px; }
@@ -768,7 +757,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .day__badge { font-size: 10.5px; padding: 4px 6px; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
-  .ritual__img { width: 126px; height: 126px; }
+  .ritual__tap { width: 176px; height: 176px; }
   .day__seal { width: 36px; height: 36px; margin-left: -18px; }
 }
 
@@ -853,15 +842,11 @@ body.is-modal-open { overflow: hidden; }
   font-weight: 600; margin-top: 12px; letter-spacing: -0.02em;
 }
 
-/* 팝업 안 부적 — 크게(172px) 정중앙 */
-.modal .ritual { margin-top: 16px; padding: 18px 14px 16px; border-radius: 22px; }
+/* 팝업 안 부적 — 캐릭터를 주인공으로 크게 */
+.modal .ritual { margin-top: 10px; padding: 0; border-radius: 0; }
 .modal .ritual__eyebrow { font-size: 9.5px; }
-.modal .ritual__tap { margin-top: 12px; }
-.modal .ritual__img {
-  width: 172px; height: 172px; border-radius: 30px;
-  box-shadow: 0 16px 30px -18px rgba(29, 28, 25, .6);
-}
-.modal .ritual__count { font-size: 13px; margin-top: 13px; letter-spacing: .06em; }
+.modal .ritual__tap { margin-top: 4px; }
+.modal .ritual__count { font-size: 13px; margin-top: 8px; letter-spacing: .06em; }
 .modal .ritual__count b { font-size: 15px; }
 .modal .ritual__msg { font-size: 11.5px; margin-top: 5px; }
 .modal .ritual.is-done .ritual__msg { font-size: 13px; }
@@ -910,7 +895,8 @@ body.is-modal-open { overflow: hidden; }
 .modal__dialog--lock .lock__title { margin-top: 16px; }
 
 @media (max-height: 660px) {
-  .modal .ritual__img { width: 148px; height: 148px; }
+  .modal .ritual__tap { width: 200px; height: 200px; }
+  .modal .ritual__stage { min-height: 208px; }
   .modal__date { font-size: 22px; }
 }
 
@@ -921,7 +907,7 @@ body.is-modal-open { overflow: hidden; }
   .modal.is-closing .modal__dialog, .modal.is-closing .modal__backdrop {
     animation-duration: .01ms !important;
   }
-  .modal .ritual__img { transition: none; }
+  .modal .ritual__char { transition: none; }
 }
 
 /* ── 소리 토글 ────────────────────────────────────── */
@@ -968,15 +954,16 @@ body.is-modal-open { overflow: hidden; }
 .ritual__stage {
   position: relative;
   display: flex; align-items: center; justify-content: center;
-  padding: 12px 0 6px; min-height: 152px;
+  padding: 4px 0 0; min-height: 168px;
 }
 .ritual__tap { position: relative; z-index: 2; }
 .ritual__char {
-  position: relative; display: block; border-radius: 26px;
+  position: relative; display: block; width: 100%; height: 100%;
   animation: charIn .74s cubic-bezier(.18, 1.55, .45, 1) both,
              floaty 3.6s ease-in-out .74s infinite;
   will-change: transform;
 }
+.ritual__char .ch { width: 100%; height: 100%; }
 .ritual__char.is-jelly { animation: jelly .6s cubic-bezier(.2, 1.5, .4, 1); }
 .ritual__char.is-jelly--big { animation: jellyBig .72s cubic-bezier(.2, 1.5, .4, 1); }
 
@@ -1128,19 +1115,6 @@ body.is-modal-open { overflow: hidden; }
   50% { transform: translateY(-6px) rotate(3deg); }
 }
 
-/* ── 2타 볼 발그레 ───────────────────────────────── */
-.ritual__blush {
-  position: absolute; inset: 0; border-radius: 26px;
-  opacity: 0; pointer-events: none;
-  mix-blend-mode: multiply;
-  transition: opacity .45s ease;
-  background:
-    radial-gradient(circle at 33% 58%, rgba(240, 108, 128, .55), rgba(240, 108, 128, 0) 14%),
-    radial-gradient(circle at 67% 58%, rgba(240, 108, 128, .55), rgba(240, 108, 128, 0) 14%);
-}
-.ritual[data-stage="2"] .ritual__blush { opacity: .6; }
-.ritual.is-done .ritual__blush { opacity: .38; }
-
 /* ── 2타 이후 캐릭터가 살짝 부들부들 ──────────────── */
 .ritual[data-stage="2"] .ritual__tap { animation: tremble 1.7s ease-in-out infinite; }
 @keyframes tremble {
@@ -1180,16 +1154,6 @@ body.is-modal-open { overflow: hidden; }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── .ics 안내 ───────────────────────────────────── */
-.ics__howto {
-  margin-top: 16px; padding: 11px 13px; text-align: center;
-  background: #FAF6EC; border: 1px solid rgba(174, 138, 80, .22);
-  border-radius: 13px;
-  font-size: 11px; line-height: 1.8; color: #7C6C4C;
-}
-.ics__howto b { color: #6B5526; font-weight: 700; }
-.btn--ics { font-size: 13px; letter-spacing: -0.01em; }
-
 /* ── 맨 아래 카드 — 1·2·3 결제 동선 ──────────────── */
 .cta__steps { margin-top: 18px; }
 .cta__steps .btn:first-child { margin-top: 0; }
@@ -1224,7 +1188,7 @@ body.is-modal-open { overflow: hidden; }
   margin-top: 14px; padding: 12px;
   background: #FBF7EE; border: 1px solid rgba(174, 138, 80, .2); border-radius: 16px;
 }
-.shop__talis img { width: 62px; height: 62px; border-radius: 14px; object-fit: cover; flex: none; }
+.shop__talis > .ch { width: 66px; height: 66px; flex: none; }
 .shop__talis b { display: block; font-size: 12px; color: #8E6B2C; }
 .shop__talis span { display: block; font-size: 10.5px; color: var(--mute); line-height: 1.65; margin-top: 3px; }
 .shop__price {
@@ -1250,26 +1214,23 @@ body.is-modal-open { overflow: hidden; }
    v4-b — 팝업은 '읽는 글'이 아니라 '기운 받는 화면'
    ========================================================== */
 /* 캐릭터를 팝업의 주인공으로 크게 */
-.modal .ritual { margin-top: 14px; padding: 16px 14px 14px; }
-.modal .ritual__stage { min-height: 214px; padding: 10px 0 6px; }
-.modal .ritual__img {
-  width: 196px; height: 196px; border-radius: 34px;
-  box-shadow: 0 18px 34px -18px rgba(29, 28, 25, .55);
-}
-.modal .ritual__aura { width: 252px; height: 252px; margin: -126px 0 0 -126px; }
-.modal .ritual__ring { width: 198px; height: 198px; margin: -99px 0 0 -99px; }
-.modal .ritual__pop { width: 206px; height: 206px; margin: -103px 0 0 -103px; }
-.modal .ritual__badge { width: 42px; height: 42px; font-size: 20px; top: -2px; right: 4%; }
+.modal .ritual { margin-top: 12px; padding: 0; }
+.modal .ritual__stage { min-height: 292px; padding: 2px 0 0; }
+.modal .ritual__tap { width: 276px; height: 276px; }
+.modal .ritual__aura { width: 330px; height: 330px; margin: -165px 0 0 -165px; }
+.modal .ritual__ring { width: 274px; height: 274px; margin: -137px 0 0 -137px; }
+.modal .ritual__pop { width: 286px; height: 286px; margin: -143px 0 0 -143px; }
+.modal .ritual__badge { width: 42px; height: 42px; font-size: 20px; top: 4px; right: 4%; }
 .modal .ritual[data-stage="3"] .ritual__badge { width: 48px; height: 48px; font-size: 25px; }
-.modal .ritual__count { margin-top: 12px; font-size: 13px; letter-spacing: .1em; }
+.modal .ritual__count { margin-top: 6px; font-size: 13px; letter-spacing: .1em; }
 .modal .ritual__count b { font-size: 16px; }
 .modal .modal__headline { font-size: 20px; margin-top: 10px; }
 
 @media (max-height: 700px) {
-  .modal .ritual__stage { min-height: 186px; }
-  .modal .ritual__img { width: 168px; height: 168px; border-radius: 30px; }
-  .modal .ritual__aura { width: 220px; height: 220px; margin: -110px 0 0 -110px; }
-  .modal .ritual__ring { width: 172px; height: 172px; margin: -86px 0 0 -86px; }
+  .modal .ritual__stage { min-height: 240px; }
+  .modal .ritual__tap { width: 228px; height: 228px; }
+  .modal .ritual__aura { width: 280px; height: 280px; margin: -140px 0 0 -140px; }
+  .modal .ritual__ring { width: 226px; height: 226px; margin: -113px 0 0 -113px; }
 }
 
 /* 접어 둔 사주 풀이 */
@@ -1322,4 +1283,104 @@ body.is-modal-open { overflow: hidden; }
 @keyframes orbitSpark {
   0%, 100% { transform: translateY(0) scale(.9) rotate(0); opacity: .45; }
   50% { transform: translateY(-11px) scale(1.2) rotate(18deg); opacity: 1; }
+}
+
+/* ==========================================================
+   v5 — 사각틀 없는 SVG 오행 캐릭터 · 부적 이름표 · 잔잔한 날
+   ========================================================== */
+.ch { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* 표정 4단 — data-stage 에 따라 눈·입이 실제로 바뀐다 */
+.ch-face { opacity: 0; transition: opacity .2s ease; }
+.ch[data-stage="0"] .ch-face--0,
+.ch[data-stage="1"] .ch-face--1,
+.ch[data-stage="2"] .ch-face--2,
+.ch[data-stage="3"] .ch-face--3 { opacity: 1; }
+
+/* 0타 — 둥실 숨 쉬며 눈 깜빡 */
+.ch-eye { transform-box: fill-box; transform-origin: center; animation: chBlink 5.2s ease-in-out infinite; }
+.ch-eye--r { animation-delay: .07s; }
+@keyframes chBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(.07); }
+  98% { transform: scaleY(1); }
+}
+
+/* 볼터치 — 2타에 발그레, 완료엔 은은하게 */
+.ch-blush { opacity: 0; transition: opacity .45s ease; }
+.ch[data-stage="2"] .ch-blush { opacity: .8; }
+.ch[data-stage="3"] .ch-blush { opacity: .5; }
+
+/* 팔 — 1타 놀라서 벌리고, 2타 오므리고, 3타 활짝 */
+.ch-arm { transform-box: fill-box; transition: transform .34s cubic-bezier(.2, 1.4, .4, 1); }
+.ch-arm--l { transform-origin: 100% 0%; }
+.ch-arm--r { transform-origin: 0% 0%; }
+.ch[data-stage="1"] .ch-arm--l { transform: rotate(-26deg) translate(-1px, -3px); }
+.ch[data-stage="1"] .ch-arm--r { transform: rotate(26deg) translate(1px, -3px); }
+.ch[data-stage="2"] .ch-arm--l { transform: rotate(12deg) scaleY(.82); }
+.ch[data-stage="2"] .ch-arm--r { transform: rotate(-12deg) scaleY(.82); }
+.ch[data-stage="3"] .ch-arm--l { transform: rotate(-46deg) translate(-2px, -7px); }
+.ch[data-stage="3"] .ch-arm--r { transform: rotate(46deg) translate(2px, -7px); }
+
+/* 오라 — 단계마다 진해지고 커진다 */
+.ch-glow {
+  transform-box: fill-box; transform-origin: center;
+  opacity: .45; transition: opacity .5s ease, transform .6s cubic-bezier(.2, 1.4, .4, 1);
+}
+.ch[data-stage="1"] .ch-glow { opacity: .68; transform: scale(1.06); }
+.ch[data-stage="2"] .ch-glow { opacity: .86; transform: scale(1.16); }
+.ch[data-stage="3"] .ch-glow { opacity: 1; transform: scale(1.26); }
+
+.ch-shadow { transform-box: fill-box; transform-origin: center; animation: chShadow 3.8s ease-in-out infinite; }
+@keyframes chShadow { 0%, 100% { transform: scale(1); opacity: .10; } 50% { transform: scale(.9); opacity: .06; } }
+
+/* 반짝이 */
+.ch-tw, .ch-spark { transform-box: fill-box; transform-origin: center; animation: chTwinkle 3.2s ease-in-out infinite; }
+.ch-tw--b, .ch-spark--b { animation-delay: -1.6s; }
+.ch-spark--happy { animation-duration: 1.9s; }
+@keyframes chTwinkle {
+  0%, 100% { opacity: .3; transform: scale(.82) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.08) rotate(24deg); }
+}
+
+/* 3타 완료 — 오행 오라 파동 */
+.ch-aura-wave { transform-box: fill-box; transform-origin: center; }
+.ch[data-stage="3"] .ch-aura-wave { animation: chWave 1.2s ease-out both; }
+@keyframes chWave {
+  0% { opacity: .8; transform: scale(.6); }
+  60% { opacity: .28; }
+  100% { opacity: 0; transform: scale(1.55); }
+}
+
+/* 배너·아이템 팝업 속 캐릭터는 은은하게 떠 있기 */
+.talis-banner__char .ch,
+.shop__talis > .ch { animation: chFloat 4.2s ease-in-out infinite; }
+@keyframes chFloat {
+  0%, 100% { transform: translateY(0) rotate(-1.4deg); }
+  50% { transform: translateY(-5px) rotate(1.4deg); }
+}
+
+/* ── 잔잔한 날 팝업 ───────────────────────────────── */
+.calm {
+  margin-top: 16px; padding: 20px 14px 18px; text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(140, 156, 136, .16), rgba(140, 156, 136, 0) 68%);
+  border-radius: 20px;
+}
+.calm__icon { font-size: 34px; line-height: 1; animation: chFloat 4.6s ease-in-out infinite; }
+.calm__line {
+  font-family: var(--serif); font-size: 17.5px; line-height: 1.7;
+  color: var(--ink); margin-top: 12px; letter-spacing: -0.02em;
+}
+.calm__sub { font-size: 11.5px; color: var(--mute); line-height: 1.7; margin-top: 9px; }
+.calm__sub b { color: #7E6229; font-weight: 700; }
+.modal__dialog--calm .brief__more { margin-top: 12px; }
+.modal__dialog--calm .brief__more summary::after { content: "일진 · 십신 · 처방"; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-eye, .ch-shadow, .ch-tw, .ch-spark, .talis-banner__char .ch,
+  .shop__talis > .ch, .calm__icon, .ritual__name, .ch[data-stage="3"] .ch-aura-wave {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .ch-arm, .ch-face, .ch-blush, .ch-glow { transition: none; }
 }

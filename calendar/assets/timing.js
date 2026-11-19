@@ -1,5 +1,5 @@
 /*!
- * 윤이세 타이밍 캘린더 — 명리 관계·처방·.ics 코어
+ * 윤이세 타이밍 캘린더 — 명리 관계·처방 코어
  * 기반: assets/manse.js (KASI 대조 완료 만세력 엔진) + vendor/lunar.js
  *
  * 원칙
@@ -439,99 +439,12 @@
     return [line1, line2];
   }
 
-  /* ── .ics ──────────────────────────────────────────── */
-  function icsEscape(s) {
-    return String(s == null ? '' : s)
-      .replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\n');
-  }
-  function utf8Len(ch) {
-    var c = ch.codePointAt(0);
-    if (c < 0x80) return 1;
-    if (c < 0x800) return 2;
-    if (c < 0x10000) return 3;
-    return 4;
-  }
-  function foldLine(line) {
-    // RFC 5545: 75옥텟. 이모지는 서로게이트 쌍이라 코드포인트 단위로 센다.
-    var out = '', bytes = 0, buf = '';
-    var chars = Array.from ? Array.from(line) : line.split('');
-    for (var i = 0; i < chars.length; i++) {
-      var ch = chars[i];
-      var b = utf8Len(ch);
-      if (bytes + b > 72) { out += buf + '\r\n '; buf = ''; bytes = 0; }
-      buf += ch; bytes += b;
-    }
-    return out + buf;
-  }
-  function fmtLocal(d) {
-    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
-      'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
-  }
-  function fmtUTC(d) {
-    return d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()) +
-      'T' + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
-  }
-
-  var ICS_ICON = { red: '🔴', gold: '🟡', blue: '🔵', gray: '⚪' };
-
-  function buildICS(days, opts) {
-    opts = opts || {};
-    var now = new Date();
-    var L = [];
-    L.push('BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//YOONISE//Timing Calendar//KO',
-      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH');
-    L.push('X-WR-CALNAME:' + icsEscape((opts.name ? opts.name + ' · ' : '') + '윤이세 타이밍 캘린더 (무료 3일)'));
-    L.push('X-WR-TIMEZONE:Asia/Seoul');
-    L.push('BEGIN:VTIMEZONE', 'TZID:Asia/Seoul',
-      'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900',
-      'TZNAME:KST', 'END:STANDARD', 'END:VTIMEZONE');
-
-    days.forEach(function (info, k) {
-      var strong = info.marks.filter(function (mk) { return !mk.minor && (mk.cat === 'red' || mk.cat === 'gold'); });
-      if (!strong.length && !info.term) return;
-      strong.sort(function (a, b) { return b.weight - a.weight; });
-      var primary = strong.length ? strong[0] : null;
-      var tag = primary
-        ? (primary.cat === 'red' ? '입단속' : '럭키') + ' · ' + primary.label
-        : '리셋 · ' + info.term.ko + (info.term.isJie ? ' ' + info.term.time : '');
-      var icon = primary ? ICS_ICON[primary.cat] : '⚪';
-      var summary = icon + ' ' + tag + ' — ' + info.gz.text + '일';
-      var desc = info.headline + '\n' +
-        strong.map(function (mk) { return '· ' + mk.detail; }).join('\n') +
-        (info.term ? (strong.length ? '\n' : '') + '· ' + info.term.ko + ' ' + info.term.time + (info.term.isJie ? ' (' + info.term.monthText + '월 시작)' : '') : '') + '\n' +
-        '처방: ' + info.lines[0] + ' / ' + info.lines[1] + '\n' +
-        '(윤이세 타이밍 캘린더 · 무료 3일 맛보기)';
-
-      var dayStart = info.iso.replace(/-/g, '') + 'T090000';
-      var dayEnd = info.iso.replace(/-/g, '') + 'T091500';
-      var uid = 'ytc-' + info.iso.replace(/-/g, '') + '-' + k + '@yoonise-timing';
-
-      L.push('BEGIN:VEVENT');
-      L.push('UID:' + uid);
-      L.push('DTSTAMP:' + fmtUTC(now));
-      L.push('DTSTART;TZID=Asia/Seoul:' + dayStart);
-      L.push('DTEND;TZID=Asia/Seoul:' + dayEnd);
-      L.push('SUMMARY:' + icsEscape(summary));
-      L.push('DESCRIPTION:' + icsEscape(desc));
-      L.push('TRANSP:TRANSPARENT');
-      L.push('BEGIN:VALARM', 'TRIGGER:-PT15H', 'ACTION:DISPLAY',
-        'DESCRIPTION:' + icsEscape('내일 ' + tag + ' — 미리 챙기세요'), 'X-WR-ALARMUID:' + uid + '-a1', 'END:VALARM');
-      L.push('BEGIN:VALARM', 'TRIGGER:-PT0M', 'ACTION:DISPLAY',
-        'DESCRIPTION:' + icsEscape(tag + ' — ' + info.lines[0]), 'X-WR-ALARMUID:' + uid + '-a2', 'END:VALARM');
-      L.push('END:VEVENT');
-    });
-
-    L.push('END:VCALENDAR');
-    return L.map(foldLine).join('\r\n') + '\r\n';
-  }
-
   global.Timing = {
     CAT: CAT,
     buildTerms: buildTerms,
     natalOf: natalOf,
     dayInfo: dayInfo,
     saeunOf: saeunOf,
-    buildICS: buildICS,
     addDays: addDays,
     isoOf: isoOf,
     parseISO: parseISO,
