@@ -672,7 +672,7 @@ button.talis-plaque:active { transform: scale(.972); }
 .talis-plaque__char .ch { width: 100%; height: 100%; }
 
 .talis-plaque__vname {
-  position: absolute; top: 3.1em; right: .62em;
+  position: absolute; top: 3.1em; right: .95em;
   writing-mode: vertical-rl; text-orientation: upright;
   max-height: 6.4em; padding-left: .2em;
   border-left: .07em solid rgba(240, 222, 180, .22);
