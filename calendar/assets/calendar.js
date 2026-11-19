@@ -505,6 +505,144 @@
     return { el: pick, count: min, ties: ties.length };
   }
 
+  /* ── 부적 패(牌) 아트 ──────────────────────────────────
+     진짜 부적의 상징 — 금색 매듭 고리 · 오행 인장 · 금박 이중 테두리와 네 귀퉁이
+     뇌문 · 구름문/별자리/태극 워터마크 · 주홍 낙관. 한지 질감은 feTurbulence 로.
+     글자 크기는 .talis-plaque 의 font-size 하나로 비례해 커진다(배너 ↔ 확대 모달). */
+  var EL_GLYPH = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
+  var EL_PAPER = {
+    목: { a: '#26341F', b: '#121911', gold: '#C9A968', halo: '#8FC470' },
+    화: { a: '#3C2119', b: '#1F100C', gold: '#CE9F62', halo: '#F0845C' },
+    토: { a: '#362A19', b: '#1D1710', gold: '#D5B06C', halo: '#E2B45E' },
+    금: { a: '#282C2F', b: '#141718', gold: '#D2C8A8', halo: '#B9C9D6' },
+    수: { a: '#1C2735', b: '#0F1721', gold: '#CDBE93', halo: '#6FC0DA' }
+  };
+  var pseq = 0;
+
+  /** 고리 · 매듭 · 노리개 끈 (부적 패 위에 거는 부분) */
+  function plaqueLoopArt() {
+    var u = 'tl' + (++pseq) + '_';
+    return '<svg viewBox="0 0 48 54" aria-hidden="true" focusable="false">' +
+      '<defs><linearGradient id="' + u + 'g" x1="0" y1="0" x2=".4" y2="1">' +
+      '<stop offset="0" stop-color="#F2DCA6"/><stop offset=".45" stop-color="#C9A265"/>' +
+      '<stop offset="1" stop-color="#8E6C34"/></linearGradient>' +
+      '<radialGradient id="' + u + 'b" cx=".38" cy=".3" r=".72">' +
+      '<stop offset="0" stop-color="#FFF3D2" stop-opacity=".85"/>' +
+      '<stop offset="1" stop-color="#C9A265" stop-opacity="0"/></radialGradient></defs>' +
+      /* 끈 */
+      '<path d="M24 0v4.2" stroke="#B2433A" stroke-width="1.5" stroke-linecap="round"/>' +
+      /* 고리 */
+      '<ellipse cx="24" cy="12" rx="5.9" ry="6.9" fill="none" stroke="url(#' + u + 'g)" stroke-width="2.1"/>' +
+      '<ellipse cx="24" cy="11.6" rx="3.9" ry="4.5" fill="url(#' + u + 'b)" stroke="rgba(255,246,222,.45)" stroke-width=".7"/>' +
+      /* 매듭 — 마름모 매듭과 늘어뜨린 끈 */
+      '<path d="M24 19.4v3" stroke="url(#' + u + 'g)" stroke-width="1.4"/>' +
+      '<path d="M24 22.6l4.8 4.6-4.8 4.6-4.8-4.6z" fill="url(#' + u + 'g)" stroke="rgba(120,86,36,.5)" stroke-width=".5"/>' +
+      '<circle cx="24" cy="27.2" r="1.7" fill="#F6E7BE" stroke="rgba(120,86,36,.45)" stroke-width=".4"/>' +
+      '<g stroke="#B2433A" stroke-width="1.05" stroke-linecap="round" opacity=".9">' +
+      '<path d="M20.2 32.6 18.2 44"/><path d="M24 33v11"/><path d="M27.8 32.6l2 11.4"/></g>' +
+      /* 부적머리 — 종이를 접어 끈에 건 삼각 장식 */
+      '<path d="M14.4 54 24 36.8 33.6 54Z" fill="url(#' + u + 'g)" stroke="rgba(120,86,36,.55)" stroke-width=".6"/>' +
+      '<path d="M18.6 54 24 43.4 29.4 54Z" style="fill:var(--tp-a)" opacity=".85"/>' +
+      '</svg>';
+  }
+
+  /** 부적 패 바탕 — 한지 질감 · 금박 테두리 · 워터마크 */
+  function plaqueSheetArt(el) {
+    var c = EL_PAPER[el] || EL_PAPER['화'], u = 'tp' + (++pseq) + '_';
+    var cloud =
+      '<g fill="none" stroke="' + c.gold + '" stroke-width=".9" stroke-linecap="round">' +
+      '<path d="M0 9.6a4.7 4.7 0 0 1 9.4 0"/><path d="M8.6 9.6a4.7 4.7 0 0 1 9.4 0"/>' +
+      '<path d="M1.4 12.6h15.2"/></g>';
+    function clouds(x, y, s, o, r) {
+      return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ') rotate(' + (r || 0) + ')" opacity="' + o + '">' +
+        cloud + '</g>';
+    }
+    /* 별자리 — 캐릭터를 감싸는 점선 별자리 */
+    var starPts = [[32, 40], [22, 50], [19, 63], [24, 76], [34, 85]];
+    var starLines = '', starDots = '';
+    for (var i = 0; i < starPts.length; i++) {
+      starDots += '<circle cx="' + starPts[i][0] + '" cy="' + starPts[i][1] + '" r="' + (i % 2 ? 1.1 : .8) + '"/>';
+      if (i) starLines += 'M' + starPts[i - 1][0] + ' ' + starPts[i - 1][1] + 'L' + starPts[i][0] + ' ' + starPts[i][1];
+    }
+    var starPts2 = [[68, 38], [76, 46], [79, 58], [75, 70], [66, 80]];
+    var starLines2 = '', starDots2 = '';
+    for (var j = 0; j < starPts2.length; j++) {
+      starDots2 += '<circle cx="' + starPts2[j][0] + '" cy="' + starPts2[j][1] + '" r="' + (j % 2 ? .8 : 1.1) + '"/>';
+      if (j) starLines2 += 'M' + starPts2[j - 1][0] + ' ' + starPts2[j - 1][1] + 'L' + starPts2[j][0] + ' ' + starPts2[j][1];
+    }
+    var meander = '<g fill="none" stroke="url(#' + u + 'g)" stroke-width=".85" opacity=".55" stroke-linecap="square">' +
+      '<path d="M7.6 16.4V7.6h8.8"/><path d="M10.6 16.4v-6h5.8"/></g>';
+    return '<svg class="talis-plaque__svg" viewBox="0 0 100 140" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+      '<linearGradient id="' + u + 'bg" x1=".1" y1="0" x2=".55" y2="1">' +
+      '<stop offset="0" stop-color="' + c.a + '"/><stop offset=".62" stop-color="' + c.b + '"/>' +
+      '<stop offset="1" stop-color="' + c.b + '"/></linearGradient>' +
+      '<linearGradient id="' + u + 'g" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#EFD9A6"/><stop offset=".38" stop-color="' + c.gold + '"/>' +
+      '<stop offset=".62" stop-color="#8F6E36"/><stop offset="1" stop-color="#E4CB94"/></linearGradient>' +
+      '<radialGradient id="' + u + 'h" cx=".5" cy=".46" r=".5">' +
+      '<stop offset="0" stop-color="' + c.halo + '" stop-opacity=".30"/>' +
+      '<stop offset=".55" stop-color="' + c.halo + '" stop-opacity=".10"/>' +
+      '<stop offset="1" stop-color="' + c.halo + '" stop-opacity="0"/></radialGradient>' +
+      '<filter id="' + u + 't" x="0" y="0" width="100%" height="100%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" seed="11" result="n"/>' +
+      '<feColorMatrix type="saturate" values="0"/></filter>' +
+      '</defs>' +
+      '<rect width="100" height="140" fill="url(#' + u + 'bg)"/>' +
+      '<rect width="100" height="140" fill="url(#' + u + 'h)"/>' +
+      /* 한지 섬유 질감 */
+      '<rect width="100" height="140" filter="url(#' + u + 't)" opacity=".16" style="mix-blend-mode:overlay"/>' +
+      /* 구름문 워터마크 */
+      clouds(9, 40, 1.05, '.14', -4) + clouds(58, 30, .8, '.11', 6) +
+      clouds(6, 82, .82, '.12', 3) + clouds(60, 104, .92, '.10', -6) +
+      clouds(30, 120, .7, '.09', 2) +
+      /* 별자리 워터마크 */
+      '<g stroke="' + c.gold + '" stroke-width=".45" opacity=".26"><path d="' + starLines + '"/><path d="' + starLines2 + '"/></g>' +
+      '<g fill="' + c.gold + '" opacity=".34">' + starDots + starDots2 + '</g>' +
+      /* 태극 워터마크 */
+      '<g transform="translate(50 121)" opacity=".24"><circle r="6.2" fill="none" stroke="' + c.gold + '" stroke-width=".7"/>' +
+      '<path d="M0-6.2A6.2 6.2 0 0 1 0 6.2 3.1 3.1 0 0 1 0 0 3.1 3.1 0 0 0 0-6.2Z" fill="' + c.gold + '"/></g>' +
+      /* 캐릭터 뒤 광륜 */
+      '<circle cx="46" cy="72" r="30" fill="none" stroke="' + c.gold + '" stroke-width=".55" opacity=".35"/>' +
+      '<circle cx="46" cy="72" r="34" fill="none" stroke="' + c.gold + '" stroke-width=".35" opacity=".18"/>' +
+      /* 금박 이중 테두리 */
+      '<rect x="3.4" y="3.4" width="93.2" height="133.2" rx="3" fill="none" stroke="url(#' + u + 'g)" stroke-width="1.5" opacity=".92"/>' +
+      '<rect x="7.1" y="7.1" width="85.8" height="125.8" rx="1.6" fill="none" stroke="url(#' + u + 'g)" stroke-width=".6" opacity=".6"/>' +
+      /* 네 귀퉁이 뇌문 */
+      '<g transform="translate(100 0) scale(-1 1)">' + meander + '</g>' +
+      '<g transform="translate(0 140) scale(1 -1)">' + meander + '</g>' +
+      '<g transform="translate(100 140) scale(-1 -1)">' + meander + '</g>' +
+      meander +
+      /* 머리 장식 — 작은 삼각 부적머리 */
+      '<g fill="none" stroke="url(#' + u + 'g)" stroke-width=".8" opacity=".5">' +
+      '<path d="M38 9.5h24"/><path d="M43 12.4h14"/></g>' +
+      '</svg>';
+  }
+
+  /** 부적 패 전체 — 고리 + 패 + 글자/인장 오버레이 */
+  function plaqueHTML(el, opt) {
+    opt = opt || {};
+    var name = Chars ? Chars.name(el, '', '') : (TALIS[el] ? TALIS[el].label : '수호 부적');
+    var shortName = String(name).replace(/\s*부적$/, '').replace(/\s+/g, '·');
+    var vfs = shortName.length > 6 ? '.63em' : '.7em';
+    var tag = opt.tag ? 'button' : 'div';
+    var attrs = opt.tag
+      ? ' type="button" data-' + (opt.action || 'talis-open') + ' aria-label="' + esc(name) + (opt.action === 'talis-bless' ? ' — 오늘 기운 받기' : ' 크게 보기') + '"'
+      : '';
+    return '<' + tag + ' class="talis-plaque talis-plaque--' + el + (opt.lg ? ' talis-plaque--lg' : '') + '"' + attrs + '>' +
+      '<span class="talis-plaque__loop" aria-hidden="true">' + plaqueLoopArt() + '</span>' +
+      '<span class="talis-plaque__sheet">' +
+      plaqueSheetArt(el) +
+      '<span class="talis-plaque__glyph" aria-hidden="true">' + (EL_GLYPH[el] || '木') + '</span>' +
+      '<span class="talis-plaque__char" aria-hidden="true">' + (Chars ? Chars.svg(el) : '') + '</span>' +
+      '<span class="talis-plaque__vname" aria-hidden="true"><span style="font-size:' + vfs + '">' + esc(shortName) + '</span></span>' +
+      '<span class="talis-plaque__seal" aria-hidden="true"><i>守</i><i>護</i></span>' +
+      '<span class="talis-plaque__year" aria-hidden="true"><i>丁未</i></span>' +
+      '<span class="talis-plaque__shine" aria-hidden="true"></span>' +
+      '</span>' +
+      '</' + tag + '>';
+  }
+
   function renderTalisman() {
     var box = $('#talisBanner');
     if (!box) return;
@@ -512,20 +650,83 @@
     var r = repElement(), t = TALIS[r.el];
     var total = state.res.total || 8;
     var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
-    var why = (r.count === 0
-      ? total + '글자에 ' + r.el + t.josa + ' 하나도 없어요. '
-      : total + '글자 중 ' + r.el + t.josa + ' ' + r.count + '개로 가장 적어요. ') + t.why;
+    var lack = (r.count === 0
+      ? total + '글자에 ' + t.label + ' 기운이 하나도 없어요.'
+      : total + '글자 중 ' + t.label + ' 기운이 ' + r.count + '개로 가장 적어요.');
+    var why = lack + ' ' + t.why;
+    var shortWhy = lack + ' 그 자리를 이 부적이 채워 줍니다.';
     var tname = Chars ? Chars.name(r.el, '', '') : t.label;
     var ticon = Chars ? Chars.icon(r.el, '') : '✨';
+    state.repTalis = { el: r.el, name: tname, icon: ticon, who: who, why: why, ties: r.ties };
     box.innerHTML =
-      '<span class="talis-banner__char" aria-hidden="true">' + (Chars ? Chars.svg(r.el) : '') + '</span>' +
+      plaqueHTML(r.el, { tag: true, action: 'talis-open' }) +
       '<div class="talis-banner__body">' +
-      '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 2027 대표 부적</p>' +
-      '<p class="talis-banner__title">' + esc(who) + '의 2027 대표 수호 부적 — <b>' + ticon + ' ' + esc(tname) + '</b></p>' +
-      '<p class="talis-banner__why">' + esc(why) + '</p>' +
-      '<p class="talis-banner__note">2027년 내내 이 기운이 내 사주를 받쳐 주는 부적이에요.' +
-      (r.ties > 1 ? ' 가장 적은 오행이 여럿이라 나를 도와주는 기운부터 골랐어요.' : '') + '</p>' +
+      '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
+      '<p class="talis-banner__title">' + esc(who) + '의 2027 대표 수호 부적<br><b>' + ticon + ' ' + esc(tname) + '</b></p>' +
+      '<p class="talis-banner__why">' + esc(shortWhy) + '</p>' +
+      '<button type="button" class="talis-banner__more" data-talis-open>부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
       '</div>';
+  }
+
+  /* ── 대표 부적 확대 모달 ───────────────────────────── */
+  var talisEl = null, talisBody = null, talisDialog = null, talisLastFocus = null, talisClosing = false;
+
+  function openTalisModal() {
+    var d = state.repTalis;
+    if (!talisEl || !d) return;
+    talisLastFocus = document.activeElement;
+    talisBody.innerHTML =
+      '<p class="modal__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
+      '<p class="modal__date" id="talisModalTitle">' + esc(d.who) + '의<br>2027 내 수호 부적</p>' +
+      '<p class="modal__sub">한 해 내내 내 사주를 받쳐 주는 대표 부적이에요.</p>' +
+      '<div class="talis-showcase"><div class="talis-showcase__obj">' +
+      plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true }) +
+      '<span class="talis-showcase__waves" aria-hidden="true"><i></i><i></i></span>' +
+      '</div></div>' +
+      '<p class="talis-modal__name"><span aria-hidden="true">' + d.icon + '</span>' + esc(d.name) + '</p>' +
+      '<p class="talis-modal__why">' + esc(d.why) + '</p>' +
+      '<button type="button" class="btn talis-bless-btn" data-talis-bless>오늘 기운 받기</button>' +
+      '<p class="talis-bless__note" role="status" aria-live="polite">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
+      '<button type="button" class="btn btn--ghost modal__done-btn" data-talis-close>닫기</button>';
+    talisEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    talisBody.scrollTop = 0;
+    sfxOpen();                              // 뿅 — 사용자 클릭 안에서 재생
+    try { talisDialog.focus({ preventScroll: true }); } catch (e) { talisDialog.focus(); }
+  }
+
+  function closeTalisModal() {
+    if (!talisEl || talisEl.hidden || talisClosing) return;
+    talisClosing = true;
+    talisEl.classList.add('is-closing');
+    setTimeout(function () {
+      talisEl.classList.remove('is-closing');
+      talisEl.hidden = true;
+      if ((!modalEl || modalEl.hidden) && (!shopEl || shopEl.hidden)) {
+        document.body.classList.remove('is-modal-open');
+      }
+      talisBody.innerHTML = '';
+      talisClosing = false;
+      var t = talisLastFocus;
+      talisLastFocus = null;
+      if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) {} }
+    }, 180);
+  }
+
+  /** 오늘 기운 받기 — 빛 파동 + 진동 + 차임 */
+  function onTalisBless() {
+    if (!talisBody) return;
+    var sc = talisBody.querySelector('.talis-showcase');
+    var note = talisBody.querySelector('.talis-bless__note');
+    if (!sc) return;
+    sc.classList.remove('is-blessed');
+    void sc.offsetWidth;
+    sc.classList.add('is-blessed');
+    sfxBless();
+    if (note) {
+      note.classList.add('is-on');
+      note.innerHTML = '✨ 기운이 켜졌어요. 오늘 하루, 이 부적과 함께.';
+    }
   }
 
   /* ── 톡·톡·톡 리추얼 ───────────────────────────────── */
@@ -2123,6 +2324,15 @@
     wood(ctx, 0, 0.05);
   }
   /* 3) 3/3 완료 — 도장 '쾅' 저음 타격 + C5-E5-G5-C6 상승 아르페지오 */
+  /* 4) 대표 부적 '오늘 기운 받기' — 낮게 울리는 종 + 상승 차임 */
+  function sfxBless() {
+    vibrate([18, 26, 42]);
+    var ctx = audioCtx(); if (!ctx) return;
+    tone(ctx, { from: 392, to: 388, dur: 0.7, type: 'sine', gain: 0.11, attack: 0.012 });
+    tone(ctx, { from: 588, to: 588, dur: 0.55, type: 'sine', gain: 0.06, at: 0.02 });
+    tone(ctx, { from: 784, to: 1176, dur: 0.5, glide: 0.2, type: 'triangle', gain: 0.07, at: 0.12 });
+    wood(ctx, 0, 0.035);
+  }
   function sfxDone() {
     vibrate([80, 35, 100, 45, 130]);   // 3타 완료 — 쾅! 하고 길게
     var ctx = audioCtx(); if (!ctx) return;
@@ -2160,6 +2370,9 @@
     modalEl = $('#dayModal');
     modalBody = $('#modalBody');
     modalDialog = $('#modalDialog');
+    talisEl = $('#talisModal');
+    talisBody = $('#talisBody');
+    talisDialog = $('#talisDialog');
     shopEl = $('#shopModal');
     shopBody = $('#shopBody');
     shopDialog = $('#shopDialog');
@@ -2175,6 +2388,14 @@
         syncSoundBtn();
         if (sound.on) sfxTap(1);            // 켜졌다는 확인음도 제스처 안에서
       });
+    });
+
+    // 대표 부적 — 배너 부적 패 탭 → 크게 보기 모달 / 모달 안 부적·버튼 탭 → 오늘 기운 받기
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest) return;
+      if (e.target.closest('[data-talis-open]')) { e.preventDefault(); openTalisModal(); return; }
+      if (e.target.closest('[data-talis-close]')) { e.preventDefault(); closeTalisModal(); return; }
+      if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(); }
     });
 
     // 팝업 안: 부적 두드리기 / X·배경·닫기 버튼
@@ -2211,6 +2432,21 @@
 
     // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
     document.addEventListener('keydown', function (e) {
+      if (talisEl && !talisEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeTalisModal(); return; }
+        if (e.key !== 'Tab') return;
+        var tf = $$('a[href], button:not([disabled])', talisDialog).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!tf.length) return;
+        var tFirst = tf[0], tLast = tf[tf.length - 1];
+        if (e.shiftKey && (document.activeElement === tFirst || document.activeElement === talisDialog)) {
+          e.preventDefault(); tLast.focus();
+        } else if (!e.shiftKey && document.activeElement === tLast) {
+          e.preventDefault(); tFirst.focus();
+        }
+        return;
+      }
       if (shopEl && !shopEl.hidden) {
         if (e.key === 'Escape') { e.preventDefault(); closeShop(); }
         return;
