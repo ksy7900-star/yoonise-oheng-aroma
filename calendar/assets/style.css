@@ -1019,8 +1019,8 @@ body.is-modal-open { overflow: hidden; }
 .ritual__ring {
   position: absolute; left: 50%; top: 50%;
   width: 122px; height: 122px; margin: -61px 0 0 -61px;
-  border-radius: 50%; border: 1.5px solid var(--el);
-  opacity: .4; pointer-events: none; z-index: 0;
+  border-radius: 50%; border: 1px solid var(--el);
+  opacity: .15; pointer-events: none; z-index: 0;
   animation: ringPulse 3s ease-out infinite;
 }
 .ritual[data-stage="1"] .ritual__ring { animation-duration: 2s; }

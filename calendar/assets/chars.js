@@ -82,14 +82,14 @@
     },
     화: function (u) {
       return '<path d="M100 36c7 17 23 27 33 41 9 13 14.5 25 14.5 38 0 28-21.5 49-47.5 49S52.5 143 52.5 115c0-13 5.5-25 14.5-38 10-14 26-24 33-41z" fill="url(#' + u + 'b)"/>' +
-        '<ellipse cx="100" cy="146" rx="27" ry="18" fill="#FFE7B0" opacity=".5"/>' +
-        '<ellipse cx="74" cy="84" rx="13" ry="9" fill="#fff" opacity=".24" transform="rotate(-24 74 84)"/>';
+        '<ellipse cx="74" cy="84" rx="13" ry="9" fill="#fff" opacity=".24" transform="rotate(-24 74 84)"/>' +
+        '<ellipse cx="100" cy="150" rx="30" ry="11" fill="#FFD98A" opacity=".35"/>';
     },
     토: function (u) {
       return '<path d="M100 58c-12 0-21 5-22 13-16 12-27 30-27 51 0 25 22 41 49 41s49-16 49-41c0-21-11-39-27-51-1-8-10-13-22-13z" fill="url(#' + u + 'b)"/>' +
         '<path d="M78 72h44" stroke="#C08A3E" stroke-width="8" stroke-linecap="round"/>' +
         '<path d="M100 64l-8-10 8 4 8-4z" fill="#D9A25A"/>' +
-        '<ellipse cx="64" cy="96" rx="11" ry="15" fill="#fff" opacity=".26" transform="rotate(-16 64 96)"/>' +
+        '<ellipse cx="60" cy="90" rx="10" ry="14" fill="#fff" opacity=".22" transform="rotate(-16 60 90)"/>' +
         '<path d="M64 148q36 20 72 0" fill="none" stroke="#C08A3E" stroke-width="2.4" opacity=".35" ' +
         'stroke-linecap="round" stroke-dasharray="1 6"/>';
     },
@@ -103,7 +103,7 @@
     },
     수: function (u) {
       return '<path d="M100 32c0 0 52 60 52 88 0 29-23 50-52 50s-52-21-52-50c0-28 52-88 52-88z" fill="url(#' + u + 'b)"/>' +
-        '<ellipse cx="64" cy="86" rx="10" ry="15" fill="#fff" opacity=".28" transform="rotate(-20 64 86)"/>';
+        '<ellipse cx="60" cy="84" rx="10" ry="14" fill="#fff" opacity=".22" transform="rotate(-20 60 84)"/>';
     }
   };
 
