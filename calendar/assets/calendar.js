@@ -550,9 +550,9 @@
   function plaqueSheetArt(el) {
     var c = EL_PAPER[el] || EL_PAPER['화'], u = 'tp' + (++pseq) + '_';
     var cloud =
-      '<g fill="none" stroke="' + c.gold + '" stroke-width=".9" stroke-linecap="round">' +
-      '<path d="M0 9.6a4.7 4.7 0 0 1 9.4 0"/><path d="M8.6 9.6a4.7 4.7 0 0 1 9.4 0"/>' +
-      '<path d="M1.4 12.6h15.2"/></g>';
+      '<g fill="none" stroke="' + c.gold + '" stroke-width=".8" stroke-linecap="round">' +
+      '<path d="M0 9.2a4.2 4.2 0 0 1 8.4 0 4.2 4.2 0 0 1 8.4 0 4.2 4.2 0 0 1 8.4 0"/>' +
+      '<path d="M0 12.6h25.2"/></g>';
     function clouds(x, y, s, o, r) {
       return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ') rotate(' + (r || 0) + ')" opacity="' + o + '">' +
         cloud + '</g>';
@@ -593,9 +593,9 @@
       /* 한지 섬유 질감 */
       '<rect width="100" height="140" filter="url(#' + u + 't)" opacity=".16" style="mix-blend-mode:overlay"/>' +
       /* 구름문 워터마크 */
-      clouds(9, 40, 1.05, '.14', -4) + clouds(58, 30, .8, '.11', 6) +
-      clouds(6, 82, .82, '.12', 3) + clouds(60, 104, .92, '.10', -6) +
-      clouds(30, 120, .7, '.09', 2) +
+      clouds(8, 33, 1, '.13', -2) + clouds(63, 28, .78, '.10', 4) +
+      clouds(7, 96, .88, '.11', 2) + clouds(61, 106, .8, '.09', -3) +
+      clouds(26, 122, .66, '.10', 0) +
       /* 별자리 워터마크 */
       '<g stroke="' + c.gold + '" stroke-width=".45" opacity=".26"><path d="' + starLines + '"/><path d="' + starLines2 + '"/></g>' +
       '<g fill="' + c.gold + '" opacity=".34">' + starDots + starDots2 + '</g>' +
