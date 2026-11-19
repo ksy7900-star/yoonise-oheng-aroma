@@ -27,9 +27,10 @@
      앱 안 구입 팝업의 버튼이 여는 주소입니다. 실제 결제 페이지·쇼핑몰이 열리면
      아래 세 줄만 그 주소로 바꾸면 팝업 문구·버튼은 그대로 두고 바로 연결됩니다.
      (지금은 카카오톡 채널 1:1 문의로 신청·결제를 안내하는 단계) */
-  var SET_CHECKOUT_URL = KAKAO;     // 📦 2027 정미년 타이밍 풀세트 — 신청·결제
-  var PASS_CHECKOUT_URL = KAKAO;    // 🎟️ 2027 1년 캘린더 패스 — 신청·결제
-  var CARE_CHECKOUT_URL = KAKAO;    // 🔮 개운 아이템 · 1:1 상담 — 주문·문의
+  var PASS_CHECKOUT_URL = KAKAO;      // 🎟️ 2027 1년 패스 14,900원 — 신청·결제
+  var ALLINONE_CHECKOUT_URL = KAKAO;  // 👑 2027 올인원 패키지 19,900원 — 신청·결제
+  var CARE_CHECKOUT_URL = KAKAO;      // ⚡ 긴급 개운템 낱개 2,900원 / 3종 5,900원
+  var CONSULT_CHECKOUT_URL = KAKAO;   // 🔮 윤이세 1:1 상담 49,000원~ — 일정·결제
 
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
@@ -994,105 +995,391 @@
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>2027년 1~12월 전체 열기</p>' +
-      '<p class="lock__sub">2027 정미년 풀세트 / 1년 캘린더 패스 / 개운 아이템·1:1 상담</p>' +
+      '<p class="lock__sub">2027 1년 패스 / 올인원 패키지 / 긴급 개운템</p>' +
       '<p class="lock__early">사전 신청 시 12월 한 달 무료!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
       '지금 사전 신청하면 2026년 12월 한 달을 먼저 열어 드리고, 2027년 1~12월 365일을 이어서 볼 수 있어요.</p>' +
       '<div class="lock__actions">' +
-      '<button type="button" class="btn btn--cream shop-btn" data-shop="set">' +
-      '<span class="shop-btn__no">1</span><span class="shop-btn__label">📦 2027 정미년 타이밍 풀세트</span></button>' +
       '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">2</span><span class="shop-btn__label">🎟️ 2027 1년 캘린더 패스 (앱 전용)</span></button>' +
+      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 2027 1년 패스 · 14,900원</span></button>' +
+      '<button type="button" class="btn btn--cream shop-btn" data-shop="allinone">' +
+      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 2027 올인원 패키지 · 19,900원</span></button>' +
       '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">' +
-      '<span class="shop-btn__no">3</span><span class="shop-btn__label">🔮 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담</span></button>' +
+      '<span class="shop-btn__no">3</span><span class="shop-btn__label">⚡ 긴급 개운템 · 낱개 2,900원</span></button>' +
       '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>';
   }
 
-  /* ── 앱 안 구입 팝업 (풀세트 · 1년 패스 · 개운 아이템/1:1 상담) ──────
+  /* ── 앱 안 구입 팝업 (1년 패스 · 올인원 패키지 · 긴급 개운템) ──────
      버튼을 누르면 리틀리로 튕기지 않고 이 팝업이 열립니다.
-     실제 결제·주문 링크가 생기면 위쪽 SET/PASS/CARE_CHECKOUT_URL 만 바꾸면
-     팝업 문구·버튼은 그대로 두고 바로 결제로 넘어갑니다.
+     실제 결제 링크가 생기면 위쪽 PASS/ALLINONE/CARE_CHECKOUT_URL 만 바꾸면 됩니다.
      문구 원칙 — 사주를 모르는 고객이 한 번에 알아듣는 말로만 씁니다.
-     ('원국', '24절기 월운' 같은 용어는 쓰지 않습니다.) */
-  /* 가격 표시 — 실제 금액이 정해지면 아래 문자열만 채우면 팝업에 그대로 나옵니다.
-     비워 두면 '카카오톡 채널에서 안내'로 표시됩니다. */
-  var SET_PRICE = '';
-  var PASS_PRICE = '';
-  var CARE_PRICE = '';
-  var PRICE_TBD = '카카오톡 채널에서 안내';
+     ('원국', '24절기 월운' 같은 용어는 쓰지 않습니다.)
+     100% 디지털 상품입니다. 실물 다이어리·배송은 넣지 않습니다. */
+  var PASS_PRICE = '14,900원';
+  var ALLINONE_PRICE = '19,900원';
+  var CARE_PRICE = '낱개 2,900원 · 3종 세트 5,900원';
+  var CONSULT_PRICE = '49,000원~';
 
   var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
 
   function priceHTML(label, price) {
     return '<div class="shop__price"><span>' + esc(label) + '</span>' +
-      '<b>' + esc(price || PRICE_TBD) + '</b></div>';
+      '<b>' + esc(price) + '</b></div>';
   }
 
-  /* 1번 — 2027 정미년 타이밍 풀세트 (실물 + 스티커 + 앱) */
-  function setShopHTML() {
-    return '<p class="modal__eyebrow">2027 FULL SET · 사전 신청 시 12월 한 달 무료</p>' +
-      '<h2 class="shop__title" id="shopTitle">📦 2027 정미년 타이밍 풀세트</h2>' +
-      '<p class="shop__sub">2027년 한 해를 <b>다이어리 · 부적 스티커 · 앱</b> 세 가지로 한 번에 챙기는 세트예요. 가장 많이 고르시는 구성이에요.</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>2027 실물 다이어리</b><span>2027년 1월부터 12월까지, 손으로 쓰는 한 해 다이어리</span></li>' +
-      '<li><b>오행 부적 스티커팩</b><span>앱에서 받은 그날의 부적을 다이어리에 직접 붙이는 실물 스티커</span></li>' +
-      '<li><b>1년 캘린더 앱 이용권</b><span>QR 한 번이면 2027년 1~12월 365일이 앱에 열려요</span></li>' +
-      '<li><b>사전 신청 시 12월 한 달 무료!</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
-      '</ul>' +
-      priceHTML('풀세트 가격', SET_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + SET_CHECKOUT_URL + '" target="_blank" rel="noopener">📦 풀세트 신청하기</a>' +
-      '<p class="shop__note">신청과 결제는 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
-  }
-
-  /* 2번 — 2027 1년 캘린더 패스 (앱 전용) */
+  /* 1번 — 2027 1년 패스 (14,900원) */
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
-      '<h2 class="shop__title" id="shopTitle">🎟️ 2027 1년 캘린더 패스</h2>' +
+      '<h2 class="shop__title" id="shopTitle">🎟️ 2027 1년 패스</h2>' +
       '<p class="shop__sub">생년월일만 넣으면 <b>2027년 1월 1일부터 12월 31일까지 365일</b>이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 챱챱 붙이는 앱이에요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>내 생년월일 맞춤, 좋은 날·조심할 날 1년 치</b><span>2027년 1월 1일부터 12월 31일까지 하루씩 전부</span></li>' +
-      '<li><b>부적 스티커 캘린더</b><span>기운이 서는 날 부적을 톡톡톡 두드리면 달력 칸에 스티커가 챱</span></li>' +
-      '<li><b>사전 신청 시 12월 한 달 무료!</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
+      '<li><b>2027년 1~12월 1년 운기 흐름</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
+      '<li><b>사전 신청 시 12월 한 달 서비스</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
+      '<li><b>내 기본 부적 1개</b><span>2027년 내내 나를 받쳐 주는 기본 부적</span></li>' +
       '</ul>' +
-      priceHTML('1년 패스 가격', PASS_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 바로 신청하기</a>' +
-      '<p class="shop__note">신청과 결제는 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+      priceHTML('2027 1년 패스', PASS_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 14,900원으로 신청하기</a>' +
+      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
   }
 
-  /* 3번 — 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담 */
-  function careShopHTML() {
-    var r = state.res ? repElement() : null;
-    var el = r ? r.el : '화';
-    var t = TALIS[el] || TALIS['화'];
-    var th = EL_THEME[el] || EL_THEME['화'];
-    var total = (state.res && state.res.total) || 8;
-    var why = r
-      ? (r.count === 0 ? '여덟 글자에 ' + el + t.josa + ' 하나도 없어요.'
-        : '여덟 글자 중 ' + el + t.josa + ' ' + r.count + '개로 가장 적어요.')
-      : '내 사주에서 가장 적은 기운을 찾아 드려요.';
-    return '<p class="modal__eyebrow">CARE · 개운 아이템 &amp; 1:1 상담</p>' +
-      '<h2 class="shop__title" id="shopTitle">🔮 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담</h2>' +
-      '<p class="shop__sub">달력도 보고 부적도 붙였는데 <b>유독 막히는 시기</b>가 있어요. 그럴 때는 내게 맞는 개운템과 1:1 상담으로 뚫어 드려요.</p>' +
-      '<div class="shop__talis">' +
-      (Chars ? Chars.svg(el) : '') +
-      '<p><b>지금 내게 가장 적은 기운 · ' + esc(t.label) + '</b><span>' + esc(why) + ' ' + esc(th.cheer) + '</span></p>' +
-      '</div>' +
+  /* 2번 — 2027 올인원 패키지 (19,900원 · 추천) */
+  function allinoneShopHTML() {
+    return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
+      '<h2 class="shop__title" id="shopTitle">👑 2027 올인원 패키지</h2>' +
+      '<p class="shop__sub">1년 패스에 <b>2027년 내 년수호 부적</b>과 <b>매일 일진 부적</b>까지 다 열리는 구성이에요. 14,900원에 <b>5,000원만</b> 보태면 여기까지 와요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>막힐 때 쓰는 맞춤 개운템</b><span>모자란 기운을 채우는 아이템을 골라 드려요 — 준비되는 것부터 차례로 안내</span></li>' +
-      '<li><b>윤이세 1:1 상담</b><span>달력에 안 잡히는 내 상황까지 함께 짚어 드려요</span></li>' +
-      '<li><b>캘린더·부적과 함께 쓰기</b><span>앱에서 짚은 막히는 달을 아이템과 상담으로 같이 풀어요</span></li>' +
+      '<li><b>1년 패스 전부</b><span>2027년 1~12월 365일 + 사전 신청 시 12월 한 달 서비스</span></li>' +
+      '<li><b>2027년 내 년수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
+      '<li><b>매일 일진 부적 — 전부</b><span>기운 서는 날마다 튀어나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
       '</ul>' +
-      priceHTML('아이템 · 상담 가격', CARE_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + CARE_CHECKOUT_URL + '" target="_blank" rel="noopener">🔮 아이템 · 상담 신청하기</a>' +
-      '<p class="shop__note">어떤 시기가 막히는지 채널에 남겨 주시면, 그 상황에 맞춰 아이템과 상담 일정을 안내드려요.</p>';
+      '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>년수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
+      priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + ALLINONE_CHECKOUT_URL + '" target="_blank" rel="noopener">👑 19,900원으로 신청하기</a>' +
+      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+  }
+
+  /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
+     부적이 아니라 '행동·오브제·소리'로 막힌 날을 뚫는 디지털 아이템.
+     팝업 안에서 3종을 모두 체험할 수 있게 실제로 동작한다. */
+  var CARE = {
+    목: {
+      obj: 'sprout', name: '새싹 화분',
+      missions: [
+        { tag: '색', text: '초록·연두 중 하나를 오늘 몸에 걸쳐 보세요.' },
+        { tag: '음식', text: '신맛 한 입 — 레몬물이나 식초 한 방울이면 충분해요.' },
+        { tag: '동선', text: '집 앞 나무가 있는 길로 한 바퀴 돌아오세요.' },
+        { tag: '말', text: '미뤄 둔 연락 하나, 오늘 먼저 보내 보세요.' },
+        { tag: '손', text: '창문을 열고 3분만 바깥 공기를 들이세요.' }
+      ]
+    },
+    화: {
+      obj: 'incense', name: '따뜻한 향로',
+      missions: [
+        { tag: '색', text: '빨강·주황 소품 하나를 눈에 보이는 자리에 두세요.' },
+        { tag: '음식', text: '따뜻한 차 한 잔을 식기 전에 천천히 드세요.' },
+        { tag: '동선', text: '햇볕 드는 창가에 3분만 서 있어 보세요.' },
+        { tag: '말', text: '망설인 결정 하나를 오늘 안에 딱 정하세요.' },
+        { tag: '손', text: '미뤄 둔 답장 하나, 지금 3줄로 끝내세요.' }
+      ]
+    },
+    토: {
+      obj: 'stone', name: '황금 수호석',
+      missions: [
+        { tag: '색', text: '베이지·노랑으로 손 닿는 자리부터 정리하세요.' },
+        { tag: '음식', text: '단맛 한 조각, 밥은 평소보다 천천히 드세요.' },
+        { tag: '동선', text: '책상 위 서류 세 장만 치우고 시작하세요.' },
+        { tag: '말', text: '안 쓸 약속 하나를 오늘 정중히 접으세요.' },
+        { tag: '손', text: '지갑 속 영수증을 다 꺼내 버리세요.' }
+      ]
+    },
+    금: {
+      obj: 'bell', name: '수정 종',
+      missions: [
+        { tag: '색', text: '흰색·은색으로 지갑이나 가방을 정리하세요.' },
+        { tag: '음식', text: '매운맛 한 입으로 막힌 숨을 트여 보세요.' },
+        { tag: '동선', text: '안 쓰는 구독 하나를 오늘 확인해서 끊으세요.' },
+        { tag: '말', text: '받을 돈 한 건, 오늘 문자로 물어보세요.' },
+        { tag: '손', text: '결제 3초 전, 한 번만 더 물어보고 누르세요.' }
+      ]
+    },
+    수: {
+      obj: 'orb', name: '행운 물결구슬',
+      missions: [
+        { tag: '색', text: '파랑·남색 계열로 물 한 잔 옆에 두세요.' },
+        { tag: '음식', text: '미지근한 물 한 잔을 한 번에 비우세요.' },
+        { tag: '동선', text: '손목을 10초 물에 적시고 돌아오세요.' },
+        { tag: '말', text: '보내려던 답장은 초안에만 넣어 두세요.' },
+        { tag: '손', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' }
+      ]
+    }
+  };
+
+  var OBJ_SVG = {
+    sprout: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="108" rx="26" ry="5" fill="#2A2724" opacity=".08"/>' +
+      '<path d="M60 78V48" stroke="#5C9A4A" stroke-width="4.4" stroke-linecap="round"/>' +
+      '<path d="M60 56C48 54 40 46 39 34c11 0 20 9 21 22z" fill="#7FC25F"/>' +
+      '<path d="M60 56c12-2 20-10 21-22-11 0-20 9-21 22z" fill="#9BD67A"/>' +
+      '<path d="M38 76h44l-5 24a7 7 0 0 1-7 6H50a7 7 0 0 1-7-6z" fill="#E7C79A"/>' +
+      '<path d="M38 76h44l-1.4 6.6H39.4z" fill="#D3AE79"/>' +
+      '<circle cx="53" cy="94" r="2.3" fill="#7A5C33" opacity=".55"/>' +
+      '<circle cx="67" cy="94" r="2.3" fill="#7A5C33" opacity=".55"/>' +
+      '<path d="M55 100q5 4 10 0" fill="none" stroke="#7A5C33" stroke-width="2" stroke-linecap="round" opacity=".55"/>' +
+      '</svg>',
+    incense: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="106" rx="26" ry="5" fill="#2A2724" opacity=".08"/>' +
+      '<path d="M58 60c-9-10 9-14 0-26" fill="none" stroke="#B7C2CB" stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
+      '<path d="M70 58c-7-9 7-12 0-22" fill="none" stroke="#CFD8DE" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
+      '<path d="M34 68h52c0 16-11.6 28-26 28S34 84 34 68z" fill="#C97B5A"/>' +
+      '<ellipse cx="60" cy="68" rx="26" ry="6.5" fill="#E39A78"/>' +
+      '<path d="M50 96l-3 8M70 96l3 8" stroke="#A9633F" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="60" cy="68" rx="4" ry="3" fill="#FFD79A"/>' +
+      '</svg>',
+    stone: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="104" rx="28" ry="5" fill="#2A2724" opacity=".08"/>' +
+      '<path d="M60 30c16 0 30 16 30 37 0 17-13 27-30 27S30 84 30 67c0-21 14-37 30-37z" fill="#EBC77E"/>' +
+      '<path d="M46 44c6-6 14-9 20-9-10 6-15 16-16 30-4-8-6-15-4-21z" fill="#F8E3B4" opacity=".8"/>' +
+      '<circle cx="50" cy="70" r="2.6" fill="#8A6B2C"/>' +
+      '<circle cx="70" cy="70" r="2.6" fill="#8A6B2C"/>' +
+      '<path d="M54 79q6 5 12 0" stroke="#8A6B2C" fill="none" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<path d="M92 34l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFF3CF"/>' +
+      '</svg>',
+    bell: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="106" rx="24" ry="5" fill="#2A2724" opacity=".08"/>' +
+      '<path d="M60 26c14 0 21 16 21 34v18H39V60c0-18 7-34 21-34z" fill="#DCEBF4" stroke="#A9BECE" stroke-width="2"/>' +
+      '<path d="M50 36c-4 8-6 16-6 24" stroke="#FFFFFF" stroke-width="4" opacity=".85" stroke-linecap="round"/>' +
+      '<path d="M36 78h48l-4 8H40z" fill="#C7D9E4"/>' +
+      '<circle cx="60" cy="92" r="5" fill="#9FB4C6"/>' +
+      '<path d="M88 38l2.4 6 6 2.4-6 2.4-2.4 6-2.4-6-6-2.4 6-2.4z" fill="#FFF3CF"/>' +
+      '</svg>',
+    orb: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="105" rx="24" ry="5" fill="#2A2724" opacity=".08"/>' +
+      '<circle cx="60" cy="62" r="32" fill="#E8F6FC" stroke="#B7DCEA" stroke-width="2"/>' +
+      '<path d="M35 68c8-7 15 7 23 0s15 7 23 0" fill="none" stroke="#78C2DC" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M37 80c8-7 15 7 23 0s15 7 23 0" fill="none" stroke="#9FD5E8" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>' +
+      '<ellipse cx="48" cy="45" rx="9" ry="6" fill="#FFFFFF" opacity=".85" transform="rotate(-25 48 45)"/>' +
+      '</svg>'
+  };
+
+  var care = { draws: 0, charge: 0, lit: false, bowl: null, bowlTimer: null };
+
+  function careElement() {
+    return state.res ? repElement().el : '화';
+  }
+
+  function careMissionHTML(el, idx) {
+    var list = (CARE[el] || CARE['화']).missions;
+    var m = list[idx % list.length];
+    return '<span class="care-flip__tag">' + esc(m.tag) + '</span>' +
+      '<b>' + esc(m.text) + '</b>';
+  }
+
+  function careShopHTML() {
+    var el = careElement();
+    var c = CARE[el] || CARE['화'];
+    var thr = EL_THEME[el] || EL_THEME['화'];
+    var idx = (seedOf(state.todayISO) + care.draws) % c.missions.length;
+    return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
+      '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
+      '<p class="shop__sub">부적을 붙여도 유독 막히고 안 풀리는 날, 앱에서 바로 꺼내 쓰는 <b>3가지</b>예요. 지금 여기서 그대로 체험해 보세요.</p>' +
+
+      /* ① 행동 카드 */
+      '<section class="care">' +
+      '<p class="care__no">01</p>' +
+      '<p class="care__title">오늘의 긴급 개운 행동 카드</p>' +
+      '<p class="care__desc">카드를 뒤집으면 오늘 막힘을 뚫는 행동 <b>한 가지</b>가 나와요.</p>' +
+      '<button type="button" class="care-flip' + (care.draws ? ' is-open' : '') + '" data-care="draw" aria-label="오늘의 개운 행동 카드 뽑기">' +
+      '<span class="care-flip__inner">' +
+      '<span class="care-flip__face care-flip__face--back"><span class="care-flip__star">✦</span><b>탭해서<br>오늘의 카드 뽑기</b></span>' +
+      '<span class="care-flip__face care-flip__face--front">' + (care.draws ? careMissionHTML(el, idx) : '') + '</span>' +
+      '</span></button>' +
+      '<p class="care__hint">' + (care.draws ? '한 번 더 뽑을 수 있어요' : '') + '</p>' +
+      '</section>' +
+
+      /* ② 디지털 개운 오브제 */
+      '<section class="care">' +
+      '<p class="care__no">02</p>' +
+      '<p class="care__title">내 디지털 개운 오브제</p>' +
+      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + '을 문질러 기운을 채워 보세요.</p>' +
+      '<button type="button" class="care-obj' + (care.lit ? ' is-lit' : '') + '" data-care="obj" ' +
+      'style="--obj-glow:' + thr.color + '" aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
+      '<span class="care-obj__art">' + OBJ_SVG[c.obj] + '</span>' +
+      '<span class="care-obj__bar"><i style="width:' + care.charge + '%"></i></span>' +
+      '<span class="care-obj__label" data-care-label>' + (care.lit ? '기운 가득! 오늘은 이 기운으로 버텨요' : '문지르면 기운이 차요 · ' + care.charge + '%') + '</span>' +
+      '</button>' +
+      '</section>' +
+
+      /* ③ 싱잉볼 */
+      '<section class="care">' +
+      '<p class="care__no">03</p>' +
+      '<p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' +
+      '<p class="care__desc">깊고 맑은 울림에 맞춰 숨을 한 번 크게 — 1분이면 머리가 조용해져요.</p>' +
+      '<button type="button" class="care-bowl" data-care="bowl" aria-label="1분 싱잉볼 기운 리셋 시작">' +
+      '<span class="care-bowl__ring"></span>' +
+      '<span class="care-bowl__art"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">' +
+      '<path d="M28 58h64c0 17-14 31-32 31S28 75 28 58z" fill="#D9B46A"/>' +
+      '<ellipse cx="60" cy="58" rx="32" ry="7" fill="#EFD79E"/>' +
+      '<ellipse cx="60" cy="58" rx="22" ry="4.5" fill="#C99C4E"/>' +
+      '<path d="M88 30l2.2 5.6 5.6 2.2-5.6 2.2-2.2 5.6-2.2-5.6-5.6-2.2 5.6-2.2z" fill="#FFF3CF" class="care-bowl__spark"/>' +
+      '<path d="M32 96h56" stroke="#C9A45E" stroke-width="4" stroke-linecap="round"/>' +
+      '</svg></span>' +
+      '<span class="care-bowl__text" data-care-bowl-text>탭하면 시작 · 1분</span>' +
+      '</button>' +
+      '</section>' +
+
+      priceHTML('긴급 개운템 3종', CARE_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + CARE_CHECKOUT_URL + '" target="_blank" rel="noopener">⚡ 2,900원 · 3종 세트 5,900원 신청하기</a>' +
+      '<div class="shop__consult">' +
+      '<b>윤이세 1:1 상담 ' + CONSULT_PRICE + '</b>' +
+      '<span>캘린더·개운템으로도 안 풀리면, 내 상황을 통째로 보고 길을 잡아 드려요.</span>' +
+      '<a href="' + CONSULT_CHECKOUT_URL + '" target="_blank" rel="noopener">상담 일정 잡기 →</a>' +
+      '</div>' +
+      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 안내드려요. 3종은 지금 여기서 그대로 체험할 수 있어요.</p>';
+  }
+
+  /* ── 긴급 개운템 동작 ───────────────────────────── */
+  function careEl(sel) { return shopBody ? shopBody.querySelector(sel) : null; }
+
+  function drawCareCard(btn) {
+    var el = careElement();
+    care.draws += 1;
+    var list = (CARE[el] || CARE['화']).missions;
+    var idx = (seedOf(state.todayISO) + care.draws) % list.length;
+    var front = btn.querySelector('.care-flip__face--front');
+    if (front) front.innerHTML = careMissionHTML(el, idx);
+    btn.classList.add('is-open');
+    var hint = btn.parentNode ? btn.parentNode.querySelector('.care__hint') : null;
+    if (hint) hint.textContent = '한 번 더 뽑을 수 있어요';
+    vibrate([16, 20, 26]);
+    sfxTap(1);
+  }
+
+  function chargeCareObj(btn) {
+    if (care.lit) { vibrate([30, 40, 30]); return; }
+    care.charge = Math.min(100, care.charge + 14);
+    var bar = btn.querySelector('.care-obj__bar i');
+    var label = btn.querySelector('[data-care-label]');
+    if (bar) bar.style.width = care.charge + '%';
+    btn.classList.remove('is-hit');
+    void btn.offsetWidth;
+    btn.classList.add('is-hit');
+    vibrate(18);
+    if (care.charge >= 100) {
+      care.lit = true;
+      btn.classList.add('is-lit');
+      if (label) label.textContent = '기운 가득! 오늘은 이 기운으로 버텨요';
+      vibrate([40, 60, 40, 60, 90]);
+      sfxDone();
+    } else {
+      if (label) label.textContent = '문지르면 기운이 차요 · ' + care.charge + '%';
+      sfxTap(2);
+    }
+  }
+
+  /* 싱잉볼 — Web Audio 로 깊은 배음 + 1분 호흡 가이드 */
+  function bowlStrike() {
+    var ctx = audioCtx(); if (!ctx) return;
+    var t0 = ctx.currentTime;
+    var base = 196;                                   // G3 — 낮고 편안한 울림
+    [1, 2.02, 2.98, 4.07, 5.42].forEach(function (m, i) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = i === 0 ? 'sine' : 'sine';
+      o.frequency.setValueAtTime(base * m * (1 + (i % 2 ? 0.0016 : -0.0012)), t0);
+      var peak = 0.26 / (i * 0.9 + 1);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.012 + i * 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 7.5 - i * 0.6);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0 + 8);
+    });
+    // 살짝 스치는 쇠 소리
+    var n = Math.floor(ctx.sampleRate * 0.12);
+    if (n > 0) {
+      var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, 6);
+      var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g2 = ctx.createGain();
+      bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.8;
+      g2.gain.value = 0.05;
+      src.buffer = buf; src.connect(bp); bp.connect(g2); g2.connect(ctx.destination);
+      src.start(t0);
+    }
+  }
+
+  function stopBowl() {
+    if (care.bowlTimer) { clearInterval(care.bowlTimer); care.bowlTimer = null; }
+    care.bowl = null;
+    var btn = careEl('[data-care="bowl"]');
+    if (btn) {
+      btn.classList.remove('is-on', 'is-in', 'is-out');
+      var txt = btn.querySelector('[data-care-bowl-text]');
+      if (txt) txt.textContent = '탭하면 시작 · 1분';
+      var ring = btn.querySelector('.care-bowl__ring');
+      if (ring) { ring.style.transition = 'transform .5s ease, opacity .5s ease'; ring.style.transform = 'scale(.92)'; ring.style.opacity = '0'; }
+    }
+  }
+
+  function startBowl(btn) {
+    if (care.bowlTimer) { stopBowl(); vibrate(12); return; }
+    bowlStrike();
+    vibrate([60, 40, 120]);
+    care.bowl = { left: 60, phase: 'in', phaseLeft: 4 };
+    btn.classList.add('is-on', 'is-in');
+    var txt = btn.querySelector('[data-care-bowl-text]');
+    var paint = function () {
+      if (!care.bowl) return;
+      var b = care.bowl;
+      if (txt) {
+        txt.textContent = (b.phase === 'in' ? '들이쉬세요' : '내쉬세요') + ' · 남은 ' + b.left + '초';
+      }
+      var ring = btn.querySelector('.care-bowl__ring');
+      if (ring) {
+        var dur = b.phase === 'in' ? 4 : 6;
+        ring.style.transition = 'transform ' + dur + 's ease-in-out, opacity ' + dur + 's ease-in-out';
+        ring.style.transform = 'scale(' + (b.phase === 'in' ? 1.38 : 0.92) + ')';
+        ring.style.opacity = b.phase === 'in' ? 0.78 : 0.3;
+      }
+      btn.classList.toggle('is-in', b.phase === 'in');
+      btn.classList.toggle('is-out', b.phase === 'out');
+    };
+    paint();
+    care.bowlTimer = setInterval(function () {
+      var b = care.bowl;
+      if (!b) return;
+      b.left -= 1;
+      b.phaseLeft -= 1;
+      if (b.phaseLeft <= 0) {
+        if (b.phase === 'in') { b.phase = 'out'; b.phaseLeft = 6; }
+        else { b.phase = 'in'; b.phaseLeft = 4; }
+      }
+      if (b.left <= 0) {
+        if (txt) txt.textContent = '기운 리셋 완료 · 오늘 하루 수고했어요';
+        btn.classList.remove('is-in', 'is-out');
+        btn.classList.add('is-done');
+        var ring = btn.querySelector('.care-bowl__ring');
+        if (ring) { ring.style.transition = 'transform .8s ease, opacity .8s ease'; ring.style.transform = 'scale(.92)'; ring.style.opacity = '0'; }
+        sfxDone(); vibrate([30, 50, 30, 50, 120]);
+        if (care.bowlTimer) { clearInterval(care.bowlTimer); care.bowlTimer = null; }
+        care.bowl = null;
+        setTimeout(function () { if (btn) btn.classList.remove('is-done'); }, 2600);
+        return;
+      }
+      paint();
+    }, 1000);
+  }
+
+  function handleCare(kind, btn, ev) {
+    if (kind === 'draw') { drawCareCard(btn); return; }
+    if (kind === 'obj') { chargeCareObj(btn); return; }
+    if (kind === 'bowl') { startBowl(btn); return; }
   }
 
   function openShop(kind) {
     if (!shopEl) return;
     shopLastFocus = document.activeElement;
-    shopBody.innerHTML = kind === 'care' ? careShopHTML() : (kind === 'set' ? setShopHTML() : passShopHTML());
+    shopBody.innerHTML = kind === 'care' ? careShopHTML()
+      : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML());
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -1102,6 +1389,7 @@
 
   function closeShop() {
     if (!shopEl || shopEl.hidden || shopClosing) return;
+    if (care.bowlTimer) stopBowl();
     shopClosing = true;
     shopEl.classList.add('is-closing');
     setTimeout(function () {
@@ -1261,7 +1549,9 @@
     });
     if (shopEl) {
       shopEl.addEventListener('click', function (e) {
-        if (e.target.closest('[data-shop-close]')) closeShop();
+        if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
+        var c = e.target.closest ? e.target.closest('[data-care]') : null;
+        if (c) { e.preventDefault(); handleCare(c.getAttribute('data-care'), c, e); }
       });
     }
 

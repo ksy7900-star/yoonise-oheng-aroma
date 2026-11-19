@@ -1142,10 +1142,23 @@ body.is-modal-open { overflow: hidden; }
 .btn--ghost-light .shop-btn__no { background: rgba(242, 237, 227, .2); }
 .shop-btn__text { display: flex; flex-direction: column; gap: 4px; min-width: 0; text-align: left; }
 .shop-btn__label { text-align: left; line-height: 1.35; }
+.shop-btn__label b { font-weight: 700; }
+.btn--cream .shop-btn__label b { color: #9E4A2E; }
+.btn--ghost-light .shop-btn__label b { color: #F0D9A8; }
+.shop-btn__tag {
+  display: inline-block; margin-left: 4px; padding: 1px 6px;
+  border-radius: 999px; font-size: 9px; font-weight: 700; letter-spacing: 0;
+  background: #9E4A2E; color: #FFF6E6; vertical-align: 2px;
+}
 .shop-btn__desc {
   font-size: 10.5px; font-weight: 400; line-height: 1.55;
   letter-spacing: -0.01em; opacity: .72;
 }
+.cta__consult {
+  margin-top: 14px; padding-top: 13px; font-size: 10.5px; line-height: 1.6;
+  color: rgba(242, 237, 227, .58); border-top: 1px solid rgba(242, 237, 227, .12);
+}
+.cta__consult b { color: rgba(242, 237, 227, .9); font-weight: 600; }
 
 /* ── 구입 안내 팝업 ──────────────────────────────── */
 .shop__title {
@@ -1178,6 +1191,103 @@ body.is-modal-open { overflow: hidden; }
 .shop__price b { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
 .shop__cta { margin-top: 12px; }
 .shop__note { font-size: 10px; color: var(--mute); line-height: 1.7; margin-top: 10px; text-align: center; }
+.shop__save {
+  margin-top: 12px; padding: 11px 14px; border-radius: 14px;
+  background: #FBF3E2; border: 1px dashed rgba(174, 138, 80, .45);
+  text-align: center;
+}
+.shop__save b { display: block; font-size: 12px; color: #8E6B2C; letter-spacing: -0.01em; }
+.shop__save span { display: block; font-size: 10px; color: var(--mute); margin-top: 3px; }
+.shop__consult {
+  margin-top: 14px; padding: 13px 15px; border-radius: 14px;
+  background: #FAF7F0; border: 1px solid rgba(29, 28, 25, .07);
+}
+.shop__consult b { display: block; font-size: 12px; color: var(--ink); letter-spacing: -0.01em; }
+.shop__consult span { display: block; font-size: 10px; color: var(--mute); line-height: 1.6; margin-top: 4px; }
+.shop__consult a { display: inline-block; margin-top: 8px; font-size: 10.5px; font-weight: 700; color: #9E4A2E; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── 긴급 개운템 3종 (팝업 안에서 그대로 체험) ─────── */
+.care {
+  margin-top: 14px; padding: 14px 14px 16px; border-radius: 18px;
+  background: #FAF7F0; border: 1px solid rgba(29, 28, 25, .07);
+}
+.care__no { font-size: 8.5px; font-weight: 700; letter-spacing: .2em; color: #B08A4E; }
+.care__title { font-family: var(--serif); font-size: 15px; margin-top: 3px; letter-spacing: -0.02em; }
+.care__desc { font-size: 10.5px; line-height: 1.65; color: var(--mute); margin-top: 5px; }
+.care__desc b { color: var(--ink-2); }
+.care__hint { font-size: 9.5px; color: var(--mute); text-align: center; margin-top: 7px; min-height: 13px; }
+
+/* ① 행동 카드 — 뒤집히는 카드 */
+.care-flip { display: block; width: 100%; margin-top: 9px; background: none; border: 0; padding: 0; perspective: 900px; }
+.care-flip__inner {
+  position: relative; display: block; width: 100%; height: 104px;
+  transform-style: preserve-3d; transition: transform .62s cubic-bezier(.3, 1.4, .4, 1);
+}
+.care-flip.is-open .care-flip__inner { transform: rotateY(180deg); }
+.care-flip__face {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 7px;
+  padding: 12px 16px; border-radius: 16px; text-align: center;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+}
+.care-flip__face--back {
+  background: linear-gradient(150deg, #2A2724, #443C33); color: rgba(246, 242, 234, .88);
+  font-size: 11.5px; line-height: 1.6; border: 1px solid rgba(242, 237, 227, .16);
+}
+.care-flip__face--back b { font-weight: 500; }
+.care-flip__star { font-size: 15px; color: #E4AE55; }
+.care-flip__face--front {
+  transform: rotateY(180deg); background: #FFFDF8;
+  border: 1px solid rgba(174, 138, 80, .3);
+  box-shadow: inset 0 0 0 3px #FFF, 0 2px 6px rgba(28, 27, 25, .06);
+}
+.care-flip__face--front b {
+  font-family: var(--serif); font-size: 13px; font-weight: 600; line-height: 1.5;
+  letter-spacing: -0.02em; color: var(--ink);
+}
+.care-flip__tag {
+  font-size: 9px; font-weight: 700; letter-spacing: .08em; color: #8E6B2C;
+  background: rgba(196, 154, 80, .18); padding: 2px 9px; border-radius: 999px;
+}
+
+/* ② 디지털 개운 오브제 */
+.care-obj {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%; margin-top: 6px; padding: 4px 0 0;
+  background: none; border: 0;
+}
+.care-obj__art { display: block; width: 96px; height: 96px; transition: transform .22s cubic-bezier(.2, 1.6, .4, 1), filter .3s ease; }
+.care-obj__art .obj { width: 100%; height: 100%; }
+.care-obj.is-hit .care-obj__art { transform: scale(1.09) rotate(-2deg); }
+.care-obj.is-lit .care-obj__art {
+  filter: drop-shadow(0 0 10px var(--obj-glow, #E4AE55));
+  animation: objFloat 3s ease-in-out infinite;
+}
+@keyframes objFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.care-obj__bar { display: block; width: 168px; height: 6px; border-radius: 999px; background: rgba(29, 28, 25, .09); overflow: hidden; }
+.care-obj__bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #E9C878, #C79A4E); transition: width .3s ease; }
+.care-obj__label { font-size: 10.5px; color: var(--mute); letter-spacing: -0.01em; }
+.care-obj.is-lit .care-obj__label { color: #8E6B2C; font-weight: 700; }
+
+/* ③ 싱잉볼 */
+.care-bowl {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px;
+  width: 100%; margin-top: 8px; padding: 6px 0 0;
+  background: none; border: 0;
+}
+.care-bowl__art { display: block; width: 84px; height: 84px; }
+.care-bowl__art svg { width: 100%; height: 100%; }
+.care-bowl__ring {
+  position: absolute; top: 6px; left: 50%; width: 84px; height: 84px; margin-left: -42px;
+  border-radius: 50%; border: 1.5px solid rgba(196, 154, 80, .75);
+  transform: scale(.92); opacity: 0; pointer-events: none;
+}
+.care-bowl__text { font-size: 11px; color: var(--mute); letter-spacing: -0.01em; }
+.care-bowl.is-on .care-bowl__text { color: #8E6B2C; font-weight: 700; }
+.care-bowl.is-done .care-bowl__text { color: #6E8E5B; }
+.care-bowl__spark { opacity: 0; }
+.care-bowl.is-on .care-bowl__spark { animation: sparkTwinkle 2.2s ease-in-out infinite; }
+@keyframes sparkTwinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   .ritual__char, .ritual__aura, .ritual__ring, .ritual__pop,
