@@ -375,11 +375,13 @@ form { margin-top: 22px; }
 .calfilter__btn[data-filter="good"].is-on { color: #7C5F1F; }
 
 /* 모아보기 중 — 해당 날만 또렷하게, 나머지는 물러나게 */
-.cal .day.day--dim { opacity: .24; }
+.cal .day.day--dim { opacity: .3; }
 .cal .day.day--dim:hover { background-image: none; }
-.cal .day.day--pick { box-shadow: inset 0 0 0 1.4px rgba(29, 28, 25, .16); }
-.cal.is-filtering .day--pick.day--t-red { background: rgba(191, 106, 91, .15); }
-.cal.is-filtering .day--pick.day--t-gold { background: rgba(196, 154, 80, .19); }
+.cal .day.day--pick { box-shadow: inset 0 0 0 1.4px rgba(29, 28, 25, .14); }
+.cal .day.day--pick--red { background: rgba(191, 106, 91, .16); }
+.cal .day.day--pick--gray { background: rgba(169, 162, 150, .22); }
+.cal .day.day--pick--gold { background: rgba(196, 154, 80, .20); }
+.cal .day.day--pick--blue { background: rgba(113, 136, 157, .17); }
 
 /* 달력 아래 — 이 달 조심할 날 · 좋은 날 목록 */
 .calfocus {

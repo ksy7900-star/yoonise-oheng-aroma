@@ -1077,8 +1077,13 @@
       // 모아보기 — 조심할 날(입단속·리셋) / 좋은 날(럭키·결정·머니)
       var isBad = badges.some(function (b) { return b.cat === 'red' || b.cat === 'gray'; });
       var isGood = badges.some(function (b) { return b.cat === 'gold' || b.cat === 'blue'; });
-      if (state.filter === 'bad') cls.push(isBad ? 'day--pick' : 'day--dim');
-      else if (state.filter === 'good') cls.push(isGood ? 'day--pick' : 'day--dim');
+      var pick = '';
+      if (state.filter === 'bad' && isBad) {
+        pick = badges.some(function (b) { return b.cat === 'red'; }) ? 'red' : 'gray';
+      } else if (state.filter === 'good' && isGood) {
+        pick = badges.some(function (b) { return b.cat === 'gold'; }) ? 'gold' : 'blue';
+      }
+      if (state.filter !== 'all') cls.push(pick ? 'day--pick day--pick--' + pick : 'day--dim');
 
       var open = isOpenDay(iso);
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
