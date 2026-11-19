@@ -268,6 +268,25 @@
     if (strongGold) dots.push({ cat: 'gold' });
     if (!strongRed && !strongGold && strongBlue) dots.push({ cat: 'blue' });
 
+    // 배지: 달력 셀에 바로 보이는 짧은 한글 (하루 최대 2개)
+    //  주의 = 충·형이 걸린 날 / 기회 = 귀인·합이 들어온 날 / 계약·재물 = 문서·돈의 신호 / 절기 = 월운 전환일
+    var maxWeight = function (cat) {
+      var w = 0;
+      marks.forEach(function (mk) { if (mk.cat === cat && !mk.minor && mk.weight > w) w = mk.weight; });
+      return w;
+    };
+    var badges = [];
+    if (strongRed) badges.push({ cat: 'red', text: '주의', weight: maxWeight('red') });
+    if (strongGold) badges.push({ cat: 'gold', text: '기회', weight: maxWeight('gold') });
+    if (!strongRed && !strongGold && strongBlue) {
+      var isDoc = marks.some(function (mk) { return mk.cat === 'blue' && mk.kind === 'doc' && !mk.minor; });
+      badges.push({ cat: 'blue', text: isDoc ? '계약' : '재물', weight: maxWeight('blue') });
+    }
+    if (term) badges.push({ cat: 'gray', text: '절기', weight: term.isJie ? 14 : 12 });
+    var BADGE_ORDER = { red: 0, gold: 1, blue: 2, gray: 3 };
+    badges.sort(function (a, b) { return BADGE_ORDER[a.cat] - BADGE_ORDER[b.cat]; });
+    if (badges.length > 2) badges = badges.slice(0, 2);
+
     var headline, tone;
     if (strongRed && strongGold) { headline = '기회와 변동이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
     else if (strongRed) { headline = '속도 조절 · 결정은 하루 뒤로'; tone = 'red'; }
@@ -281,7 +300,7 @@
     return {
       iso: iso, y: y, m: m, d: d, dow: dowOf(iso),
       gz: gz, ganEl: M.GAN_EL[gz.ganIndex], zhiEl: M.ZHI_EL[gz.zhiIndex],
-      lunarText: lunarText, term: term, marks: marks, dots: dots,
+      lunarText: lunarText, term: term, marks: marks, dots: dots, badges: badges,
       tone: tone, headline: headline, lines: lines,
       tenGod: tgName
     };
@@ -438,7 +457,7 @@
     var L = [];
     L.push('BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//YOONISE//Timing Calendar//KO',
       'CALSCALE:GREGORIAN', 'METHOD:PUBLISH');
-    L.push('X-WR-CALNAME:' + icsEscape((opts.name ? opts.name + ' · ' : '') + '윤이세 타이밍 캘린더 (무료 7일)'));
+    L.push('X-WR-CALNAME:' + icsEscape((opts.name ? opts.name + ' · ' : '') + '윤이세 타이밍 캘린더 (무료 3일)'));
     L.push('X-WR-TIMEZONE:Asia/Seoul');
     L.push('BEGIN:VTIMEZONE', 'TZID:Asia/Seoul',
       'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900',
@@ -458,7 +477,7 @@
         strong.map(function (mk) { return '· ' + mk.detail; }).join('\n') +
         (info.term ? (strong.length ? '\n' : '') + '· ' + info.term.ko + ' ' + info.term.time + (info.term.isJie ? ' (' + info.term.monthText + '월 시작)' : '') : '') + '\n' +
         '처방: ' + info.lines[0] + ' / ' + info.lines[1] + '\n' +
-        '(윤이세 타이밍 캘린더 · 무료 7일 맛보기)';
+        '(윤이세 타이밍 캘린더 · 무료 3일 맛보기)';
 
       var dayStart = info.iso.replace(/-/g, '') + 'T090000';
       var dayEnd = info.iso.replace(/-/g, '') + 'T091500';

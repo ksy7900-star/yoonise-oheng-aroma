@@ -10,7 +10,7 @@
   var MAIN_KEY = 'yoonise.oheng.last.v1';   // 기존 오행 앱에 저장된 사주가 있으면 그대로 이어받는다
   var RANGE_FROM = '2026-11-01';
   var RANGE_TO = '2027-12-31';
-  var FREE_DAYS = 7;
+  var FREE_DAYS = 3;   // 오늘 포함 3일(D+0·D+1·D+2)만 무료
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -332,25 +332,37 @@
       { key: 'month', pos: '월주', me: false },
       { key: 'year', pos: '년주', me: false }
     ];
-    var html = cols.map(function (c) {
+
+    // 정통 만세력식 4칸 표: [시주 | 일주 | 월주 | 년주]
+    //  위 → 아래: 천간 십신 / 천간 타일 / 지지 타일 / 지지 십신
+    var row = { pos: [], ganTen: [], gan: [], zhi: [], zhiTen: [] };
+    cols.forEach(function (c) {
+      var me = c.me ? ' is-me' : '';
+      row.pos.push('<span class="natal__pos' + me + '">' + c.pos + '</span>');
+
       var pil = p[c.key];
       if (!pil) {
-        return '<div class="natal__col"><p class="natal__pos">' + c.pos + '</p>' +
-          '<p class="natal__hanja" style="color:#CFC8BA">—</p><p class="natal__ten">시간 모름</p></div>';
+        row.ganTen.push('<span class="natal__ten' + me + '">—</span>');
+        row.gan.push('<span class="natal__tile natal__tile--none' + me + '">—</span>');
+        row.zhi.push('<span class="natal__tile natal__tile--none' + me + '">—</span>');
+        row.zhiTen.push('<span class="natal__ten natal__ten--zhi natal__ten--mute' + me + '">시간 모름</span>');
+        return;
       }
+
       var tg = t[c.key] || {};
-      return '<div class="natal__col' + (c.me ? ' natal__col--me' : '') + '">' +
-        '<p class="natal__pos">' + c.pos + '</p>' +
-        '<p class="natal__hanja">' + pil.gan + pil.zhi + '</p>' +
-        '<p class="natal__ten">' + (tg.gan || '') + ' · ' + (tg.zhi || '') + '</p>' +
-        '</div>';
-    }).join('');
-    $('#natal').innerHTML = html;
+      row.ganTen.push('<span class="natal__ten natal__ten--gan' + me + '">' +
+        (c.me ? '일간<small>나</small>' : esc(tg.gan || '—')) + '</span>');
+      row.gan.push('<span class="natal__tile natal__tile--' + esc(M.GAN_EL[pil.ganIndex]) + me + '">' + esc(pil.gan) + '</span>');
+      row.zhi.push('<span class="natal__tile natal__tile--' + esc(M.ZHI_EL[pil.zhiIndex]) + me + '">' + esc(pil.zhi) + '</span>');
+      row.zhiTen.push('<span class="natal__ten natal__ten--zhi' + me + '">' + esc(tg.zhi || '—') + '</span>');
+    });
+
+    $('#natal').innerHTML = row.pos.concat(row.ganTen, row.gan, row.zhi, row.zhiTen).join('');
 
     var jq = state.res.jieqi;
     $('#natalMeta').textContent = state.res.input.gender === 'M' ? '남성' : '여성';
     $('#natalNote').innerHTML = '연주는 입춘 ' + esc(jq.lichun) + ' 기준, 월주는 ' + esc(jq.prev.name) + ' 절입 ' + esc(jq.prev.at) + ' 이후로 계산했어요.' +
-      (state.res.input.timeKnown ? '' : ' 시간을 몰라 시주는 비워 두었습니다.');
+      (state.res.input.timeKnown ? ' 지지 십신은 지장간의 본기(本氣) 기준입니다.' : ' 시간을 몰라 시주는 비워 두었습니다.');
   }
 
   function renderCalendar() {
@@ -363,11 +375,12 @@
     var html = '';
     for (var i = 0; i < first; i++) html += '<span aria-hidden="true"></span>';
 
-    var stat = { gold: 0, red: 0, blue: 0, gray: 0 };
+    var stat = { red: 0, gold: 0, blue: 0, gray: 0 };
     for (var d = 1; d <= dim; d++) {
       var iso = T.isoOf(v.y, v.m, d);
       var info = infoFor(iso);
       if (!info) continue;
+      var badges = info.badges || [];
       var cls = ['day'];
       if (info.dow === 0) cls.push('day--sun');
       if (info.dow === 6) cls.push('day--sat');
@@ -376,19 +389,16 @@
       if (iso === state.todayISO) cls.push('is-today');
       if (iso === state.sel) cls.push('is-sel');
 
-      var dots = info.dots.slice();
-      if (info.term && dots.length < 2) dots.push({ cat: 'gray' });
-      dots = dots.slice(0, 2);
+      // 셀 배경 틴트는 주의·기회에만 — 계약·재물·절기는 배지로만 표시해 색을 아낀다
+      var lead = badges.length ? badges[0].cat : '';
+      if (lead === 'red' || lead === 'gold') cls.push('day--t-' + lead);
 
-      var hasGold = info.dots.some(function (m) { return m.cat === 'gold'; });
-      var hasRed = info.dots.some(function (m) { return m.cat === 'red'; });
-      var hasBlue = info.dots.some(function (m) { return m.cat === 'blue'; });
-      if (hasGold) stat.gold++;
-      if (hasRed) stat.red++;
-      if (hasBlue) stat.blue++;
-      if (info.term) stat.gray++;
+      badges.forEach(function (b) { if (stat[b.cat] != null) stat[b.cat]++; });
 
-      var dotHtml = dots.map(function (x) { return '<span class="dot dot--' + x.cat + '"></span>'; }).join('');
+      var badgeHtml = badges.map(function (b) {
+        return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
+      }).join('');
+
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO) label = v.m + '월 ' + d + '일, 지난 날';
 
@@ -397,15 +407,15 @@
         (iso < state.todayISO ? ' tabindex="-1"' : '') +
         ' aria-label="' + esc(label) + '">' +
         '<span class="day__num">' + d + '</span>' +
-        '<span class="day__dots">' + dotHtml + '</span>' +
+        '<span class="day__badges">' + badgeHtml + '</span>' +
         '</button>';
     }
     $('#calGrid').innerHTML = html;
 
     var bits = [];
-    if (stat.gold) bits.push('타이밍 ON ' + stat.gold);
-    if (stat.red) bits.push('속도 조절 ' + stat.red);
-    if (stat.blue) bits.push('계약·문서 ' + stat.blue);
+    if (stat.gold) bits.push('기회 ' + stat.gold);
+    if (stat.red) bits.push('주의 ' + stat.red);
+    if (stat.blue) bits.push('계약·재물 ' + stat.blue);
     if (stat.gray) bits.push('절기 ' + stat.gray);
     $('#calSummary').textContent = bits.length ? bits.join('  ·  ') : '이 달은 표시할 신호가 적은 달이에요';
 
@@ -413,7 +423,7 @@
     $('#nextMonth').disabled = (v.y === 2027 && v.m === 12);
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    $('#calNote').textContent = '무료 구간은 오늘부터 ' + freeEnd.m + '월 ' + freeEnd.d + '일까지예요. 그 뒤 날짜는 점만 보이고, 누르면 여는 방법이 나옵니다.';
+    $('#calNote').textContent = freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
   }
 
   function shiftMonth(dir) {
@@ -491,11 +501,11 @@
     }).join('');
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     return '<article class="lock">' +
-      '<p class="lock__eyebrow">FREE TRIAL · 7 DAYS</p>' +
+      '<p class="lock__eyebrow">FREE TRIAL · 3 DAYS</p>' +
       '<p class="lock__date">' + fmtMD(info.iso) + ' <span>' + DOW_EN[info.dow] + ' · ' + esc(info.gz.textKo) + '일</span></p>' +
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
-      '<p class="lock__title">🔒 2027년 전체 1년 타이밍 · 캘린더 알람 열기</p>' +
+      '<p class="lock__title">🔒 3일 무료 체험 이후 · 2027 정미년 전체 1년 타이밍 열기</p>' +
       '<p class="lock__sub">(정미년 패스 / 윤이세 1:1 상담)</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + freeEnd.m + '월 ' + freeEnd.d + '일까지) 밖이에요. ' +
@@ -524,7 +534,7 @@
     var end = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     $('#icsStatus').textContent = exportable.length
       ? '오늘 ~ ' + end.m + '.' + end.d + ' 중 ' + exportable.length + '일이 담깁니다. 기기 캘린더에 넣으면 전날 저녁과 당일 오전에 알림이 떠요.'
-      : '이번 7일은 담을 만한 변동일·추진일이 없어요. 잔잔한 날은 알림 없이 넘어갑니다.';
+      : '이번 3일은 담을 만한 변동일·추진일이 없어요. 잔잔한 날은 알림 없이 넘어갑니다.';
   }
 
   function downloadICS() {
@@ -532,7 +542,7 @@
     try {
       var name = state.res.input.name || '';
       var text = T.buildICS(state.icsDays, { name: name });
-      var fileName = 'yoonise-timing-' + state.todayISO.replace(/-/g, '') + '-free7.ics';
+      var fileName = 'yoonise-timing-' + state.todayISO.replace(/-/g, '') + '-free3.ics';
       var blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');

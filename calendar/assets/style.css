@@ -264,21 +264,49 @@ form { margin-top: 22px; }
   border: 1px solid var(--hair); border-radius: 999px; padding: 6px 13px;
 }
 
-/* ── 원국 ─────────────────────────────────────────── */
+/* ── 원국 (정통 4칸 표) ────────────────────────── */
 .natal {
   display: grid; grid-template-columns: repeat(4, 1fr);
-  margin-top: 16px;
+  margin-top: 16px; row-gap: 7px;
+  padding: 13px 0 10px;
+  border-top: 1px solid var(--hair-soft);
+  border-bottom: 1px solid var(--hair-soft);
 }
-.natal__col { text-align: center; padding: 4px 2px; border-left: 1px solid var(--hair-soft); }
-.natal__col:first-child { border-left: 0; }
-.natal__pos { font-size: 9.5px; letter-spacing: .16em; color: var(--mute); }
-.natal__hanja {
-  font-family: var(--serif); font-size: 22px; letter-spacing: .04em;
-  color: var(--ink); margin-top: 7px; line-height: 1.2;
+.natal > span { border-left: 1px solid var(--hair-soft); }
+.natal > span:nth-child(4n + 1) { border-left: 0; }
+.natal__pos {
+  text-align: center; padding-bottom: 1px;
+  font-size: 9.5px; letter-spacing: .14em; color: var(--mute);
 }
-.natal__ten { font-size: 9.5px; color: var(--mute); margin-top: 6px; line-height: 1.6; }
-.natal__col--me .natal__pos { color: var(--gold); }
-.natal__col--me .natal__hanja { color: var(--gold); }
+.natal__pos.is-me { color: var(--gold); font-weight: 600; }
+.natal__ten {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  min-height: 15px; text-align: center;
+  font-size: 10.5px; color: var(--ink-2); letter-spacing: -0.01em;
+}
+.natal__ten--gan { color: var(--ink); }
+.natal__ten--zhi { color: #6F685C; }
+.natal__ten--mute { font-size: 9px; color: #B7B0A2; letter-spacing: 0; }
+.natal__ten small {
+  font-size: 8px; font-weight: 600; color: var(--gold);
+  border: 1px solid rgba(174, 138, 80, .35); border-radius: 999px; padding: 0 4px;
+  line-height: 1.5; letter-spacing: 0;
+}
+.natal__ten.is-me { color: var(--gold); font-weight: 600; }
+.natal__tile {
+  justify-self: center;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  font-family: var(--serif); font-size: 21px; line-height: 1; letter-spacing: 0;
+}
+.natal__tile--목 { background: #EDF2EA; color: #4E6A48; }
+.natal__tile--화 { background: #FAEDEA; color: #9C5445; }
+.natal__tile--토 { background: #F5F0E4; color: #7E6B45; }
+.natal__tile--금 { background: #EFEFEC; color: #63635F; }
+.natal__tile--수 { background: #EBF0F4; color: #4C6275; }
+.natal__tile--none { background: #F4F1EA; color: #C9C2B4; }
+.natal__tile.is-me { box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .45); }
 
 /* ── 캘린더 ───────────────────────────────────────── */
 .card--cal { padding: 22px 14px 18px; }
@@ -293,11 +321,37 @@ form { margin-top: 22px; }
 .cal__title { font-family: var(--serif); font-size: 23px; font-weight: 600; text-align: center; margin-top: 1px; }
 .cal__summary { font-size: 11px; color: var(--mute); text-align: center; margin-top: 8px; }
 
-.legend {
-  display: flex; flex-wrap: wrap; gap: 8px 13px; justify-content: center;
-  margin: 15px 0 12px; font-size: 10px; color: var(--mute); letter-spacing: -0.01em;
+/* ── 이 캘린더 보는 법 ─────────────────────────────── */
+.howto {
+  margin: 13px 0 3px; padding: 12px 13px 11px;
+  background: #FBF8F1; border: 1px solid var(--hair-soft); border-radius: 14px;
 }
-.legend li { display: flex; align-items: center; gap: 5px; }
+.howto__title {
+  font-size: 9px; font-weight: 600; letter-spacing: .2em;
+  color: var(--mute); text-transform: uppercase;
+}
+.howto__list { margin-top: 9px; display: flex; flex-direction: column; gap: 5px; }
+.howto__list li { display: flex; align-items: center; gap: 7px; }
+.howto__txt { font-size: 10.5px; line-height: 1.55; color: var(--ink-2); }
+.howto__badges { display: inline-flex; gap: 3px; flex: none; }
+.howto .badge { min-width: 32px; flex: none; }
+.howto__free {
+  margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--hair);
+  font-size: 10.5px; color: #8A7B5C; line-height: 1.5;
+}
+.howto__free b { color: #7E6229; font-weight: 700; }
+
+/* 배지 (셀·안내 공통) */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 9.5px; font-weight: 600; line-height: 1;
+  padding: 4px 7px; border-radius: 999px;
+  letter-spacing: -0.01em; white-space: nowrap;
+}
+.badge--gold { background: rgba(196, 154, 80, .18); color: #7E6229; }
+.badge--red { background: rgba(191, 106, 91, .16); color: #8E4A3D; }
+.badge--blue { background: rgba(113, 136, 157, .16); color: #4F6679; }
+.badge--gray { background: rgba(169, 162, 150, .22); color: #6C6558; }
 .dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; flex: none; }
 .dot--gold { background: var(--dot-gold); }
 .dot--red { background: var(--dot-red); }
@@ -312,29 +366,43 @@ form { margin-top: 22px; }
 .cal__dow span:first-child { color: #B07A6C; }
 .cal__dow span:last-child { color: #7A8B9B; }
 
-.cal { display: grid; grid-template-columns: repeat(7, 1fr); padding-top: 8px; row-gap: 2px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); padding-top: 8px; row-gap: 3px; column-gap: 1px; }
 .day {
   appearance: none; border: 0; background: none;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 3px 0 5px; border-radius: 12px; min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 4px 0 6px; border-radius: 12px; min-height: 52px;
   transition: background .18s ease;
 }
+.day:hover { background: rgba(29, 28, 25, .045); }
 .day__num {
-  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
   border-radius: 50%; font-size: 12.5px; color: var(--ink-2);
   font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
   transition: background .18s ease, color .18s ease;
 }
 .day--sun .day__num { color: #B07A6C; }
 .day--sat .day__num { color: #7A8B9B; }
-.day--free { background: rgba(174, 138, 80, .065); }
+
+/* 무료 구간(오늘~D+2)은 은은한 테두리로 */
+.day--free { box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .22); }
+/* 중요한 날의 파스텔 틴트 — 주의는 코랄, 기회는 골드 */
+.day--t-red { background: rgba(191, 106, 91, .085); }
+.day--t-gold { background: rgba(196, 154, 80, .12); }
+
 .day--past { opacity: .3; }
-.day--past .day__dots { visibility: hidden; }
+.day--past .day__badges { visibility: hidden; }
 .day.is-today .day__num { box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .4); }
 .day.is-sel .day__num { background: var(--ink); color: #F9F6EF; box-shadow: none; }
 .day.is-sel.day--sun .day__num, .day.is-sel.day--sat .day__num { color: #F9F6EF; }
-.day__dots { display: flex; gap: 3px; height: 5px; }
-.day__dots .dot { width: 4.5px; height: 4.5px; }
+
+.day__badges {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 2px; padding: 0 1px; min-height: 12px;
+}
+.day__badge {
+  font-size: 8.5px; line-height: 1; padding: 2.5px 4.5px;
+  border-radius: 5px; letter-spacing: -0.03em;
+}
 
 .cal__note {
   margin-top: 14px; padding: 11px 13px;
@@ -487,12 +555,15 @@ form { margin-top: 22px; }
 @media (max-width: 360px) {
   .card { padding: 20px 16px; }
   .card--cal { padding: 20px 10px 16px; }
-  .day { min-height: 41px; }
-  .day__num { width: 24px; height: 24px; font-size: 11.5px; }
-  .natal__hanja { font-size: 20px; }
+  .day { min-height: 50px; }
+  .day__num { width: 23px; height: 23px; font-size: 11.5px; }
+  .day__badge { font-size: 8px; padding: 2px 4px; }
+  .natal__tile { width: 36px; height: 36px; font-size: 19px; }
 }
 @media (min-width: 520px) {
-  .day__num { width: 30px; height: 30px; font-size: 13.5px; }
-  .day { min-height: 50px; }
+  .day__num { width: 28px; height: 28px; font-size: 13.5px; }
+  .day { min-height: 58px; }
+  .day__badge { font-size: 9.5px; padding: 3px 6px; }
   .cal__title { font-size: 26px; }
+  .natal__tile { width: 46px; height: 46px; font-size: 24px; }
 }
