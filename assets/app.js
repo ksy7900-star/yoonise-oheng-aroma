@@ -313,6 +313,7 @@
     var who = name ? name + '님' : '나';
 
     $('#result').hidden = false;
+    $('#formCard').hidden = true;
     renderSavedBar(res);
 
     // 요약
