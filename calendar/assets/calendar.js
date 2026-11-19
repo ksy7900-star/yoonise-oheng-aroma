@@ -527,10 +527,10 @@
 
   function downloadICS() {
     if (!state.icsDays.length) return;
-    var name = state.res.input.name || '';
-    var text = T.buildICS(state.icsDays, { name: name });
-    var fileName = 'yoonise-timing-' + state.todayISO.replace(/-/g, '') + '-free7.ics';
     try {
+      var name = state.res.input.name || '';
+      var text = T.buildICS(state.icsDays, { name: name });
+      var fileName = 'yoonise-timing-' + state.todayISO.replace(/-/g, '') + '-free7.ics';
       var blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
@@ -540,7 +540,7 @@
       setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1500);
       $('#icsStatus').textContent = '파일을 만들었어요 — ' + fileName + ' · 열어서 캘린더에 추가해 주세요.';
     } catch (e) {
-      $('#icsStatus').textContent = '이 브라우저에서는 파일 저장이 막혀 있어요. 새 창으로 열어 저장해 주세요.';
+      $('#icsStatus').textContent = '이 브라우저에서는 파일 저장이 막혀 있어요. 잠시 뒤 다시 시도해 주세요.';
     }
   }
 

@@ -402,12 +402,20 @@
     return String(s == null ? '' : s)
       .replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\n');
   }
+  function utf8Len(ch) {
+    var c = ch.codePointAt(0);
+    if (c < 0x80) return 1;
+    if (c < 0x800) return 2;
+    if (c < 0x10000) return 3;
+    return 4;
+  }
   function foldLine(line) {
-    // RFC 5545: 75옥텟. 한글은 UTF-8 3바이트라 바이트로 센다.
+    // RFC 5545: 75옥텟. 이모지는 서로게이트 쌍이라 코드포인트 단위로 센다.
     var out = '', bytes = 0, buf = '';
-    for (var i = 0; i < line.length; i++) {
-      var ch = line.charAt(i);
-      var b = encodeURIComponent(ch).replace(/%[0-9A-F]{2}/g, 'x').length;
+    var chars = Array.from ? Array.from(line) : line.split('');
+    for (var i = 0; i < chars.length; i++) {
+      var ch = chars[i];
+      var b = utf8Len(ch);
       if (bytes + b > 72) { out += buf + '\r\n '; buf = ''; bytes = 0; }
       buf += ch; bytes += b;
     }
