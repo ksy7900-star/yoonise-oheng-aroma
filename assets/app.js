@@ -317,7 +317,6 @@
     renderSavedBar(res);
 
     // 요약
-    $('#summaryEyebrow').textContent = who + '의 사주';
     $('#summaryTitle').textContent = who === '나' ? '나의 사주 원국' : who + '의 사주 원국';
     var dateBits = [
       '양력 ' + res.solar.y + '.' + p2(res.solar.m) + '.' + p2(res.solar.d),
