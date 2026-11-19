@@ -33,37 +33,37 @@
     목: {
       key: 'wood', label: '목(木)', josa: '이',
       why: '새로 시작하고 뻗어 나가는 기운 — 기회를 붙잡고 사람에게 먼저 다가가는 힘을 채워 줍니다.',
-      done: '✨ 오늘 럭키 기운 충전 완료!',
-      sub: '별빛이 톡톡 — 오늘은 먼저 손 내밀어 보세요.',
-      taps: ['톡 — 새싹이 올라옵니다', '톡톡 — 마지막 한 번!']
+      done: '✨ 럭키 풀충전! 오늘은 먼저 말 꺼낸 사람이 이기는 날!',
+      sub: '먼저 보낸 카톡 한 줄이 오늘의 승부수.',
+      taps: ['오늘 운발 부스터 켜는 중...', '눈치 보지 말고 슬쩍 던져 볼까?']
     },
     화: {
       key: 'fire', label: '화(火)', josa: '가',
       why: '결정하고 표현하는 기운 — 미루지 않고 밀고 나가는 힘을 채워 줍니다.',
-      done: '🔥 오늘 결정의 불씨 ON!',
-      sub: '오늘 정할 일 하나, 지금 적어 두세요.',
-      taps: ['톡 — 불씨가 붙었어요', '톡톡 — 마지막 한 번!']
+      done: '🔥 결정 불씨 ON! 오늘 찍은 도장·메모 한 줄이 한 달 갑니다!',
+      sub: '미룬 결정 하나 = 야근 한 스푼.',
+      taps: ['복잡한 생각 다림질하는 중...', '망설이면 놓친다, 직감 쪽으로!']
     },
     토: {
       key: 'earth', label: '토(土)', josa: '가',
       why: '중심을 잡고 버티는 기운 — 일이 흔들릴 때 내 자리를 지키는 힘을 채워 줍니다.',
-      done: '🌱 오늘 리셋 완료 — 중심 다시 세웠어요.',
-      sub: '새 달의 기준을 한 줄로 적어 두면 오래갑니다.',
-      taps: ['톡 — 중심이 잡혀요', '톡톡 — 마지막 한 번!']
+      done: '🌱 리셋 완료! 어제 후회는 어제에 두고 오늘부터 새 판!',
+      sub: '책상 위 서류 세 장만 치워도 머리가 리셋돼요.',
+      taps: ['지난 기운 먼지 탈탈 털어내는 중...', '마음 책상 깔끔하게 비우는 중...']
     },
     금: {
       key: 'metal', label: '금(金)', josa: '이',
       why: '벌여 둔 일을 매듭짓고 재물을 지키는 기운을 채워 줍니다.',
-      done: '💰 오늘 머니 그릇 채움 완료!',
-      sub: '나가는 돈부터 한 번 확인해 보세요.',
-      taps: ['톡 — 그릇이 단단해져요', '톡톡 — 마지막 한 번!']
+      done: '💰 머니 그릇 세팅 끝! 들어올 돈은 반기고 충동결제는 로그아웃!',
+      sub: '3일 묵힌 장바구니는 오늘 로그아웃.',
+      taps: ['장바구니 결제 누르기 전에 잠깐...', '지갑 지퍼 꽉 잡는 중...']
     },
     수: {
       key: 'water', label: '수(水)', josa: '가',
       why: '차분히 흐르며 지켜 내는 기운 — 말과 감정을 다스리는 힘을 채워 줍니다.',
-      done: '🛡️ 오늘 입단속 방패 ON!',
-      sub: '보내기 전에 한 번 접어 두세요.',
-      taps: ['톡 — 방패가 올라와요', '톡톡 — 마지막 한 번!']
+      done: '🛡️ 입단속 방패 ON! 오늘 할 말 반만 줄이면 내일 이불킥 0번!',
+      sub: '답장은 초안에 넣어 두고 내일 아침에.',
+      taps: ['잠깐, 지금 카톡 보내기 전에 3초만...', '손가락 멈춰! 아직 답장 타이밍 아님!']
     }
   };
 
@@ -421,8 +421,8 @@
     return repElement().el;   // 배지 없는 평범한 날은 1년 대표 부적으로
   }
 
-  function doneText(t, iso) {
-    return iso === state.todayISO ? t.done : t.done.replace('오늘 ', '이 날 ');
+  function doneText(t) {
+    return t.done;   // 대사는 날짜와 상관없이 그대로 — 위트 있는 완료 문구
   }
 
   function ritualHTML(info) {
@@ -437,8 +437,8 @@
     var lead = info.iso === state.todayISO ? '오늘의 수호 부적' : '이 날의 수호 부적';
     var msg = done
       ? esc(doneText(t, info.iso)) + '<small>' + esc(t.sub) + '</small>'
-      : (n > 0 ? '한 번 더 — ' + (3 - n) + '번 남았어요.' : '부적을 세 번 두드려 ' +
-        (info.iso === state.todayISO ? '오늘' : '그날') + '의 기운을 켜 보세요.');
+      : (n > 0 ? '한 번 더 — ' + (3 - n) + '번 남았어요.' : '부적을 톡톡톡 세 번 두드리면 ' +
+        (info.iso === state.todayISO ? '오늘' : '그날') + ' 기운이 켜져요.');
     return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso + '" data-el="' + el + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + ' · ' + esc(tag) + '</p>' +
       '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(t.label) + ' 부적 두드리기 (' + n + '/3)">' +
@@ -759,7 +759,7 @@
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       saeunHtml +
       ritualHTML(info) +
-      '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>✓ 달력에 금색 완료 도장을 찍었어요.</p>' +
+      '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>✓ 달력에 금색 도장 쾅 — 한 칸 채웠어요.</p>' +
       '<div class="brief__gz modal__gz">' +
       '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
       '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
