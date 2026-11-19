@@ -44,8 +44,7 @@
     '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(35.5 35.5)"/>' +
     '</g>' +
     '</svg>';
-  /* 오행별 기운 색·표정 배지·파티클 — 0타 대기 / 1타 / 2타 / 3타 완료에서 확확 바뀐다 */
-  var TAP_BADGE = ['✨', '⚡', '🔥'];
+  /* 오행별 기운 색·파티클 — 1타 / 2타 / 3타 완료에서 확확 바뀐다 */
   var EL_THEME = {
     목: { color: '#6FAE5B', badge: '🌱', parts: ['🍃', '🌱', '✦', '💚'], cheer: '새싹이 쑥!' },
     화: { color: '#F0714E', badge: '💖', parts: ['💗', '🔥', '⭐', '✦'], cheer: '불꽃이 활활!' },
@@ -551,7 +550,6 @@
       ? esc(lot.done) + '<small>' + esc(lot.sub) + '</small>'
       : (n > 0 ? lot.taps[n - 1] : '부적을 톡톡톡 세 번 두드리면 ' +
         (info.iso === state.todayISO ? '오늘' : '그날') + ' 기운이 켜져요.');
-    var badge = done ? th.badge : (TAP_BADGE[n] || TAP_BADGE[0]);
     return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso +
       '" data-el="' + el + '" data-stage="' + n + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + (tag ? ' · ' + esc(tag) : '') + '</p>' +
@@ -564,7 +562,6 @@
       '<span class="ritual__char">' + (Chars ? Chars.svg(el, { stage: n }) : '') + '</span>' +
       '<span class="ritual__fx" aria-hidden="true"></span>' +
       '</button>' +
-      '<span class="ritual__badge" aria-hidden="true">' + badge + '</span>' +
       '<span class="ritual__pop" aria-hidden="true"></span>' +
       '</div>' +
       '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +
@@ -634,19 +631,10 @@
   }
 
   function setStage(wrap, n) {                   // 0타 → 1타 → 2타 → 3타 표정·기운 교체
-    var el = wrap.getAttribute('data-el');
-    var th = EL_THEME[el] || EL_THEME['화'];
     wrap.setAttribute('data-stage', String(n));
     var ch = wrap.querySelector('.ch');
     if (ch) ch.setAttribute('data-stage', String(n));
     if (n >= 3) wrap.classList.add('is-done');
-    var b = wrap.querySelector('.ritual__badge');
-    if (b) {
-      b.textContent = n >= 3 ? th.badge : (TAP_BADGE[n] || TAP_BADGE[0]);
-      b.classList.remove('is-pop');
-      void b.offsetWidth;
-      b.classList.add('is-pop');
-    }
   }
 
   function onRitualTap(btn, ev) {
