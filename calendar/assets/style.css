@@ -1494,7 +1494,7 @@ body.is-modal-open { overflow: hidden; }
 }
 .bowl__halo {
   position: absolute; inset: 6%; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(232, 186, 96, .38) 0%, rgba(232, 186, 96, .13) 48%, rgba(232, 186, 96, 0) 100%);
+  background: radial-gradient(closest-side, rgba(232, 186, 96, .42) 0%, rgba(232, 186, 96, .13) 52%, rgba(232, 186, 96, 0) 100%);
   opacity: .3; transform: scale(var(--bs, 1));
   transition: transform .26s linear, opacity .4s ease;
 }
