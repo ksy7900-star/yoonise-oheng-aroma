@@ -514,7 +514,7 @@
       days.push(info);
     }
     var exportable = days.filter(function (d) {
-      return d.dots.length > 0 || !!d.term;
+      return !!d.term || d.marks.some(function (m) { return !m.minor && (m.cat === 'red' || m.cat === 'gold'); });
     });
     state.icsDays = exportable;
     var btn = $('#icsBtn');
