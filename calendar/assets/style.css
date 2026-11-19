@@ -389,7 +389,7 @@ form { margin-top: 22px; }
 .day--t-red { background: rgba(191, 106, 91, .085); }
 .day--t-gold { background: rgba(196, 154, 80, .12); }
 
-.day--past { opacity: .3; }
+.day--past { opacity: .3; background: none; box-shadow: none; }
 .day--past .day__badges { visibility: hidden; }
 .day.is-today .day__num { box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .4); }
 .day.is-sel .day__num { background: var(--ink); color: #F9F6EF; box-shadow: none; }
@@ -397,12 +397,18 @@ form { margin-top: 22px; }
 
 .day__badges {
   display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 2px; padding: 0 1px; min-height: 12px;
+  gap: 2.5px; padding: 0 1px; min-height: 15px;
 }
 .day__badge {
-  font-size: 8.5px; line-height: 1; padding: 2.5px 4.5px;
+  font-size: 9px; line-height: 1; padding: 3px 5px;
   border-radius: 5px; letter-spacing: -0.03em;
+  background: #FFFFFF;
 }
+/* 셀 안의 배지는 흰 바탕 + 얇은 링으로 — 틴트 위에서도 또렷하게 */
+.day__badge.badge--red { background: #FFFFFF; color: #9A4A3A; box-shadow: inset 0 0 0 1px rgba(191, 106, 91, .32); }
+.day__badge.badge--gold { background: #FFFFFF; color: #7C5F1F; box-shadow: inset 0 0 0 1px rgba(196, 154, 80, .36); }
+.day__badge.badge--blue { background: #FFFFFF; color: #4A6478; box-shadow: inset 0 0 0 1px rgba(113, 136, 157, .32); }
+.day__badge.badge--gray { background: #FFFFFF; color: #6A6357; box-shadow: inset 0 0 0 1px rgba(169, 162, 150, .38); }
 
 .cal__note {
   margin-top: 14px; padding: 11px 13px;
@@ -557,13 +563,13 @@ form { margin-top: 22px; }
   .card--cal { padding: 20px 10px 16px; }
   .day { min-height: 50px; }
   .day__num { width: 23px; height: 23px; font-size: 11.5px; }
-  .day__badge { font-size: 8px; padding: 2px 4px; }
+  .day__badge { font-size: 8px; padding: 2.5px 4px; }
   .natal__tile { width: 36px; height: 36px; font-size: 19px; }
 }
 @media (min-width: 520px) {
   .day__num { width: 28px; height: 28px; font-size: 13.5px; }
   .day { min-height: 58px; }
-  .day__badge { font-size: 9.5px; padding: 3px 6px; }
+  .day__badge { font-size: 10px; padding: 3px 6px; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
 }
