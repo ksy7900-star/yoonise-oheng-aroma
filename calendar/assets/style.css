@@ -1236,6 +1236,23 @@ body.is-modal-open { overflow: hidden; }
 .pay__pick-btn span { font-size: 10px; color: var(--mute); }
 .pay__pick-btn.is-on { background: #1C1B19; border-color: #1C1B19; color: #F2EDE3; }
 .pay__pick-btn.is-on span { color: rgba(242, 237, 227, .66); }
+/* 소액(1만 원 미만) 계좌이체 전용 — 버튼 하나만 */
+.pay--single { grid-template-columns: 1fr; }
+.pay__guide {
+  margin-top: 12px; padding: 9px 12px; border-radius: 12px;
+  font-size: 10px; line-height: 1.65; color: #6B5B3E;
+  background: #FBF3E2; border: 1px dashed rgba(174, 138, 80, .42);
+}
+.pay__guide b { color: #8E6B2C; font-weight: 700; }
+/* 개운템 4가지 선택 칩 — 이름·가격 두 줄 */
+.pay__pick--4 .pay__pick-btn { flex-direction: column; gap: 3px; padding: 11px 8px; }
+/* 부족한 오행별 추천 자연·장소 배지 */
+.care__place {
+  margin-top: 12px; padding: 11px 13px; border-radius: 14px;
+  font-size: 10.5px; line-height: 1.65; color: var(--ink-2);
+  background: #FBF7EE; border: 1px solid rgba(174, 138, 80, .26);
+}
+.care__place b { color: #9E4A2E; font-weight: 700; }
 .shop__save {
   margin-top: 12px; padding: 11px 14px; border-radius: 14px;
   background: #FBF3E2; border: 1px dashed rgba(174, 138, 80, .45);

@@ -985,7 +985,7 @@
      100% 디지털 상품입니다. 실물 다이어리·배송은 넣지 않습니다. */
   var PASS_PRICE = '14,900원';
   var ALLINONE_PRICE = '19,900원';
-  var CARE_PRICE = '낱개 2,900원 · 3종 세트 5,900원';
+  var CARE_PRICE = '1종 2,900원 · 3종 풀세트 5,900원';
   var CONSULT_PRICE = '49,000원~';
 
   var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
@@ -1019,19 +1019,24 @@
       .filter(function (v) { return !!v; }).join(' ');
   }
 
-  function payActionsHTML(item) {
+  /* opts.card === false 이면 카드 버튼 없이 계좌이체 하나만 (1만 원 미만 소액 상품)
+     opts.bankSub 로 계좌이체 버튼 아래 문구를 바꿀 수 있다 (선택한 구성·금액 표시) */
+  function payActionsHTML(item, opts) {
+    opts = opts || {};
+    var withCard = opts.card !== false;
     var card = !!cardUrlOf(item);
     var bank = bankReady();
-    return '<div class="pay" role="group" aria-label="결제 방법">' +
-      '<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' +
+    var bankSub = opts.bankSub || (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내');
+    return '<div class="pay' + (withCard ? '' : ' pay--single') + '" role="group" aria-label="결제 방법">' +
+      (withCard ? ('<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' +
       '<span class="pay__ico" aria-hidden="true">💳</span>' +
       '<span class="pay__label"><b>카드결제 (페이앱)</b>' +
       '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>' +
-      '</button>' +
+      '</button>') : '') +
       '<button type="button" class="pay__btn pay__btn--bank" data-pay="bank" data-item="' + esc(item) + '">' +
       '<span class="pay__ico" aria-hidden="true">🏦</span>' +
       '<span class="pay__label"><b>계좌이체</b>' +
-      '<span>' + (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내') + '</span></span>' +
+      '<span>' + bankSub + '</span></span>' +
       '</button>' +
       '</div>' +
       '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
@@ -1094,8 +1099,10 @@
     }
     if (bankReady()) {
       var text = bankText();
+      var label = itemLabel(item);
       var bankNote = function (copied) {
-        payNote((copied === true ? '계좌번호를 복사했어요' : (copied === false ? '아래 계좌로 입금해 주세요' : '입금 계좌는 여기예요')) +
+        payNote((label ? '<b>' + esc(label) + '</b> 결제 · ' : '') +
+          (copied === true ? '계좌번호를 복사했어요' : (copied === false ? '아래 계좌로 입금해 주세요' : '입금 계좌는 여기예요')) +
           ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
           kakaoLinkHTML('입금 확인 카톡 보내기 →'));
       };
@@ -1245,6 +1252,33 @@
 
   var care = { draws: 0, charge: 0, lit: false, bowl: null, bowlTimer: null, buy: 'set' };
 
+  /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트 */
+  var CARE_ITEMS = {
+    card: { ico: '🃏', name: '행동 카드', price: '2,900원' },
+    objet: { ico: '💎', name: '개운 오브제', price: '2,900원' },
+    bowl: { ico: '🔔', name: '1분 싱잉볼', price: '2,900원' },
+    set: { ico: '⚡', name: '3종 풀세트', price: '5,900원', rec: true }
+  };
+  var CARE_ITEM_ORDER = ['card', 'objet', 'bowl', 'set'];
+
+  function careItemLabel(v) {
+    var it = CARE_ITEMS[v];
+    return it ? it.name + ' ' + it.price : '';
+  }
+  function itemLabel(item) {
+    var m = /^care-(card|objet|bowl|set)$/.exec(String(item || ''));
+    return m ? careItemLabel(m[1]) : '';
+  }
+
+  /* 부족한 오행별 추천 자연·장소 */
+  var CARE_PLACE = {
+    목: '공원 · 나무 아래 · 식물 옆이나 동쪽 창가',
+    화: '햇볕 드는 남향 창가 · 따뜻한 조명 아래 · 활기찬 카페',
+    토: '흙 밟는 산책로 · 집 중심 거실 · 차분한 돌/도자기 옆',
+    금: '깨끗이 비운 책상 · 서쪽 창가 · 시원한 바람 부는 곳',
+    수: '물가(강·바다·분수) · 조용한 밤 공간 · 샤워 후 차분한 방'
+  };
+
   function careElement() {
     return state.res ? repElement().el : '화';
   }
@@ -1278,6 +1312,7 @@
     var idx = (seedOf(state.todayISO) + care.draws) % c.missions.length;
     return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
       '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
+      '<p class="care__place"><b>📍 추천 공간:</b> ' + esc(CARE_PLACE[el] || CARE_PLACE['화']) + '</p>' +
       '<p class="shop__sub">부적을 붙여도 유독 막히고 안 풀리는 날, 앱에서 바로 꺼내 쓰는 <b>3가지</b>예요. 지금 여기서 그대로 체험해 보세요.</p>' +
 
       /* ① 행동 카드 */
@@ -1325,13 +1360,15 @@
       '</section>' +
 
       priceHTML('긴급 개운템', CARE_PRICE) +
-      '<div class="pay__pick" role="group" aria-label="개운템 구성 선택">' +
-      '<button type="button" class="pay__pick-btn' + (care.buy === 'one' ? ' is-on' : '') + '" data-careitem="one" aria-pressed="' + (care.buy === 'one') + '">' +
-      '<b>낱개 1종</b><span>2,900원</span></button>' +
-      '<button type="button" class="pay__pick-btn' + (care.buy === 'set' ? ' is-on' : '') + '" data-careitem="set" aria-pressed="' + (care.buy === 'set') + '">' +
-      '<b>3종 세트</b><span>5,900원</span></button>' +
+      '<div class="pay__pick pay__pick--4" role="group" aria-label="개운템 구성 선택">' +
+      CARE_ITEM_ORDER.map(function (k) {
+        var it = CARE_ITEMS[k], on = care.buy === k;
+        return '<button type="button" class="pay__pick-btn' + (on ? ' is-on' : '') + '" data-careitem="' + k + '" aria-pressed="' + on + '">' +
+          '<b>' + it.ico + ' ' + esc(it.name) + '</b><span>' + esc(it.price) + (it.rec ? ' · 추천' : '') + '</span></button>';
+      }).join('') +
       '</div>' +
-      payActionsHTML('care-' + care.buy) +
+      '<p class="pay__guide">소액(1만 원 미만) 상품은 계좌이체 전용이에요 · <b>' + esc(String(BANK_NAME).trim()) + ' ' + esc(String(BANK_ACCOUNT).trim()) + '</b></p>' +
+      payActionsHTML('care-' + care.buy, { card: false, bankSub: esc(careItemLabel(care.buy)) + ' · 계좌번호 복사' }) +
       '<div class="shop__consult">' +
       '<b>윤이세 1:1 상담 ' + CONSULT_PRICE + '</b>' +
       '<span>캘린더·개운템으로도 안 풀리면, 내 상황을 통째로 보고 길을 잡아 드려요.</span>' +
@@ -1472,7 +1509,7 @@
 
   /* 개운템 구성(낱개 / 3종 세트) 고르면 결제 두 버튼이 그 구성으로 바뀐다 */
   function setCareItem(v) {
-    if (v !== 'one' && v !== 'set') return;
+    if (!CARE_ITEMS[v]) return;
     care.buy = v;
     if (!shopBody) return;
     $$('[data-careitem]', shopBody).forEach(function (b) {
@@ -1483,6 +1520,8 @@
     $$('[data-pay]', shopBody).forEach(function (b) {
       if (b.getAttribute('data-item')) b.setAttribute('data-item', 'care-' + v);
     });
+    var bankSub = shopBody.querySelector('[data-pay="bank"] .pay__label span');
+    if (bankSub) bankSub.textContent = careItemLabel(v) + ' · 계좌번호 복사';
     var cardSub = shopBody.querySelector('[data-pay="card"] .pay__label span');
     if (cardSub) cardSub.textContent = cardUrlOf('care-' + v) ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기';
     var note = shopBody.querySelector('[data-pay-note]');
