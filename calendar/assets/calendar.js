@@ -72,7 +72,7 @@
   var state = {
     gender: '', calendar: 'solar', res: null, natal: null,
     terms: null, view: null, sel: null, todayISO: '', cache: {}, icsDays: [],
-    stamps: {}, justStamped: null
+    stamps: {}, justStamped: null, pendingStamp: null
   };
 
   /* ── 저장 ──────────────────────────────────────────── */
@@ -480,7 +480,7 @@
     n += 1;
     ritual[iso] = n;
     spawnFx(btn);
-    if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+    if (n >= 3) sfxDone(); else sfxTap(n);
 
     var countEl = wrap.querySelector('.ritual__count b');
     if (countEl) countEl.textContent = n + '/3';
@@ -491,8 +491,15 @@
       saveStamp(iso, el);
       wrap.classList.add('is-done');
       if (msgEl) msgEl.innerHTML = esc(doneText(t, iso)) + '<small>' + esc(t.sub) + '</small>';
-      state.justStamped = iso;
-      renderCalendar();                       // 달력 셀에 도장이 쾅
+      if (modalEl && !modalEl.hidden) {
+        // 팝업이 닫히는 순간 달력 셀에 도장이 쾅 찍히도록 미뤄 둔다
+        state.pendingStamp = iso;
+        var note = modalBody && modalBody.querySelector('.modal__stamp-note');
+        if (note) note.hidden = false;
+      } else {
+        state.justStamped = iso;
+        renderCalendar();                     // 달력 셀에 도장이 쾅
+      }
     } else if (msgEl) {
       msgEl.textContent = t.taps[n - 1] || ('한 번 더 — ' + (3 - n) + '번 남았어요.');
     }
@@ -505,15 +512,6 @@
     renderTalisman();
     renderCalendar();
     renderIcs();
-    var sel = state.sel || state.todayISO;
-    if (sel >= RANGE_FROM && sel <= RANGE_TO) {
-      if (!state.sel) {
-        var p = T.parseISO(sel);
-        if (p.y === state.view.y && p.m === state.view.m) { state.sel = sel; }
-        else state.sel = state.view.y + '-' + (state.view.m < 10 ? '0' : '') + state.view.m + '-01';
-      }
-      renderDetail(state.sel);
-    }
   }
 
   function renderSavedBar() {
@@ -678,60 +676,91 @@
     var v = clampView(state.view.y, state.view.m + dir);
     if (v.y === state.view.y && v.m === state.view.m) return;
     state.view = v;
-    var p = T.parseISO(state.todayISO);
-    state.sel = (p.y === v.y && p.m === v.m) ? state.todayISO : T.isoOf(v.y, v.m, 1);
+    state.sel = null;
     renderCalendar();
-    renderDetail(state.sel);
   }
 
-  /* ── 날짜 상세 ─────────────────────────────────────── */
-  function renderDetail(iso) {
+  /* ── 날짜 팝업 모달 ───────────────────────────────── */
+  var modalEl = null, modalBody = null, modalDialog = null;
+  var lastFocus = null, modalClosing = false;
+
+  function openDayModal(iso) {
     var info = infoFor(iso);
-    if (!info) return;
-    var el = $('#detail');
-    if (iso < state.todayISO) {
-      el.innerHTML = '<article class="brief"><p class="brief__date">' + fmtMD(iso) +
-        '<small>' + DOW_EN[info.dow] + '</small></p>' +
-        '<p class="brief__headline" style="margin-top:10px">지난 날이에요.</p>' +
-        '<p class="micro">지난 날짜의 처방은 열리지 않습니다. 오늘이나 내일 날짜를 눌러 보세요.</p></article>';
-      return;
-    }
-    if (!inFree(iso)) { el.innerHTML = lockHTML(info); return; }
-    el.innerHTML = briefHTML(info);
+    if (!info || !modalEl) return;
+    var lock = !inFree(iso);
+    lastFocus = document.activeElement;
+    state.sel = iso;
+    renderCalendar();                       // 날짜 칸 선택 표시
+    modalBody.innerHTML = lock ? lockModalHTML(info) : briefModalHTML(info);
+    modalDialog.classList.toggle('modal__dialog--lock', lock);
+    modalEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    modalBody.scrollTop = 0;
+    sfxOpen();                              // 뿅 — 사용자 클릭 안에서 재생
+    try { modalDialog.focus({ preventScroll: true }); } catch (e) { modalDialog.focus(); }
   }
 
-  function briefHTML(info) {
+  function closeDayModal() {
+    if (!modalEl || modalEl.hidden || modalClosing) return;
+    modalClosing = true;
+    modalEl.classList.add('is-closing');
+    var backIso = state.sel;
+    setTimeout(function () {
+      modalEl.classList.remove('is-closing');
+      modalEl.hidden = true;
+      document.body.classList.remove('is-modal-open');
+      modalBody.innerHTML = '';
+      modalClosing = false;
+      if (state.pendingStamp) {
+        // 팝업이 사라진 자리에서 달력 셀에 금색 ✓가 쾅
+        state.justStamped = state.pendingStamp;
+        state.pendingStamp = null;
+        renderCalendar();
+      }
+      var back = backIso ? $('#calGrid .day[data-iso="' + backIso + '"]') : null;
+      var target = back || lastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      lastFocus = null;
+    }, 180);
+  }
+
+  function modalHead(info) {
+    var today = info.iso === state.todayISO;
+    return '<p class="modal__eyebrow">' + (today ? 'TODAY · 데일리 브리핑' : 'DAILY BRIEFING · 데일리 브리핑') + '</p>' +
+      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
+      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일</span></p>' +
+      '<p class="modal__sub">' + esc(fmtKoDate(info.iso)) + ' · 음력 ' + esc(info.lunarText) + '</p>';
+  }
+
+  function briefModalHTML(info) {
     var gz = info.gz;
+    var today = info.iso === state.todayISO;
+    var when = today ? '오늘' : '이 날';
     var strong = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; });
-    var marks = strong.slice(0, 3);
-    var markHtml = marks.map(function (m) {
+    var markHtml = strong.slice(0, 3).map(function (m) {
       return '<span class="mark mark--' + m.cat + '"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
     var why = info.marks.filter(function (m) { return m.cat !== 'gray'; })
       .map(function (m) { return '<li>' + esc(m.detail) + '</li>'; }).join('');
-    var myGan = state.natal ? state.natal.gan : '';
-    var whyTen = '<li>내 일간 ' + esc(myGan) + ' 기준, 오늘 천간 ' + esc(gz.gan) + '은 ' + esc(info.tenGod || '—') +
-      ' — ' + esc(info.tenGod === '비견' || info.tenGod === '겁재' ? '내 기운이 그대로 올라오는 자리' : '내 사주 위에 오늘 얹히는 자리') + '</li>';
+    var whyTen = '<li>내 일간 ' + esc(state.natal ? state.natal.gan : '') + ' 기준, ' + when + ' 천간 ' + esc(gz.gan) + '은 ' +
+      esc(info.tenGod || '—') + ' — ' +
+      esc(info.tenGod === '비견' || info.tenGod === '겁재' ? '내 기운이 그대로 올라오는 자리' : '내 사주 위에 하루가 얹히는 자리') + '</li>';
 
     var termLine = info.term
       ? '<p class="brief__term"><b>' + esc(info.term.ko) + '</b> ' + esc(info.term.time) + ' · ' +
         (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '24절기') + '</p>'
       : '';
-
     var saeunHtml = info.saeun
       ? '<p class="brief__saeun">' + esc(info.saeun.label) + ' 세운' +
         (info.saeun.isLichunDay ? ' · <b>이날 입춘, 새 세운 시작</b>' : '') + '</p>'
       : '';
 
-    return '<article class="brief">' +
-      '<div class="brief__top">' +
-      '<p class="brief__date">' + fmtMD(info.iso) + '<small>' + DOW_EN[info.dow] + '</small></p>' +
-      '<p class="brief__lunar">' + esc(fmtKoDate(info.iso)) + '<br>음력 ' + esc(info.lunarText) + '</p>' +
-      '</div>' +
-      '<p class="brief__headline">' + esc(info.headline) + '</p>' +
+    return modalHead(info) +
+      '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       saeunHtml +
-      '<div class="brief__rule"></div>' +
-      '<div class="brief__gz">' +
+      ritualHTML(info) +
+      '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>✓ 달력에 금색 완료 도장을 찍었어요.</p>' +
+      '<div class="brief__gz modal__gz">' +
       '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
       '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
       '<span class="pill pill--' + esc(info.ganEl) + '">' + esc(info.ganEl) + '</span>' +
@@ -741,36 +770,129 @@
       (markHtml ? '<div class="marks">' + markHtml + '</div>' : '') +
       '<ul class="brief__why">' + whyTen + why + '</ul>' +
       '<div class="rx">' +
-      '<p class="rx__label">오늘의 처방</p>' +
+      '<p class="rx__label">' + when + '의 처방</p>' +
       '<div class="rx__item"><span class="rx__n">01</span><span>' + esc(info.lines[0]) + '</span></div>' +
       '<div class="rx__item"><span class="rx__n">02</span><span>' + esc(info.lines[1]) + '</span></div>' +
       '</div>' +
-      ritualHTML(info) + termLine +
-      '</article>';
+      termLine +
+      '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
-  function lockHTML(info) {
+  function lockModalHTML(info) {
     var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
     var markHtml = marks.map(function (m) {
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
-    var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    return '<article class="lock">' +
-      '<p class="lock__eyebrow">FREE TRIAL · 3 DAYS</p>' +
-      '<p class="lock__date">' + fmtMD(info.iso) + ' <span>' + DOW_EN[info.dow] + ' · ' + esc(info.gz.textKo) + '일' +
-        (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
+    var fe = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
+    return '<p class="modal__eyebrow">FREE TRIAL · 3 DAYS</p>' +
+      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
+      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일' +
+      (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
-      '<p class="lock__title">🔒 3일 무료 체험 이후 · 정미년 1년 전체 열기</p>' +
-      '<p class="lock__sub">(정미년 패스 / 윤이세 1:1 상담)</p>' +
+      '<p class="lock__title">🔒 3일 무료 체험 이후<br>정미년 1년 전체 열기</p>' +
+      '<p class="lock__sub">정미년 패스 / 윤이세 1:1 상담</p>' +
       '<p class="lock__early">얼리버드 12+2개월 · 2026 연말·1월 보너스 포함</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
-      '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + freeEnd.m + '월 ' + freeEnd.d + '일까지) 밖이에요. ' +
+      '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
       '지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체와 리셋 알람까지 이어집니다.</p>' +
       '<div class="lock__actions">' +
       '<a class="btn btn--cream" href="' + KAKAO + '" target="_blank" rel="noopener">카카오톡으로 1:1 상담</a>' +
       '<a class="btn btn--ghost-light" href="' + LITTLY + '" target="_blank" rel="noopener">정미년 패스 안내 보기</a>' +
-      '</div></article>';
+      '</div>' +
+      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>';
+  }
+
+  /* ── 효과음 · 진동 (Web Audio 합성, 음원 파일 없음) ── */
+  var SOUND_KEY = 'yoonise.timing.sound.v1';
+  var sound = { on: true, ctx: null };
+
+  function loadSoundPref() {
+    try { if (localStorage.getItem(SOUND_KEY) === '0') sound.on = false; } catch (e) {}
+  }
+  function saveSoundPref() {
+    try { localStorage.setItem(SOUND_KEY, sound.on ? '1' : '0'); } catch (e) {}
+  }
+  function vibrate(p) {
+    if (!sound.on || !navigator.vibrate) return;
+    try { navigator.vibrate(p); } catch (e) {}
+  }
+  /* AudioContext는 반드시 사용자 제스처(날짜 클릭·부적 탭) 안에서 만든다
+     — 모바일 Safari/Chrome 자동재생 정책 통과용 */
+  function audioCtx() {
+    if (!sound.on) return null;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!sound.ctx) sound.ctx = new AC();
+      if (sound.ctx.state === 'suspended' && sound.ctx.resume) sound.ctx.resume();
+      return sound.ctx;
+    } catch (e) { return null; }
+  }
+  function tone(ctx, o) {
+    var t0 = ctx.currentTime + (o.at || 0);
+    var osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(o.from, t0);
+    if (o.to && o.to !== o.from) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + (o.glide || o.dur));
+    var peak = o.gain == null ? 0.14 : o.gain;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack || 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + o.dur + 0.03);
+  }
+  /* 나무 타격의 '톡' — 아주 짧은 밴드패스 노이즈 */
+  function wood(ctx, at, gain) {
+    var n = Math.floor(ctx.sampleRate * 0.05);
+    if (n <= 0) return;
+    var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3.2);
+    var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+    bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 1.0;
+    g.gain.value = gain == null ? 0.05 : gain;
+    src.buffer = buf; src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+    src.start(ctx.currentTime + (at || 0));
+  }
+
+  /* 1) 모달이 뿅 튀어나올 때 — 880→1320Hz 맑은 차임 */
+  function sfxOpen() {
+    vibrate(15);
+    var ctx = audioCtx(); if (!ctx) return;
+    tone(ctx, { from: 880, to: 1320, dur: 0.34, glide: 0.13, type: 'sine', gain: 0.13 });
+    tone(ctx, { from: 1320, to: 1760, dur: 0.28, type: 'sine', gain: 0.055, at: 0.07, glide: 0.12 });
+  }
+  /* 2) 부적 두드리기(1/3·2/3) — 420→220Hz 톡, 두 번째는 살짝 높게 */
+  function sfxTap(step) {
+    vibrate(25);
+    var ctx = audioCtx(); if (!ctx) return;
+    var base = 420 + (step - 1) * 45;
+    tone(ctx, { from: base, to: base * 0.52, dur: 0.14, glide: 0.05, type: 'triangle', gain: 0.2, attack: 0.004 });
+    tone(ctx, { from: base * 2, to: base * 2, dur: 0.06, type: 'sine', gain: 0.045 });
+    wood(ctx, 0, 0.05);
+  }
+  /* 3) 3/3 완료 — 도장 '쾅' 저음 타격 + C5-E5-G5-C6 상승 아르페지오 */
+  function sfxDone() {
+    vibrate([30, 40, 55]);
+    var ctx = audioCtx(); if (!ctx) return;
+    // 쾅 — 낮게 떨어지는 타격 + 노이즈 임팩트
+    tone(ctx, { from: 150, to: 52, dur: 0.26, glide: 0.16, type: 'sine', gain: 0.42, attack: 0.004 });
+    tone(ctx, { from: 96, to: 44, dur: 0.34, glide: 0.22, type: 'triangle', gain: 0.2, attack: 0.006 });
+    wood(ctx, 0, 0.12);
+    // 반짝 — 상승 화음
+    [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) {
+      tone(ctx, { from: f, to: f, dur: 0.55, type: 'sine', gain: 0.15, at: 0.09 + i * 0.085, attack: 0.008 });
+      tone(ctx, { from: f * 2, to: f * 2, dur: 0.4, type: 'triangle', gain: 0.035, at: 0.09 + i * 0.085 });
+    });
+  }
+  function syncSoundBtn() {
+    $$('.js-sound').forEach(function (b) {
+      b.textContent = sound.on ? '🔊 소리' : '🔇 무음';
+      b.setAttribute('aria-pressed', sound.on ? 'true' : 'false');
+      b.setAttribute('aria-label', sound.on ? '효과음과 진동 켜짐 — 끄기' : '효과음과 진동 꺼짐 — 켜기');
+      b.title = sound.on ? '효과음·진동 끄기' : '효과음·진동 켜기';
+      b.classList.toggle('is-off', !sound.on);
+    });
   }
 
   /* ── .ics ──────────────────────────────────────────── */
@@ -822,9 +944,45 @@
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
 
-    $('#detail').addEventListener('click', function (e) {
-      var btn = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (btn) onRitualTap(btn);
+    modalEl = $('#dayModal');
+    modalBody = $('#modalBody');
+    modalDialog = $('#modalDialog');
+
+    loadSoundPref();
+    syncSoundBtn();
+    $$('.js-sound').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        sound.on = !sound.on;
+        saveSoundPref();
+        syncSoundBtn();
+        if (sound.on) sfxTap(1);            // 켜졌다는 확인음도 제스처 안에서
+      });
+    });
+
+    // 팝업 안: 부적 두드리기 / X·배경·닫기 버튼
+    modalEl.addEventListener('click', function (e) {
+      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (tap) { onRitualTap(tap); return; }
+      if (e.target.closest('[data-modal-close]')) closeDayModal();
+    });
+
+    // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
+    document.addEventListener('keydown', function (e) {
+      if (!modalEl || modalEl.hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeDayModal(); return; }
+      if (e.key !== 'Tab') return;
+      var f = $$('a[href], button:not([disabled])', modalDialog).filter(function (el) {
+        return el.offsetParent !== null;
+      });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === modalDialog)) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
     });
 
     $('#calGrid').addEventListener('click', function (e) {
@@ -832,10 +990,7 @@
       if (!b) return;
       var iso = b.dataset.iso;
       if (iso < state.todayISO) return;
-      state.sel = iso;
-      renderCalendar();
-      renderDetail(iso);
-      $('#detail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      openDayModal(iso);
     });
 
     var saved = loadInput();

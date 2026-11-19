@@ -730,3 +730,185 @@ form { margin-top: 22px; }
   .ritual__img { width: 126px; height: 126px; }
   .day__stamp { width: 14px; height: 14px; line-height: 14px; font-size: 8.5px; }
 }
+
+/* ── 날짜 팝업 모달 ───────────────────────────────── */
+body.is-modal-open { overflow: hidden; }
+
+.modal {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.modal[hidden] { display: none; }
+
+.modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(24, 22, 19, .58);
+  -webkit-backdrop-filter: blur(3px) saturate(.92);
+  backdrop-filter: blur(3px) saturate(.92);
+  animation: backdropIn .22s ease-out both;
+}
+.modal__dialog {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 420px;
+  max-height: 92vh; max-height: calc(100dvh - 28px);
+  background: var(--paper);
+  border-radius: 26px;
+  box-shadow: 0 30px 70px -28px rgba(20, 18, 15, .6), 0 2px 8px rgba(20, 18, 15, .1);
+  animation: modalIn .34s cubic-bezier(.22, 1.2, .48, 1) both;
+  outline: none;
+  overflow: hidden;
+}
+.modal__content {
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 24px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.modal__content::-webkit-scrollbar { width: 0; height: 0; }
+
+@keyframes modalIn {
+  0% { opacity: 0; transform: translateY(26px) scale(.84); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+.modal.is-closing .modal__dialog { animation: modalOut .18s ease-in both; }
+.modal.is-closing .modal__backdrop { animation: backdropOut .18s ease-in both; }
+@keyframes modalOut { to { opacity: 0; transform: translateY(10px) scale(.95); } }
+@keyframes backdropOut { to { opacity: 0; } }
+
+.modal__close {
+  position: absolute; top: 10px; right: 10px; z-index: 3;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--hair); background: rgba(255, 255, 255, .82);
+  color: var(--ink-2); font-size: 13px; line-height: 1;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .18s ease, transform .16s ease;
+}
+.modal__close:active { transform: scale(.94); }
+
+/* 팝업 머리 */
+.modal__eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: #9A8256;
+  padding-right: 44px; line-height: 1.5;
+}
+.modal__date {
+  font-family: var(--serif); font-size: 25px; line-height: 1.2;
+  margin-top: 5px; padding-right: 40px; letter-spacing: -0.02em;
+}
+.modal__date span {
+  font-family: var(--sans); font-size: 10.5px; letter-spacing: .02em;
+  color: var(--mute); margin-left: 7px; vertical-align: 3px;
+}
+.modal__sub {
+  font-size: 10.5px; color: var(--mute); line-height: 1.6;
+  margin-top: 5px; padding-right: 34px;
+}
+.modal__headline {
+  font-family: var(--serif); font-size: 18px; line-height: 1.5;
+  font-weight: 600; margin-top: 12px; letter-spacing: -0.02em;
+}
+
+/* 팝업 안 부적 — 크게(172px) 정중앙 */
+.modal .ritual { margin-top: 16px; padding: 18px 14px 16px; border-radius: 22px; }
+.modal .ritual__eyebrow { font-size: 9.5px; }
+.modal .ritual__tap { margin-top: 12px; }
+.modal .ritual__img {
+  width: 172px; height: 172px; border-radius: 30px;
+  box-shadow: 0 16px 30px -18px rgba(29, 28, 25, .6);
+}
+.modal .ritual__count { font-size: 13px; margin-top: 13px; letter-spacing: .06em; }
+.modal .ritual__count b { font-size: 15px; }
+.modal .ritual__msg { font-size: 11.5px; margin-top: 5px; }
+.modal .ritual.is-done .ritual__msg { font-size: 13px; }
+
+.modal__stamp-note {
+  margin-top: 10px; text-align: center;
+  font-size: 11px; font-weight: 600; color: #8E6B2C; letter-spacing: -0.01em;
+  animation: noteIn .32s ease-out both;
+}
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 팝업 안 일진·작용·처방 */
+.modal .modal__gz {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid var(--hair-soft);
+}
+.modal .marks { margin-top: 10px; }
+.modal .brief__why { margin-top: 12px; }
+.modal .rx { margin-top: 16px; }
+.modal .brief__term { margin-top: 16px; }
+
+.modal__done-btn { margin-top: 20px; }
+.modal__done-btn--dark {
+  background: transparent;
+  border-color: rgba(242, 237, 227, .24);
+  color: rgba(242, 237, 227, .88);
+}
+
+/* 잠금 안내 — 어두운 팝업 */
+.modal__dialog--lock { background: #1C1B19; color: #F2EDE3; }
+.modal__dialog--lock .modal__eyebrow { color: rgba(242, 237, 227, .5); }
+.modal__dialog--lock .modal__date { color: #F6F2EA; }
+.modal__dialog--lock .modal__date span { color: rgba(242, 237, 227, .5); }
+.modal__dialog--lock .modal__close {
+  background: rgba(242, 237, 227, .10);
+  border-color: rgba(242, 237, 227, .22);
+  color: rgba(242, 237, 227, .82);
+}
+.modal__dialog--lock .mark {
+  background: rgba(242, 237, 227, .08);
+  color: rgba(242, 237, 227, .8);
+}
+.modal__dialog--lock .lock__title { margin-top: 16px; }
+
+@media (max-height: 660px) {
+  .modal .ritual__img { width: 148px; height: 148px; }
+  .modal__date { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal__backdrop, .modal__dialog, .modal__stamp-note {
+    animation-duration: .01ms !important;
+  }
+  .modal.is-closing .modal__dialog, .modal.is-closing .modal__backdrop {
+    animation-duration: .01ms !important;
+  }
+  .modal .ritual__img { transition: none; }
+}
+
+/* ── 소리 토글 ────────────────────────────────────── */
+.cal__tools { display: flex; justify-content: flex-end; margin: 8px 4px 0; }
+.soundbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em;
+  color: #8A7B5C; background: #FAF6EC;
+  border: 1px solid rgba(174, 138, 80, .28); border-radius: 999px;
+  padding: 5px 11px; line-height: 1.2;
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+.soundbtn.is-off { color: var(--mute); background: #F5F2EA; border-color: var(--hair); }
+.modal__sound {
+  position: absolute; top: 12px; right: 50px; z-index: 3;
+  height: 32px; min-width: 32px; padding: 0 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--ink-2); background: rgba(255, 255, 255, .84);
+  border: 1px solid var(--hair); border-radius: 999px;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: color .2s ease, background .2s ease;
+}
+.modal__sound.is-off { color: var(--mute); }
+.modal__dialog--lock .modal__sound {
+  background: rgba(242, 237, 227, .10);
+  border-color: rgba(242, 237, 227, .22);
+  color: rgba(242, 237, 227, .82);
+}
+.modal__eyebrow { padding-right: 108px; }
+.modal__date { padding-right: 100px; }
