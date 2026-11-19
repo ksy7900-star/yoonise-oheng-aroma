@@ -82,8 +82,8 @@
     },
     화: function (u) {
       return '<path d="M100 36c7 17 23 27 33 41 9 13 14.5 25 14.5 38 0 28-21.5 49-47.5 49S52.5 143 52.5 115c0-13 5.5-25 14.5-38 10-14 26-24 33-41z" fill="url(#' + u + 'b)"/>' +
-        '<ellipse cx="74" cy="84" rx="13" ry="9" fill="#fff" opacity=".24" transform="rotate(-24 74 84)"/>' +
-        '<ellipse cx="100" cy="150" rx="30" ry="11" fill="#FFD98A" opacity=".35"/>';
+        '<ellipse cx="74" cy="84" rx="13" ry="9" fill="#fff" opacity=".26" transform="rotate(-24 74 84)"/>' +
+        '<ellipse cx="88" cy="58" rx="7" ry="11" fill="#fff" opacity=".18" transform="rotate(14 88 58)"/>';
     },
     토: function (u) {
       return '<path d="M100 58c-12 0-21 5-22 13-16 12-27 30-27 51 0 25 22 41 49 41s49-16 49-41c0-21-11-39-27-51-1-8-10-13-22-13z" fill="url(#' + u + 'b)"/>' +
