@@ -15,7 +15,7 @@
      FREE_TRIAL_ENABLED = false → 지금 모드. 2026-11-01 ~ 2027-12-31
         모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다.
      FREE_TRIAL_ENABLED = true  → 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
-        그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 상담 안내)로 바뀝니다.
+        그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)로 바뀝니다.
      → 나중에 "3일 무료 체험" 판매를 다시 켤 때는 FREE_TRIAL_ENABLED 하나만 true 로 바꾸세요.
         무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = false;
@@ -35,7 +35,7 @@
   var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 2027 올인원패키지 19,900원 (페이앱 페이지에서 금액 확인)
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
-  var PAYAPP_CONSULT_URL = '';    // 🔮 윤이세 1:1 상담 49,000원~
+  var PAYAPP_CONSULT_URL = '';    // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
   var BANK_NAME = 'SC제일은행';                 // 은행 이름 (통장 사본 확인)
   var BANK_ACCOUNT = '504-20-454146';          // 계좌번호 (통장 사본 확인)
   var BANK_HOLDER = '김나영 (엔와이트레이드)';   // 예금주 (통장 사본 확인)
@@ -1345,7 +1345,7 @@
   var PASS_PRICE = '14,900원';
   var ALLINONE_PRICE = '19,900원';
   var CARE_PRICE = '1종 2,900원 · 3종 풀세트 5,900원';
-  var CONSULT_PRICE = '49,000원~';
+  var CONSULT_PRICE = '49,000원';
 
   var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
 
@@ -1649,6 +1649,7 @@
     return it ? it.name + ' ' + it.price : '';
   }
   function itemLabel(item) {
+    if (String(item || '') === 'consult') return '윤이세 1:1 원포인트 리딩';
     var m = /^care-(card|objet|bowl|set)$/.exec(String(item || ''));
     return m ? careItemLabel(m[1]) : '';
   }
@@ -1703,19 +1704,21 @@
       '<b class="bamboo__text">' + esc(m.text) + '</b>';
   }
 
-  /* 4번 — 윤이세 1:1 상담 (49,000원~) */
+  /* 4번 — 윤이세 1:1 원포인트 리딩 (49,000원 · 질문 딱 1가지)
+     ※ 종합 사주 컨설팅(100,000원 · 기질·대운 전체)과 섞이지 않게 씁니다.
+       이 팝업은 '지금 걸리는 질문 하나'만 보는 원포인트 상품입니다. */
   function consultShopHTML() {
-    return '<p class="modal__eyebrow">1:1 CONSULT · 윤이세</p>' +
-      '<h2 class="shop__title" id="shopTitle">🔮 윤이세 1:1 상담</h2>' +
-      '<p class="shop__sub">캘린더로는 안 풀리는 내 상황을 <b>통째로</b> 놓고, 지금 어디서 막혔는지·어디로 움직이면 풀리는지 같이 짚어 드려요.</p>' +
+    return '<p class="modal__eyebrow">1:1 POINT READING · 윤이세</p>' +
+      '<h2 class="shop__title" id="shopTitle">🔎 윤이세 1:1 원포인트 리딩</h2>' +
+      '<p class="shop__sub">캘린더로도 계속 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>내 사주·올해 흐름 전체로 보기</b><span>날짜 하나가 아니라 내 판 전체에서 막힌 자리를 찾아요</span></li>' +
-      '<li><b>지금 할 일·미룰 일 정리</b><span>바로 움직일 것과 기다릴 것을 갈라 드려요</span></li>' +
-      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 채널로 알려 주시면 가능한 시간을 바로 잡아 드려요</span></li>' +
+      '<li><b>딱 1가지 핵심 질문 집중</b><span>이직·계약·관계·시기 중 지금 가장 급한 문제 하나만 깊게 봅니다</span></li>' +
+      '<li><b>지금 할 일 · 미룰 일 정리</b><span>바로 움직일 때인지, 한 템포 쉴 때인지 방향을 딱 갈라 드려요</span></li>' +
+      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 채널로 질문 하나와 생년월일시를 보내 주시면 일정을 잡아 드려요</span></li>' +
       '</ul>' +
-      priceHTML('윤이세 1:1 상담', CONSULT_PRICE) +
+      priceHTML('윤이세 1:1 원포인트 리딩', CONSULT_PRICE) +
       payActionsHTML('consult') +
-      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 상담 일정을 바로 잡아 드립니다.</p>';
+      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 <b>질문 하나 + 생년월일시</b>를 보내 주세요 — 상담 일정을 바로 잡아 드립니다.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
   }
 
   function careShopHTML() {
@@ -1821,9 +1824,9 @@
       '<p class="pay__guide">소액(1만 원 미만) 상품은 계좌이체 전용이에요 · <b>' + esc(String(BANK_NAME).trim()) + ' ' + esc(String(BANK_ACCOUNT).trim()) + '</b></p>' +
       payActionsHTML('care-' + care.buy, { card: false, bankSub: esc(careItemLabel(care.buy)) + ' · 계좌번호 복사' }) +
       '<div class="shop__consult">' +
-      '<b>윤이세 1:1 상담 ' + CONSULT_PRICE + '</b>' +
-      '<span>캘린더·개운템으로도 안 풀리면, 내 상황을 통째로 보고 길을 잡아 드려요.</span>' +
-      '<button type="button" class="shop__consult-btn" data-shop="consult">상담 일정 잡기 →</button>' +
+      '<b>🔎 윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE + '</b>' +
+      '<span>캘린더·개운템으로도 계속 걸리는 딱 1가지, 질문 하나만 놓고 짚어 드려요.</span>' +
+      '<button type="button" class="shop__consult-btn" data-shop="consult">원포인트 리딩 보기 →</button>' +
       '</div>' +
       '<p class="shop__note">3종은 지금 여기서 그대로 체험할 수 있어요. 결제가 끝나면 카카오톡 채널로 알려 주세요.</p>';
   }
