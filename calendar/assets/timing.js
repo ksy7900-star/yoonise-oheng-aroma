@@ -214,11 +214,23 @@
     } else if (yukhapOf(tz) === mz) {
       add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날', true);
     }
-    var sg = samhapGroupOf(tz), sg2 = samhapGroupOf(dz);
-    if (sg >= 0 && sg === sg2 && tz !== dz) {
-      add('gold', 'hap', 40, '삼합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합');
-    } else if (sg >= 0 && sg === samhapGroupOf(mz) && tz !== mz) {
-      add('gold', 'hap', 18, '삼합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합', true);
+    var sg = samhapGroupOf(tz);
+    if (sg >= 0) {
+      var natalZhis = [dz, mz, natal.yearZhiIndex, natal.timeZhiIndex];
+      var two = [];
+      for (var zi = 0; zi < natalZhis.length; zi++) {
+        var z = natalZhis[zi];
+        if (z == null || z === tz) continue;
+        if (SAMHAP[sg].indexOf(z) >= 0 && two.indexOf(z) < 0) two.push(z);
+      }
+      if (two.length >= 2) {
+        add('gold', 'hap', 50, '삼합 완성',
+          '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] + ' 삼합이 완성되는 날');
+      } else if (two.length === 1) {
+        var where = two[0] === dz ? '내 일지 ' : (two[0] === mz ? '내 월지 ' : '내 원국 ');
+        add('gold', 'hap', 22, '반합',
+          where + zhiFull(two[0]) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합', true);
+      }
     }
 
     // ── 재물·문서 (십신) ──
