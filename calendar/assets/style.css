@@ -748,6 +748,10 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .talis-banner__char { width: 66px; height: 66px; }
   .ritual__tap { width: 134px; height: 134px; }
 }
+@media (min-width: 420px) {
+  /* 칸이 넉넉해지면 숫자를 가리지 않고 옆에 나란히 붙인다 */
+  .day__sticker { margin-left: 1px; }
+}
 @media (min-width: 520px) {
   .day__num { width: 28px; height: 28px; font-size: 13.5px; }
   .day { min-height: 58px; }
@@ -755,7 +759,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
-  .day__sticker { width: 33px; height: 33px; margin-left: -8px; }
+  .day__sticker { width: 33px; height: 33px; margin-left: 1px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
