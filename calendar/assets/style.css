@@ -707,15 +707,14 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .day__top { display: flex; align-items: center; justify-content: center; }
 .day__sticker {
   display: block; flex: none;
-  width: 24px; height: 26px;
-  margin: -7px 0 0 -7px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  width: 26px; height: 28px;
+  margin: -7px 0 0 -8px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
   transform: rotate(-9deg);
   pointer-events: none;
 }
 .day__sticker .ch {
   width: 100%; height: 100%; overflow: hidden;   /* 캐릭터만 잘라 쓰는 미니 스티커 */
-  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)
-          drop-shadow(0 1.5px 2px rgba(28, 27, 25, .22));
+  filter: drop-shadow(0 1px 1.6px rgba(28, 27, 25, .30));
 }
 .day__sticker.is-new { animation: stickerIn .72s cubic-bezier(.2, 1.5, .4, 1) both; }
 @keyframes stickerIn {
@@ -732,7 +731,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 }
 .sticker-mini .ch {
   width: 100%; height: 100%; overflow: hidden;
-  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+  filter: drop-shadow(0 1px 1px rgba(28, 27, 25, .22));
 }
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
@@ -754,7 +753,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
-  .day__sticker { width: 28px; height: 30px; margin-left: -8px; }
+  .day__sticker { width: 30px; height: 33px; margin-left: -9px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
@@ -938,7 +937,7 @@ body.is-modal-open { overflow: hidden; }
 
 /* 달력 스티커 — 모바일에서도 한눈에 붙은 게 보이도록 */
 @media (max-width: 360px) {
-  .day__sticker { width: 22px; height: 24px; margin-left: -6px; }
+  .day__sticker { width: 24px; height: 26px; margin-left: -7px; }
 }
 
 /* ==========================================================
