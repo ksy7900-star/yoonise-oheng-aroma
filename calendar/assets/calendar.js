@@ -1065,7 +1065,7 @@
      팝업 안에서 3종을 모두 체험할 수 있게 실제로 동작한다. */
   var CARE = {
     목: {
-      obj: 'sprout', name: '새싹 화분',
+      obj: 'sprout', name: '새싹 화분', josa: '을',
       missions: [
         { tag: '색', text: '초록·연두 중 하나를 오늘 몸에 걸쳐 보세요.' },
         { tag: '음식', text: '신맛 한 입 — 레몬물이나 식초 한 방울이면 충분해요.' },
@@ -1075,7 +1075,7 @@
       ]
     },
     화: {
-      obj: 'incense', name: '따뜻한 향로',
+      obj: 'incense', name: '따뜻한 향로', josa: '를',
       missions: [
         { tag: '색', text: '빨강·주황 소품 하나를 눈에 보이는 자리에 두세요.' },
         { tag: '음식', text: '따뜻한 차 한 잔을 식기 전에 천천히 드세요.' },
@@ -1085,7 +1085,7 @@
       ]
     },
     토: {
-      obj: 'stone', name: '황금 수호석',
+      obj: 'stone', name: '황금 수호석', josa: '을',
       missions: [
         { tag: '색', text: '베이지·노랑으로 손 닿는 자리부터 정리하세요.' },
         { tag: '음식', text: '단맛 한 조각, 밥은 평소보다 천천히 드세요.' },
@@ -1095,7 +1095,7 @@
       ]
     },
     금: {
-      obj: 'bell', name: '수정 종',
+      obj: 'bell', name: '수정 종', josa: '을',
       missions: [
         { tag: '색', text: '흰색·은색으로 지갑이나 가방을 정리하세요.' },
         { tag: '음식', text: '매운맛 한 입으로 막힌 숨을 트여 보세요.' },
@@ -1105,7 +1105,7 @@
       ]
     },
     수: {
-      obj: 'orb', name: '행운 물결구슬',
+      obj: 'orb', name: '행운 물결구슬', josa: '를',
       missions: [
         { tag: '색', text: '파랑·남색 계열로 물 한 잔 옆에 두세요.' },
         { tag: '음식', text: '미지근한 물 한 잔을 한 번에 비우세요.' },
@@ -1202,7 +1202,7 @@
       '<section class="care">' +
       '<p class="care__no">02</p>' +
       '<p class="care__title">내 디지털 개운 오브제</p>' +
-      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + '을 문질러 기운을 채워 보세요.</p>' +
+      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + esc(c.josa) + ' 문질러 기운을 채워 보세요.</p>' +
       '<button type="button" class="care-obj' + (care.lit ? ' is-lit' : '') + '" data-care="obj" ' +
       'style="--obj-glow:' + thr.color + '" aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
       '<span class="care-obj__art">' + OBJ_SVG[c.obj] + '</span>' +
@@ -1258,7 +1258,7 @@
 
   function chargeCareObj(btn) {
     if (care.lit) { vibrate([30, 40, 30]); return; }
-    care.charge = Math.min(100, care.charge + 14);
+    care.charge = Math.min(100, care.charge + 25);
     var bar = btn.querySelector('.care-obj__bar i');
     var label = btn.querySelector('[data-care-label]');
     if (bar) bar.style.width = care.charge + '%';

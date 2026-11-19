@@ -1256,7 +1256,7 @@ body.is-modal-open { overflow: hidden; }
   width: 100%; margin-top: 6px; padding: 4px 0 0;
   background: none; border: 0;
 }
-.care-obj__art { display: block; width: 96px; height: 96px; transition: transform .22s cubic-bezier(.2, 1.6, .4, 1), filter .3s ease; }
+.care-obj__art { display: block; width: 104px; height: 104px; transition: transform .22s cubic-bezier(.2, 1.6, .4, 1), filter .3s ease; }
 .care-obj__art .obj { width: 100%; height: 100%; }
 .care-obj.is-hit .care-obj__art { transform: scale(1.09) rotate(-2deg); }
 .care-obj.is-lit .care-obj__art {
