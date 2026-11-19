@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261120a">
+<link rel="stylesheet" href="assets/style.css?v=20261120b">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
     <h1 class="hero__title">내 인생<br><em>타이밍 캘린더</em></h1>
     <p class="hero__sub">생년월일 한 번이면, 내 사주에 2027년 1월부터 12월까지<br>하루씩 짚어 드려요.<br>지금 사전 신청하면 12월 한 달을 먼저 열어 드려요.</p>
     <ul class="hero__facts">
-      <li>만세력 절입 시각 반영</li>
+      <li>절기 시각까지 반영</li>
       <li class="js-trial">3일 무료</li>
       <li class="js-open">2027년 1~12월 전체 오픈</li>
       <li>기기에만 저장</li>
@@ -35,7 +35,7 @@
   <!-- ───────── 입력 ───────── -->
   <section class="card card--form" id="formCard" aria-labelledby="formTitle">
     <h2 class="card__title" id="formTitle">내 사주를 먼저 알려주세요</h2>
-    <p class="card__sub">입춘과 24절기의 절입 시각까지 반영해 원국을 세우고, 그 위에 날짜를 올립니다.</p>
+    <p class="card__sub">태어난 날짜와 시각을 절기 시각까지 맞춰 여덟 글자를 세우고, 그 위에 날짜를 하나씩 올려요.</p>
 
     <form id="birthForm" novalidate>
       <div class="field">
@@ -142,7 +142,7 @@
     <!-- 원국 -->
     <section class="card card--natal" aria-labelledby="natalTitle">
       <div class="sec__head">
-        <h2 class="sec__title" id="natalTitle">내 원국</h2>
+        <h2 class="sec__title" id="natalTitle">내 사주</h2>
         <p class="sec__meta" id="natalMeta"></p>
       </div>
       <div class="natal" id="natal"></div>
@@ -177,15 +177,15 @@
         <ul class="howto__list">
           <li>
             <span class="badge badge--gold">럭키</span>
-            <span class="howto__txt">귀인·합이 들어오는 날 → 제안·미팅·새로운 시작</span>
+            <span class="howto__txt">사람·기회가 붙는 날 → 제안·미팅·새로운 시작</span>
           </li>
           <li>
             <span class="badge badge--red">입단속</span>
-            <span class="howto__txt">충·형이 걸리는 날 → 큰 결정·감정적 대화는 하루 미루기</span>
+            <span class="howto__txt">부딪히기 쉬운 날 → 큰 결정·감정적 대화는 하루 미루기</span>
           </li>
           <li>
             <span class="badge badge--blue">결정</span>
-            <span class="howto__txt">문서·인성 기운이 서는 날 → 계약·기획·문서 정리</span>
+            <span class="howto__txt">서류에 힘이 실리는 날 → 계약·기획·문서 정리</span>
           </li>
           <li>
             <span class="badge badge--blue">머니</span>
@@ -193,12 +193,12 @@
           </li>
           <li>
             <span class="badge badge--gray">리셋</span>
-            <span class="howto__txt">24절기 월운 전환일 → 달의 흐름이 바뀌는 기준점</span>
+            <span class="howto__txt">달이 새로 시작되는 날 → 흐름이 바뀌는 기준점</span>
           </li>
         </ul>
-        <p class="howto__free js-trial">오늘부터 <b>3일</b>은 배지가 붙은 날을 눌러 부적과 상세 처방을 바로 볼 수 있어요.</p>
+        <p class="howto__free js-trial">오늘부터 <b>3일</b>은 배지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요.</p>
         <p class="howto__free js-open">지금은 <b>2027년 1~12월 전체</b>가 열려 있어요. <b>배지가 붙은 날</b>을 누르면 그날의 부적이 나옵니다.</p>
-        <p class="howto__free howto__free--ritual">부적은 <b>기운이 서는 날에만</b> 짠 하고 나타나요. 그날의 부적을 팝업에서 <b>톡·톡·톡 세 번</b> 두드리면 달력에 <b>주홍 낙관 도장</b>이 쾅 찍힙니다.</p>
+        <p class="howto__free howto__free--ritual">부적은 <b>기운이 서는 날에만</b> 짠 하고 나타나요. 그날의 부적을 팝업에서 <b>톡·톡·톡 세 번</b> 두드리면, 그날의 캐릭터 부적 스티커가 달력 칸에 <b>챱!</b> 붙어요.</p>
       </div>
 
       <div class="cal__dow" aria-hidden="true">
@@ -206,27 +206,36 @@
       </div>
       <div class="cal" id="calGrid" role="grid" aria-label="월간 타이밍 달력"></div>
 
-      <p class="cal__note" id="calNote">기운이 서는 날(배지가 붙은 날)만 눌러서 부적을 볼 수 있어요.</p>
+      <p class="cal__note" id="calNote">기운이 서는 날(색 배지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
     </section>
 
-    <!-- CTA — 1. 패스 · 2. 오행 아이템 · 3. 1:1 상담 (모두 앱 안 결제 안내 팝업) -->
-    <section class="cta" aria-label="2027 1년 패스 · 오행 아이템 · 1:1 상담">
-      <p class="cta__eyebrow">2027 1년 패스 · 오행 아이템 · 1:1 상담</p>
-      <h2 class="cta__title">2027년 1~12월 전체와<br>내 원국을 겹쳐 보기</h2>
-      <p class="cta__sub js-trial">무료 3일은 맛보기예요. 지금 사전 신청하면 <b>12월 한 달 서비스(12+1개월)</b>로 열리고, 2027년 1월~12월 1년 전체 캘린더와 리셋 알람, 내 원국에 맞춘 월별 해석까지 함께 풀어 드립니다.</p>
-      <p class="cta__sub js-open">지금 열린 캘린더는 2027년 1월~12월 1년 전체 흐름이에요. 아래에서 내 원국에 맞춘 패스·아이템·1:1 상담을 바로 이어서 볼 수 있어요. 지금 사전 신청하면 12월 한 달을 더 열어 드려요(12+1개월).</p>
+    <!-- CTA — 1. 풀세트 · 2. 1년 패스 · 3. 개운 아이템/1:1 상담 (모두 앱 안 결제 안내 팝업) -->
+    <section class="cta" aria-label="2027 타이밍 풀세트 · 1년 캘린더 패스 · 개운 아이템과 1:1 상담">
+      <p class="cta__eyebrow">2027 정미년 · 사전 신청 시 12월 한 달 무료</p>
+      <h2 class="cta__title">2027년 한 해,<br>내 손에 쥐는 세 가지 방법</h2>
+      <p class="cta__sub js-trial">지금 보고 계신 달력이 2027년 1~12월 365일 전부예요. 사전 신청하면 2026년 12월 한 달을 먼저 열어 드려요.</p>
+      <p class="cta__sub js-open">지금 열린 캘린더는 2027년 1~12월 365일 전부예요. 편한 방법부터 시작하세요 — 손에 잡히는 세트, 앱만, 아니면 막힐 때 1:1 상담.</p>
       <div class="cta__steps">
-        <button type="button" class="btn btn--cream shop-btn" data-shop="pass">
+        <button type="button" class="btn btn--cream shop-btn" data-shop="set">
           <span class="shop-btn__no">1</span>
-          <span class="shop-btn__label">🎟️ 2027 1년 패스 결제하기</span>
+          <span class="shop-btn__text">
+            <span class="shop-btn__label">📦 2027 정미년 타이밍 풀세트</span>
+            <span class="shop-btn__desc">2027 실물 다이어리 + 오행 부적 스티커팩 + 1년 캘린더 앱 이용권 · 사전 신청 시 12월 한 달 무료!</span>
+          </span>
         </button>
-        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="goods">
+        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">
           <span class="shop-btn__no">2</span>
-          <span class="shop-btn__label">🧿 오행 아이템 · 굿즈 결제하기</span>
+          <span class="shop-btn__text">
+            <span class="shop-btn__label">🎟️ 2027 1년 캘린더 패스 (앱 전용)</span>
+            <span class="shop-btn__desc">내 생년월일 맞춤 좋은 날·조심할 날 1년 치 + 부적 스티커 캘린더 · 사전 신청 시 12월 한 달 무료!</span>
+          </span>
         </button>
-        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="consult">
+        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">
           <span class="shop-btn__no">3</span>
-          <span class="shop-btn__label">💬 윤이세 1:1 상담 결제하기</span>
+          <span class="shop-btn__text">
+            <span class="shop-btn__label">🔮 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담</span>
+            <span class="shop-btn__desc">캘린더·부적으로도 유독 막히는 시기를 뚫어 주는 맞춤 개운템 &amp; 윤이세 1:1 상담</span>
+          </span>
         </button>
       </div>
     </section>
@@ -260,10 +269,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261120a"></script>
-<script src="assets/manse.js?v=20261120a"></script>
-<script src="assets/timing.js?v=20261120a"></script>
-<script src="assets/chars.js?v=20261120a"></script>
-<script src="assets/calendar.js?v=20261120a"></script>
+<script src="vendor/lunar.js?v=20261120b"></script>
+<script src="assets/manse.js?v=20261120b"></script>
+<script src="assets/timing.js?v=20261120b"></script>
+<script src="assets/chars.js?v=20261120b"></script>
+<script src="assets/calendar.js?v=20261120b"></script>
 </body>
 </html>

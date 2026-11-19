@@ -155,6 +155,7 @@
     if (!BODY[el]) el = '화';
     var u = 'ch' + (++seq) + '_';
     var stage = Math.max(0, Math.min(3, opt.stage == null ? 0 : Number(opt.stage)));
+    var box = opt.box || '0 0 200 200';
     var defs = '<defs>' +
       DEFS[el].replace(/%b/g, u + 'b') +
       '<radialGradient id="' + u + 'g" cx=".5" cy=".5" r=".5">' +
@@ -165,7 +166,7 @@
       '</defs>';
 
     return '<svg class="ch ch--' + el + (opt.cls ? ' ' + opt.cls : '') + '" data-stage="' + stage + '" ' +
-      'viewBox="0 0 200 200" role="img" aria-hidden="true" focusable="false">' +
+      'viewBox="' + box + '" role="img" aria-hidden="true" focusable="false">' +
       defs +
       '<circle class="ch-glow" cx="100" cy="108" r="88" fill="url(#' + u + 'g)"/>' +
       '<ellipse class="ch-shadow" cx="100" cy="185" rx="42" ry="6.5" fill="#2A2724" opacity=".10"/>' +
@@ -175,6 +176,17 @@
       '<g class="ch-decor">' + DECOR[el] + '</g>' +
       '<circle class="ch-aura-wave" cx="100" cy="108" r="62" fill="none" stroke="' + GLOW[el] + '" stroke-width="3" opacity="0"/>' +
       '</svg>';
+  }
+
+  /**
+   * 달력 칸에 챱 붙는 '미니 캐릭터 스티커'
+   *  — 캐릭터 그림을 작게 잘라(크롭) 쓴다. 얼굴 아래로 잘리지 않게 캐릭터 몸 전체가
+   *    들어오는 상자만 남기고, 달력 칸에서는 흰 테두리(다이컷 느낌)를 CSS 로 얹는다.
+   * @param {string} el '목'|'화'|'토'|'금'|'수'
+   */
+  function sticker(el) {
+    if (!BODY[el]) el = '화';
+    return svg(el, { stage: 3, cls: 'ch--sticker', box: '24 8 152 168' });
   }
 
   /* ── 부적 이름표 ──────────────────────────────────────────────
@@ -205,5 +217,5 @@
     return ICON[tag] || REP_ICON[el] || '✨';
   }
 
-  global.Chars = { svg: svg, name: name, icon: icon, REP: REP, REP_ICON: REP_ICON };
+  global.Chars = { svg: svg, sticker: sticker, name: name, icon: icon, REP: REP, REP_ICON: REP_ICON };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -13,7 +13,7 @@
   var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
   /* ── 무료 체험 잠금 스위치 (판매 세팅은 이 두 줄만 보면 됩니다) ──────────
      FREE_TRIAL_ENABLED = false → 지금 모드. 2026-11-01 ~ 2027-12-31
-        모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·도장·처방이 바로 열립니다.
+        모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다.
      FREE_TRIAL_ENABLED = true  → 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
         그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 상담 안내)로 바뀝니다.
      → 나중에 "3일 무료 체험" 판매를 다시 켤 때는 FREE_TRIAL_ENABLED 하나만 true 로 바꾸세요.
@@ -25,25 +25,20 @@
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   /* ── 구입 동선 링크 ────────────────────────────────────────────────
      앱 안 구입 팝업의 버튼이 여는 주소입니다. 실제 결제 페이지·쇼핑몰이 열리면
-     아래 두 줄만 그 주소로 바꾸면 팝업 문구·버튼은 그대로 두고 바로 연결됩니다.
+     아래 세 줄만 그 주소로 바꾸면 팝업 문구·버튼은 그대로 두고 바로 연결됩니다.
      (지금은 카카오톡 채널 1:1 문의로 신청·결제를 안내하는 단계) */
-  var PASS_CHECKOUT_URL = KAKAO;    // 🎟️ 2027 1년 패스 — 신청·결제
-  var GOODS_CHECKOUT_URL = KAKAO;   // 🧿 오행 아이템·굿즈 — 주문·문의
+  var SET_CHECKOUT_URL = KAKAO;     // 📦 2027 정미년 타이밍 풀세트 — 신청·결제
+  var PASS_CHECKOUT_URL = KAKAO;    // 🎟️ 2027 1년 캘린더 패스 — 신청·결제
+  var CARE_CHECKOUT_URL = KAKAO;    // 🔮 개운 아이템 · 1:1 상담 — 주문·문의
 
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
-  /* 달력 칸에 쾅 찍히는 동그란 낙관(도장) — 44px 뷰박스 하나를 여러 크기로 재사용 */
-  var SEAL_SVG = '<svg class="seal" viewBox="0 0 44 44" aria-hidden="true" focusable="false">' +
-    '<circle class="seal__halo" cx="22" cy="22" r="17.4"/>' +
-    '<circle class="seal__disc" cx="22" cy="22" r="15.2"/>' +
-    '<circle class="seal__inner" cx="22" cy="22" r="12.4"/>' +
-    '<g class="seal__spark">' +
-    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(8.5 8.5)"/>' +
-    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(35.5 8.5)"/>' +
-    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(8.5 35.5)"/>' +
-    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(35.5 35.5)"/>' +
-    '</g>' +
-    '</svg>';
+  /* 달력 칸에 챱 붙는 '그날의 미니 오행 캐릭터 스티커'
+     — 도장(낙관) 대신 그날의 오행 캐릭터를 작게 잘라 붙인다. chars.js 가 그림을 맡는다. */
+  function stickerSVG(el) {
+    if (!Chars || !Chars.sticker) return '';
+    return Chars.sticker(TALIS[el] ? el : '화');
+  }
   /* 오행별 기운 색·파티클 — 1타 / 2타 / 3타 완료에서 확확 바뀐다 */
   var EL_THEME = {
     목: { color: '#6FAE5B', badge: '🌱', parts: ['🍃', '🌱', '✦', '💚'], cheer: '새싹이 쑥!' },
@@ -88,7 +83,7 @@
       why: '결정하고 표현하는 기운 — 미루지 않고 밀고 나가는 힘을 채워 줍니다.',
       sets: [
         { taps: ['복잡한 생각 다림질하는 중...', '망설이면 놓친다, 직감 쪽으로!'],
-          done: '🔥 결정 불씨 ON! 오늘 찍은 도장·메모 한 줄이 한 달 갑니다!',
+          done: '🔥 결정 불씨 ON! 오늘 정한 결정·메모 한 줄이 한 달 갑니다!',
           sub: '미룬 결정 하나 = 야근 한 스푼.' },
         { taps: ['머릿속 회의실 정리 중...', '찬성 1표, 반대 0표 — 가자!'],
           done: '🔥 결정 완료! 오늘 결정은 오늘 끝내야 내일이 가벼워요!',
@@ -355,7 +350,7 @@
     if (!state.gender) {
       setGenderError(true);
       alertEl.hidden = false;
-      alertEl.textContent = '성별을 선택해야 원국을 정확히 세울 수 있어요. 여성 / 남성을 골라 주세요.';
+      alertEl.textContent = '성별을 선택해야 사주를 정확히 세울 수 있어요. 여성 / 남성을 골라 주세요.';
       $('#genderField').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -365,7 +360,7 @@
     var o = readForm();
     if (!o.timeKnown) { o.hh = 12; o.mm = 0; }
     $('#submitBtn').classList.add('is-loading');
-    $('#submitBtn').textContent = '원국을 세우는 중…';
+    $('#submitBtn').textContent = '사주를 세우는 중…';
 
     setTimeout(function () {
       try {
@@ -531,6 +526,13 @@
     return repElement().el;   // 배지 없는 평범한 날은 1년 대표 부적으로
   }
 
+  /** 그날 달력 칸에 붙어 있는 스티커의 오행 — 찍힌 기록이 있으면 그 오행 그대로 */
+  function stampElement(info) {
+    var st = stampOf(info.iso);
+    if (st && st.el && TALIS[st.el]) return st.el;
+    return dayElement(info);
+  }
+
   function ritualHTML(info) {
     var st = stampOf(info.iso);
     var auto = dayElement(info);
@@ -666,13 +668,13 @@
       saveStamp(iso, el);
       if (msgEl) msgEl.innerHTML = esc(lot.done) + '<small>' + esc(lot.sub) + '</small>';
       if (modalEl && !modalEl.hidden) {
-        // 팝업이 닫히는 순간 달력 셀에 낙관이 쾅 찍히도록 미뤄 둔다
+        // 팝업이 닫히는 순간 달력 칸에 그날의 부적 스티커가 챱 붙도록 미뤄 둔다
         state.pendingStamp = iso;
         var note = modalBody && modalBody.querySelector('.modal__stamp-note');
         if (note) note.hidden = false;
       } else {
         state.justStamped = iso;
-        renderCalendar();                     // 달력 셀에 낙관이 쾅
+        renderCalendar();                     // 달력 칸에 부적 스티커가 챱
       }
     } else if (msgEl) {
       msgEl.textContent = lot.taps[n - 1] || ('한 번 더 — ' + (3 - n) + '번 남았어요.');
@@ -735,7 +737,7 @@
     var jq = state.res.jieqi;
     $('#natalMeta').textContent = state.res.input.gender === 'M' ? '남성' : '여성';
     $('#natalNote').innerHTML = '연주는 입춘 ' + esc(jq.lichun) + ' 기준, 월주는 ' + esc(jq.prev.name) + ' 절입 ' + esc(jq.prev.at) + ' 이후로 계산했어요.' +
-      (state.res.input.timeKnown ? ' 지지 십신은 지장간의 본기(本氣) 기준입니다.' : ' 시간을 몰라 시주는 비워 두었습니다.');
+      (state.res.input.timeKnown ? ' 글자 사이의 관계는 각 글자의 대표 기운으로 봤어요.' : ' 시간을 몰라 시주는 비워 두었습니다.');
   }
 
   function renderCalendar() {
@@ -783,11 +785,17 @@
       if (stamp && !badges.length) stamp = null;   // 부적은 기운이 서는 날에만 남는다
       if (stamp) {
         cls.push('day--stamped');
-        if (iso >= state.todayISO) label += ', 부적 완료';
+        if (iso >= state.todayISO) label += ', 부적 스티커 붙음';
       }
+      var stampEl = stamp ? stampElement(info) : '';
 
-      var cellInner = '<span class="day__num">' + d + '</span>' +
-        (stamp ? '<span class="day__seal' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">' + SEAL_SVG + '</span>' : '') +
+      var cellInner = '<span class="day__top">' +
+        '<span class="day__num">' + d + '</span>' +
+        (stamp
+          ? '<span class="day__sticker' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">' +
+            stickerSVG(stampEl) + '</span>'
+          : '') +
+        '</span>' +
         '<span class="day__badges">' + badgeHtml + '</span>';
 
       if (clickable) {
@@ -820,8 +828,8 @@
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     var noteText = FREE_TRIAL_ENABLED
-      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 배지가 붙은 날을 눌러 부적과 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
-      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 표시되고, 기운이 서는 날(배지가 붙은 날)에만 부적이 짠 하고 나타납니다.';
+      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 배지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
+      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 서는 날(색 배지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.';
     $('#calNote').textContent = noteText;
   }
 
@@ -898,7 +906,7 @@
       modalBody.innerHTML = '';
       modalClosing = false;
       if (state.pendingStamp) {
-        // 팝업이 사라진 자리에서 달력 셀에 주홍 낙관이 쾅
+        // 팝업이 사라진 자리에서 달력 칸에 그날의 부적 스티커가 챱
         state.justStamped = state.pendingStamp;
         state.pendingStamp = null;
         renderCalendar();
@@ -934,7 +942,7 @@
 
     var termLine = info.term
       ? '<p class="brief__term"><b>' + esc(info.term.ko) + '</b> ' + esc(info.term.time) + ' · ' +
-        (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '24절기') + '</p>'
+        (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '절기') + '</p>'
       : '';
     var saeunHtml = info.saeun
       ? '<p class="brief__saeun">' + esc(info.saeun.label) + ' 세운' +
@@ -947,7 +955,8 @@
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       ritualHTML(info) +
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
-      '<span class="seal-mini" aria-hidden="true">' + SEAL_SVG + '</span>달력에 주홍 낙관이 쾅 — 한 칸 채웠어요.</p>' +
+      '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
+      '✨ 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 챱 붙였어요!</p>' +
       '<details class="brief__more">' +
       '<summary>' + (when === '오늘' ? '오늘의 사주 풀이 보기' : '이 날의 사주 풀이 보기') + '</summary>' +
       '<div class="brief__more-body">' +
@@ -985,32 +994,33 @@
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>2027년 1~12월 전체 열기</p>' +
-      '<p class="lock__sub">2027 1년 패스 / 오행 아이템 / 1:1 상담</p>' +
-      '<p class="lock__early">사전 신청 시 12월 한 달 서비스 (12+1개월)</p>' +
+      '<p class="lock__sub">2027 정미년 풀세트 / 1년 캘린더 패스 / 개운 아이템·1:1 상담</p>' +
+      '<p class="lock__early">사전 신청 시 12월 한 달 무료!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
-      '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
-      '지금 사전 신청하면 2026년 12월 한 달을 서비스로 열어 드리고(12+1개월), 2027년 1~12월 1년 전체와 리셋 알람까지 이어집니다.</p>' +
+      '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
+      '지금 사전 신청하면 2026년 12월 한 달을 먼저 열어 드리고, 2027년 1~12월 365일을 이어서 볼 수 있어요.</p>' +
       '<div class="lock__actions">' +
-      '<button type="button" class="btn btn--cream shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 2027 1년 패스 결제하기</span></button>' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="goods">' +
-      '<span class="shop-btn__no">2</span><span class="shop-btn__label">🧿 오행 아이템 · 굿즈 결제하기</span></button>' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="consult">' +
-      '<span class="shop-btn__no">3</span><span class="shop-btn__label">💬 윤이세 1:1 상담 결제하기</span></button>' +
+      '<button type="button" class="btn btn--cream shop-btn" data-shop="set">' +
+      '<span class="shop-btn__no">1</span><span class="shop-btn__label">📦 2027 정미년 타이밍 풀세트</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
+      '<span class="shop-btn__no">2</span><span class="shop-btn__label">🎟️ 2027 1년 캘린더 패스 (앱 전용)</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">' +
+      '<span class="shop-btn__no">3</span><span class="shop-btn__label">🔮 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담</span></button>' +
       '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>';
   }
 
-  /* ── 앱 안 구입 팝업 (패스 · 오행 아이템 · 1:1 상담) ──────────
+  /* ── 앱 안 구입 팝업 (풀세트 · 1년 패스 · 개운 아이템/1:1 상담) ──────
      버튼을 누르면 리틀리로 튕기지 않고 이 팝업이 열립니다.
-     실제 결제·주문 링크가 생기면 위쪽 PASS_CHECKOUT_URL / GOODS_CHECKOUT_URL /
-     CONSULT_CHECKOUT_URL 한 줄씩만 바꾸면 팝업 그대로 결제로 넘어갑니다. */
-  var CONSULT_CHECKOUT_URL = KAKAO;
+     실제 결제·주문 링크가 생기면 위쪽 SET/PASS/CARE_CHECKOUT_URL 만 바꾸면
+     팝업 문구·버튼은 그대로 두고 바로 결제로 넘어갑니다.
+     문구 원칙 — 사주를 모르는 고객이 한 번에 알아듣는 말로만 씁니다.
+     ('원국', '24절기 월운' 같은 용어는 쓰지 않습니다.) */
   /* 가격 표시 — 실제 금액이 정해지면 아래 문자열만 채우면 팝업에 그대로 나옵니다.
      비워 두면 '카카오톡 채널에서 안내'로 표시됩니다. */
+  var SET_PRICE = '';
   var PASS_PRICE = '';
-  var GOODS_PRICE = '';
-  var CONSULT_PRICE = '';
+  var CARE_PRICE = '';
   var PRICE_TBD = '카카오톡 채널에서 안내';
 
   var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
@@ -1020,66 +1030,69 @@
       '<b>' + esc(price || PRICE_TBD) + '</b></div>';
   }
 
-  function passShopHTML() {
-    return '<p class="modal__eyebrow">2027 PASS · 사전 신청 12+1개월</p>' +
-      '<h2 class="shop__title" id="shopTitle">2027년 1년 패스</h2>' +
-      '<p class="shop__sub">2027년 1월부터 12월까지 1년 — 내 원국 위에 하루씩 얹어 보는 캘린더예요.</p>' +
+  /* 1번 — 2027 정미년 타이밍 풀세트 (실물 + 스티커 + 앱) */
+  function setShopHTML() {
+    return '<p class="modal__eyebrow">2027 FULL SET · 사전 신청 시 12월 한 달 무료</p>' +
+      '<h2 class="shop__title" id="shopTitle">📦 2027 정미년 타이밍 풀세트</h2>' +
+      '<p class="shop__sub">2027년 한 해를 <b>다이어리 · 부적 스티커 · 앱</b> 세 가지로 한 번에 챙기는 세트예요. 가장 많이 고르시는 구성이에요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>2027년 1~12월 1년 전체 흐름</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
-      '<li><b>사전 신청 시 12월 한 달 서비스</b><span>2026년 12월 한 달을 먼저 열어 드려요 (12+1개월)</span></li>' +
-      '<li><b>내 원국 맞춤 리셋 알람</b><span>24절기 월운이 바뀌는 날을 내 사주 기준으로</span></li>' +
+      '<li><b>2027 실물 다이어리</b><span>2027년 1월부터 12월까지, 손으로 쓰는 한 해 다이어리</span></li>' +
+      '<li><b>오행 부적 스티커팩</b><span>앱에서 받은 그날의 부적을 다이어리에 직접 붙이는 실물 스티커</span></li>' +
+      '<li><b>1년 캘린더 앱 이용권</b><span>QR 한 번이면 2027년 1~12월 365일이 앱에 열려요</span></li>' +
+      '<li><b>사전 신청 시 12월 한 달 무료!</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
       '</ul>' +
-      priceHTML('사전 신청 패스 가격', PASS_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 바로 결제하기</a>' +
-      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+      priceHTML('풀세트 가격', SET_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + SET_CHECKOUT_URL + '" target="_blank" rel="noopener">📦 풀세트 신청하기</a>' +
+      '<p class="shop__note">신청과 결제는 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
   }
 
-  function goodsShopHTML() {
+  /* 2번 — 2027 1년 캘린더 패스 (앱 전용) */
+  function passShopHTML() {
+    return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
+      '<h2 class="shop__title" id="shopTitle">🎟️ 2027 1년 캘린더 패스</h2>' +
+      '<p class="shop__sub">생년월일만 넣으면 <b>2027년 1월 1일부터 12월 31일까지 365일</b>이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 챱챱 붙이는 앱이에요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>내 생년월일 맞춤, 좋은 날·조심할 날 1년 치</b><span>2027년 1월 1일부터 12월 31일까지 하루씩 전부</span></li>' +
+      '<li><b>부적 스티커 캘린더</b><span>기운이 서는 날 부적을 톡톡톡 두드리면 달력 칸에 스티커가 챱</span></li>' +
+      '<li><b>사전 신청 시 12월 한 달 무료!</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
+      '</ul>' +
+      priceHTML('1년 패스 가격', PASS_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 바로 신청하기</a>' +
+      '<p class="shop__note">신청과 결제는 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+  }
+
+  /* 3번 — 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담 */
+  function careShopHTML() {
     var r = state.res ? repElement() : null;
     var el = r ? r.el : '화';
     var t = TALIS[el] || TALIS['화'];
     var th = EL_THEME[el] || EL_THEME['화'];
-    var who = (state.res && state.res.input && state.res.input.name) ? state.res.input.name + ' 님' : '내';
     var total = (state.res && state.res.total) || 8;
     var why = r
-      ? (r.count === 0 ? total + '글자에 ' + el + t.josa + ' 하나도 없어요.'
-        : total + '글자 중 ' + el + t.josa + ' ' + r.count + '개로 가장 적어요.')
-      : '내 원국에 모자란 기운을 골라 드려요.';
-    return '<p class="modal__eyebrow">OHENG ITEM · 오행 아이템</p>' +
-      '<h2 class="shop__title" id="shopTitle">내게 없는 기운을 채우는 아이템</h2>' +
-      '<p class="shop__sub">' + esc(who) + '의 사주에서 <b>' + esc(t.label) + '</b>' + esc(t.josa) + ' 가장 약해요. ' + esc(why) + '</p>' +
+      ? (r.count === 0 ? '여덟 글자에 ' + el + t.josa + ' 하나도 없어요.'
+        : '여덟 글자 중 ' + el + t.josa + ' ' + r.count + '개로 가장 적어요.')
+      : '내 사주에서 가장 적은 기운을 찾아 드려요.';
+    return '<p class="modal__eyebrow">CARE · 개운 아이템 &amp; 1:1 상담</p>' +
+      '<h2 class="shop__title" id="shopTitle">🔮 안 풀릴 때 쓰는 개운 아이템 · 1:1 상담</h2>' +
+      '<p class="shop__sub">달력도 보고 부적도 붙였는데 <b>유독 막히는 시기</b>가 있어요. 그럴 때는 내게 맞는 개운템과 1:1 상담으로 뚫어 드려요.</p>' +
       '<div class="shop__talis">' +
       (Chars ? Chars.svg(el) : '') +
-      '<p><b>' + esc(th.cheer) + '</b><span>' + esc(t.why) + '</span></p>' +
+      '<p><b>지금 내게 가장 적은 기운 · ' + esc(t.label) + '</b><span>' + esc(why) + ' ' + esc(th.cheer) + '</span></p>' +
       '</div>' +
       '<ul class="shop__list">' +
-      '<li><b>포토카드</b><span>내 부족 오행 수호 부적 카드 — 책상·지갑에 세워 두는 용도</span></li>' +
-      '<li><b>폰 배경화면</b><span>잠금화면에 두는 오행 이미지 (바로 받는 디지털 파일)</span></li>' +
-      '<li><b>실물 굿즈</b><span>부적 스티커 · 키링 — 주문을 모아 순차 제작해요</span></li>' +
+      '<li><b>막힐 때 쓰는 맞춤 개운템</b><span>모자란 기운을 채우는 아이템을 골라 드려요 — 준비되는 것부터 차례로 안내</span></li>' +
+      '<li><b>윤이세 1:1 상담</b><span>달력에 안 잡히는 내 상황까지 함께 짚어 드려요</span></li>' +
+      '<li><b>캘린더·부적과 함께 쓰기</b><span>앱에서 짚은 막히는 달을 아이템과 상담으로 같이 풀어요</span></li>' +
       '</ul>' +
-      priceHTML('아이템 가격', GOODS_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + GOODS_CHECKOUT_URL + '" target="_blank" rel="noopener">🧿 바로 주문하기</a>' +
-      '<p class="shop__note">어떤 아이템을 원하시는지 채널에 남겨 주시면, 내 원국에 맞춰 골라 드리고 결제를 안내드려요.</p>';
-  }
-
-  function consultShopHTML() {
-    return '<p class="modal__eyebrow">1:1 CONSULT · 윤이세</p>' +
-      '<h2 class="shop__title" id="shopTitle">윤이세 1:1 상담</h2>' +
-      '<p class="shop__sub">내 원국과 2027년 1~12월 캘린더를 겹쳐, 월별로 어떻게 쓰면 좋을지 함께 봅니다.</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>내 원국 다시 짚기</b><span>강한 기운과 모자란 기운, 지금의 흐름부터</span></li>' +
-      '<li><b>2027년 월별 흐름</b><span>2027 한 해를 달마다 무엇을 할지로 바꿔 드려요</span></li>' +
-      '<li><b>내 캘린더 맞춤 처방</b><span>이 캘린더에서 짚은 날들을 내 일정에 얹는 법</span></li>' +
-      '</ul>' +
-      priceHTML('상담 가격', CONSULT_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + CONSULT_CHECKOUT_URL + '" target="_blank" rel="noopener">💬 바로 결제 · 상담 신청하기</a>' +
-      '<p class="shop__note">상담 일정과 결제는 카카오톡 채널에서 정해요. 원하시는 시간대를 함께 알려 주세요.</p>';
+      priceHTML('아이템 · 상담 가격', CARE_PRICE) +
+      '<a class="btn btn--primary shop__cta" href="' + CARE_CHECKOUT_URL + '" target="_blank" rel="noopener">🔮 아이템 · 상담 신청하기</a>' +
+      '<p class="shop__note">어떤 시기가 막히는지 채널에 남겨 주시면, 그 상황에 맞춰 아이템과 상담 일정을 안내드려요.</p>';
   }
 
   function openShop(kind) {
     if (!shopEl) return;
     shopLastFocus = document.activeElement;
-    shopBody.innerHTML = kind === 'goods' ? goodsShopHTML() : (kind === 'consult' ? consultShopHTML() : passShopHTML());
+    shopBody.innerHTML = kind === 'care' ? careShopHTML() : (kind === 'set' ? setShopHTML() : passShopHTML());
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;

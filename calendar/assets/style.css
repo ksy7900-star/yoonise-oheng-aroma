@@ -702,46 +702,38 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   font-size: 10.5px; font-weight: 400; color: var(--mute); letter-spacing: 0;
 }
 
-/* 달력 셀 — 동그란 주홍 낙관 도장 */
+/* 달력 칸 — 그날의 미니 오행 캐릭터 스티커 (챱!) */
 .day { position: relative; }
-.day__seal {
-  position: absolute; left: 50%; top: -2px;
-  width: 34px; height: 34px; margin-left: -17px;
-  pointer-events: none; z-index: 0;
-  color: #B4432C;
-  transform: rotate(-8deg);
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .75)) drop-shadow(0 2px 3px rgba(180, 67, 44, .18));
+.day__top { display: flex; align-items: center; justify-content: center; }
+.day__sticker {
+  display: block; flex: none;
+  width: 24px; height: 26px;
+  margin: -7px 0 0 -7px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  transform: rotate(-9deg);
+  pointer-events: none;
 }
-.day--stamped .day__num {
-  position: relative; z-index: 1;
-  color: #FFF4E6; font-weight: 700;
-  text-shadow: 0 1px 1px rgba(120, 40, 24, .35);
+.day__sticker .ch {
+  width: 100%; height: 100%; overflow: hidden;   /* 캐릭터만 잘라 쓰는 미니 스티커 */
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)
+          drop-shadow(0 1.5px 2px rgba(28, 27, 25, .22));
 }
-.day--stamped.day--sun .day__num, .day--stamped.day--sat .day__num { color: #FFF4E6; }
-.day--stamped.is-today .day__num { box-shadow: none; }
-.day--stamped.is-sel .day__num { background: transparent; color: #FFF4E6; }
-.day__seal.is-new { animation: sealIn .68s cubic-bezier(.2, 1.5, .4, 1) both; }
-@keyframes sealIn {
-  0% { transform: rotate(-28deg) scale(2.8); opacity: 0; }
-  36% { opacity: .85; }
-  60% { transform: rotate(-2deg) scale(.88); opacity: 1; }
-  80% { transform: rotate(-11deg) scale(1.05); }
-  100% { transform: rotate(-8deg) scale(1); opacity: 1; }
+.day__sticker.is-new { animation: stickerIn .72s cubic-bezier(.2, 1.5, .4, 1) both; }
+@keyframes stickerIn {
+  0% { transform: rotate(-30deg) scale(2.5); opacity: 0; }
+  38% { opacity: .92; }
+  64% { transform: rotate(-3deg) scale(.85); opacity: 1; }
+  84% { transform: rotate(-12deg) scale(1.06); }
+  100% { transform: rotate(-9deg) scale(1); opacity: 1; }
 }
-.seal { display: block; width: 100%; height: 100%; overflow: visible; }
-.seal__halo { fill: none; stroke: rgba(180, 67, 44, .28); stroke-width: 1.1; }
-.seal__disc { fill: #B4432C; }
-.seal__inner {
-  fill: none; stroke: rgba(255, 246, 234, .58); stroke-width: .85;
-  stroke-dasharray: 1.7 2.4; stroke-linecap: round;
-}
-.seal__spark { fill: #E4AE55; }
-.seal-mini {
+/* 팝업 안 완료 문구 옆 미니 스티커 */
+.sticker-mini {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; margin-right: 5px; vertical-align: -4px;
-  color: #B4432C;
+  width: 22px; height: 24px; margin-right: 5px; vertical-align: -7px;
 }
-.seal-mini .seal { width: 18px; height: 18px; }
+.sticker-mini .ch {
+  width: 100%; height: 100%; overflow: hidden;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+}
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
 @media (max-width: 360px) {
@@ -762,7 +754,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
-  .day__seal { width: 36px; height: 36px; margin-left: -18px; }
+  .day__sticker { width: 28px; height: 30px; margin-left: -8px; }
 }
 
 /* ── 날짜 팝업 모달 ───────────────────────────────── */
@@ -944,10 +936,9 @@ body.is-modal-open { overflow: hidden; }
 .modal__eyebrow { padding-right: 108px; }
 .modal__date { padding-right: 100px; }
 
-/* 달력 낙관 — 모바일에서도 한눈에 도장이 찍힌 게 보이도록 */
-.day__seal { top: -2px; }
+/* 달력 스티커 — 모바일에서도 한눈에 붙은 게 보이도록 */
 @media (max-width: 360px) {
-  .day__seal { width: 30px; height: 30px; margin-left: -15px; top: 0; }
+  .day__sticker { width: 22px; height: 24px; margin-left: -6px; }
 }
 
 /* ==========================================================
@@ -1135,16 +1126,21 @@ body.is-modal-open { overflow: hidden; }
 .cta__steps { margin-top: 18px; }
 .cta__steps .btn:first-child { margin-top: 0; }
 .cta__steps .btn + .btn { margin-top: 8px; }
-.shop-btn { justify-content: flex-start; gap: 10px; padding: 14px 16px; }
+.shop-btn { justify-content: flex-start; align-items: flex-start; gap: 10px; padding: 14px 16px; }
 .shop-btn__no {
-  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  flex: none; width: 20px; height: 20px; border-radius: 50%; margin-top: 1px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums;
   background: rgba(29, 28, 25, .12); color: inherit;
 }
 .btn--cream .shop-btn__no { background: rgba(29, 28, 25, .14); }
 .btn--ghost-light .shop-btn__no { background: rgba(242, 237, 227, .2); }
-.shop-btn__label { text-align: left; }
+.shop-btn__text { display: flex; flex-direction: column; gap: 4px; min-width: 0; text-align: left; }
+.shop-btn__label { text-align: left; line-height: 1.35; }
+.shop-btn__desc {
+  font-size: 10.5px; font-weight: 400; line-height: 1.55;
+  letter-spacing: -0.01em; opacity: .72;
+}
 
 /* ── 구입 안내 팝업 ──────────────────────────────── */
 .shop__title {
