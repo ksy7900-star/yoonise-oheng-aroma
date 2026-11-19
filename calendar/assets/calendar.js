@@ -1373,7 +1373,7 @@
       /* ① 대나무 산가지 뽑기 */
       '<section class="care care--bamboo">' +
       '<p class="care__no">01</p>' +
-      '<p class="care__title">오늘의 긴급 개운 산가지</p>' +
+      '<p class="care__title">오늘의 긴급 개운 처방</p>' +
       '<p class="care__desc">마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.</p>' +
       '<div class="bamboo' + (picked ? ' is-picked' : '') + '" data-bamboo>' +
       '<span class="bamboo__tray"></span>' +
