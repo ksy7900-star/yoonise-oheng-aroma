@@ -31,35 +31,35 @@
 
   var TALIS = {
     목: {
-      key: 'wood', label: '목(木)', badge: '럭키',
+      key: 'wood', label: '목(木)', josa: '이',
       why: '새로 시작하고 뻗어 나가는 기운 — 기회를 붙잡고 사람에게 먼저 다가가는 힘을 채워 줍니다.',
       done: '✨ 오늘 럭키 기운 충전 완료!',
       sub: '별빛이 톡톡 — 오늘은 먼저 손 내밀어 보세요.',
       taps: ['톡 — 새싹이 올라옵니다', '톡톡 — 마지막 한 번!']
     },
     화: {
-      key: 'fire', label: '화(火)', badge: '결정',
+      key: 'fire', label: '화(火)', josa: '가',
       why: '결정하고 표현하는 기운 — 미루지 않고 밀고 나가는 힘을 채워 줍니다.',
       done: '🔥 오늘 결정의 불씨 ON!',
       sub: '오늘 정할 일 하나, 지금 적어 두세요.',
       taps: ['톡 — 불씨가 붙었어요', '톡톡 — 마지막 한 번!']
     },
     토: {
-      key: 'earth', label: '토(土)', badge: '리셋',
+      key: 'earth', label: '토(土)', josa: '가',
       why: '중심을 잡고 버티는 기운 — 일이 흔들릴 때 내 자리를 지키는 힘을 채워 줍니다.',
       done: '🌱 오늘 리셋 완료 — 중심 다시 세웠어요.',
       sub: '새 달의 기준을 한 줄로 적어 두면 오래갑니다.',
       taps: ['톡 — 중심이 잡혀요', '톡톡 — 마지막 한 번!']
     },
     금: {
-      key: 'metal', label: '금(金)', badge: '머니',
+      key: 'metal', label: '금(金)', josa: '이',
       why: '벌여 둔 일을 매듭짓고 재물을 지키는 기운을 채워 줍니다.',
       done: '💰 오늘 머니 그릇 채움 완료!',
       sub: '나가는 돈부터 한 번 확인해 보세요.',
       taps: ['톡 — 그릇이 단단해져요', '톡톡 — 마지막 한 번!']
     },
     수: {
-      key: 'water', label: '수(水)', badge: '입단속',
+      key: 'water', label: '수(水)', josa: '가',
       why: '차분히 흐르며 지켜 내는 기운 — 말과 감정을 다스리는 힘을 채워 줍니다.',
       done: '🛡️ 오늘 입단속 방패 ON!',
       sub: '보내기 전에 한 번 접어 두세요.',
@@ -400,8 +400,8 @@
     var total = state.res.total || 8;
     var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
     var why = (r.count === 0
-      ? total + '글자에 ' + r.el + '이 하나도 없어요. '
-      : total + '글자 중 ' + r.el + '이 ' + r.count + '개로 가장 적어요. ') + t.why;
+      ? total + '글자에 ' + r.el + t.josa + ' 하나도 없어요. '
+      : total + '글자 중 ' + r.el + t.josa + ' ' + r.count + '개로 가장 적어요. ') + t.why;
     box.innerHTML =
       '<img class="talis-banner__img" src="' + TALIS_PATH + t.key + '.jpg" width="76" height="76" ' +
       'alt="' + esc(t.label) + ' 수호 부적 캐릭터">' +
@@ -421,17 +421,26 @@
     return repElement().el;   // 배지 없는 평범한 날은 1년 대표 부적으로
   }
 
+  function doneText(t, iso) {
+    return iso === state.todayISO ? t.done : t.done.replace('오늘 ', '이 날 ');
+  }
+
   function ritualHTML(info) {
     var st = stampOf(info.iso);
-    var el = (st && st.el && TALIS[st.el]) ? st.el : dayElement(info);
+    var auto = dayElement(info);
+    var el = (st && st.el && TALIS[st.el]) ? st.el : auto;
     var t = TALIS[el];
     var done = !!st;
     var n = done ? 3 : (ritual[info.iso] || 0);
+    var b0 = (info.badges || [])[0];
+    var tag = (b0 && BADGE_TO_EL[b0.text] === el) ? b0.text : '1년 대표 부적';
+    var lead = info.iso === state.todayISO ? '오늘의 수호 부적' : '이 날의 수호 부적';
     var msg = done
-      ? esc(t.done) + '<small>' + esc(t.sub) + '</small>'
-      : (n > 0 ? '한 번 더 — ' + (3 - n) + '번 남았어요.' : '부적을 세 번 두드려 오늘의 기운을 켜 보세요.');
+      ? esc(doneText(t, info.iso)) + '<small>' + esc(t.sub) + '</small>'
+      : (n > 0 ? '한 번 더 — ' + (3 - n) + '번 남았어요.' : '부적을 세 번 두드려 ' +
+        (info.iso === state.todayISO ? '오늘' : '그날') + '의 기운을 켜 보세요.');
     return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso + '" data-el="' + el + '">' +
-      '<p class="ritual__eyebrow">오늘의 수호 부적 · ' + esc(t.label) + (t.badge ? ' · ' + esc(t.badge) : '') + '</p>' +
+      '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + ' · ' + esc(tag) + '</p>' +
       '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(t.label) + ' 부적 두드리기 (' + n + '/3)">' +
       '<img class="ritual__img" src="' + TALIS_PATH + t.key + '.jpg" width="112" height="112" ' +
       'alt="' + esc(t.label) + ' 수호 부적 캐릭터, 세 번 두드려 오늘의 기운을 켜는 부적">' +
@@ -481,7 +490,7 @@
     if (n >= 3) {
       saveStamp(iso, el);
       wrap.classList.add('is-done');
-      if (msgEl) msgEl.innerHTML = esc(t.done) + '<small>' + esc(t.sub) + '</small>';
+      if (msgEl) msgEl.innerHTML = esc(doneText(t, iso)) + '<small>' + esc(t.sub) + '</small>';
       state.justStamped = iso;
       renderCalendar();                       // 달력 셀에 도장이 쾅
     } else if (msgEl) {
