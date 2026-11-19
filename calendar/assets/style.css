@@ -1091,10 +1091,12 @@ body.is-modal-open { overflow: hidden; }
 }
 .ritual__p--big { animation-timing-function: cubic-bezier(.1, .8, .3, 1); animation-fill-mode: forwards; }
 @keyframes pFly {
-  0% { transform: translate(-50%, -50%) scale(.25) rotate(0deg); opacity: 0; }
-  16% { opacity: 1; }
+  0% { transform: translate(-50%, -50%) scale(.2) rotate(0deg); opacity: 0; }
+  14% { opacity: 1; }
+  58% { opacity: 1; }
+  82% { opacity: .55; }
   100% {
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.08) rotate(var(--rot));
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.12) rotate(var(--rot));
     opacity: 0;
   }
 }
