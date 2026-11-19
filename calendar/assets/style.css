@@ -320,6 +320,15 @@ form { margin-top: 22px; }
 .cal__year { font-size: 9.5px; letter-spacing: .22em; color: var(--mute); text-align: center; }
 .cal__title { font-family: var(--serif); font-size: 23px; font-weight: 600; text-align: center; margin-top: 1px; }
 .cal__summary { font-size: 11px; color: var(--mute); text-align: center; margin-top: 8px; }
+/* 세운 줄 — 입춘에서 해가 바뀐다 */
+.cal__saeun {
+  margin: 10px auto 0; width: fit-content; max-width: 100%;
+  font-size: 10px; line-height: 1.5; letter-spacing: .01em; text-align: center;
+  color: #8A7B5C; background: #FAF6EC; border: 1px solid rgba(174, 138, 80, .22);
+  border-radius: 999px; padding: 4px 11px;
+}
+.cal__saeun b { color: #7E6229; font-weight: 600; }
+.cal__saeun.is-shift { background: #F6ECD8; border-color: rgba(174, 138, 80, .42); color: #6E5A2E; }
 
 /* ── 이 캘린더 보는 법 ─────────────────────────────── */
 .howto {
@@ -429,6 +438,8 @@ form { margin-top: 22px; }
 .brief__date small { font-family: var(--sans); font-size: 11px; letter-spacing: .14em; color: var(--mute); margin-left: 8px; vertical-align: 3px; }
 .brief__lunar { font-size: 10.5px; color: var(--mute); text-align: right; line-height: 1.6; }
 .brief__headline { font-family: var(--serif); font-size: 19px; line-height: 1.55; margin-top: 14px; font-weight: 600; }
+.brief__saeun { margin-top: 7px; font-size: 10.5px; color: #8A7B5C; letter-spacing: .02em; line-height: 1.6; }
+.brief__saeun b { color: #7E6229; font-weight: 600; }
 .brief__rule { height: 1px; background: var(--hair-soft); margin: 18px 0 16px; }
 
 .brief__gz { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -489,6 +500,11 @@ form { margin-top: 22px; }
 .lock__term { font-size: 10.5px; color: rgba(242, 237, 227, .45); margin-top: 6px; letter-spacing: .02em; }
 .lock__title { font-family: var(--serif); font-size: 18px; line-height: 1.55; margin-top: 16px; color: #F6F2EA; position: relative; z-index: 1; }
 .lock__sub { font-size: 11px; color: rgba(242, 237, 227, .52); margin-top: 6px; }
+.lock__early {
+  display: inline-block; margin-top: 11px; padding: 5px 11px; border-radius: 999px;
+  font-size: 10px; letter-spacing: .02em; line-height: 1.4;
+  color: #E9C77F; background: rgba(196, 154, 80, .14); border: 1px solid rgba(196, 154, 80, .36);
+}
 .lock__marks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .lock .mark { background: rgba(242, 237, 227, .08); color: rgba(242, 237, 227, .8); }
 .lock .mark__dot { opacity: .9; }

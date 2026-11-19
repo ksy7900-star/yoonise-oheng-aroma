@@ -9,7 +9,8 @@
   var STORE_KEY = 'yoonise.timing.v1';
   var MAIN_KEY = 'yoonise.oheng.last.v1';   // 기존 오행 앱에 저장된 사주가 있으면 그대로 이어받는다
   var RANGE_FROM = '2026-11-01';
-  var RANGE_TO = '2027-12-31';
+  var RANGE_TO = '2028-02-03';   // 정미년 마지막 날 — 2028-02-04 입춘부터 무신년
+  var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
   var FREE_DAYS = 3;   // 오늘 포함 3일(D+0·D+1·D+2)만 무료
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
@@ -281,7 +282,7 @@
   /* ── 공통 계산 ─────────────────────────────────────── */
   function clampView(y, m) {
     var v = y * 12 + (m - 1);
-    var lo = 2026 * 12 + 10, hi = 2027 * 12 + 11;
+    var lo = 2026 * 12 + 10, hi = 2028 * 12 + 1;
     if (v < lo) v = lo;
     if (v > hi) v = hi;
     return { y: Math.floor(v / 12), m: (v % 12) + 1 };
@@ -372,6 +373,7 @@
 
     var first = new Date(Date.UTC(v.y, v.m - 1, 1)).getUTCDay();
     var dim = T.daysInMonth(v.y, v.m);
+    if (T.isoOf(v.y, v.m, dim) > RANGE_TO) dim = T.parseISO(RANGE_TO).d;   // 마지막 달은 정미년 끝까지만
     var html = '';
     for (var i = 0; i < first; i++) html += '<span aria-hidden="true"></span>';
 
@@ -420,10 +422,44 @@
     $('#calSummary').textContent = bits.length ? bits.join('  ·  ') : '이 달은 표시할 신호가 적은 달이에요';
 
     $('#prevMonth').disabled = (v.y === 2026 && v.m === 11);
-    $('#nextMonth').disabled = (v.y === 2027 && v.m === 12);
+    $('#nextMonth').disabled = (v.y === 2028 && v.m === 2);
+
+    renderSaeun(v, dim);
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     $('#calNote').textContent = freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+  }
+
+  /* ── 세운 줄: 입춘에서 해가 바뀐다 ─────────────────── */
+  function renderSaeun(v, dim) {
+    var el = $('#calSaeun');
+    if (!el) return;
+    var s1 = T.saeunOf(T.isoOf(v.y, v.m, 1), state.terms);
+    var s2 = T.saeunOf(T.isoOf(v.y, v.m, dim), state.terms);
+    if (!s1 || !s2) { el.textContent = ''; el.classList.remove('is-shift'); return; }
+
+    if (s1.year !== s2.year) {
+      // 이 달 안에서 입춘을 지나 해가 바뀐다
+      var lc = null;
+      state.terms.list.forEach(function (t) {
+        if (t.ko === '입춘' && t.iso.slice(0, 7) === T.isoOf(v.y, v.m, 1).slice(0, 7)) lc = t;
+      });
+      var md = lc ? (T.parseISO(lc.iso).m + '.' + T.parseISO(lc.iso).d) : '';
+      el.innerHTML = '<b>' + esc(s1.label) + '</b> → <b>' + esc(s2.label) + '</b>' +
+        (md ? ' · ' + md + ' 입춘 시작' : '');
+      el.classList.add('is-shift');
+      return;
+    }
+
+    el.classList.remove('is-shift');
+    if (T.isoOf(v.y, v.m, dim) === RANGE_TO) {
+      var e = T.parseISO(RANGE_TO);
+      el.innerHTML = '<b>' + esc(s1.label) + '</b> · ' + e.m + '.' + e.d + '까지 (정미년 끝)'; 
+    } else if (s1.year < 2027) {
+      el.innerHTML = '<b>' + esc(s1.label) + '</b> · 정미년 입춘 전';
+    } else {
+      el.innerHTML = '<b>' + esc(s1.label) + '</b>';
+    }
   }
 
   function shiftMonth(dir) {
@@ -470,12 +506,18 @@
         (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '24절기') + '</p>'
       : '';
 
+    var saeunHtml = info.saeun
+      ? '<p class="brief__saeun">' + esc(info.saeun.label) + ' 세운' +
+        (info.saeun.isLichunDay ? ' · <b>이날 입춘, 새 세운 시작</b>' : '') + '</p>'
+      : '';
+
     return '<article class="brief">' +
       '<div class="brief__top">' +
       '<p class="brief__date">' + fmtMD(info.iso) + '<small>' + DOW_EN[info.dow] + '</small></p>' +
       '<p class="brief__lunar">' + esc(fmtKoDate(info.iso)) + '<br>음력 ' + esc(info.lunarText) + '</p>' +
       '</div>' +
       '<p class="brief__headline">' + esc(info.headline) + '</p>' +
+      saeunHtml +
       '<div class="brief__rule"></div>' +
       '<div class="brief__gz">' +
       '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
@@ -502,14 +544,16 @@
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     return '<article class="lock">' +
       '<p class="lock__eyebrow">FREE TRIAL · 3 DAYS</p>' +
-      '<p class="lock__date">' + fmtMD(info.iso) + ' <span>' + DOW_EN[info.dow] + ' · ' + esc(info.gz.textKo) + '일</span></p>' +
+      '<p class="lock__date">' + fmtMD(info.iso) + ' <span>' + DOW_EN[info.dow] + ' · ' + esc(info.gz.textKo) + '일' +
+        (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
-      '<p class="lock__title">🔒 3일 무료 체험 이후 · 2027 정미년 전체 1년 타이밍 열기</p>' +
+      '<p class="lock__title">🔒 3일 무료 체험 이후 · 정미년 1년 전체 열기</p>' +
       '<p class="lock__sub">(정미년 패스 / 윤이세 1:1 상담)</p>' +
+      '<p class="lock__early">얼리버드 12+2개월 · 2026 연말·1월 보너스 포함</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 작용과 처방은 무료 구간(' + freeEnd.m + '월 ' + freeEnd.d + '일까지) 밖이에요. ' +
-      '2027 정미년 12개월 전체 캘린더와 리셋 알람은 정미년 패스에서 열립니다.</p>' +
+      '지금 시작하면 2026 남은 연말·1월은 보너스로 열리고, 2027 정미년(입춘~) 1년 전체와 리셋 알람까지 이어집니다.</p>' +
       '<div class="lock__actions">' +
       '<a class="btn btn--cream" href="' + KAKAO + '" target="_blank" rel="noopener">카카오톡으로 1:1 상담</a>' +
       '<a class="btn btn--ghost-light" href="' + LITTLY + '" target="_blank" rel="noopener">정미년 패스 안내 보기</a>' +
@@ -560,7 +604,7 @@
   function boot() {
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    state.terms = T.buildTerms(RANGE_FROM, RANGE_TO);
+    state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
 

@@ -148,6 +148,28 @@
     return { byDate: byDate, list: list };
   }
 
+  /* ── 세운(歲運): 입춘 기준 ───────────────────────────
+   * 사주년은 1월 1일이 아니라 입춘 절입 시각에 바뀐다.
+   * 2026-02-04 입춘 ~ 2027-02-03 = 병오년, 2027-02-04 입춘 ~ 2028-02-03 = 정미년.
+   */
+  function saeunOf(iso, terms) {
+    if (!terms || !terms.list) return null;
+    var lc = null;
+    for (var i = 0; i < terms.list.length; i++) {
+      var t = terms.list[i];
+      if (t.ko === '입춘' && t.iso <= iso) lc = t;   // list 는 날짜 오름차순
+    }
+    if (!lc) return null;
+    var y = parseISO(lc.iso).y;
+    var gz = M.ganZhiOf(y - 4);
+    return {
+      iso: lc.iso, time: lc.time, year: y,
+      text: gz.text, textKo: gz.textKo,
+      label: gz.textKo + '년(' + gz.text + ')',
+      isLichunDay: lc.iso === iso
+    };
+  }
+
   /* ── 원국 요약 ─────────────────────────────────────── */
   function natalOf(res) {
     var d = res.pillars.day, mo = res.pillars.month, y = res.pillars.year, t = res.pillars.time;
@@ -296,11 +318,12 @@
     else { headline = '잔잔한 날 · 흐름 정리'; tone = 'none'; }
 
     var lines = prescribe(marks, term, gz);
+    var saeun = saeunOf(iso, terms);
 
     return {
       iso: iso, y: y, m: m, d: d, dow: dowOf(iso),
       gz: gz, ganEl: M.GAN_EL[gz.ganIndex], zhiEl: M.ZHI_EL[gz.zhiIndex],
-      lunarText: lunarText, term: term, marks: marks, dots: dots, badges: badges,
+      lunarText: lunarText, term: term, saeun: saeun, marks: marks, dots: dots, badges: badges,
       tone: tone, headline: headline, lines: lines,
       tenGod: tgName
     };
@@ -507,6 +530,7 @@
     buildTerms: buildTerms,
     natalOf: natalOf,
     dayInfo: dayInfo,
+    saeunOf: saeunOf,
     buildICS: buildICS,
     addDays: addDays,
     isoOf: isoOf,
