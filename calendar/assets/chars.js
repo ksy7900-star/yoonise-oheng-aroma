@@ -89,7 +89,7 @@
       return '<path d="M100 58c-12 0-21 5-22 13-16 12-27 30-27 51 0 25 22 41 49 41s49-16 49-41c0-21-11-39-27-51-1-8-10-13-22-13z" fill="url(#' + u + 'b)"/>' +
         '<path d="M78 72h44" stroke="#C08A3E" stroke-width="8" stroke-linecap="round"/>' +
         '<path d="M100 64l-8-10 8 4 8-4z" fill="#D9A25A"/>' +
-        '<ellipse cx="74" cy="110" rx="13" ry="18" fill="#fff" opacity=".3" transform="rotate(-16 74 110)"/>' +
+        '<ellipse cx="64" cy="96" rx="11" ry="15" fill="#fff" opacity=".26" transform="rotate(-16 64 96)"/>' +
         '<path d="M64 148q36 20 72 0" fill="none" stroke="#C08A3E" stroke-width="2.4" opacity=".35" ' +
         'stroke-linecap="round" stroke-dasharray="1 6"/>';
     },
@@ -103,8 +103,7 @@
     },
     수: function (u) {
       return '<path d="M100 32c0 0 52 60 52 88 0 29-23 50-52 50s-52-21-52-50c0-28 52-88 52-88z" fill="url(#' + u + 'b)"/>' +
-        '<ellipse cx="77" cy="112" rx="13" ry="19" fill="#fff" opacity=".32" transform="rotate(-18 77 112)"/>' +
-        '<path d="M70 152q10 8 20 0t20 0" fill="none" stroke="#fff" stroke-width="3" opacity=".5" stroke-linecap="round"/>';
+        '<ellipse cx="64" cy="86" rx="10" ry="15" fill="#fff" opacity=".28" transform="rotate(-20 64 86)"/>';
     }
   };
 

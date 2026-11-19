@@ -1069,15 +1069,15 @@
   }
 
   function passShopHTML() {
-    return '<p class="modal__eyebrow">丁未年 PASS · 얼리버드 12+2개월</p>' +
-      '<h2 class="shop__title" id="shopTitle">정미년 1년 패스</h2>' +
-      '<p class="shop__sub">2027 정미년 입춘부터 1년 — 내 원국 위에 하루씩 얹어 보는 캘린더예요.</p>' +
+    return '<p class="modal__eyebrow">2027 PASS · 사전 신청 12+1개월</p>' +
+      '<h2 class="shop__title" id="shopTitle">2027년 1년 패스</h2>' +
+      '<p class="shop__sub">2027년 1월부터 12월까지 1년 — 내 원국 위에 하루씩 얹어 보는 캘린더예요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>2027 정미년 1년 전체 흐름</b><span>2027.2.4 입춘 ~ 2028.2.3까지, 하루씩 전부</span></li>' +
-      '<li><b>2026 연말 · 1월 보너스</b><span>정미년이 들어오기 전 석 달을 먼저 열어 드려요</span></li>' +
+      '<li><b>2027년 1~12월 1년 전체 흐름</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
+      '<li><b>사전 신청 시 12월 한 달 서비스</b><span>2026년 12월 한 달을 먼저 열어 드려요 (12+1개월)</span></li>' +
       '<li><b>내 원국 맞춤 리셋 알람</b><span>24절기 월운이 바뀌는 날을 내 사주 기준으로</span></li>' +
       '</ul>' +
-      priceHTML('얼리버드 패스 가격', PASS_PRICE) +
+      priceHTML('사전 신청 패스 가격', PASS_PRICE) +
       '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 바로 결제하기</a>' +
       '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
   }
