@@ -1218,9 +1218,13 @@ body.is-modal-open { overflow: hidden; }
 }
 .pay__note b { color: #9E4A2E; }
 .pay__kakao {
-  display: block; width: 100%; margin-top: 9px; padding: 10px 12px; border-radius: 11px;
-  font-size: 11px; font-weight: 700; color: #FFF6E6; background: #9E4A2E;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 9px; padding: 10px 12px; border-radius: 11px;
+  font-size: 11px; font-weight: 700; color: #6B4A16;
+  background: #F7E9C9; border: 1px solid rgba(174, 138, 80, .42);
+  transition: transform .16s ease;
 }
+.pay__kakao:active { transform: translateY(1px); }
 .pay__pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .pay__pick-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;

@@ -1049,13 +1049,7 @@
     try { window.open(KAKAO, '_blank', 'noopener'); } catch (e) { }
   }
 
-  function copyText(text) {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text)['catch'](function () { });
-        return true;
-      }
-    } catch (e) { }
+  function legacyCopy(text) {
     try {
       var ta = document.createElement('textarea');
       ta.value = text;
@@ -1069,6 +1063,16 @@
       document.body.removeChild(ta);
       return ok;
     } catch (e) { return false; }
+  }
+  /* 복사 성공 여부를 실제 결과로 돌려준다 — 안내 문구가 사실과 어긋나지 않게 */
+  function copyText(text, cb) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { cb(true); }, function () { cb(legacyCopy(text)); });
+        return;
+      }
+    } catch (e) { }
+    cb(legacyCopy(text));
   }
 
   function handlePay(kind, item) {
@@ -1086,10 +1090,13 @@
     }
     if (bankReady()) {
       var text = bankText();
-      var copied = copyText(text);
-      payNote((copied ? '계좌번호를 복사했어요' : '아래 계좌로 입금해 주세요') +
-        ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
-        '<button type="button" class="pay__kakao" data-pay="kakao">입금 확인 카톡 보내기 →</button>');
+      var bankNote = function (copied) {
+        payNote((copied === true ? '계좌번호를 복사했어요' : (copied === false ? '아래 계좌로 입금해 주세요' : '입금 계좌는 여기예요')) +
+          ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
+          '<button type="button" class="pay__kakao" data-pay="kakao">입금 확인 카톡 보내기 →</button>');
+      };
+      bankNote(null);
+      copyText(text, bankNote);
       vibrate(18);
       sfxTap(2);
       return;
