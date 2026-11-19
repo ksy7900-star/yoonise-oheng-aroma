@@ -403,6 +403,10 @@ form { margin-top: 22px; }
 .day--past { opacity: .3; background: none; box-shadow: none; }
 .day--past .day__badges { visibility: hidden; }
 
+/* 평범한 날(기운 배지 없음) — 누를 수 없는 정적인 칸, 커서·호버 효과 없음 */
+.day--static { cursor: default; }
+.day--static:hover { background-image: none; }
+
 /* 무료 체험 스위치(calendar/assets/calendar.js 의 FREE_TRIAL_ENABLED)
    끄면 data-trial="off" — js-trial 문구 숨김 + 지난 날도 눌러 볼 수 있게 흐림 해제 */
 body[data-trial="off"] .js-trial { display: none !important; }
@@ -1331,25 +1335,9 @@ body.is-modal-open { overflow: hidden; }
   50% { transform: translateY(-5px) rotate(1.4deg); }
 }
 
-/* ── 잔잔한 날 팝업 ───────────────────────────────── */
-.calm {
-  margin-top: 16px; padding: 20px 14px 18px; text-align: center;
-  background: radial-gradient(circle at 50% 0%, rgba(140, 156, 136, .16), rgba(140, 156, 136, 0) 68%);
-  border-radius: 20px;
-}
-.calm__icon { font-size: 34px; line-height: 1; animation: chFloat 4.6s ease-in-out infinite; }
-.calm__line {
-  font-family: var(--serif); font-size: 17.5px; line-height: 1.7;
-  color: var(--ink); margin-top: 12px; letter-spacing: -0.02em;
-}
-.calm__sub { font-size: 11.5px; color: var(--mute); line-height: 1.7; margin-top: 9px; }
-.calm__sub b { color: #7E6229; font-weight: 700; }
-.modal__dialog--calm .brief__more { margin-top: 12px; }
-.modal__dialog--calm .brief__more summary::after { content: "일진 · 십신 · 처방"; }
-
 @media (prefers-reduced-motion: reduce) {
   .ch-eye, .ch-shadow, .ch-tw, .ch-spark, .talis-banner__char .ch,
-  .shop__talis > .ch, .calm__icon, .ritual__name, .ch[data-stage="3"] .ch-aura-wave {
+  .shop__talis > .ch, .ritual__name, .ch[data-stage="3"] .ch-aura-wave {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }

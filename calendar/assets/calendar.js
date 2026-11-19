@@ -774,6 +774,9 @@
       }).join('');
 
       var open = isOpenDay(iso);
+      // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
+      var pastDay = iso < state.todayISO;
+      var clickable = badges.length ? true : (!open && !pastDay);
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
@@ -783,14 +786,22 @@
         if (iso >= state.todayISO) label += ', 부적 완료';
       }
 
-      html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
-        (iso === state.sel ? ' aria-current="date"' : '') +
-        (open ? '' : ' tabindex="-1"') +
-        ' aria-label="' + esc(label) + '">' +
-        '<span class="day__num">' + d + '</span>' +
+      var cellInner = '<span class="day__num">' + d + '</span>' +
         (stamp ? '<span class="day__seal' + (state.justStamped === iso ? ' is-new' : '') + '" aria-hidden="true">' + SEAL_SVG + '</span>' : '') +
-        '<span class="day__badges">' + badgeHtml + '</span>' +
-        '</button>';
+        '<span class="day__badges">' + badgeHtml + '</span>';
+
+      if (clickable) {
+        html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
+          (iso === state.sel ? ' aria-current="date"' : '') +
+          (open ? '' : ' tabindex="-1"') +
+          ' aria-label="' + esc(label) + '">' + cellInner + '</button>';
+      } else {
+        // 날짜만 보이는 정적인 칸 — 키보드 포커스도 받지 않는다
+        cls.push('day--static');
+        var plainLabel = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일';
+        html += '<div class="' + cls.join(' ') + '" data-iso="' + iso + '">' +
+          '<span class="sr-only">' + esc(plainLabel) + '</span>' + cellInner + '</div>';
+      }
     }
     $('#calGrid').innerHTML = html;
     state.justStamped = null;
@@ -809,8 +820,8 @@
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     var noteText = FREE_TRIAL_ENABLED
-      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 날짜를 눌러 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
-      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 열려 있어요. 기운이 서는 날에만 부적이 짠 하고 나타납니다.';
+      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 배지가 붙은 날을 눌러 부적과 처방을 볼 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
+      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 표시되고, 기운이 서는 날(배지가 붙은 날)에만 부적이 짠 하고 나타납니다.';
     $('#calNote').textContent = noteText;
   }
 
@@ -860,15 +871,14 @@
   function openDayModal(iso) {
     var info = infoFor(iso);
     if (!info || !modalEl) return;
+    // 기운 태그(럭키·입단속·결정·머니·리셋)가 하나도 없는 평범한 날은 팝업을 열지 않는다
+    if (!info.badges || !info.badges.length) return;
     var lock = FREE_TRIAL_ENABLED && !inFree(iso);
-    // 기운 태그(럭키·입단속·결정·머니·리셋)가 하나도 없는 평범한 날 → 부적 없이 잔잔한 안내만
-    var calm = !lock && !(info.badges && info.badges.length);
     lastFocus = document.activeElement;
     state.sel = iso;
     renderCalendar();                       // 날짜 칸 선택 표시
-    modalBody.innerHTML = lock ? lockModalHTML(info) : (calm ? calmModalHTML(info) : briefModalHTML(info));
+    modalBody.innerHTML = lock ? lockModalHTML(info) : briefModalHTML(info);
     modalDialog.classList.toggle('modal__dialog--lock', lock);
-    modalDialog.classList.toggle('modal__dialog--calm', calm);
     modalEl.hidden = false;
     document.body.classList.add('is-modal-open');
     modalBody.scrollTop = 0;
@@ -950,52 +960,6 @@
       (info.tenGod ? '<span class="pill">' + esc(info.tenGod) + '</span>' : '') +
       '</div>' +
       (markHtml ? '<div class="marks">' + markHtml + '</div>' : '') +
-      '<ul class="brief__why">' + whyTen + why + '</ul>' +
-      '<div class="rx">' +
-      '<p class="rx__label">' + when + '의 처방</p>' +
-      '<div class="rx__item"><span class="rx__n">01</span><span>' + esc(info.lines[0]) + '</span></div>' +
-      '<div class="rx__item"><span class="rx__n">02</span><span>' + esc(info.lines[1]) + '</span></div>' +
-      '</div>' +
-      termLine +
-      '</div>' +
-      '</details>' +
-      '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
-  }
-
-  /* ── 평범한 날 — 부적 없이 잔잔한 안내 + 접이식 사주 풀이 ── */
-  function calmModalHTML(info) {
-    var gz = info.gz;
-    var today = info.iso === state.todayISO;
-    var when = today ? '오늘' : '이 날';
-    var whyTen = '<li>내 일간 ' + esc(state.natal ? state.natal.gan : '') + ' 기준, ' + when + ' 천간 ' + esc(gz.gan) + '은 ' +
-      esc(info.tenGod || '—') + ' — ' + esc('내 사주 위에 하루가 잔잔히 얹히는 자리') + '</li>';
-    var why = info.marks.filter(function (m) { return m.cat !== 'gray'; })
-      .map(function (m) { return '<li>' + esc(m.detail) + '</li>'; }).join('');
-    var termLine = info.term
-      ? '<p class="brief__term"><b>' + esc(info.term.ko) + '</b> ' + esc(info.term.time) + ' · ' +
-        (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '24절기') + '</p>'
-      : '';
-    var saeunHtml = info.saeun
-      ? '<p class="brief__saeun">' + esc(info.saeun.label) + ' 세운' +
-        (info.saeun.isLichunDay ? ' · <b>이날 입춘, 새 세운 시작</b>' : '') + '</p>'
-      : '';
-    return modalHead(info) +
-      '<div class="calm">' +
-      '<p class="calm__icon" aria-hidden="true">🌿</p>' +
-      '<p class="calm__line">' + (today ? '오늘은' : '이 날은') + ' 큰 기운 변동 없이<br>잔잔히 흘러가는 날이에요.</p>' +
-      '<p class="calm__sub">특별한 기운이 서는 날에만 부적이 <b>짠!</b> 하고 나타나요.</p>' +
-      '</div>' +
-      '<details class="brief__more brief__more--calm">' +
-      '<summary>' + (when === '오늘' ? '오늘의 사주 풀이 보기' : '이 날의 사주 풀이 보기') + '</summary>' +
-      '<div class="brief__more-body">' +
-      saeunHtml +
-      '<div class="brief__gz modal__gz">' +
-      '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
-      '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
-      '<span class="pill pill--' + esc(info.ganEl) + '">' + esc(info.ganEl) + '</span>' +
-      '<span class="pill pill--' + esc(info.zhiEl) + '">' + esc(info.zhiEl) + '</span>' +
-      (info.tenGod ? '<span class="pill">' + esc(info.tenGod) + '</span>' : '') +
-      '</div>' +
       '<ul class="brief__why">' + whyTen + why + '</ul>' +
       '<div class="rx">' +
       '<p class="rx__label">' + when + '의 처방</p>' +
