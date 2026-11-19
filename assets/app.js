@@ -259,12 +259,15 @@
 
   function renderWonguk(res) {
     var P = res.pillars;
-    var cols = [
+    // 연·월·일·시(시간 순서) — 천간 읽기 문장에 사용
+    var chrono = [
       { key: 'year', label: '년', han: '年', p: P.year },
       { key: 'month', label: '월', han: '月', p: P.month },
       { key: 'day', label: '일', han: '日', p: P.day },
       { key: 'time', label: '시', han: '時', p: P.time }
     ];
+    // 표는 한국 정통 만세력처럼 오른쪽이 년주가 되도록 시주 → 년주 순으로 놓는다
+    var cols = chrono.slice().reverse();
     var html = '<div class="wg__label"></div>';
     cols.forEach(function (c) {
       html += '<div class="wg__head"><b>' + c.label + '주</b><small>' + c.han + '柱</small>' +
@@ -313,7 +316,7 @@
     });
 
     var readSeen = {};
-    var read = '천간 읽기 — ' + cols.filter(function (c) { return c.p; }).filter(function (c) {
+    var read = '천간 읽기 — ' + chrono.filter(function (c) { return c.p; }).filter(function (c) {
       if (readSeen[c.p.ganIndex]) return false;
       readSeen[c.p.ganIndex] = true; return true;
     }).map(function (c) {
