@@ -12,6 +12,7 @@
   var RANGE_TO = '2027-12-31';
   var FREE_DAYS = 7;
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   var LITTLY = 'https://litt.ly/yoonise';
 
@@ -379,16 +380,16 @@
       if (info.term && dots.length < 2) dots.push({ cat: 'gray' });
       dots = dots.slice(0, 2);
 
-      var hasGold = info.marks.some(function (m) { return m.cat === 'gold'; });
-      var hasRed = info.marks.some(function (m) { return m.cat === 'red'; });
-      var hasBlue = info.marks.some(function (m) { return m.cat === 'blue'; });
+      var hasGold = info.dots.some(function (m) { return m.cat === 'gold'; });
+      var hasRed = info.dots.some(function (m) { return m.cat === 'red'; });
+      var hasBlue = info.dots.some(function (m) { return m.cat === 'blue'; });
       if (hasGold) stat.gold++;
       if (hasRed) stat.red++;
       if (hasBlue) stat.blue++;
       if (info.term) stat.gray++;
 
       var dotHtml = dots.map(function (x) { return '<span class="dot dot--' + x.cat + '"></span>'; }).join('');
-      var label = v.m + '월 ' + d + '일 ' + DOW_EN[info.dow] + ', ' + info.headline;
+      var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO) label = v.m + '월 ' + d + '일, 지난 날';
 
       html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
@@ -443,11 +444,13 @@
 
   function briefHTML(info) {
     var gz = info.gz;
-    var marks = info.marks.filter(function (m) { return m.cat !== 'gray'; });
+    var strong = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; });
+    var marks = strong.slice(0, 3);
     var markHtml = marks.map(function (m) {
       return '<span class="mark mark--' + m.cat + '"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
-    var why = marks.map(function (m) { return '<li>' + esc(m.detail) + '</li>'; }).join('');
+    var why = info.marks.filter(function (m) { return m.cat !== 'gray'; })
+      .map(function (m) { return '<li>' + esc(m.detail) + '</li>'; }).join('');
     var myGan = state.natal ? state.natal.gan : '';
     var whyTen = '<li>내 일간 ' + esc(myGan) + ' 기준, 오늘 천간 ' + esc(gz.gan) + '은 ' + esc(info.tenGod || '—') +
       ' — ' + esc(info.tenGod === '비견' || info.tenGod === '겁재' ? '내 기운이 그대로 올라오는 자리' : '내 사주 위에 오늘 얹히는 자리') + '</li>';
@@ -482,7 +485,7 @@
   }
 
   function lockHTML(info) {
-    var marks = info.marks.filter(function (m) { return m.cat !== 'gray'; }).slice(0, 2);
+    var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
     var markHtml = marks.map(function (m) {
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
@@ -511,7 +514,7 @@
       days.push(info);
     }
     var exportable = days.filter(function (d) {
-      return d.marks.some(function (m) { return m.cat === 'red' || m.cat === 'gold' || m.cat === 'gray'; });
+      return d.dots.length > 0 || !!d.term;
     });
     state.icsDays = exportable;
     var btn = $('#icsBtn');

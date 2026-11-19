@@ -178,8 +178,8 @@
     var dg = natal.dayGanIndex, dz = natal.dayZhiIndex, mz = natal.monthZhiIndex;
     var tg = gz.ganIndex, tz = gz.zhiIndex;
     var marks = [];
-    function add(cat, kind, weight, label, detail) {
-      marks.push({ cat: cat, kind: kind, weight: weight, label: label, detail: detail });
+    function add(cat, kind, weight, label, detail, minor) {
+      marks.push({ cat: cat, kind: kind, weight: weight, label: label, detail: detail, minor: !!minor });
     }
 
     // ── 주의·변동 ──
@@ -191,12 +191,12 @@
     if (isHyeong(tz, dz)) {
       add('red', 'hyeong', 50, '일지 형', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 마찰과 서류의 엉킴');
     } else if (isHyeong(tz, mz)) {
-      add('red', 'hyeong', 25, '월지 형', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 절차가 꼬이기 쉬운 날');
+      add('red', 'hyeong', 25, '월지 형', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 절차가 꼬이기 쉬운 날', true);
     }
     if (haeOf(tz) === dz) {
       add('red', 'hae', 40, '일지 해', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 말과 뜻이 엇갈리는 날');
     } else if (haeOf(tz) === mz) {
-      add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날');
+      add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날', true);
     }
 
     // ── 기회·귀인 ──
@@ -212,13 +212,13 @@
     if (yukhapOf(tz) === dz) {
       add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 관계가 이어지는 날');
     } else if (yukhapOf(tz) === mz) {
-      add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날');
+      add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날', true);
     }
     var sg = samhapGroupOf(tz), sg2 = samhapGroupOf(dz);
     if (sg >= 0 && sg === sg2 && tz !== dz) {
       add('gold', 'hap', 40, '삼합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합');
     } else if (sg >= 0 && sg === samhapGroupOf(mz) && tz !== mz) {
-      add('gold', 'hap', 18, '삼합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합');
+      add('gold', 'hap', 18, '삼합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합', true);
     }
 
     // ── 재물·문서 (십신) ──
@@ -232,10 +232,10 @@
     var mainStem = HIDDEN[gz.zhi][0];
     var zgName = TEN(dg, GAN.indexOf(mainStem));
     if ((zgName === '정재' || zgName === '편재') && tgName !== '정재' && tgName !== '편재') {
-      add('blue', 'wealth', 20, '재물', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(財), 재물 자리가 열린 날');
+      add('blue', 'wealth', 20, '재물', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(財), 재물 자리가 열린 날', true);
     }
     if ((zgName === '정인' || zgName === '편인') && tgName !== '정인' && tgName !== '편인') {
-      add('blue', 'doc', 20, '문서', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(印), 문서 자리가 열린 날');
+      add('blue', 'doc', 20, '문서', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(印), 문서 자리가 열린 날', true);
     }
 
     // ── 절기 ──
@@ -244,29 +244,23 @@
       add('gray', 'jie', 12, term.ko,
         term.isJie
           ? term.ko + ' 절입 ' + term.time + ' — ' + (term.monthText ? term.monthText + '월' : '월건') + '이 바뀝니다'
-          : term.ko + ' ' + term.time + ' — 24절기');
+          : term.ko + ' ' + term.time + ' — 24절기', true);
     }
 
-    // 점: 2개까지, 색은 주의 > 기회 > 재물 순
-    var byWeight = marks.filter(function (mk) { return mk.cat !== 'gray'; })
-      .sort(function (a, b) { return b.weight - a.weight; });
-    var dots = [], usedCat = {};
-    for (var i = 0; i < byWeight.length && dots.length < 2; i++) {
-      if (usedCat[byWeight[i].cat]) continue;
-      usedCat[byWeight[i].cat] = 1;
-      dots.push(byWeight[i]);
-    }
-    dots.sort(function (a, b) { return CAT[a.cat].order - CAT[b.cat].order; });
-
-    var hasRed = marks.some(function (mk) { return mk.cat === 'red'; });
-    var hasGold = marks.some(function (mk) { return mk.cat === 'gold'; });
-    var hasBlue = marks.some(function (mk) { return mk.cat === 'blue'; });
+    // 점: 하루에 1~2개. 강한 신호만 점이 된다(약한 신호는 상세 설명에만)
+    var strongRed = marks.some(function (mk) { return mk.cat === 'red' && !mk.minor; });
+    var strongGold = marks.some(function (mk) { return mk.cat === 'gold' && !mk.minor; });
+    var strongBlue = marks.some(function (mk) { return mk.cat === 'blue' && !mk.minor; });
+    var dots = [];
+    if (strongRed) dots.push({ cat: 'red' });
+    if (strongGold) dots.push({ cat: 'gold' });
+    if (!strongRed && !strongGold && strongBlue) dots.push({ cat: 'blue' });
 
     var headline, tone;
-    if (hasRed && hasGold) { headline = '기회와 변동이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
-    else if (hasRed) { headline = '속도 조절 · 결정은 하루 뒤로'; tone = 'red'; }
-    else if (hasGold) { headline = '추진하기 좋은 날 · 먼저 손 내밀기'; tone = 'gold'; }
-    else if (hasBlue) { headline = '계약·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
+    if (strongRed && strongGold) { headline = '기회와 변동이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
+    else if (strongRed) { headline = '속도 조절 · 결정은 하루 뒤로'; tone = 'red'; }
+    else if (strongGold) { headline = '추진하기 좋은 날 · 먼저 손 내밀기'; tone = 'gold'; }
+    else if (strongBlue) { headline = '계약·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
     else if (term) { headline = '절기 전환 · 새 달의 기준이 서는 날'; tone = 'gray'; }
     else { headline = '잔잔한 날 · 흐름 정리'; tone = 'none'; }
 
@@ -379,7 +373,7 @@
   function prescribe(marks, term, gz) {
     var top = null;
     marks.forEach(function (mk) {
-      if (mk.cat === 'gray') return;
+      if (mk.cat === 'gray' || mk.minor) return;
       if (!top || mk.weight > top.weight) top = mk;
     });
     var kind = top ? top.kind : (term ? 'jie' : 'calm');
@@ -431,19 +425,18 @@
       'TZNAME:KST', 'END:STANDARD', 'END:VTIMEZONE');
 
     days.forEach(function (info, k) {
-      var strong = info.marks.filter(function (mk) { return mk.cat === 'red' || mk.cat === 'gold' || mk.cat === 'gray'; });
-      if (!strong.length) return;
-      var primary = strong.slice().sort(function (a, b) {
-        if (a.cat === 'gray') return 1;
-        if (b.cat === 'gray') return -1;
-        return b.weight - a.weight;
-      })[0];
-      var tag = primary.cat === 'gray'
-        ? (info.term.isJie ? '절입' : '절기') + ' · ' + info.term.ko + (info.term.isJie ? ' ' + info.term.time : '')
-        : (primary.cat === 'red' ? '주의' : '기회') + ' · ' + primary.label;
-      var summary = ICS_ICON[primary.cat] + ' ' + tag + ' — ' + info.gz.text + '일';
+      var strong = info.marks.filter(function (mk) { return !mk.minor && (mk.cat === 'red' || mk.cat === 'gold'); });
+      if (!strong.length && !info.term) return;
+      strong.sort(function (a, b) { return b.weight - a.weight; });
+      var primary = strong.length ? strong[0] : null;
+      var tag = primary
+        ? (primary.cat === 'red' ? '속도 조절' : '타이밍 ON') + ' · ' + primary.label
+        : (info.term.isJie ? '절입' : '절기') + ' · ' + info.term.ko + (info.term.isJie ? ' ' + info.term.time : '');
+      var icon = primary ? ICS_ICON[primary.cat] : '⚪';
+      var summary = icon + ' ' + tag + ' — ' + info.gz.text + '일';
       var desc = info.headline + '\n' +
-        strong.map(function (mk) { return '· ' + mk.detail; }).join('\n') + '\n' +
+        strong.map(function (mk) { return '· ' + mk.detail; }).join('\n') +
+        (info.term ? (strong.length ? '\n' : '') + '· ' + info.term.ko + ' ' + info.term.time + (info.term.isJie ? ' (' + info.term.monthText + '월 시작)' : '') : '') + '\n' +
         '처방: ' + info.lines[0] + ' / ' + info.lines[1] + '\n' +
         '(윤이세 타이밍 캘린더 · 무료 7일 맛보기)';
 
