@@ -372,7 +372,7 @@ form { margin-top: 22px; }
   padding: 4px 0 6px; border-radius: 12px; min-height: 52px;
   transition: background .18s ease;
 }
-.day:hover { background: rgba(29, 28, 25, .045); }
+.day:hover { background-image: linear-gradient(rgba(29, 28, 25, .045), rgba(29, 28, 25, .045)); }
 .day__num {
   width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
   border-radius: 50%; font-size: 12.5px; color: var(--ink-2);
@@ -396,10 +396,10 @@ form { margin-top: 22px; }
 
 .day__badges {
   display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 2.5px; padding: 0 1px; min-height: 15px;
+  gap: 2.5px; padding: 0 1px; min-height: 17px;
 }
 .day__badge {
-  font-size: 9px; line-height: 1; padding: 3px 5px;
+  font-size: 10px; line-height: 1; padding: 3.5px 5px;
   border-radius: 5px; letter-spacing: -0.03em;
   background: #FFFFFF;
 }
@@ -562,13 +562,13 @@ form { margin-top: 22px; }
   .card--cal { padding: 20px 10px 16px; }
   .day { min-height: 50px; }
   .day__num { width: 23px; height: 23px; font-size: 11.5px; }
-  .day__badge { font-size: 8px; padding: 2.5px 4px; }
+  .day__badge { font-size: 9px; padding: 3px 4px; }
   .natal__tile { width: 36px; height: 36px; font-size: 19px; }
 }
 @media (min-width: 520px) {
   .day__num { width: 28px; height: 28px; font-size: 13.5px; }
   .day { min-height: 58px; }
-  .day__badge { font-size: 10px; padding: 3px 6px; }
+  .day__badge { font-size: 10.5px; padding: 4px 6px; }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
 }
