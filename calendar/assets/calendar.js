@@ -23,14 +23,22 @@
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
-  /* ── 구입 동선 링크 ────────────────────────────────────────────────
-     앱 안 구입 팝업의 버튼이 여는 주소입니다. 실제 결제 페이지·쇼핑몰이 열리면
-     아래 세 줄만 그 주소로 바꾸면 팝업 문구·버튼은 그대로 두고 바로 연결됩니다.
-     (지금은 카카오톡 채널 1:1 문의로 신청·결제를 안내하는 단계) */
-  var PASS_CHECKOUT_URL = KAKAO;      // 🎟️ 2027 1년 패스 14,900원 — 신청·결제
-  var ALLINONE_CHECKOUT_URL = KAKAO;  // 👑 2027 올인원 패키지 19,900원 — 신청·결제
-  var CARE_CHECKOUT_URL = KAKAO;      // ⚡ 긴급 개운템 낱개 2,900원 / 3종 5,900원
-  var CONSULT_CHECKOUT_URL = KAKAO;   // 🔮 윤이세 1:1 상담 49,000원~ — 일정·결제
+  /* ── 결제 설정 (아래 값만 채우면 팝업 버튼이 바로 결제로 연결됩니다) ──────────
+     💳 카드결제 (페이앱) — 상품별 페이앱 결제 링크 주소.
+        비워 두면('') 버튼을 누를 때 "링크 연결 준비 중" 안내와 함께 카카오톡 채널이 열리고,
+        주소를 채우면 곧바로 그 페이앱 결제창으로 이동합니다.
+     🏦 계좌이체 — 은행·계좌번호·예금주.
+        비워 두면 카카오톡 채널에서 계좌를 안내하고,
+        채우면 계좌번호 원클릭 복사 + 입금 확인 카톡 연결이 동작합니다.
+     ※ 계좌번호·예금주는 실제로 확인된 값만 넣습니다. 지어내지 않습니다. */
+  var PAYAPP_PASS_URL = '';       // 🎟️ 2027 1년 패스 14,900원
+  var PAYAPP_ALLINONE_URL = '';   // 👑 2027 올인원 패키지 19,900원
+  var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
+  var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
+  var PAYAPP_CONSULT_URL = '';    // 🔮 윤이세 1:1 상담 49,000원~
+  var BANK_NAME = '';             // 은행 이름 (예: 국민은행)
+  var BANK_ACCOUNT = '';          // 계좌번호
+  var BANK_HOLDER = '';           // 예금주
 
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
@@ -928,57 +936,15 @@
   }
 
   function briefModalHTML(info) {
-    var gz = info.gz;
     var today = info.iso === state.todayISO;
-    var when = today ? '오늘' : '이 날';
-    var strong = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; });
-    var markHtml = strong.slice(0, 3).map(function (m) {
-      return '<span class="mark mark--' + m.cat + '"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
-    }).join('');
-    var why = info.marks.filter(function (m) { return m.cat !== 'gray'; })
-      .map(function (m) { return '<li>' + esc(m.detail) + '</li>'; }).join('');
-    var whyTen = '<li>내 일간 ' + esc(state.natal ? state.natal.gan : '') + ' 기준, ' + when + ' 천간 ' + esc(gz.gan) + '은 ' +
-      esc(info.tenGod || '—') + ' — ' +
-      esc(info.tenGod === '비견' || info.tenGod === '겁재' ? '내 기운이 그대로 올라오는 자리' : '내 사주 위에 하루가 얹히는 자리') + '</li>';
-
-    var termLine = info.term
-      ? '<p class="brief__term"><b>' + esc(info.term.ko) + '</b> ' + esc(info.term.time) + ' · ' +
-        (info.term.isJie ? esc(info.term.monthText) + '월 시작' + (info.term.yearText ? ' (' + esc(info.term.yearText) + '년)' : '') : '절기') + '</p>'
-      : '';
-    var saeunHtml = info.saeun
-      ? '<p class="brief__saeun">' + esc(info.saeun.label) + ' 세운' +
-        (info.saeun.isLichunDay ? ' · <b>이날 입춘, 새 세운 시작</b>' : '') + '</p>'
-      : '';
-
-    // 기운을 먼저 느끼게 — 기본 화면은 캐릭터·움직임·한 줄뿐,
-    // 긴 풀이(일진·십신·작용·처방)는 '+ 오늘의 사주 풀이 보기'로 접어 둔다.
+    // 부적 팝업은 캐릭터·이름표·톡톡톡·대사·스티커 완료 안내·닫기만 남긴다.
+    // (예전 맨 아래 '+ 이 날의 사주 풀이 보기' 접이식 풀이는 뺐다 — 2026-11-20)
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       ritualHTML(info) +
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
       '✨ 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 챱 붙였어요!</p>' +
-      '<details class="brief__more">' +
-      '<summary>' + (when === '오늘' ? '오늘의 사주 풀이 보기' : '이 날의 사주 풀이 보기') + '</summary>' +
-      '<div class="brief__more-body">' +
-      saeunHtml +
-      '<div class="brief__gz modal__gz">' +
-      '<span class="brief__gz-hanja">' + esc(gz.text) + '</span>' +
-      '<span class="brief__gz-ko">' + esc(gz.textKo) + '일</span>' +
-      '<span class="pill pill--' + esc(info.ganEl) + '">' + esc(info.ganEl) + '</span>' +
-      '<span class="pill pill--' + esc(info.zhiEl) + '">' + esc(info.zhiEl) + '</span>' +
-      (info.tenGod ? '<span class="pill">' + esc(info.tenGod) + '</span>' : '') +
-      '</div>' +
-      (markHtml ? '<div class="marks">' + markHtml + '</div>' : '') +
-      '<ul class="brief__why">' + whyTen + why + '</ul>' +
-      '<div class="rx">' +
-      '<p class="rx__label">' + when + '의 처방</p>' +
-      '<div class="rx__item"><span class="rx__n">01</span><span>' + esc(info.lines[0]) + '</span></div>' +
-      '<div class="rx__item"><span class="rx__n">02</span><span>' + esc(info.lines[1]) + '</span></div>' +
-      '</div>' +
-      termLine +
-      '</div>' +
-      '</details>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
@@ -1029,6 +995,109 @@
       '<b>' + esc(price) + '</b></div>';
   }
 
+  /* ── 결제 두 버튼 — 💳 카드결제 (페이앱) · 🏦 계좌이체 ────────────────────
+     item: 'pass' | 'allinone' | 'care-one' | 'care-set' | 'consult'
+     위쪽 '결제 설정' 값이 비어 있으면 카카오톡 채널로 안내하고,
+     값이 채워지면 그 자리에서 페이앱 결제창 이동 / 계좌번호 복사가 동작합니다. */
+  function cardUrlOf(item) {
+    var map = {
+      'pass': PAYAPP_PASS_URL,
+      'allinone': PAYAPP_ALLINONE_URL,
+      'care-one': PAYAPP_CARE_ONE_URL,
+      'care-set': PAYAPP_CARE_SET_URL,
+      'consult': PAYAPP_CONSULT_URL
+    };
+    var url = map[item];
+    return url && String(url).trim() ? String(url).trim() : '';
+  }
+  function bankReady() {
+    return !!(String(BANK_NAME).trim() && String(BANK_ACCOUNT).trim());
+  }
+  function bankText() {
+    return [BANK_NAME, BANK_ACCOUNT, BANK_HOLDER]
+      .map(function (v) { return String(v || '').trim(); })
+      .filter(function (v) { return !!v; }).join(' ');
+  }
+
+  function payActionsHTML(item) {
+    var card = !!cardUrlOf(item);
+    var bank = bankReady();
+    return '<div class="pay" role="group" aria-label="결제 방법">' +
+      '<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' +
+      '<span class="pay__ico" aria-hidden="true">💳</span>' +
+      '<span class="pay__label"><b>카드결제 (페이앱)</b>' +
+      '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>' +
+      '</button>' +
+      '<button type="button" class="pay__btn pay__btn--bank" data-pay="bank" data-item="' + esc(item) + '">' +
+      '<span class="pay__ico" aria-hidden="true">🏦</span>' +
+      '<span class="pay__label"><b>계좌이체</b>' +
+      '<span>' + (bank ? '계좌번호 복사 · 입금 확인' : '카카오톡으로 입금 계좌 안내') + '</span></span>' +
+      '</button>' +
+      '</div>' +
+      '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
+  }
+
+  function payNote(html) {
+    var n = shopBody ? shopBody.querySelector('[data-pay-note]') : null;
+    if (!n) return null;
+    n.innerHTML = html;
+    n.hidden = false;
+    return n;
+  }
+
+  function openKakao() {
+    try { window.open(KAKAO, '_blank', 'noopener'); } catch (e) { }
+  }
+
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)['catch'](function () { });
+        return true;
+      }
+    } catch (e) { }
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  function handlePay(kind, item) {
+    if (kind === 'kakao') { openKakao(); return; }
+    if (kind === 'card') {
+      var url = cardUrlOf(item);
+      if (url) {
+        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다.');
+        try { window.open(url, '_blank', 'noopener'); } catch (e) { window.location.href = url; }
+      } else {
+        payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.');
+        openKakao();
+      }
+      return;
+    }
+    if (bankReady()) {
+      var text = bankText();
+      var copied = copyText(text);
+      payNote((copied ? '계좌번호를 복사했어요' : '아래 계좌로 입금해 주세요') +
+        ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
+        '<button type="button" class="pay__kakao" data-pay="kakao">입금 확인 카톡 보내기 →</button>');
+      vibrate(18);
+      sfxTap(2);
+      return;
+    }
+    payNote('입금 계좌는 카카오톡 채널에서 바로 안내해 드려요.');
+    openKakao();
+  }
+
   /* 1번 — 2027 1년 패스 (14,900원) */
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
@@ -1040,8 +1109,8 @@
       '<li><b>내 기본 부적 1개</b><span>2027년 내내 나를 받쳐 주는 기본 부적</span></li>' +
       '</ul>' +
       priceHTML('2027 1년 패스', PASS_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + PASS_CHECKOUT_URL + '" target="_blank" rel="noopener">🎟️ 14,900원으로 신청하기</a>' +
-      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+      payActionsHTML('pass') +
+      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 신청 확인하고 바로 열어 드려요.</p>';
   }
 
   /* 2번 — 2027 올인원 패키지 (19,900원 · 추천) */
@@ -1056,8 +1125,8 @@
       '</ul>' +
       '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>년수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
       priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + ALLINONE_CHECKOUT_URL + '" target="_blank" rel="noopener">👑 19,900원으로 신청하기</a>' +
-      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 순서대로 안내드려요. 버튼을 누르면 채널 대화가 열립니다.</p>';
+      payActionsHTML('allinone') +
+      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 신청 확인하고 바로 열어 드려요.</p>';
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
@@ -1163,7 +1232,7 @@
       '</svg>'
   };
 
-  var care = { draws: 0, charge: 0, lit: false, bowl: null, bowlTimer: null };
+  var care = { draws: 0, charge: 0, lit: false, bowl: null, bowlTimer: null, buy: 'set' };
 
   function careElement() {
     return state.res ? repElement().el : '화';
@@ -1174,6 +1243,21 @@
     var m = list[idx % list.length];
     return '<span class="care-flip__tag">' + esc(m.tag) + '</span>' +
       '<b>' + esc(m.text) + '</b>';
+  }
+
+  /* 4번 — 윤이세 1:1 상담 (49,000원~) */
+  function consultShopHTML() {
+    return '<p class="modal__eyebrow">1:1 CONSULT · 윤이세</p>' +
+      '<h2 class="shop__title" id="shopTitle">🔮 윤이세 1:1 상담</h2>' +
+      '<p class="shop__sub">캘린더로는 안 풀리는 내 상황을 <b>통째로</b> 놓고, 지금 어디서 막혔는지·어디로 움직이면 풀리는지 같이 짚어 드려요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>내 사주·올해 흐름 전체로 보기</b><span>날짜 하나가 아니라 내 판 전체에서 막힌 자리를 찾아요</span></li>' +
+      '<li><b>지금 할 일·미룰 일 정리</b><span>바로 움직일 것과 기다릴 것을 갈라 드려요</span></li>' +
+      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 채널로 알려 주시면 가능한 시간을 바로 잡아 드려요</span></li>' +
+      '</ul>' +
+      priceHTML('윤이세 1:1 상담', CONSULT_PRICE) +
+      payActionsHTML('consult') +
+      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 상담 일정을 바로 잡아 드립니다.</p>';
   }
 
   function careShopHTML() {
@@ -1229,14 +1313,20 @@
       '</button>' +
       '</section>' +
 
-      priceHTML('긴급 개운템 3종', CARE_PRICE) +
-      '<a class="btn btn--primary shop__cta" href="' + CARE_CHECKOUT_URL + '" target="_blank" rel="noopener">⚡ 2,900원 · 3종 세트 5,900원 신청하기</a>' +
+      priceHTML('긴급 개운템', CARE_PRICE) +
+      '<div class="pay__pick" role="group" aria-label="개운템 구성 선택">' +
+      '<button type="button" class="pay__pick-btn' + (care.buy === 'one' ? ' is-on' : '') + '" data-careitem="one" aria-pressed="' + (care.buy === 'one') + '">' +
+      '<b>낱개 1종</b><span>2,900원</span></button>' +
+      '<button type="button" class="pay__pick-btn' + (care.buy === 'set' ? ' is-on' : '') + '" data-careitem="set" aria-pressed="' + (care.buy === 'set') + '">' +
+      '<b>3종 세트</b><span>5,900원</span></button>' +
+      '</div>' +
+      payActionsHTML('care-' + care.buy) +
       '<div class="shop__consult">' +
       '<b>윤이세 1:1 상담 ' + CONSULT_PRICE + '</b>' +
       '<span>캘린더·개운템으로도 안 풀리면, 내 상황을 통째로 보고 길을 잡아 드려요.</span>' +
-      '<a href="' + CONSULT_CHECKOUT_URL + '" target="_blank" rel="noopener">상담 일정 잡기 →</a>' +
+      '<button type="button" class="shop__consult-btn" data-shop="consult">상담 일정 잡기 →</button>' +
       '</div>' +
-      '<p class="shop__note">결제와 신청은 카카오톡 채널에서 안내드려요. 3종은 지금 여기서 그대로 체험할 수 있어요.</p>';
+      '<p class="shop__note">3종은 지금 여기서 그대로 체험할 수 있어요. 결제가 끝나면 카카오톡 채널로 알려 주세요.</p>';
   }
 
   /* ── 긴급 개운템 동작 ───────────────────────────── */
@@ -1369,6 +1459,26 @@
     }, 1000);
   }
 
+  /* 개운템 구성(낱개 / 3종 세트) 고르면 결제 두 버튼이 그 구성으로 바뀐다 */
+  function setCareItem(v) {
+    if (v !== 'one' && v !== 'set') return;
+    care.buy = v;
+    if (!shopBody) return;
+    $$('[data-careitem]', shopBody).forEach(function (b) {
+      var on = b.getAttribute('data-careitem') === v;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    $$('[data-pay]', shopBody).forEach(function (b) {
+      if (b.getAttribute('data-item')) b.setAttribute('data-item', 'care-' + v);
+    });
+    var cardSub = shopBody.querySelector('[data-pay="card"] .pay__label span');
+    if (cardSub) cardSub.textContent = cardUrlOf('care-' + v) ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기';
+    var note = shopBody.querySelector('[data-pay-note]');
+    if (note) { note.hidden = true; note.innerHTML = ''; }
+    sfxTap(1);
+  }
+
   function handleCare(kind, btn, ev) {
     if (kind === 'draw') { drawCareCard(btn); return; }
     if (kind === 'obj') { chargeCareObj(btn); return; }
@@ -1379,7 +1489,8 @@
     if (!shopEl) return;
     shopLastFocus = document.activeElement;
     shopBody.innerHTML = kind === 'care' ? careShopHTML()
-      : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML());
+      : (kind === 'consult' ? consultShopHTML()
+        : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML()));
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -1550,6 +1661,10 @@
     if (shopEl) {
       shopEl.addEventListener('click', function (e) {
         if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
+        var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
+        if (pay) { e.preventDefault(); handlePay(pay.getAttribute('data-pay'), pay.getAttribute('data-item')); return; }
+        var pick = e.target.closest ? e.target.closest('[data-careitem]') : null;
+        if (pick) { e.preventDefault(); setCareItem(pick.getAttribute('data-careitem')); return; }
         var c = e.target.closest ? e.target.closest('[data-care]') : null;
         if (c) { e.preventDefault(); handleCare(c.getAttribute('data-care'), c, e); }
       });
