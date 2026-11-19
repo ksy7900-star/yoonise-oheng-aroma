@@ -46,13 +46,14 @@
         <input class="input" id="name" name="name" type="text" maxlength="12" placeholder="결과에 이름을 넣어 드려요" autocomplete="off" inputmode="text">
       </div>
 
-      <div class="field">
-        <span class="label">성별 <span class="opt">선택</span></span>
-        <div class="chips" id="genderChips" role="group" aria-label="성별">
-          <button type="button" class="chip is-on" data-gender="" aria-pressed="true">선택 안 함</button>
+      <div class="field" id="genderField">
+        <span class="label">성별 <span class="req" aria-hidden="true">*</span><span class="sr-only">(필수)</span></span>
+        <div class="chips" id="genderChips" role="group" aria-label="성별 (필수)" aria-required="true" aria-describedby="genderError">
           <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
           <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
         </div>
+        <p class="field-note field-note--req">여성 / 남성 중 하나를 선택해 주세요. 선택하지 않으면 결과를 볼 수 없어요.</p>
+        <p class="field-error" id="genderError" role="alert" hidden>성별을 선택해 주세요.</p>
       </div>
 
       <div class="field">
@@ -86,7 +87,8 @@
           </label>
         </div>
         <div id="timeBox">
-          <div class="jisi" id="jisi" role="group" aria-label="태어난 시 (12지시)"></div>
+          <div class="jisi" id="jisi" role="group" aria-label="태어난 시 (12지시 · 30분 경계)"></div>
+          <p class="field-note">한국 사주명리 표준 30분 경계로 봐요 — 자시 23:30~01:30, 오시 11:30~13:30.</p>
           <div class="time-row">
             <span class="time-inputs">
               <select class="select select--time" id="hour" aria-label="출생 시"></select>
@@ -118,10 +120,10 @@
           <div class="field field--tight">
             <label class="label" for="ziRule">일주가 바뀌는 시각</label>
             <select class="select select--wide" id="ziRule">
-              <option value="23">밤 11시(자시) — 조자시설</option>
+              <option value="23">자시 시작(23:30) — 조자시설</option>
               <option value="24">밤 12시(자정) — 정자시설</option>
             </select>
-            <p class="field-note">밤 11시 이후 출생이면 이 설정에 따라 날짜가 달라져요.</p>
+            <p class="field-note">자시(23:30~01:30)가 시작되는 때에 일주가 바뀌어요.</p>
           </div>
         </div>
       </details>
@@ -166,6 +168,20 @@
     <section class="card card--archetype" id="archetypeCard">
       <h2 class="section__title"><span class="section__num">02</span> 나의 기질 아키타입</h2>
       <div id="archetypeBody"></div>
+    </section>
+
+    <!-- 중간 CTA — 결과 중간 이탈 방지 -->
+    <section class="mid-cta" aria-label="카카오톡 1:1 상담 안내">
+      <div class="mid-cta__body">
+        <p class="mid-cta__eyebrow">여기까지 읽으셨다면</p>
+        <p class="mid-cta__title">💬 내 오행 밸런스, 지금 1:1로 짚어보기</p>
+        <p class="mid-cta__sub">이 페이지는 타고난 비율까지만 보여 드려요. 지금의 고민에 어떻게 쓰면 좋을지는 카톡 상담에서 함께 풀어 드립니다.</p>
+      </div>
+      <a class="mid-cta__btn" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener">
+        <span class="mid-cta__ico" aria-hidden="true">💬</span>
+        <span class="mid-cta__label">카톡 상담하기</span>
+        <span class="mid-cta__arrow" aria-hidden="true">→</span>
+      </a>
     </section>
 
     <section class="card card--aroma">

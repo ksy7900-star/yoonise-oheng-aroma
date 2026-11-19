@@ -6,7 +6,8 @@
  *  - 연주: 입춘(立春) 절입 시각 기준
  *  - 월주: 12절기(입춘·경칩·청명·입하·망종·소서·입추·백로·한로·입동·대설·소한) 절입 시각 기준
  *  - 일주: 율리우스 적일 기반 60갑자(자정 기준, 옵션에 따라 23시 기준)
- *  - 시주: 2시간 단위 12지시, 오자둔(五鼠遁)
+ *  - 시주: 한국 사주명리 표준 12지시(30분 경계), 오자둔(五鼠遁)
+ *    예) 자시 23:30~01:30, 오시 11:30~13:30, 미시 13:30~15:30
  *  - 절입 시각은 라이브러리 계산값(중국 표준시 = UTC+8)을 절대시각으로 환산해
  *    한국 표준시(UTC+9) 출생 시각과 비교한다.
  *  - 모든 계산은 브라우저 안에서만 수행되고 어디에도 전송되지 않는다.
@@ -56,6 +57,35 @@
     '立秋': ['立秋', 'LI_QIU'], '白露': ['白露', 'BAI_LU'], '寒露': ['寒露', 'HAN_LU'],
     '立冬': ['立冬', 'LI_DONG'], '大雪': ['大雪', 'DA_XUE'], '小寒': ['小寒', 'XIAO_HAN']
   };
+
+  // 12지시 — 한국 사주명리 표준 30분 경계
+  //  rep: 그 지시 안의 대표 시각(자정부터 분)
+  var JISI = [
+    { idx: 0, ko: '자', hanja: '子', start: '23:30', end: '01:30', rep: 30 },
+    { idx: 1, ko: '축', hanja: '丑', start: '01:30', end: '03:30', rep: 150 },
+    { idx: 2, ko: '인', hanja: '寅', start: '03:30', end: '05:30', rep: 270 },
+    { idx: 3, ko: '묘', hanja: '卯', start: '05:30', end: '07:30', rep: 390 },
+    { idx: 4, ko: '진', hanja: '辰', start: '07:30', end: '09:30', rep: 510 },
+    { idx: 5, ko: '사', hanja: '巳', start: '09:30', end: '11:30', rep: 630 },
+    { idx: 6, ko: '오', hanja: '午', start: '11:30', end: '13:30', rep: 750 },
+    { idx: 7, ko: '미', hanja: '未', start: '13:30', end: '15:30', rep: 870 },
+    { idx: 8, ko: '신', hanja: '申', start: '15:30', end: '17:30', rep: 990 },
+    { idx: 9, ko: '유', hanja: '酉', start: '17:30', end: '19:30', rep: 1110 },
+    { idx: 10, ko: '술', hanja: '戌', start: '19:30', end: '21:30', rep: 1230 },
+    { idx: 11, ko: '해', hanja: '亥', start: '21:30', end: '23:30', rep: 1350 }
+  ];
+  var JISI_START = 23 * 60 + 30; // 자시가 시작되는 시각(조자시설의 일주 경계)
+
+  // 시각 → 12지시 인덱스 (30분 경계: 23:30~01:30 = 子)
+  function jisiIndex(hh, mm) {
+    var t = (Number(hh) || 0) * 60 + (Number(mm) || 0);
+    return Math.floor(mod(t + 30, 1440) / 120);
+  }
+
+  function jisiOf(hh, mm) {
+    var j = JISI[jisiIndex(hh, mm)];
+    return { idx: j.idx, ko: j.ko, hanja: j.hanja, start: j.start, end: j.end, rep: j.rep };
+  }
 
   // 시/도 대표 경도 (동경)
   var REGIONS = [
@@ -264,7 +294,8 @@
     var dayLunar = Solar.fromYmd(cY, cM, cD).getLunar();
     var dayIndex = LunarUtil.getJiaZiIndex(dayLunar.getDayInGanZhi());
     var ziOvernight = false;
-    if (timeKnown && opts.ziRule !== '24' && cH >= 23) {
+    // 조자시설: 자시가 시작되는 23:30에 일주가 바뀐다 (30분 경계 표준과 동일)
+    if (timeKnown && opts.ziRule !== '24' && (cH * 60 + cMi) >= JISI_START) {
       dayIndex = mod(dayIndex + 1, 60);
       ziOvernight = true;
     }
@@ -273,7 +304,7 @@
     // ---- 시주 ----
     var timeP = null, zhiTimeIndex = null;
     if (timeKnown) {
-      var hourBranch = Math.floor(mod(cH + 1, 24) / 2); // 23,0 → 子
+      var hourBranch = jisiIndex(cH, cMi); // 30분 경계: 23:30~01:30 → 子
       zhiTimeIndex = hourBranch;
       var hourGan = mod(dayP.ganIndex * 2 + hourBranch, 10);
       timeP = {
@@ -369,6 +400,7 @@
 
   global.Manse = {
     compute: compute, todayInfo: todayInfo, jieTable: jieTable, dayGanZhiOf: dayGanZhiOf, buildJie: buildJie,
+    JISI: JISI, jisiIndex: jisiIndex, jisiOf: jisiOf,
     GAN: GAN, ZHI: ZHI, GAN_KO: GAN_KO, ZHI_KO: ZHI_KO, GAN_HUN: GAN_HUN,
     ZHI_ANIMAL: ZHI_ANIMAL, GAN_EL: GAN_EL, ZHI_EL: ZHI_EL, HIDDEN: HIDDEN,
     JIE: JIE, REGIONS: REGIONS, ganZhiOf: ganZhiOf

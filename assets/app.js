@@ -46,28 +46,26 @@
     for (var mi = 0; mi < 60; mi += 5) opts += '<option value="' + mi + '">' + (mi < 10 ? '0' : '') + mi + '분</option>';
     miSel.innerHTML = opts;
 
-    // 12지시
+    // 12지시 — 한국 사주명리 표준 30분 경계 (자시 23:30~01:30 …)
     var jisi = '';
-    var i2 = 0;
-    var JISI = [['자', 23, '23~01'], ['축', 1, '01~03'], ['인', 3, '03~05'], ['묘', 5, '05~07'],
-                ['진', 7, '07~09'], ['사', 9, '09~11'], ['오', 11, '11~13'], ['미', 13, '13~15'],
-                ['신', 15, '15~17'], ['유', 17, '17~19'], ['술', 19, '19~21'], ['해', 21, '21~23']];
-    JISI.forEach(function (j) {
-      jisi += '<button type="button" class="jisi__btn" data-hour="' + j[1] + '" data-idx="' + (i2++) + '">' + j[0] +
-        '<small>' + j[2] + '</small></button>';
+    M.JISI.forEach(function (j) {
+      var repH = Math.floor(j.rep / 60), repM = j.rep % 60;
+      jisi += '<button type="button" class="jisi__btn" data-idx="' + j.idx + '" data-hour="' + repH +
+        '" data-min="' + repM + '">' + j.ko +
+        '<small>' + j.start + '~' + j.end + '</small></button>';
     });
     $('#jisi').innerHTML = jisi;
     $('#jisi').addEventListener('click', function (e) {
       var b = e.target.closest('.jisi__btn');
       if (!b) return;
       hSel.value = b.dataset.hour;
-      if (!miSel.value) miSel.value = '0';
+      miSel.value = b.dataset.min;
       syncJisi();
     });
     hSel.addEventListener('change', syncJisi);
     miSel.addEventListener('change', syncJisi);
 
-    // 성별 칩
+    // 성별 칩 — 필수 선택
     $('#genderChips').addEventListener('click', function (e) {
       var b = e.target.closest('.chip'); if (!b) return;
       state.gender = b.dataset.gender;
@@ -76,6 +74,7 @@
         c.classList.toggle('is-on', on);
         c.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
+      setGenderError(false);
     });
 
     // 양력/음력
@@ -125,26 +124,32 @@
     if (cur && cur <= max) dSel.value = cur;
   }
 
-  function jisiOf(h) {
+  function jisiOf(h, mi) {
     if (h === null || h === '' || isNaN(h)) return null;
-    var idx = Math.floor(((h + 1) % 24) / 2);
-    return { ko: M.ZHI_KO[idx], hanja: M.ZHI[idx] };
+    var j = M.jisiOf(+h, mi === '' || mi === null || isNaN(mi) ? 0 : +mi);
+    return { ko: j.ko, hanja: j.hanja, start: j.start, end: j.end, idx: j.idx };
   }
 
   function syncJisi() {
     var h = $('#hour').value, mi = $('#minute').value;
     var hv = h === '' ? null : +h;
-    var idxNow = hv === null ? -1 : Math.floor(((hv + 1) % 24) / 2);
+    var idxNow = hv === null ? -1 : M.jisiIndex(hv, mi === '' ? 0 : +mi);
     $$('#jisi .jisi__btn').forEach(function (b) {
       b.classList.toggle('is-on', hv !== null && +b.dataset.idx === idxNow);
     });
     if (hv === null) { $('#timeHint').textContent = '시간을 고르면 시주를 계산해요'; return; }
-    var j = jisiOf(hv);
+    var j = jisiOf(hv, mi);
     if (!j) return;
-    var start = hv % 2 === 0 ? hv - 1 : hv;
-    var end = (start + 2) % 24;
-    $('#timeHint').textContent = j.ko + '시(' + j.hanja + '時) · ' +
+    $('#timeHint').textContent = j.ko + '시(' + j.hanja + '時) ' + j.start + '~' + j.end + ' · ' +
       String(hv).padStart(2, '0') + ':' + (mi === '' ? '00' : String(mi).padStart(2, '0'));
+  }
+
+  function setGenderError(on) {
+    var box = $('#genderField'), msg = $('#genderError');
+    if (box) box.classList.toggle('is-error', !!on);
+    if (msg) msg.hidden = !on;
+    var chips = $('#genderChips');
+    if (chips) chips.setAttribute('aria-invalid', on ? 'true' : 'false');
   }
 
   /* ───────── 제출 ───────── */
@@ -155,6 +160,7 @@
 
     var y = $('#year').value, m = $('#month').value, d = $('#day').value;
     if (!y || !m || !d) { return fail('생년월일을 모두 선택해 주세요.'); }
+    if (!state.gender) { setGenderError(true); return fail('성별을 선택해 주세요. (여성 / 남성 중 하나)', $('#genderField')); }
     var timeUnknown = $('#timeUnknown').checked;
     var hh = $('#hour').value, mm = $('#minute').value;
     if (!timeUnknown && hh === '') { return fail('태어난 시간을 고르거나, 위의 ‘몰라요’를 켜 주세요.'); }
@@ -194,10 +200,10 @@
       render(res);
     }, 620);
 
-    function fail(msg) {
+    function fail(msg, target) {
       alertEl.textContent = msg;
       alertEl.hidden = false;
-      alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (target || alertEl).scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
@@ -500,7 +506,7 @@
 
   /* ───────── 등장 애니메이션 ───────── */
   function revealCards() {
-    var cards = $$('#result .card, #result .cta, #result .result__foot');
+    var cards = $$('#result .card, #result .mid-cta, #result .cta, #result .result__foot');
     if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       cards.forEach(function (c) { c.classList.add('reveal', 'is-in'); });
       return;
