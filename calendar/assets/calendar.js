@@ -36,9 +36,9 @@
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
   var PAYAPP_CONSULT_URL = '';    // 🔮 윤이세 1:1 상담 49,000원~
-  var BANK_NAME = '';             // 은행 이름 (예: 국민은행)
-  var BANK_ACCOUNT = '';          // 계좌번호
-  var BANK_HOLDER = '';           // 예금주
+  var BANK_NAME = 'SC제일은행';                 // 은행 이름 (통장 사본 확인)
+  var BANK_ACCOUNT = '504-20-454146';          // 계좌번호 (통장 사본 확인)
+  var BANK_HOLDER = '김나영 (엔와이트레이드)';   // 예금주 (통장 사본 확인)
 
   /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
@@ -1031,7 +1031,7 @@
       '<button type="button" class="pay__btn pay__btn--bank" data-pay="bank" data-item="' + esc(item) + '">' +
       '<span class="pay__ico" aria-hidden="true">🏦</span>' +
       '<span class="pay__label"><b>계좌이체</b>' +
-      '<span>' + (bank ? '계좌번호 복사 · 입금 확인' : '카카오톡으로 입금 계좌 안내') + '</span></span>' +
+      '<span>' + (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내') + '</span></span>' +
       '</button>' +
       '</div>' +
       '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
