@@ -34,13 +34,14 @@
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
   /* 달력 칸에 쾅 찍히는 동그란 낙관(도장) — 44px 뷰박스 하나를 여러 크기로 재사용 */
   var SEAL_SVG = '<svg class="seal" viewBox="0 0 44 44" aria-hidden="true" focusable="false">' +
-    '<circle class="seal__ring" cx="22" cy="22" r="19.4" stroke-dasharray="116 6" stroke-dashoffset="18"/>' +
-    '<circle class="seal__ring2" cx="22" cy="22" r="14.9"/>' +
+    '<circle class="seal__halo" cx="22" cy="22" r="17.4"/>' +
+    '<circle class="seal__disc" cx="22" cy="22" r="15.2"/>' +
+    '<circle class="seal__inner" cx="22" cy="22" r="12.4"/>' +
     '<g class="seal__spark">' +
-    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z"/>' +
-    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(90 22 22)"/>' +
-    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(180 22 22)"/>' +
-    '<path d="M22 1.1l1.15 2.75 2.75 1.15-2.75 1.15L22 8.9l-1.15-2.75L18.1 5l2.75-1.15z" transform="rotate(270 22 22)"/>' +
+    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(8.5 8.5)"/>' +
+    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(35.5 8.5)"/>' +
+    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(8.5 35.5)"/>' +
+    '<path d="M0 -2.7l.78 1.92 1.92.78-1.92.78L0 2.7l-.78-1.92-1.92-.78 1.92-.78z" transform="translate(35.5 35.5)"/>' +
     '</g>' +
     '</svg>';
   var TALIS_PATH = 'assets/talisman/';
@@ -613,13 +614,13 @@
       p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
       p.style.setProperty('--dy', (Math.sin(ang) * dist - 12) + 'px');
       p.style.setProperty('--rot', (Math.random() * 260 - 130) + 'deg');
-      p.style.setProperty('--dur', (0.66 + Math.random() * 0.52) + 's');
-      p.style.setProperty('--dl', (Math.random() * 0.1) + 's');
+      p.style.setProperty('--dur', ((big ? 1.05 : 0.82) + Math.random() * 0.75) + 's');
+      p.style.setProperty('--dl', (Math.random() * 0.16) + 's');
       p.style.setProperty('--sz', (big ? 15 : 11) + Math.round(Math.random() * 6) + 'px');
       box.appendChild(p);
     }
     st.appendChild(box);
-    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1600);
+    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 2200);
   }
 
   function quake(big) {                          // 모달이 덜컹 — 손맛의 절반
@@ -1041,7 +1042,7 @@
       : '내 원국에 모자란 기운을 골라 드려요.';
     return '<p class="modal__eyebrow">OHENG ITEM · 오행 아이템</p>' +
       '<h2 class="shop__title" id="shopTitle">내게 없는 기운을 채우는 아이템</h2>' +
-      '<p class="shop__sub">' + esc(who) + '의 사주에서 <b>' + esc(t.label) + '</b>이 가장 약해요. ' + esc(why) + '</p>' +
+      '<p class="shop__sub">' + esc(who) + '의 사주에서 <b>' + esc(t.label) + '</b>' + esc(t.josa) + ' 가장 약해요. ' + esc(why) + '</p>' +
       '<div class="shop__talis">' +
       '<img src="' + TALIS_PATH + t.key + '.jpg' + TALIS_VER + '" width="72" height="72" alt="' + esc(t.label) + ' 수호 부적 캐릭터">' +
       '<p><b>' + esc(th.cheer) + '</b><span>' + esc(t.why) + '</span></p>' +

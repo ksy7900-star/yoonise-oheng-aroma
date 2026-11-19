@@ -721,9 +721,12 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 }
 .day--stamped .day__num {
   position: relative; z-index: 1;
-  color: #9E3620; font-weight: 700;
+  color: #FFF4E6; font-weight: 700;
+  text-shadow: 0 1px 1px rgba(120, 40, 24, .35);
 }
-.day--stamped.day--sun .day__num, .day--stamped.day--sat .day__num { color: #9E3620; }
+.day--stamped.day--sun .day__num, .day--stamped.day--sat .day__num { color: #FFF4E6; }
+.day--stamped.is-today .day__num { box-shadow: none; }
+.day--stamped.is-sel .day__num { background: transparent; color: #FFF4E6; }
 .day__seal.is-new { animation: sealIn .68s cubic-bezier(.2, 1.5, .4, 1) both; }
 @keyframes sealIn {
   0% { transform: rotate(-28deg) scale(2.8); opacity: 0; }
@@ -733,9 +736,13 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   100% { transform: rotate(-8deg) scale(1); opacity: 1; }
 }
 .seal { display: block; width: 100%; height: 100%; overflow: visible; }
-.seal__ring { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
-.seal__ring2 { fill: rgba(180, 67, 44, .05); stroke: currentColor; stroke-width: .9; opacity: .42; }
-.seal__spark { fill: #C08B32; }
+.seal__halo { fill: none; stroke: rgba(180, 67, 44, .28); stroke-width: 1.1; }
+.seal__disc { fill: #B4432C; }
+.seal__inner {
+  fill: none; stroke: rgba(255, 246, 234, .58); stroke-width: .85;
+  stroke-dasharray: 1.7 2.4; stroke-linecap: round;
+}
+.seal__spark { fill: #E4AE55; }
 .seal-mini {
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px;
@@ -1082,7 +1089,7 @@ body.is-modal-open { overflow: hidden; }
   will-change: transform, opacity;
   filter: drop-shadow(0 1px 2px rgba(29, 28, 25, .18));
 }
-.ritual__p--big { animation-timing-function: cubic-bezier(.1, .8, .3, 1); }
+.ritual__p--big { animation-timing-function: cubic-bezier(.1, .8, .3, 1); animation-fill-mode: forwards; }
 @keyframes pFly {
   0% { transform: translate(-50%, -50%) scale(.25) rotate(0deg); opacity: 0; }
   16% { opacity: 1; }
