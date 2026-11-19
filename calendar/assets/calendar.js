@@ -1048,6 +1048,10 @@
   function openKakao() {
     try { window.open(KAKAO, '_blank', 'noopener'); } catch (e) { }
   }
+  /* 새 탭이 차단될 수 있으니 안내 안에 한 번 더 누를 수 있는 링크를 함께 둔다 */
+  function kakaoLinkHTML(label) {
+    return '<a class="pay__kakao" href="' + KAKAO + '" target="_blank" rel="noopener">' + label + '</a>';
+  }
 
   function legacyCopy(text) {
     try {
@@ -1076,14 +1080,14 @@
   }
 
   function handlePay(kind, item) {
-    if (kind === 'kakao') { openKakao(); return; }
     if (kind === 'card') {
       var url = cardUrlOf(item);
       if (url) {
         payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다.');
         try { window.open(url, '_blank', 'noopener'); } catch (e) { window.location.href = url; }
       } else {
-        payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.');
+        payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
+          kakaoLinkHTML('카카오톡 채널 열기 →'));
         openKakao();
       }
       return;
@@ -1093,7 +1097,7 @@
       var bankNote = function (copied) {
         payNote((copied === true ? '계좌번호를 복사했어요' : (copied === false ? '아래 계좌로 입금해 주세요' : '입금 계좌는 여기예요')) +
           ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
-          '<button type="button" class="pay__kakao" data-pay="kakao">입금 확인 카톡 보내기 →</button>');
+          kakaoLinkHTML('입금 확인 카톡 보내기 →'));
       };
       bankNote(null);
       copyText(text, bankNote);
@@ -1101,7 +1105,7 @@
       sfxTap(2);
       return;
     }
-    payNote('입금 계좌는 카카오톡 채널에서 바로 안내해 드려요.');
+    payNote('입금 계좌는 카카오톡 채널에서 바로 안내해 드려요.' + kakaoLinkHTML('카카오톡 채널 열기 →'));
     openKakao();
   }
 
