@@ -31,8 +31,8 @@
         비워 두면 카카오톡 채널에서 계좌를 안내하고,
         채우면 계좌번호 원클릭 복사 + 입금 확인 카톡 연결이 동작합니다.
      ※ 계좌번호·예금주는 실제로 확인된 값만 넣습니다. 지어내지 않습니다. */
-  var PAYAPP_PASS_URL = '';       // 🎟️ 2027 1년 패스 14,900원
-  var PAYAPP_ALLINONE_URL = '';   // 👑 2027 올인원 패키지 19,900원
+  var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 2027년 1년 타이밍패스 14,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 2027 올인원패키지 19,900원 (페이앱 페이지에서 금액 확인)
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
   var PAYAPP_CONSULT_URL = '';    // 🔮 윤이세 1:1 상담 49,000원~
@@ -1148,8 +1148,9 @@
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
-     부적이 아니라 '행동·오브제·소리'로 막힌 날을 뚫는 디지털 아이템.
-     팝업 안에서 3종을 모두 체험할 수 있게 실제로 동작한다. */
+     ① 주역 대나무 산가지 — 부채꼴 6개 중 '딱 1개'만 뽑는 의식
+     ② 디지털 개운 오브제 — 손가락으로 문지르면 기운이 차오르는 촉감(pointermove)
+     ③ 1분 오행 싱잉볼 — 60초 지속 공명 + 호흡별 재타종 + 수동 타종 */
   var CARE = {
     목: {
       obj: 'sprout', name: '새싹 화분', josa: '을',
@@ -1158,7 +1159,8 @@
         { tag: '음식', text: '신맛 한 입 — 레몬물이나 식초 한 방울이면 충분해요.' },
         { tag: '동선', text: '집 앞 나무가 있는 길로 한 바퀴 돌아오세요.' },
         { tag: '말', text: '미뤄 둔 연락 하나, 오늘 먼저 보내 보세요.' },
-        { tag: '손', text: '창문을 열고 3분만 바깥 공기를 들이세요.' }
+        { tag: '손', text: '창문을 열고 3분만 바깥 공기를 들이세요.' },
+        { tag: '마음', text: '나를 답답하게 하는 것 하나를 종이에 적어 접어 두세요.' }
       ]
     },
     화: {
@@ -1168,7 +1170,8 @@
         { tag: '음식', text: '따뜻한 차 한 잔을 식기 전에 천천히 드세요.' },
         { tag: '동선', text: '햇볕 드는 창가에 3분만 서 있어 보세요.' },
         { tag: '말', text: '망설인 결정 하나를 오늘 안에 딱 정하세요.' },
-        { tag: '손', text: '미뤄 둔 답장 하나, 지금 3줄로 끝내세요.' }
+        { tag: '손', text: '미뤄 둔 답장 하나, 지금 3줄로 끝내세요.' },
+        { tag: '마음', text: '오늘 고마웠던 사람 한 명을 떠올리고 이름만 적어 두세요.' }
       ]
     },
     토: {
@@ -1178,7 +1181,8 @@
         { tag: '음식', text: '단맛 한 조각, 밥은 평소보다 천천히 드세요.' },
         { tag: '동선', text: '책상 위 서류 세 장만 치우고 시작하세요.' },
         { tag: '말', text: '안 쓸 약속 하나를 오늘 정중히 접으세요.' },
-        { tag: '손', text: '지갑 속 영수증을 다 꺼내 버리세요.' }
+        { tag: '손', text: '지갑 속 영수증을 다 꺼내 버리세요.' },
+        { tag: '마음', text: '지금 앉은 자리에서 발바닥 감각을 10초 느껴 보세요.' }
       ]
     },
     금: {
@@ -1188,7 +1192,8 @@
         { tag: '음식', text: '매운맛 한 입으로 막힌 숨을 트여 보세요.' },
         { tag: '동선', text: '안 쓰는 구독 하나를 오늘 확인해서 끊으세요.' },
         { tag: '말', text: '받을 돈 한 건, 오늘 문자로 물어보세요.' },
-        { tag: '손', text: '결제 3초 전, 한 번만 더 물어보고 누르세요.' }
+        { tag: '손', text: '결제 3초 전, 한 번만 더 물어보고 누르세요.' },
+        { tag: '마음', text: '정리 안 된 생각 세 개를 한 줄씩 적고 하나만 남기세요.' }
       ]
     },
     수: {
@@ -1198,7 +1203,8 @@
         { tag: '음식', text: '미지근한 물 한 잔을 한 번에 비우세요.' },
         { tag: '동선', text: '손목을 10초 물에 적시고 돌아오세요.' },
         { tag: '말', text: '보내려던 답장은 초안에만 넣어 두세요.' },
-        { tag: '손', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' }
+        { tag: '손', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' },
+        { tag: '마음', text: '소리 나는 곳을 하나 골라 1분만 가만히 들어 보세요.' }
       ]
     }
   };
@@ -1250,7 +1256,24 @@
       '</svg>'
   };
 
-  var care = { draws: 0, charge: 0, lit: false, bowl: null, bowlTimer: null, buy: 'set' };
+  /* 뽑기·문지르기·싱잉볼의 화면 상태 (팝업을 닫으면 초기화) */
+  var PICK_KEY = 'yoonise.timing.carepick.v1';
+  var STICK_NUM = ['一', '二', '三', '四', '五', '六'];
+  var care = { pick: -1, charge: 0, lit: false, chargeStep: 0, dustAcc: 0, buy: 'set' };
+
+  function loadCarePick() {
+    try {
+      var o = JSON.parse(localStorage.getItem(PICK_KEY) || 'null');
+      if (o && o.iso === state.todayISO && typeof o.idx === 'number' && o.idx >= 0 && o.idx < 6) return o.idx;
+    } catch (e) {}
+    return -1;
+  }
+  function saveCarePick(idx) {
+    try {
+      if (idx == null) localStorage.removeItem(PICK_KEY);
+      else localStorage.setItem(PICK_KEY, JSON.stringify({ iso: state.todayISO, idx: idx }));
+    } catch (e) {}
+  }
 
   /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트 */
   var CARE_ITEMS = {
@@ -1282,12 +1305,42 @@
   function careElement() {
     return state.res ? repElement().el : '화';
   }
-
-  function careMissionHTML(el, idx) {
+  function careMission(el, idx) {
     var list = (CARE[el] || CARE['화']).missions;
-    var m = list[idx % list.length];
-    return '<span class="care-flip__tag">' + esc(m.tag) + '</span>' +
-      '<b>' + esc(m.text) + '</b>';
+    return list[((idx % list.length) + list.length) % list.length];
+  }
+
+  /* ① 대나무 산가지 6개 — 나란히 부채처럼 세워 두고 한 개만 뽑는다 */
+  var STICK_SPREAD = 30;                            // 산가지 사이 간격(px)
+  function bambooSticksHTML() {
+    var out = '';
+    for (var i = 0; i < 6; i++) {
+      var off = (i - 2.5) * STICK_SPREAD;            // 가운데 기준 ±85px
+      var rot = -9 + i * 3.6;                        // −9° ~ +9° 부챗살
+      var shift = -off;                              // 뽑히면 가운데로
+      var cls = 'bamboo__stick';
+      if (care.pick === i) cls += ' is-chosen';
+      if (care.pick >= 0 && care.pick !== i) cls += ' is-away';
+      out += '<button type="button" class="' + cls + '" data-care="stick" data-stick="' + i + '" ' +
+        'style="left:calc(50% + ' + off.toFixed(1) + 'px); --rot:' + rot.toFixed(2) + 'deg; --i:' + i +
+        '; --shift:' + shift.toFixed(1) + 'px" ' +
+        'aria-label="' + (i + 1) + '번째 대나무 산가지 뽑기"' +
+        (care.pick >= 0 ? ' aria-disabled="true"' : '') + '>' +
+        '<span class="bamboo__shaft">' +
+        '<span class="bamboo__cap"></span>' +
+        '<span class="bamboo__glyph">' + STICK_NUM[i] + '</span>' +
+        '<span class="bamboo__node"></span><span class="bamboo__node"></span>' +
+        '<span class="bamboo__band"></span>' +
+        '</span></button>';
+    }
+    return out;
+  }
+
+  function bambooResultHTML(el, idx) {
+    var m = careMission(el, idx);
+    return '<span class="bamboo__drawn-no">' + STICK_NUM[idx % 6] + '</span>' +
+      '<span class="bamboo__tag">' + esc(m.tag) + '</span>' +
+      '<b class="bamboo__text">' + esc(m.text) + '</b>';
   }
 
   /* 4번 — 윤이세 1:1 상담 (49,000원~) */
@@ -1309,54 +1362,92 @@
     var el = careElement();
     var c = CARE[el] || CARE['화'];
     var thr = EL_THEME[el] || EL_THEME['화'];
-    var idx = (seedOf(state.todayISO) + care.draws) % c.missions.length;
+    care.pick = loadCarePick();
+    var picked = care.pick >= 0;
     return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
       '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
       '<p class="care__place"><b>📍 추천 공간:</b> ' + esc(CARE_PLACE[el] || CARE_PLACE['화']) + '</p>' +
       '<p class="shop__sub">부적을 붙여도 유독 막히고 안 풀리는 날, 앱에서 바로 꺼내 쓰는 <b>3가지</b>예요. 지금 여기서 그대로 체험해 보세요.</p>' +
 
-      /* ① 행동 카드 */
-      '<section class="care">' +
+      /* ① 대나무 산가지 뽑기 */
+      '<section class="care care--bamboo">' +
       '<p class="care__no">01</p>' +
-      '<p class="care__title">오늘의 긴급 개운 행동 카드</p>' +
-      '<p class="care__desc">카드를 뒤집으면 오늘 막힘을 뚫는 행동 <b>한 가지</b>가 나와요.</p>' +
-      '<button type="button" class="care-flip' + (care.draws ? ' is-open' : '') + '" data-care="draw" aria-label="오늘의 개운 행동 카드 뽑기">' +
-      '<span class="care-flip__inner">' +
-      '<span class="care-flip__face care-flip__face--back"><span class="care-flip__star">✦</span><b>탭해서<br>오늘의 카드 뽑기</b></span>' +
-      '<span class="care-flip__face care-flip__face--front">' + (care.draws ? careMissionHTML(el, idx) : '') + '</span>' +
-      '</span></button>' +
-      '<p class="care__hint">' + (care.draws ? '한 번 더 뽑을 수 있어요' : '') + '</p>' +
+      '<p class="care__title">오늘의 긴급 개운 산가지</p>' +
+      '<p class="care__desc">마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.</p>' +
+      '<div class="bamboo' + (picked ? ' is-picked' : '') + '" data-bamboo>' +
+      '<span class="bamboo__tray"></span>' +
+      '<span class="bamboo__burst" aria-hidden="true"></span>' +
+      '<div class="bamboo__fan">' + bambooSticksHTML() + '</div>' +
+      '</div>' +
+      '<div class="bamboo__result' + (picked ? ' is-show' : '') + '" data-bamboo-result' + (picked ? '' : ' hidden') + '>' +
+      (picked ? bambooResultHTML(el, care.pick) : '') + '</div>' +
+      '<p class="care__hint" data-bamboo-hint>' + (picked
+        ? '이 날은 <b>딱 1번만</b> 뽑았어요 — 그 한 개로 오늘을 버텨 보세요. '
+        : '한 번 뽑으면 오늘은 그 하나로 갑니다.') +
+      (picked ? '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>' : '') + '</p>' +
       '</section>' +
 
-      /* ② 디지털 개운 오브제 */
-      '<section class="care">' +
+      /* ② 디지털 개운 오브제 — 손가락으로 문지르기 */
+      '<section class="care care--obj">' +
       '<p class="care__no">02</p>' +
       '<p class="care__title">내 디지털 개운 오브제</p>' +
-      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + esc(c.josa) + ' 문질러 기운을 채워 보세요.</p>' +
-      '<button type="button" class="care-obj' + (care.lit ? ' is-lit' : '') + '" data-care="obj" ' +
-      'style="--obj-glow:' + thr.color + '" aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
+      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + esc(c.josa) + ' 손가락으로 문질러 기운을 채워 보세요.</p>' +
+      '<div class="care-obj' + (care.lit ? ' is-awake' : '') + '" data-care="obj" role="button" tabindex="0" ' +
+      'style="--obj-glow:' + thr.color + '; --charge:' + care.charge + '" ' +
+      'aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
+      '<span class="care-obj__stage">' +
+      '<span class="care-obj__glow"></span>' +
+      '<span class="care-obj__beam"></span>' +
+      '<span class="care-obj__ring is-r1"></span>' +
+      '<span class="care-obj__ring is-r2"></span>' +
       '<span class="care-obj__art">' + OBJ_SVG[c.obj] + '</span>' +
-      '<span class="care-obj__bar"><i style="width:' + care.charge + '%"></i></span>' +
-      '<span class="care-obj__label" data-care-label>' + (care.lit ? '기운 가득! 오늘은 이 기운으로 버텨요' : '문지르면 기운이 차요 · ' + care.charge + '%') + '</span>' +
-      '</button>' +
+      '<span class="care-obj__dust" data-dust></span>' +
+      '<span class="care-obj__pct" data-care-pct>' + Math.round(care.charge) + '%</span>' +
+      '</span>' +
+      '</div>' +
+      '<span class="care-obj__bar"><i style="width:' + care.charge + '%" data-care-bar></i></span>' +
+      '<span class="care-obj__label" data-care-label>' + (care.lit
+        ? '✨ 기운 충전 100% 완료!'
+        : (care.charge < 1 ? '손가락으로 문지르면 기운이 차요 · 0%' : '문지르는 만큼 기운이 올라와요 · ' + Math.round(care.charge) + '%')) + '</span>' +
+      (care.lit ? '<button type="button" class="care__reset" data-care="objReset">처음부터 다시 채우기</button>' : '') +
       '</section>' +
 
-      /* ③ 싱잉볼 */
-      '<section class="care">' +
+      /* ③ 1분 오행 싱잉볼 */
+      '<section class="care care--bowl">' +
       '<p class="care__no">03</p>' +
       '<p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' +
-      '<p class="care__desc">깊고 맑은 울림에 맞춰 숨을 한 번 크게 — 1분이면 머리가 조용해져요.</p>' +
-      '<button type="button" class="care-bowl" data-care="bowl" aria-label="1분 싱잉볼 기운 리셋 시작">' +
-      '<span class="care-bowl__ring"></span>' +
-      '<span class="care-bowl__art"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">' +
+      '<p class="care__desc">한 번 울리고 끝나지 않아요 — <b>60초 내내</b> 낮게 공명하고, 숨을 쉴 때마다 다시 울려요.</p>' +
+      '<div class="bowl' + (careBowl.on && !careBowl.paused ? ' is-on' : '') + '" data-bowl>' +
+      '<button type="button" class="bowl__art" data-care="bowlTap" aria-label="싱잉볼 치기 — 1분 공명 시작">' +
+      '<span class="bowl__halo"></span>' +
+      '<span class="bowl__ring" data-bowl-ring></span>' +
+      '<span class="bowl__ring" data-bowl-ring></span>' +
+      '<span class="bowl__ring" data-bowl-ring></span>' +
+      '<svg class="bowl__svg" viewBox="0 0 120 120" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="60" cy="105" rx="30" ry="6" fill="#2A2724" opacity=".09"/>' +
       '<path d="M28 58h64c0 17-14 31-32 31S28 75 28 58z" fill="#D9B46A"/>' +
+      '<path d="M28 58h64c0 17-14 31-32 31S28 75 28 58z" fill="none" stroke="#B98F4A" stroke-width="1.2" opacity=".55"/>' +
       '<ellipse cx="60" cy="58" rx="32" ry="7" fill="#EFD79E"/>' +
       '<ellipse cx="60" cy="58" rx="22" ry="4.5" fill="#C99C4E"/>' +
-      '<path d="M88 30l2.2 5.6 5.6 2.2-5.6 2.2-2.2 5.6-2.2-5.6-5.6-2.2 5.6-2.2z" fill="#FFF3CF" class="care-bowl__spark"/>' +
+      '<path d="M46 64c4 3 9 4 14 4s10-1 14-4" fill="none" stroke="#FFF3CF" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' +
+      '<path d="M89 30l2.2 5.6 5.6 2.2-5.6 2.2-2.2 5.6-2.2-5.6-5.6-2.2 5.6-2.2z" fill="#FFF3CF" class="bowl__spark"/>' +
+      '<path d="M84 40l17-13" stroke="#B98F4A" stroke-width="3.8" stroke-linecap="round"/>' +
+      '<circle cx="82" cy="42" r="5.2" fill="#C9A45E" stroke="#A87F3F" stroke-width="1"/>' +
       '<path d="M32 96h56" stroke="#C9A45E" stroke-width="4" stroke-linecap="round"/>' +
-      '</svg></span>' +
-      '<span class="care-bowl__text" data-care-bowl-text>탭하면 시작 · 1분</span>' +
+      '</svg>' +
       '</button>' +
+      '<p class="bowl__phase" data-bowl-phase>' + (careBowl.on
+        ? (careBowl.paused ? '잠시 멈춤' : '공명 중')
+        : '탭하면 시작 · 60초 공명') + '</p>' +
+      '<div class="bowl__bar"><i data-bowl-bar></i></div>' +
+      '<p class="bowl__time"><span data-bowl-clock>00:00</span> / 01:00</p>' +
+      '</div>' +
+      '<div class="bowl__ctrl">' +
+      '<button type="button" class="bowl__btn bowl__btn--go" data-care="bowlToggle" data-bowl-go>' +
+      '<span data-bowl-golabel>' + (careBowl.on ? (careBowl.paused ? '이어서 듣기' : '일시정지') : '1분 시작') + '</span></button>' +
+      '<button type="button" class="bowl__btn bowl__btn--stop" data-care="bowlStop" data-bowl-stop' + (careBowl.on ? '' : ' hidden') + '>그만</button>' +
+      '</div>' +
+      '<p class="care__hint">진행 중에 싱잉볼을 터치해도 언제든 다시 <b>댕~</b> 울려요.</p>' +
       '</section>' +
 
       priceHTML('긴급 개운템', CARE_PRICE) +
@@ -1380,131 +1471,519 @@
   /* ── 긴급 개운템 동작 ───────────────────────────── */
   function careEl(sel) { return shopBody ? shopBody.querySelector(sel) : null; }
 
-  function drawCareCard(btn) {
+  /* ① 대나무 — 딱 1개 뽑기 */
+  function sfxBambooDraw() {
+    vibrate([18, 22, 30]);
+    var ctx = audioCtx(); if (!ctx) return;
+    wood(ctx, 0, 0.11);
+    tone(ctx, { from: 660, to: 340, dur: 0.18, glide: 0.1, type: 'triangle', gain: 0.14, attack: 0.004 });
+  }
+  function sfxBambooReveal() {
+    var ctx = audioCtx(); if (!ctx) return;
+    [659.25, 783.99, 987.77, 1318.5].forEach(function (f, i) {
+      tone(ctx, { from: f, to: f, dur: 0.85, type: 'sine', gain: 0.11, at: 0.04 + i * 0.09, attack: 0.012 });
+      tone(ctx, { from: f * 2, to: f * 2, dur: 0.5, type: 'sine', gain: 0.028, at: 0.04 + i * 0.09 });
+    });
+    wood(ctx, 0.02, 0.05);
+  }
+
+  function pickBamboo(i) {
+    if (care.pick >= 0) { vibrate(12); return; }
     var el = careElement();
-    care.draws += 1;
-    var list = (CARE[el] || CARE['화']).missions;
-    var idx = (seedOf(state.todayISO) + care.draws) % list.length;
-    var front = btn.querySelector('.care-flip__face--front');
-    if (front) front.innerHTML = careMissionHTML(el, idx);
-    btn.classList.add('is-open');
-    var hint = btn.parentNode ? btn.parentNode.querySelector('.care__hint') : null;
-    if (hint) hint.textContent = '한 번 더 뽑을 수 있어요';
-    vibrate([16, 20, 26]);
+    care.pick = i;
+    saveCarePick(i);
+    var wrap = careEl('[data-bamboo]');
+    if (wrap) wrap.classList.add('is-picked');
+    $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
+      var k = parseInt(b.getAttribute('data-stick'), 10);
+      b.classList.toggle('is-chosen', k === i);
+      b.classList.toggle('is-away', k !== i);
+      b.setAttribute('aria-disabled', 'true');
+    });
+    sfxBambooDraw();
+    var panel = careEl('[data-bamboo-result]');
+    var hint = careEl('[data-bamboo-hint]');
+    if (hint) hint.innerHTML = '이 날은 <b>딱 1번만</b> 뽑았어요 — 그 한 개로 오늘을 버텨 보세요. ' +
+      '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>';
+    setTimeout(function () {
+      if (!panel) return;
+      panel.innerHTML = bambooResultHTML(el, i);
+      panel.hidden = false;
+      panel.classList.add('is-show');
+      sfxBambooReveal();
+      vibrate([24, 30, 60]);
+    }, 420);
+  }
+
+  function resetBamboo() {
+    care.pick = -1;
+    saveCarePick(null);
+    var wrap = careEl('[data-bamboo]');
+    if (wrap) wrap.classList.remove('is-picked');
+    $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
+      b.classList.remove('is-chosen', 'is-away');
+      b.removeAttribute('aria-disabled');
+    });
+    var panel = careEl('[data-bamboo-result]');
+    if (panel) { panel.classList.remove('is-show'); panel.hidden = true; panel.innerHTML = ''; }
+    var hint = careEl('[data-bamboo-hint]');
+    if (hint) hint.textContent = '한 번 뽑으면 오늘은 그 하나로 갑니다.';
     sfxTap(1);
   }
 
-  function chargeCareObj(btn) {
-    if (care.lit) { vibrate([30, 40, 30]); return; }
-    care.charge = Math.min(100, care.charge + 25);
-    var bar = btn.querySelector('.care-obj__bar i');
-    var label = btn.querySelector('[data-care-label]');
-    if (bar) bar.style.width = care.charge + '%';
-    btn.classList.remove('is-hit');
-    void btn.offsetWidth;
-    btn.classList.add('is-hit');
-    vibrate(18);
-    if (care.charge >= 100) {
-      care.lit = true;
-      btn.classList.add('is-lit');
-      if (label) label.textContent = '기운 가득! 오늘은 이 기운으로 버텨요';
-      vibrate([40, 60, 40, 60, 90]);
-      sfxDone();
-    } else {
-      if (label) label.textContent = '문지르면 기운이 차요 · ' + care.charge + '%';
-      sfxTap(2);
+  /* ② 오브제 — 손가락 문지르기(pointermove)로 게이지·빛가루·진동 */
+  function spawnDust(x, y, n) {
+    var layer = careEl('[data-dust]'); if (!layer) return;
+    var theme = EL_THEME[careElement()] || EL_THEME['화'];
+    var cols = ['#E8BA60', '#FFF0C4', theme.color, '#FFFFFF'];
+    for (var i = 0; i < n; i++) {
+      while (layer.childElementCount > 46 && layer.firstElementChild) {
+        layer.removeChild(layer.firstElementChild);
+      }
+      var s = document.createElement('i');
+      var ang = Math.random() * Math.PI * 2;
+      var dist = 18 + Math.random() * 52;
+      s.style.left = (x - 3 + (Math.random() - 0.5) * 18).toFixed(1) + 'px';
+      s.style.top = (y - 3 + (Math.random() - 0.5) * 18).toFixed(1) + 'px';
+      s.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * dist - 16).toFixed(1) + 'px');
+      s.style.setProperty('--p', cols[i % cols.length]);
+      s.style.animationDuration = (0.6 + Math.random() * 0.55).toFixed(2) + 's';
+      layer.appendChild(s);
+      (function (node) {
+        setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 1400);
+      })(s);
     }
   }
 
-  /* 싱잉볼 — Web Audio 로 깊은 배음 + 1분 호흡 가이드 */
-  function bowlStrike() {
+  function paintCharge() {
+    var obj = careEl('[data-care="obj"]'); if (!obj) return;
+    obj.style.setProperty('--charge', care.charge.toFixed(1));
+    var bar = careEl('[data-care-bar]');
+    if (bar) bar.style.width = care.charge.toFixed(1) + '%';
+    var pct = obj.querySelector('[data-care-pct]');
+    if (pct) pct.textContent = Math.round(care.charge) + '%';
+    if (care.lit) return;
+    var art = obj.querySelector('.care-obj__art');
+    if (art) {
+      var s = 1 + care.charge / 100 * 0.17;
+      var w = Math.sin(care.charge * 0.75) * 2.1;
+      art.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + w.toFixed(2) + 'deg)';
+    }
+    var label = careEl('[data-care-label]');
+    if (label) {
+      var c = care.charge;
+      label.textContent = c < 1 ? '손가락으로 문지르면 기운이 차요 · 0%'
+        : (c < 35 ? '문지르는 만큼 기운이 올라와요 · ' + Math.round(c) + '%'
+          : (c < 70 ? '좋아요, 빛이 돌기 시작해요 · ' + Math.round(c) + '%'
+            : (c < 100 ? '거의 다 왔어요, 조금만 더 · ' + Math.round(c) + '%' : '✨ 기운 충전 100% 완료!')));
+    }
+  }
+
+  function sfxAwaken() {
+    vibrate([40, 50, 40, 50, 130]);
     var ctx = audioCtx(); if (!ctx) return;
-    var t0 = ctx.currentTime;
-    var base = 196;                                   // G3 — 낮고 편안한 울림
-    [1, 2.02, 2.98, 4.07, 5.42].forEach(function (m, i) {
-      var o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = i === 0 ? 'sine' : 'sine';
-      o.frequency.setValueAtTime(base * m * (1 + (i % 2 ? 0.0016 : -0.0012)), t0);
-      var peak = 0.26 / (i * 0.9 + 1);
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.012 + i * 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 7.5 - i * 0.6);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(t0); o.stop(t0 + 8);
+    [392, 523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) {
+      tone(ctx, { from: f, to: f, dur: 1.0, type: 'sine', gain: 0.15, at: i * 0.075, attack: 0.012 });
+      tone(ctx, { from: f * 2, to: f * 2, dur: 0.55, type: 'sine', gain: 0.03, at: i * 0.075 });
     });
-    // 살짝 스치는 쇠 소리
-    var n = Math.floor(ctx.sampleRate * 0.12);
+    tone(ctx, { from: 220, to: 720, dur: 0.55, glide: 0.42, type: 'triangle', gain: 0.07 });
+    wood(ctx, 0, 0.07);
+  }
+
+  function awakenObj() {
+    care.charge = 100;
+    care.lit = true;
+    paintCharge();
+    var obj = careEl('[data-care="obj"]'); if (!obj) return;
+    obj.classList.remove('is-rub');
+    obj.classList.add('is-awake');
+    var art = obj.querySelector('.care-obj__art');
+    if (art) art.style.transform = '';
+    var label = careEl('[data-care-label]');
+    if (label) label.textContent = '✨ 기운 충전 100% 완료!';
+    var pct = obj.querySelector('[data-care-pct]');
+    if (pct) pct.textContent = '100%';
+    spawnDust(75, 78, 16);
+    setTimeout(function () { spawnDust(75, 78, 14); }, 180);
+    setTimeout(function () { spawnDust(75, 78, 12); }, 380);
+    sfxAwaken();
+    setTimeout(function () {
+      var me = careEl('[data-care="obj"]');
+      if (!me || careEl('[data-care="objReset"]')) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'care__reset';
+      b.setAttribute('data-care', 'objReset');
+      b.textContent = '처음부터 다시 채우기';
+      (me.closest('.care') || me.parentNode).appendChild(b);
+    }, 900);
+  }
+
+  function addCharge(amount, px, py) {
+    if (care.lit || !(amount > 0)) return;
+    care.charge = Math.min(100, care.charge + amount);
+    paintCharge();
+    care.dustAcc += amount;
+    if (care.dustAcc >= 2.4) {
+      care.dustAcc = 0;
+      spawnDust(px, py, 1);
+    }
+    var step = Math.floor(care.charge / 20);
+    if (step > care.chargeStep) {
+      care.chargeStep = step;
+      spawnDust(px, py, 5);
+      vibrate(16);
+      var ctx = audioCtx();
+      if (ctx) tone(ctx, { from: 520 + step * 90, to: 520 + step * 90, dur: 0.18, type: 'sine', gain: 0.05 });
+    }
+    if (care.charge >= 100) awakenObj();
+  }
+
+  function resetObj() {
+    care.charge = 0; care.lit = false; care.chargeStep = 0; care.dustAcc = 0;
+    var obj = careEl('[data-care="obj"]');
+    if (obj) {
+      obj.classList.remove('is-awake', 'is-rub');
+      var art = obj.querySelector('.care-obj__art');
+      if (art) art.style.transform = '';
+      var dust = obj.querySelector('[data-dust]');
+      if (dust) dust.innerHTML = '';
+      var pct = obj.querySelector('[data-care-pct]');
+      if (pct) pct.textContent = '0%';
+    }
+    paintCharge();
+    var rs = careEl('[data-care="objReset"]');
+    if (rs && rs.parentNode) rs.parentNode.removeChild(rs);
+    sfxTap(1);
+  }
+
+  /* pointer/touch 로 문지르는 감각 — 오브제 위에서만, 이동 거리만큼 차오른다 */
+  function initCare() {
+    var obj = careEl('[data-care="obj"]');
+    if (!obj) return;
+    var rub = { on: false, id: null, x: 0, y: 0, moved: 0 };
+    function stageBox() {
+      var st = obj.querySelector('.care-obj__stage');
+      return (st || obj).getBoundingClientRect();
+    }
+
+    function onDown(e) {
+      if (care.lit) return;
+      rub.on = true; rub.id = e.pointerId;
+      rub.x = e.clientX; rub.y = e.clientY; rub.moved = 0;
+      obj.classList.add('is-rub');
+      try { obj.setPointerCapture(e.pointerId); } catch (err) {}
+      if (e.cancelable) e.preventDefault();
+      var r = stageBox();
+      spawnDust(e.clientX - r.left, e.clientY - r.top, 3);
+    }
+    function onMove(e) {
+      if (!rub.on || e.pointerId !== rub.id || care.lit) return;
+      if (e.cancelable) e.preventDefault();
+      var r = stageBox();
+      var inside = e.clientX > r.left - 30 && e.clientX < r.right + 30 &&
+        e.clientY > r.top - 30 && e.clientY < r.bottom + 30;
+      var dx = e.clientX - rub.x, dy = e.clientY - rub.y;
+      rub.x = e.clientX; rub.y = e.clientY;
+      if (!inside) return;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 0.5) return;
+      rub.moved += d;
+      addCharge(Math.min(d, 28) * 0.05, e.clientX - r.left, e.clientY - r.top);
+    }
+    function onUp(e) {
+      if (!rub.on) return;
+      rub.on = false;
+      obj.classList.remove('is-rub');
+      try {
+        if (obj.hasPointerCapture && obj.hasPointerCapture(e.pointerId)) obj.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+      if (rub.moved < 6 && !care.lit) {
+        var r = stageBox();
+        addCharge(6, r.width / 2, r.height / 2);
+      }
+    }
+    obj.addEventListener('pointerdown', onDown);
+    obj.addEventListener('pointermove', onMove);
+    obj.addEventListener('pointerup', onUp);
+    obj.addEventListener('pointercancel', onUp);
+    obj.addEventListener('touchmove', function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    obj.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();
+      if (care.lit) return;
+      var r = stageBox();
+      addCharge(12, r.width / 2, r.height / 2);
+    });
+  }
+
+  /* ③ 싱잉볼 — 60초 지속 공명 + 호흡 주기 재타종 + 수동 타종 */
+  var BOWL = {
+    base: 196,                                        // G3 — 낮고 편안한 울림
+    total: 60,
+    inSec: 4, outSec: 6,                              // 들이쉬기 4초 · 내쉬기 6초 = 10초 한 호흡
+    strikeAt: [0, 4, 10, 14, 20, 24, 30, 34, 40, 44, 50, 54]
+  };
+  var careBowl = {
+    on: false, paused: false, elapsed: 0, resumedAt: 0,
+    timer: null, ctx: null, master: null, nodes: [], ringIdx: 0, lastBeat: -1
+  };
+
+  /* 타종 하나 — 배음 5개가 7초 넘게 남는다 */
+  function bowlStrikeAt(ctx, dest, t0, o) {
+    if (!ctx || !dest) return;
+    o = o || {};
+    var scale = o.gain == null ? 1 : o.gain;
+    var base = BOWL.base;
+    var parts = [[1, 1], [2.02, 0.42], [2.98, 0.26], [4.07, 0.15], [5.42, 0.1]];
+    parts.forEach(function (p, i) {
+      var osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(base * p[0] * (1 + (i % 2 ? 0.0017 : -0.0013)), t0);
+      var peak = 0.22 * p[1] * scale;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.01 + i * 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 7.6 - i * 0.55);
+      osc.connect(g); g.connect(dest);
+      osc.start(t0); osc.stop(t0 + 8);
+    });
+    // 말렛이 스치는 쇠 소리
+    var n = Math.floor(ctx.sampleRate * 0.1);
     if (n > 0) {
       var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
-      for (var k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, 6);
+      for (var k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, 7);
       var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g2 = ctx.createGain();
-      bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.8;
-      g2.gain.value = 0.05;
-      src.buffer = buf; src.connect(bp); bp.connect(g2); g2.connect(ctx.destination);
+      bp.type = 'bandpass'; bp.frequency.value = 2800; bp.Q.value = 0.7;
+      g2.gain.value = 0.045 * scale;
+      src.buffer = buf; src.connect(bp); bp.connect(g2); g2.connect(dest);
       src.start(t0);
     }
   }
 
-  function stopBowl() {
-    if (care.bowlTimer) { clearInterval(care.bowlTimer); care.bowlTimer = null; }
-    care.bowl = null;
-    var btn = careEl('[data-care="bowl"]');
-    if (btn) {
-      btn.classList.remove('is-on', 'is-in', 'is-out');
-      var txt = btn.querySelector('[data-care-bowl-text]');
-      if (txt) txt.textContent = '탭하면 시작 · 1분';
-      var ring = btn.querySelector('.care-bowl__ring');
-      if (ring) { ring.style.transition = 'transform .5s ease, opacity .5s ease'; ring.style.transform = 'scale(.92)'; ring.style.opacity = '0'; }
+  /* 60초 내내 살아 숨 쉬는 낮은 공명 드론 */
+  function bowlDrone(ctx) {
+    var master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, ctx.currentTime);
+    master.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.6);
+    master.connect(ctx.destination);
+
+    var nodes = [];
+    var lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 640; lp.Q.value = 0.6;
+    lp.connect(master); nodes.push(lp);
+
+    var droneGain = ctx.createGain();
+    droneGain.gain.value = 0.5;
+    droneGain.connect(lp); nodes.push(droneGain);
+
+    [[1, 'sine', 0.20], [0.5, 'sine', 0.13], [2, 'triangle', 0.05], [3.01, 'sine', 0.028]].forEach(function (v, idx) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = v[1];
+      o.frequency.value = BOWL.base * v[0] * (1 + (idx === 3 ? 0.0025 : 0));
+      g.gain.value = v[2];
+      o.connect(g); g.connect(droneGain);
+      o.start(); nodes.push(o, g);
+    });
+
+    // 아주 느린 숨쉬기 LFO — 소리가 살아 있는 느낌
+    var lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
+    lfo.type = 'sine'; lfo.frequency.value = 0.085;
+    lfoGain.gain.value = 0.16;
+    lfo.connect(lfoGain); lfoGain.connect(droneGain.gain);
+    lfo.start(); nodes.push(lfo, lfoGain);
+
+    // 은은한 쇠 잔향
+    var nb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 2), ctx.sampleRate);
+    var nd = nb.getChannelData(0);
+    for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    var ns = ctx.createBufferSource(); ns.buffer = nb; ns.loop = true;
+    var nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 2400; nf.Q.value = 1.2;
+    var ng = ctx.createGain(); ng.gain.value = 0.012;
+    ns.connect(nf); nf.connect(ng); ng.connect(master);
+    ns.start(); nodes.push(ns, nf, ng);
+
+    return { master: master, nodes: nodes };
+  }
+
+  function bowlAudioOff(sec) {
+    var ctx = careBowl.ctx, master = careBowl.master, nodes = careBowl.nodes || [];
+    careBowl.master = null; careBowl.nodes = []; careBowl.ctx = null;
+    if (!ctx || !master) return;
+    var t = ctx.currentTime;
+    try {
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
+      master.gain.exponentialRampToValueAtTime(0.0001, t + sec);
+    } catch (e) {}
+    setTimeout(function () {
+      nodes.forEach(function (n) {
+        try { if (n.stop) n.stop(); } catch (e) {}
+        try { n.disconnect(); } catch (e) {}
+      });
+      try { master.disconnect(); } catch (e) {}
+    }, (sec + 0.25) * 1000);
+  }
+
+  function bowlRing() {
+    var rings = $$('[data-bowl-ring]', shopBody || document);
+    if (!rings.length) return;
+    var r = rings[careBowl.ringIdx++ % rings.length];
+    r.classList.remove('is-hit');
+    void r.offsetWidth;
+    r.classList.add('is-hit');
+  }
+
+  function bowlUI() {
+    var wrap = careEl('[data-bowl]');
+    var lbl = careEl('[data-bowl-golabel]');
+    var stop = careEl('[data-bowl-stop]');
+    if (wrap) {
+      wrap.classList.toggle('is-on', careBowl.on && !careBowl.paused);
+      wrap.classList.toggle('is-paused', careBowl.paused);
+    }
+    if (lbl) lbl.textContent = !careBowl.on ? '1분 시작' : (careBowl.paused ? '이어서 듣기' : '일시정지');
+    if (stop) stop.hidden = !careBowl.on;
+  }
+
+  function paintBowl(el) {
+    var left = Math.max(0, Math.ceil(BOWL.total - el));
+    var cyc = el % 10;
+    var inhale = cyc < BOWL.inSec;
+    var into = inhale ? cyc : cyc - BOWL.inSec;
+    var span = inhale ? BOWL.inSec : BOWL.outSec;
+    var p = Math.max(0, Math.min(1, into / span));
+    var wrap = careEl('[data-bowl]');
+    if (wrap) {
+      wrap.style.setProperty('--bs', (inhale ? 1 + p * 0.24 : 1.24 - p * 0.24).toFixed(3));
+      wrap.classList.toggle('is-in', inhale);
+      wrap.classList.toggle('is-out', !inhale);
+    }
+    var phase = careEl('[data-bowl-phase]');
+    if (phase) phase.textContent = (inhale ? '코로 들이쉬세요' : '천천히 내쉬세요') + ' · 남은 ' + left + '초';
+    var bar = careEl('[data-bowl-bar]');
+    if (bar) bar.style.width = (el / BOWL.total * 100).toFixed(1) + '%';
+    var clock = careEl('[data-bowl-clock]');
+    if (clock) clock.textContent = '00:' + (left < 10 ? '0' + left : left);
+
+    var beat = -1;
+    for (var i = 0; i < BOWL.strikeAt.length; i++) if (el >= BOWL.strikeAt[i] - 0.05) beat = i;
+    if (beat > careBowl.lastBeat) {
+      careBowl.lastBeat = beat;
+      bowlRing();
+      vibrate(14);
     }
   }
 
-  function startBowl(btn) {
-    if (care.bowlTimer) { stopBowl(); vibrate(12); return; }
-    bowlStrike();
+  function bowlTick() {
+    if (!careBowl.on || careBowl.paused) return;
+    var el = careBowl.elapsed + (performance.now() - careBowl.resumedAt) / 1000;
+    if (el >= BOWL.total) { bowlFinish(); return; }
+    paintBowl(el);
+  }
+
+  function bowlBegin(fromElapsed) {
+    var from = fromElapsed || 0;
+    careBowl.on = true;
+    careBowl.paused = false;
+    careBowl.elapsed = from;
+    careBowl.resumedAt = performance.now();
+    careBowl.lastBeat = -1;
+    for (var j = 0; j < BOWL.strikeAt.length; j++) if (from + 0.05 >= BOWL.strikeAt[j]) careBowl.lastBeat = j;
+    if (careBowl.timer) { clearInterval(careBowl.timer); careBowl.timer = null; }
+
+    var ctx = audioCtx();
+    if (ctx) {
+      var d = bowlDrone(ctx);
+      careBowl.ctx = ctx; careBowl.master = d.master; careBowl.nodes = d.nodes;
+      bowlStrikeAt(ctx, d.master, ctx.currentTime + 0.03, { gain: 0.95 });
+      BOWL.strikeAt.forEach(function (sec) {
+        var off = sec - from;
+        if (off > 0.4) {
+          bowlStrikeAt(ctx, d.master, ctx.currentTime + off, { gain: sec % 10 === 0 ? 0.6 : 0.4 });
+        }
+      });
+    }
+    bowlRing();
     vibrate([60, 40, 120]);
-    care.bowl = { left: 60, phase: 'in', phaseLeft: 4 };
-    btn.classList.add('is-on', 'is-in');
-    var txt = btn.querySelector('[data-care-bowl-text]');
-    var paint = function () {
-      if (!care.bowl) return;
-      var b = care.bowl;
-      if (txt) {
-        txt.textContent = (b.phase === 'in' ? '들이쉬세요' : '내쉬세요') + ' · 남은 ' + b.left + '초';
-      }
-      var ring = btn.querySelector('.care-bowl__ring');
-      if (ring) {
-        var dur = b.phase === 'in' ? 4 : 6;
-        ring.style.transition = 'transform ' + dur + 's ease-in-out, opacity ' + dur + 's ease-in-out';
-        ring.style.transform = 'scale(' + (b.phase === 'in' ? 1.38 : 0.92) + ')';
-        ring.style.opacity = b.phase === 'in' ? 0.78 : 0.3;
-      }
-      btn.classList.toggle('is-in', b.phase === 'in');
-      btn.classList.toggle('is-out', b.phase === 'out');
-    };
-    paint();
-    care.bowlTimer = setInterval(function () {
-      var b = care.bowl;
-      if (!b) return;
-      b.left -= 1;
-      b.phaseLeft -= 1;
-      if (b.phaseLeft <= 0) {
-        if (b.phase === 'in') { b.phase = 'out'; b.phaseLeft = 6; }
-        else { b.phase = 'in'; b.phaseLeft = 4; }
-      }
-      if (b.left <= 0) {
-        if (txt) txt.textContent = '기운 리셋 완료 · 오늘 하루 수고했어요';
-        btn.classList.remove('is-in', 'is-out');
-        btn.classList.add('is-done');
-        var ring = btn.querySelector('.care-bowl__ring');
-        if (ring) { ring.style.transition = 'transform .8s ease, opacity .8s ease'; ring.style.transform = 'scale(.92)'; ring.style.opacity = '0'; }
-        sfxDone(); vibrate([30, 50, 30, 50, 120]);
-        if (care.bowlTimer) { clearInterval(care.bowlTimer); care.bowlTimer = null; }
-        care.bowl = null;
-        setTimeout(function () { if (btn) btn.classList.remove('is-done'); }, 2600);
-        return;
-      }
-      paint();
-    }, 1000);
+    careBowl.timer = setInterval(bowlTick, 180);
+    bowlUI();
+    bowlTick();
+  }
+
+  function bowlPause() {
+    if (!careBowl.on || careBowl.paused) return;
+    careBowl.elapsed = Math.min(BOWL.total, careBowl.elapsed + (performance.now() - careBowl.resumedAt) / 1000);
+    careBowl.paused = true;
+    if (careBowl.timer) { clearInterval(careBowl.timer); careBowl.timer = null; }
+    bowlAudioOff(0.45);
+    var left = Math.max(0, Math.ceil(BOWL.total - careBowl.elapsed));
+    var phase = careEl('[data-bowl-phase]');
+    if (phase) phase.textContent = '잠시 멈춤 · 남은 ' + left + '초';
+    var wrap = careEl('[data-bowl]');
+    if (wrap) { wrap.classList.remove('is-in', 'is-out'); wrap.style.setProperty('--bs', '1'); }
+    bowlUI();
+    vibrate(10);
+  }
+
+  /* closeShop 에서도 부르는 전체 정리 — 오디오 노드를 깨끗하게 끊는다 */
+  function stopBowl() {
+    if (careBowl.on && !careBowl.paused) {
+      careBowl.elapsed = Math.min(BOWL.total, careBowl.elapsed + (performance.now() - careBowl.resumedAt) / 1000);
+    }
+    var was = careBowl.on || !!careBowl.master;
+    careBowl.on = false; careBowl.paused = false; careBowl.elapsed = 0; careBowl.lastBeat = -1;
+    if (careBowl.timer) { clearInterval(careBowl.timer); careBowl.timer = null; }
+    bowlAudioOff(0.5);
+    var phase = careEl('[data-bowl-phase]');
+    if (phase) phase.textContent = '탭하면 시작 · 60초 공명';
+    var bar = careEl('[data-bowl-bar]'); if (bar) bar.style.width = '0%';
+    var clock = careEl('[data-bowl-clock]'); if (clock) clock.textContent = '00:00';
+    var wrap = careEl('[data-bowl]');
+    if (wrap) { wrap.classList.remove('is-in', 'is-out'); wrap.style.setProperty('--bs', '1'); }
+    bowlUI();
+    if (was) vibrate(12);
+  }
+
+  function sfxBowlDone() {
+    var ctx = audioCtx(); if (!ctx) return;
+    [523.25, 659.25, 783.99].forEach(function (f, i) {
+      tone(ctx, { from: f, to: f, dur: 1.1, type: 'sine', gain: 0.1, at: i * 0.16, attack: 0.02 });
+    });
+  }
+
+  function bowlFinish() {
+    if (careBowl.timer) { clearInterval(careBowl.timer); careBowl.timer = null; }
+    var ctx = careBowl.ctx, master = careBowl.master;
+    if (ctx && master) bowlStrikeAt(ctx, master, ctx.currentTime + 0.02, { gain: 0.75 });
+    bowlAudioOff(3.2);
+    careBowl.on = false; careBowl.paused = false; careBowl.elapsed = 0; careBowl.lastBeat = -1;
+    var phase = careEl('[data-bowl-phase]');
+    if (phase) phase.textContent = '기운 리셋 완료 · 오늘 하루 수고했어요';
+    var bar = careEl('[data-bowl-bar]'); if (bar) bar.style.width = '100%';
+    var clock = careEl('[data-bowl-clock]'); if (clock) clock.textContent = '00:00';
+    var wrap = careEl('[data-bowl]');
+    if (wrap) { wrap.classList.remove('is-on', 'is-in', 'is-out', 'is-paused'); wrap.style.setProperty('--bs', '1'); }
+    bowlRing();
+    sfxBowlDone();
+    vibrate([30, 50, 30, 50, 120]);
+    bowlUI();
+  }
+
+  function bowlTap() {
+    if (!careBowl.on) { bowlBegin(0); return; }
+    if (careBowl.paused) { bowlBegin(careBowl.elapsed); return; }
+    if (careBowl.ctx && careBowl.master) {
+      bowlStrikeAt(careBowl.ctx, careBowl.master, careBowl.ctx.currentTime + 0.01, { gain: 0.8 });
+    }
+    bowlRing();
+    vibrate([45, 30, 70]);
+  }
+
+  function bowlToggle() {
+    if (!careBowl.on) { bowlBegin(0); return; }
+    if (careBowl.paused) { bowlBegin(careBowl.elapsed); return; }
+    bowlPause();
   }
 
   /* 개운템 구성(낱개 3종 / 3종 풀세트) 고르면 계좌이체 버튼 문구가 그 구성으로 바뀐다 */
@@ -1530,13 +2009,18 @@
   }
 
   function handleCare(kind, btn, ev) {
-    if (kind === 'draw') { drawCareCard(btn); return; }
-    if (kind === 'obj') { chargeCareObj(btn); return; }
-    if (kind === 'bowl') { startBowl(btn); return; }
+    if (kind === 'stick') { pickBamboo(parseInt(btn.getAttribute('data-stick'), 10) || 0); return; }
+    if (kind === 'pickReset') { resetBamboo(); return; }
+    if (kind === 'obj') { return; }             // 문지르기는 initCare 의 pointer 이벤트가 맡는다
+    if (kind === 'objReset') { resetObj(); return; }
+    if (kind === 'bowlTap') { bowlTap(); return; }
+    if (kind === 'bowlToggle') { bowlToggle(); return; }
+    if (kind === 'bowlStop') { stopBowl(); return; }
   }
 
   function openShop(kind) {
     if (!shopEl) return;
+    if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
     shopBody.innerHTML = kind === 'care' ? careShopHTML()
       : (kind === 'consult' ? consultShopHTML()
@@ -1544,13 +2028,14 @@
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
+    if (kind === 'care') initCare();
     sfxOpen();
     try { shopDialog.focus({ preventScroll: true }); } catch (e) { shopDialog.focus(); }
   }
 
   function closeShop() {
     if (!shopEl || shopEl.hidden || shopClosing) return;
-    if (care.bowlTimer) stopBowl();
+    stopBowl();
     shopClosing = true;
     shopEl.classList.add('is-closing');
     setTimeout(function () {
