@@ -378,12 +378,13 @@ form { margin-top: 22px; }
 }
 .wg__cell--empty .wg__hanja { color: #C6BFB1; font-size: 24px; }
 .wg__ten {
-  display: block; width: fit-content; margin: 0 auto 5px;
-  font-size: 9.5px; line-height: 15px; padding: 0 6px;
-  border-radius: 999px; background: #EFE5CE; color: #7A6535;
+  position: relative; z-index: 1;
+  display: block; width: fit-content; margin: 0 auto 6px;
+  font-size: 10px; line-height: 16px; padding: 0 7px;
+  border-radius: 999px; background: #EFE3C8; color: #6B5626;
   font-weight: 700; letter-spacing: .01em; white-space: nowrap;
 }
-.wg__ten--sub { margin: 5px auto 0; background: #F3EDDD; color: #6E6344; }
+.wg__ten--sub { margin: 11px auto 0; background: #F2EAD6; color: #6B5A33; }
 .wg__ten--me { background: var(--ink); color: var(--cream); }
 .wg__hidden { font-size: 10px; color: var(--ink-mute); display: block; margin-top: 4px; letter-spacing: .04em; }
 .wg__hidden b { font-family: var(--serif); font-weight: 500; color: var(--ink-soft); }
