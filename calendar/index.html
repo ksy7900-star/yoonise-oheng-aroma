@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 인생 타이밍 캘린더 · 2027 정미년 | 윤이세사주</title>
+<meta name="description" content="생년월일 한 번이면, 내 사주에 2026년 11월부터 2027년 12월까지의 날들이 어떻게 걸리는지 하루씩 보여 드려요. 추진하기 좋은 날, 속도 조절할 날, 계약·문서 체크할 날. 윤이세사주.">
+<meta name="theme-color" content="#F7F3EB">
+<meta property="og:type" content="website">
+<meta property="og:title" content="내 인생 타이밍 캘린더 · 윤이세">
+<meta property="og:description" content="내 사주에 2027 정미년이 들어오는 방식 — 하루씩, 달력 위에.">
+<meta property="og:locale" content="ko_KR">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=20261119a">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__inner">
+    <p class="hero__eyebrow">YOONISE · TIMING CALENDAR</p>
+    <h1 class="hero__title">내 인생<br><em>타이밍 캘린더</em></h1>
+    <p class="hero__sub">생년월일 한 번이면, 내 사주에 2026년 11월부터<br>2027 정미년 12월까지의 날들이 어떻게 걸리는지<br>하루씩 짚어 드려요.</p>
+    <ul class="hero__facts">
+      <li>만세력 절입 시각 반영</li>
+      <li>7일 무료</li>
+      <li>기기에만 저장</li>
+    </ul>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ───────── 입력 ───────── -->
+  <section class="card card--form" id="formCard" aria-labelledby="formTitle">
+    <h2 class="card__title" id="formTitle">내 사주를 먼저 알려주세요</h2>
+    <p class="card__sub">입춘과 24절기의 절입 시각까지 반영해 원국을 세우고, 그 위에 날짜를 올립니다.</p>
+
+    <form id="birthForm" novalidate>
+      <div class="field">
+        <label class="label" for="name">이름 <span class="opt">선택</span></label>
+        <input class="input" id="name" name="name" type="text" maxlength="12" placeholder="달력에 이름을 넣어 드려요" autocomplete="off">
+      </div>
+
+      <div class="field" id="genderField">
+        <span class="label">성별 <span class="req" aria-hidden="true">*</span><span class="sr-only">(필수)</span></span>
+        <div class="chips" id="genderChips" role="group" aria-label="성별 (필수)" aria-required="true">
+          <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
+          <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
+        </div>
+        <p class="field-error" id="genderError" role="alert" hidden>성별을 선택해 주세요.</p>
+      </div>
+
+      <div class="field">
+        <span class="label">달력</span>
+        <div class="segmented" id="calendarSeg" role="group" aria-label="달력 종류">
+          <button type="button" class="seg is-on" data-cal="solar" aria-pressed="true">양력</button>
+          <button type="button" class="seg" data-cal="lunar" aria-pressed="false">음력</button>
+        </div>
+        <label class="check" id="leapRow" hidden>
+          <input type="checkbox" id="leap">
+          <span>윤달(閏月)에 태어났어요</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="label" id="dateLabel">생년월일</span>
+        <div class="date-row">
+          <select class="select" id="year" aria-label="출생 연도"></select>
+          <select class="select" id="month" aria-label="출생 월"></select>
+          <select class="select" id="day" aria-label="출생 일"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <span class="label">태어난 시간 <span class="opt">30분 단위</span></span>
+          <label class="switch">
+            <input type="checkbox" id="timeUnknown">
+            <span class="switch__track"><span class="switch__knob"></span></span>
+            <span class="switch__text">몰라요</span>
+          </label>
+        </div>
+        <div id="timeBox">
+          <div class="jisi" id="jisi" role="group" aria-label="태어난 시 (12지시 · 30분 경계)"></div>
+          <div class="time-row">
+            <span class="time-inputs">
+              <select class="select select--time" id="hour" aria-label="출생 시"></select>
+              <span class="colon">:</span>
+              <select class="select select--time" id="minute" aria-label="출생 분"></select>
+            </span>
+            <span class="hint" id="timeHint"></span>
+          </div>
+          <p class="field-note">자시 23:30~01:30, 오시 11:30~13:30 — 30분 경계로 봅니다.</p>
+        </div>
+        <p class="field-note" id="timeUnknownNote" hidden>시간을 모르면 <b>년·월·일 6글자</b>로 봅니다. 시주는 비워 둘게요.</p>
+      </div>
+
+      <details class="advanced">
+        <summary>시각 보정 <span>태어난 곳 · 서머타임 · 자시 기준</span></summary>
+        <div class="advanced__body">
+          <div class="field field--tight">
+            <label class="label" for="region">태어난 곳</label>
+            <select class="select select--wide" id="region"></select>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="trueSolar">
+            <span>진태양시 보정 (표준시 − (135° − 경도) × 4분)</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="dst">
+            <span>서머타임 시기 출생 (−1시간, 1987·1988년 여름)</span>
+          </label>
+          <div class="field field--tight" style="margin-top:14px">
+            <label class="label" for="ziRule">일주가 바뀌는 시각</label>
+            <select class="select select--wide" id="ziRule">
+              <option value="23">자시 시작(23:30) — 조자시설</option>
+              <option value="24">밤 12시(자정) — 정자시설</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <p class="form-alert" id="formAlert" role="alert" hidden></p>
+      <button class="submit" type="submit" id="submitBtn">내 타이밍 캘린더 열기</button>
+      <p class="form-note">입력한 정보는 <b>이 기기(브라우저)에만</b> 저장돼요. 서버로 보내지 않습니다.</p>
+    </form>
+  </section>
+
+  <!-- ───────── 결과 ───────── -->
+  <div id="result" hidden>
+
+    <div class="savedbar" id="savedBar">
+      <div class="savedbar__who">
+        <span class="savedbar__name" id="savedBarName"></span>
+        <span class="savedbar__meta" id="savedBarMeta"></span>
+      </div>
+      <button type="button" class="savedbar__btn" id="editBtn">수정</button>
+    </div>
+
+    <!-- 원국 -->
+    <section class="card card--natal" aria-labelledby="natalTitle">
+      <div class="sec__head">
+        <h2 class="sec__title" id="natalTitle">내 원국</h2>
+        <p class="sec__meta" id="natalMeta"></p>
+      </div>
+      <div class="natal" id="natal"></div>
+      <p class="micro" id="natalNote"></p>
+    </section>
+
+    <!-- 월간 타이밍 캘린더 -->
+    <section class="card card--cal" aria-labelledby="calTitle">
+      <div class="cal__head">
+        <button type="button" class="navbtn" id="prevMonth" aria-label="이전 달">‹</button>
+        <div class="cal__title-wrap">
+          <p class="cal__year" id="calYear">2026</p>
+          <h2 class="cal__title" id="calTitle">11월</h2>
+        </div>
+        <button type="button" class="navbtn" id="nextMonth" aria-label="다음 달">›</button>
+      </div>
+
+      <p class="cal__summary" id="calSummary"></p>
+
+      <ul class="legend" aria-label="점 표시 안내">
+        <li><span class="dot dot--gold"></span>타이밍 ON</li>
+        <li><span class="dot dot--red"></span>속도 조절</li>
+        <li><span class="dot dot--blue"></span>계약·문서</li>
+        <li><span class="dot dot--gray"></span>절기</li>
+      </ul>
+
+      <div class="cal__dow" aria-hidden="true">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="cal" id="calGrid" role="grid" aria-label="월간 타이밍 달력"></div>
+
+      <p class="cal__note" id="calNote">오늘부터 7일은 무료로 열려 있어요. 8일 이후는 점만 보이고, 누르면 여는 방법이 나옵니다.</p>
+    </section>
+
+    <!-- 날짜 상세 / 잠금 -->
+    <div id="detail" aria-live="polite"></div>
+
+    <!-- .ics -->
+    <section class="card card--ics" aria-labelledby="icsTitle">
+      <div class="sec__head">
+        <h2 class="sec__title" id="icsTitle">내 캘린더에 넣기</h2>
+        <p class="sec__meta">무료 7일 맛보기</p>
+      </div>
+      <p class="ics__lead">무료 구간의 <b>추진일·조절일·절기</b>를 휴대폰 기본 캘린더로 내려받아 알림을 받아 보세요. 서버 없이 파일로만 만들어집니다.</p>
+      <button type="button" class="btn btn--primary" id="icsBtn">
+        <span>7일 타이밍 알림 받기</span><span class="btn__sub">.ics</span>
+      </button>
+      <p class="ics__status" id="icsStatus"></p>
+      <details class="guide">
+        <summary>기기별로 알림이 붙는 방식</summary>
+        <dl>
+          <dt>아이폰</dt><dd>내려받은 파일을 열면 캘린더 앱이 일정과 알림을 함께 등록해요.</dd>
+          <dt>갤럭시</dt><dd>삼성 캘린더는 파일 가져오기를 지원하지 않아요. 구글 캘린더로 가져온 뒤 동기화하면 됩니다.</dd>
+          <dt>구글 캘린더</dt><dd>가져온 뒤 알림이 안 보이면 캘린더 설정에서 이 캘린더의 알림을 한 번 켜 주세요.</dd>
+        </dl>
+      </details>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" aria-label="윤이세 1:1 상담">
+      <p class="cta__eyebrow">정미년 패스 · 윤이세 1:1 상담</p>
+      <h2 class="cta__title">12개월 전체와<br>내 원국을 겹쳐 보기</h2>
+      <p class="cta__sub">무료 7일은 맛보기예요. 2027 정미년 1년 전체 캘린더와 절기 알람, 내 원국에 맞춘 월별 해석은 상담에서 함께 풀어 드립니다.</p>
+      <a class="btn btn--kakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener">
+        <span>카카오톡으로 1:1 상담</span>
+      </a>
+      <a class="btn btn--ghost" href="https://litt.ly/yoonise" target="_blank" rel="noopener">
+        <span>정미년 패스 안내 보기</span>
+      </a>
+    </section>
+
+    <footer class="foot">
+      <button type="button" class="ghost-link" id="againBtn">입력 수정하기</button>
+      <button type="button" class="ghost-link" id="clearBtn">저장된 정보 지우기</button>
+      <p class="micro micro--center">이 캘린더는 오락과 자기이해를 위한 것이며, 운명을 단정하지 않습니다.<br>© 윤이세사주</p>
+    </footer>
+  </div>
+
+  <noscript><p class="card">이 페이지는 자바스크립트가 필요해요. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>
+</main>
+
+<script src="vendor/lunar.js?v=20261119a"></script>
+<script src="assets/manse.js?v=20261119a"></script>
+<script src="assets/timing.js?v=20261119a"></script>
+<script src="assets/calendar.js?v=20261119a"></script>
+</body>
+</html>
