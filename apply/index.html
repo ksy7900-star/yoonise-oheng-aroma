@@ -178,6 +178,20 @@ a { color: inherit; }
   font-size: 11px; font-weight: 600; color: #6B5A2E;
 }
 .check input { width: 15px; height: 15px; accent-color: #1C1B19; }
+.privacy {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 14px;
+  padding: 11px 12px; border-radius: 13px;
+  background: #FFF; border: 1px solid rgba(29, 28, 25, .14);
+  font-size: 10.5px; line-height: 1.62; font-weight: 600; color: var(--ink-2);
+  cursor: pointer; transition: border-color .18s ease, background .18s ease;
+}
+.privacy input {
+  flex: none; width: 16px; height: 16px; margin: 1px 0 0;
+  accent-color: #1C1B19; cursor: pointer;
+}
+.privacy b { font-weight: 800; color: #A2503F; letter-spacing: -.01em; }
+.privacy.is-error { border-color: #DBA795; background: #FDF8F5; }
+.privacy.is-shake { animation: cformShake .3s cubic-bezier(.36, .07, .19, .97) both; }
 .cform__msg {
   margin: 11px 0 0; padding: 9px 11px; border-radius: 11px;
   font-size: 10.5px; font-weight: 600; line-height: 1.55; color: #A2503F;
@@ -329,6 +343,11 @@ a { color: inherit; }
     <label class="cform__row"><span class="cform__lb"><b id="noQ">⑥</b> <span id="qLabel">가장 궁금한 점</span> <i id="qHint">· 1가지면 충분해요</i></span>
       <input type="text" class="cform__input" id="fQ" placeholder="예: 지금 이직을 해도 될까요?" autocomplete="off" maxlength="120"></label>
 
+    <label class="privacy" id="privacyRow">
+      <input type="checkbox" id="fPrivacy">
+      <span><b>[필수]</b> 상담 접수 및 사주 풀이를 위한 개인정보(생년월일시·성별·연락처) 수집·이용에 동의합니다</span>
+    </label>
+
     <p class="cform__msg" id="formMsg" role="alert" hidden></p>
   </section>
 
@@ -357,7 +376,7 @@ a { color: inherit; }
   <ul class="guide">
     <li>결제 확인은 <b>카드결제면 결제할 때 넣은 휴대폰 번호</b>, <b>계좌이체면 입금자명</b>으로 대조해요.</li>
     <li>접수 순서대로 카톡에서 일정과 진행 방법을 안내해 드려요.</li>
-    <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 저장되지 않아요.</li>
+    <li>적어 주신 내용은 신청서 접수에만 쓰고, 입력한 값은 이 브라우저 탭에만 잠시 남아요(창을 닫으면 지워져요).</li>
   </ul>
 
   <p class="foot">
@@ -427,6 +446,66 @@ a { color: inherit; }
   var state = { type: 'onepoint', cal: 'solar', gender: '' };
   var $ = function (id) { return document.getElementById(id); };
   var shakeTimer = null;
+
+  /* ── 입력값 임시 저장·복원 ───────────────
+     카드결제(페이앱)에 다녀오거나 새로고침해도 적던 내용이 날아가지 않도록
+     같은 탭 안에서만 살아 있는 sessionStorage 에 적어 두고 되살린다.
+     (창을 닫으면 흔적 없이 사라진다) */
+  var STORE_KEY = 'yoonise.apply.v1';
+  var storeOk = true;
+  function storeSave() {
+    if (!storeOk) return;
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({
+        type: state.type,
+        fName: $('fName').value,
+        fHanja: $('fHanja').value,
+        fBirth: $('fBirth').value,
+        fTimeUnknown: $('fTimeUnknown').checked,
+        cal: state.cal,
+        gender: state.gender,
+        fWho: $('fWho').value,
+        fQ: $('fQ').value,
+        fPrivacy: $('fPrivacy').checked
+      }));
+    } catch (e) { storeOk = false; }
+  }
+  function storeLoad() {
+    try {
+      var raw = sessionStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      var d = JSON.parse(raw);
+      return (d && typeof d === 'object') ? d : null;
+    } catch (e) { return null; }
+  }
+  function setChips(attr, val) {
+    Array.prototype.forEach.call(document.querySelectorAll('[' + attr + ']'), function (x) {
+      var on = x.getAttribute(attr) === val;
+      x.classList.toggle('is-on', on);
+      x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function restoreForm(d) {
+    if (!d) return;
+    if (typeof d.fName === 'string') $('fName').value = d.fName;
+    if (typeof d.fHanja === 'string') $('fHanja').value = d.fHanja;
+    if (typeof d.fBirth === 'string') $('fBirth').value = d.fBirth;
+    if (typeof d.fWho === 'string') $('fWho').value = d.fWho;
+    if (typeof d.fQ === 'string') $('fQ').value = d.fQ;
+    if (d.cal === 'solar' || d.cal === 'lunar' || d.cal === 'leap') {
+      state.cal = d.cal;
+      setChips('data-cal', d.cal);
+    }
+    if (d.gender === 'F' || d.gender === 'M') {
+      state.gender = d.gender;
+      setChips('data-gender', d.gender);
+    }
+    if (d.fTimeUnknown) {
+      $('fTimeUnknown').checked = true;
+      $('fBirth').placeholder = '예: 1979-08-08';
+    }
+    if (d.fPrivacy) $('fPrivacy').checked = true;
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -499,6 +578,7 @@ a { color: inherit; }
   Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) {
     b.addEventListener('click', function () {
       setType(b.getAttribute('data-type'));
+      storeSave();
       $('prodEyebrow').scrollIntoView({ block: 'nearest' });
     });
   });
@@ -513,6 +593,7 @@ a { color: inherit; }
         x.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       clearMsg();
+      storeSave();
     });
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-gender]'), function (b) {
@@ -528,6 +609,7 @@ a { color: inherit; }
         }
       });
       clearMsg();
+      storeSave();
     });
   });
 
@@ -544,15 +626,21 @@ a { color: inherit; }
       if (birthEl.value !== out) birthEl.value = out;
     }
     clearMsg();
+    storeSave();
   });
   $('fTimeUnknown').addEventListener('change', function () {
     var on = $('fTimeUnknown').checked;
     birthEl.placeholder = on ? '예: 1979-08-08' : '예: 1979-08-08 08:30';
     if (on) birthEl.value = birthEl.value.replace(/\s+\d{1,2}(:\d{1,2})?$/, '');
     clearMsg();
+    storeSave();
   });
   ['fName', 'fHanja', 'fWho', 'fQ'].forEach(function (id) {
-    $(id).addEventListener('input', clearMsg);
+    $(id).addEventListener('input', function () { clearMsg(); storeSave(); });
+  });
+  $('fPrivacy').addEventListener('change', function () {
+    clearMsg();
+    storeSave();
   });
 
   /* ── 확인 ─────────────────────────────── */
@@ -560,7 +648,7 @@ a { color: inherit; }
     var m = $('formMsg');
     m.hidden = true;
     m.textContent = '';
-    Array.prototype.forEach.call(document.querySelectorAll('.cform__row'), function (r) {
+    Array.prototype.forEach.call(document.querySelectorAll('.cform__row, .privacy'), function (r) {
       r.classList.remove('is-error');
     });
   }
@@ -570,12 +658,16 @@ a { color: inherit; }
     m.hidden = false;
     var row = el && el.closest ? el.closest('.cform__row') : null;
     if (row) row.classList.add('is-error');
-    if (el) {
-      el.classList.remove('is-shake');
-      void el.offsetWidth;
-      el.classList.add('is-shake');
-      try { el.focus({ preventScroll: false }); } catch (e) { }
+    /* 개인정보 동의는 칸이 아니라 동의 상자 전체를 흔들고 붉게 표시한다 */
+    var box = el && el.closest ? el.closest('.privacy') : null;
+    if (box) box.classList.add('is-error');
+    var shakeEl = box || el;
+    if (shakeEl) {
+      shakeEl.classList.remove('is-shake');
+      void shakeEl.offsetWidth;
+      shakeEl.classList.add('is-shake');
     }
+    if (el) { try { el.focus({ preventScroll: false }); } catch (e) { } }
     try { m.scrollIntoView({ block: 'nearest' }); } catch (e) { }
     try { if (navigator.vibrate) navigator.vibrate([22, 38]); } catch (e) { }
   }
@@ -584,11 +676,29 @@ a { color: inherit; }
     var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);
     if (!m) return null;
     var y = +m[1], mo = +m[2], d = +m[3];
-    if (y < 1900 || y > 2026 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    /* 2027년 정미년 신생아 작명까지 받는다 */
+    if (y < 1900 || y > 2027 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
     var dt = new Date(y, mo - 1, d);
     if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
     var t = /(\d{1,2}):(\d{1,2})/.exec(v);
-    return { y: y, m: mo, d: d, hh: t ? +t[1] : null, mm: t ? +t[2] : null };
+    if (t) {
+      var hh = +t[1], mm = +t[2];
+      if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;   /* 99:99 처럼 없는 시간 */
+      return { y: y, m: mo, d: d, hh: hh, mm: mm };
+    }
+    return { y: y, m: mo, d: d, hh: null, mm: null };
+  }
+  /* 날짜는 맞는데 시간만 00:00~23:59를 벗어난 경우 — 안내를 시간 쪽으로 */
+  function badTime() {
+    var v = String(birthEl.value || '').trim();
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);
+    if (!m) return false;
+    var y = +m[1], mo = +m[2], d = +m[3];
+    if (y < 1900 || y > 2027 || mo < 1 || mo > 12 || d < 1 || d > 31) return false;
+    var dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return false;
+    var t = /(\d{1,2}):(\d{1,2})/.exec(v);
+    return !!t && (+t[1] < 0 || +t[1] > 23 || +t[2] < 0 || +t[2] > 59);
   }
   function birthLine() {
     var b = birthParts();
@@ -609,10 +719,14 @@ a { color: inherit; }
       return { el: $('fHanja'), msg: '현재 쓰는 주민등록상 한자를 적어 주세요 — 모르시면 ‘모름’이라고 적어 주세요.' };
     }
     if (!$('fBirth').value.trim()) return { el: $('fBirth'), msg: '생년월일시를 적어 주세요 — 시간을 모른다면 아래 ‘시간은 몰라요’에 체크해 주세요.' };
-    if (!birthParts()) return { el: $('fBirth'), msg: '생년월일을 1979-08-08 처럼 적어 주세요 (달력에 없는 날짜는 다시 확인이 필요해요).' };
+    if (!birthParts()) {
+      if (badTime()) return { el: $('fBirth'), msg: '태어난 시간은 00:00 ~ 23:59 사이로 적어 주세요.' };
+      return { el: $('fBirth'), msg: '생년월일을 1979-08-08 처럼 적어 주세요 (달력에 없는 날짜는 다시 확인이 필요해요).' };
+    }
     if (!state.gender) return { el: document.querySelector('[data-gender]'), msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
     if (!$('fWho').value.trim()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
     if (p.qRequired && !$('fQ').value.trim()) return { el: $('fQ'), msg: p.qLabel + '을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
+    if (!$('fPrivacy').checked) return { el: $('fPrivacy'), msg: '개인정보 수집·이용에 동의해 주세요 — 상담 접수에 꼭 필요한 단계예요.' };
     return null;
   }
 
@@ -739,7 +853,11 @@ a { color: inherit; }
     else if (start === 'full' || start === 'jonghap' || start === 'jonghab') start = 'saju';
     else if (start === 'name' || start === 'rename' || start === 'baby') start = 'naming';
   }
-  setType(PRODUCTS[start] ? start : 'onepoint', false);
+  var saved = storeLoad();
+  var savedType = saved && PRODUCTS[saved.type] ? saved.type : '';
+  /* 주소에 ?type= 이 있으면 그 탭을 먼저 따르고, 없으면 마지막에 보던 탭으로 */
+  setType(PRODUCTS[start] ? start : (savedType || 'onepoint'), false);
+  restoreForm(saved);
 })();
 </script>
 </body>
