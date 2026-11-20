@@ -324,3 +324,15 @@ python3 -m http.server 8000
   - `calendar/` 전체에서 `손목`·`찬물`·`얼음물`·`차가운 물`·`시원한 물` **grep 0건**(라이브 파일 직접 확인). 아로마 앱 `assets/data.js` 의 `손목 안쪽에 희석해` 4곳은 **맥박점에 오일을 바르는 사용법**이라 그대로 두었습니다(씻기·마시기 처방이 아님).
 - **검증(라이브 `?v=20261120aj` · 390×844)**: 구기기 잠금 1,004ms → 불씨 등장 → 불씨를 한지로 드래그해 발화(실제 마우스 입력) / Enter 로 게이지 1초 경유 발화 둘 다 확인, 소각 7,828ms 후 3단계 전환, 발화·소각·정화음 구간이 예외 없이 끝까지 실행됨(스크립트 오류로 멈추지 않음). 재 파티클 3차 물결 76개.
 - **캐시**: `?v=20261120aj` (index.html 의 CSS·JS 6개 전부).
+
+## 27. 2026-11-20 — 🔥 액운 소각 수정: 모바일 롱프레스 '복사하기' 차단 · 불씨 → **불 붙은 성냥** · 끌어 올린 만큼 불꽃이 피어오름
+
+- **왜**: 사용자 실기기(안드로이드 **네이버 인앱 브라우저**, `?v=20261120aj`) 테스트 — "**불씨가 안 움직여. 길게 누르니 복사하기만 뜨고**"(`#8367`), 이어서 "**불씨도 너무 불같지 않아. 성냥 모양이라든지, 그래서 옮기면서 불이 피어오르게**"(`#8381`).
+- **원인**: ① `.burn__stage`·`.burn__paper` 에 `user-select`·`touch-callout` 지정이 없어 롱프레스가 텍스트 선택으로 잡혔고 ② 불씨가 40×40px 이라 손가락으로 잡기 어려웠고 ③ `pointermove`/`setPointerCapture` 단일 의존이라 네이버 인앱에서 롱프레스 뒤 이동이 끊겼고 ④ 발화 판정이 "불씨 중심이 종이 상자에 들어와야"라 실기기에서 위로 70px 넘게 끌어야 했습니다.
+- **복사창·선택 차단**: `.burn__stage, .burn__stage *` 에 `user-select:none`·`-webkit-touch-callout:none`·`-webkit-user-drag:none`, `.burn__stage` 에 `touch-action:none`. JS 로 `contextmenu`·`selectstart` `preventDefault()`(소각대 안이면 항상), `selectionchange` 에서 소각 중 선택 영역을 즉시 비웁니다.
+- **불씨 → 성냥**: 인라인 SVG(`MATCH_SVG`) — 나무 개비(그라데이션) + 붉은 머리 + **빨강·주황·노랑 3중 불꽃** + 발광. 히트 영역 **72×72px**(보이는 성냥은 44×70, 제자리 유지), `bottom: calc(5% - 16px)` 로 시각 중심을 그대로 두었습니다. 숨쉬기는 불꽃에만(`matchFlicker`), 판 전체는 밝기만 변해 히트 영역이 흔들리지 않습니다.
+- **옮기면서 피어오름**: 끌어 올린 거리(`lift`)로 `--fl`(0~1)을 흘려 불꽃 크기 `scale(calc(.72 + var(--fl) * .66))` 와 발광이 함께 커집니다. 손가락이 **36px**(`FLICK_LIFT`)만 올라가면 발화하고, 종이 영역에 닿아도 발화합니다. 발화 순간 성냥 위치에서 종이 아래끝으로 **불혀가 한 번 타올랐다 꺼지는** `.burn__flash`(0.82s)를 띄우고, 성냥은 그 자리에서 0.34s 페이드아웃합니다.
+- **모바일 제스처 견고화**: `touchstart`/`touchmove`/`touchend`/`touchcancel` 을 **window 레벨 `passive:false`** 로 먼저 잡고(`touchmove` 에서 `preventDefault`), pointer 는 마우스·펜 보조 경로로만 사용(`nowMs() - flick.lastTouch < 900` 이면 무시). 리스너는 `flick.unbind` 로 다시 그릴 때·팝업을 닫을 때 전부 해제합니다.
+- **꾹 누르기 0.8초**: `BURN_PRESS_MS = 800`. 성냥을 눌러도, 종이·소각대를 눌러도 게이지가 차오르고 100%에서 발화합니다(움직이면 `holdLock` 으로 '꾹'을 취소하고 끌기로 전환). 문구·`aria-label` 도 `0.8초 꾹` 으로 교체.
+- **검증(Playwright 모바일 터치 에뮬레이션 `390×844` `hasTouch:true` + CDP `Input.dispatchTouchEvent`)**: 불씨 72×72 / `contextmenu`·`selectstart` 차단 3개 요소 모두 true / 성냥 꾹 0.9초 발화 / **위로 38px 드래그 발화** / 12px 만 끌면 미발화·제자리 복귀 / 종이 1.2초 롱프레스 발화 + `getSelection().toString() === ""` / `user-select:none`·`touch-action:none` 계산값 확인 / 소각 7.8초 후 3단계 도달 / 콘솔 오류 0. 데스크톱 마우스 드래그·꾹 누르기 회귀도 통과.
+- **캐시**: `?v=20261120ak` (index.html 의 CSS·JS 6개 전부).

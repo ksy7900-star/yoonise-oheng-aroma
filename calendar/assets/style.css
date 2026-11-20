@@ -2293,7 +2293,7 @@ body.is-modal-open { overflow: hidden; }
 .burn__stage {
   position: relative; display: flex; align-items: center; justify-content: center;
   min-height: 292px; margin: 14px -2px 0; padding: 10px 0 14px;
-  border-radius: 20px; overflow: hidden;
+  border-radius: 20px; overflow: hidden; touch-action: none;
   background: radial-gradient(90% 70% at 50% 100%, rgba(174, 138, 80, .1), transparent 62%);
   transition: background .5s ease, box-shadow .5s ease;
 }
@@ -2427,31 +2427,77 @@ body.is-modal-open { overflow: hidden; }
   90% { transform: rotate(8deg) scale(.18) translateY(-56px); opacity: .34; filter: brightness(.18); }
   100% { transform: rotate(9deg) scale(.07) translateY(-72px); opacity: 0; filter: brightness(.06); background: #14100C; }
 }
-/* 손으로 불을 붙이는 의식 — 구겨진 한지 아래 불씨를 끌어 올리거나, 1초 꾹 */
-.burn__stage.is-ready { touch-action: none; }
+/* 손으로 불을 붙이는 의식 — 구겨진 한지 아래 불씨를 끌어 올리거나, 0.8초 꾹 */
+/* 모바일 롱프레스의 '복사하기'·텍스트 선택 메뉴를 소각대 안에서는 아예 띄우지 않는다 */
+.burn__stage,
+.burn__stage * {
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-touch-callout: none; -webkit-user-drag: none;
+}
+.burn__stage.is-ready {
+  touch-action: none; -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none; user-select: none;
+}
+.burn__stage.is-ready * { touch-action: none; }
+/* 불씨(성냥) — 히트 영역은 72×72로 넉넉하게, 보이는 성냥은 그 안에 가운데 */
 .burn__ember {
-  position: absolute; left: 50%; bottom: 5%; width: 40px; height: 40px; margin-left: -20px;
+  position: absolute; left: 50%; bottom: calc(5% - 16px); width: 72px; height: 72px; margin-left: -36px;
   display: none; align-items: center; justify-content: center;
   border-radius: 50%; z-index: 4; cursor: grab; touch-action: none; outline: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-user-drag: none;
 }
 .burn__stage.is-ready .burn__ember { display: flex; animation: emberBreath 2.8s ease-in-out infinite; }
 .burn__stage.is-ready .burn__ember:focus-visible { box-shadow: 0 0 0 2px rgba(255, 190, 110, .8); }
-.burn__ember.is-grab { cursor: grabbing; animation: none; transition: none; }
-.burn__ember-core {
-  display: block; width: 13px; height: 13px; border-radius: 50%;
-  background: radial-gradient(circle at 42% 38%, #FFF3C6 0%, #FFB552 38%, #E2581B 72%, rgba(170, 46, 8, .08) 100%);
-  box-shadow: 0 0 12px 4px rgba(255, 132, 40, .5), 0 0 28px 10px rgba(255, 96, 20, .18);
+.burn__ember.is-grab { cursor: grabbing; animation: none !important; transition: none; }
+.burn__ember.is-grab .burn__match { transform: rotate(-6deg) scale(1.06); }
+/* 성냥 — 나무 개비 + 머리 + 3중 불꽃. 끌어 올린 거리(--fl)만큼 불꽃이 피어오른다 */
+.burn__match {
+  display: block; width: 44px; height: 70px; overflow: visible;
+  filter: drop-shadow(1px 5px 6px rgba(60, 40, 20, .32));
+  transform: rotate(-6deg); transition: transform .18s ease;
 }
+.burn__match .match-flame {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  transform: scale(calc(.72 + var(--fl, 0) * .66));
+  transition: transform .1s linear;
+}
+.burn__match .match-flick {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  animation: matchFlicker 1.15s ease-in-out infinite;
+}
+.burn__match .match-glow { opacity: calc(.2 + var(--fl, 0) * .6); }
+@keyframes matchFlicker {
+  0%, 100% { transform: scale(1, 1) rotate(-3deg); }
+  34% { transform: scale(.93, 1.07) rotate(2.6deg); }
+  68% { transform: scale(1.05, .95) rotate(-1.4deg); }
+}
+/* 히트 영역이 커져도 성냥이 떠 있는 느낌은 그대로 — 숨쉬기는 밝기로만 */
 @keyframes emberBreath {
-  0%, 100% { opacity: .78; transform: translateY(0) scale(.94); }
-  50% { opacity: 1; transform: translateY(-2px) scale(1.05); }
+  0%, 100% { opacity: .8; }
+  50% { opacity: 1; }
 }
-.burn__stage.is-burning .burn__ember { display: none; }
+/* 불이 옮겨붙으면 성냥은 손끝에 있던 자리에서 사라진다 */
+.burn__stage.is-burning .burn__ember { display: flex; opacity: 0; transition: opacity .34s ease-in; pointer-events: none; animation: none; }
+/* 불이 옮겨붙는 순간 — 성냥이 닿은 종이 아래끝에서 불혀가 한 번 타올랐다 꺼진다 */
+.burn__flash {
+  position: absolute; width: 58px; height: 66px; margin-left: -29px; margin-top: -66px;
+  pointer-events: none; z-index: 6; transform-origin: 50% 100%;
+  border-radius: 50% 50% 42% 42% / 74% 74% 26% 26%;
+  background: radial-gradient(50% 58% at 50% 88%, #FFF6D2 0%, #FFCE62 26%, #FF8A1E 54%, rgba(226, 63, 12, .5) 74%, rgba(226, 63, 12, 0) 88%);
+  filter: blur(2.4px);
+  animation: burnFlash .82s cubic-bezier(.24, .7, .3, 1) both;
+}
+@keyframes burnFlash {
+  0% { transform: scale(.32, .18); opacity: 0; }
+  22% { transform: scale(.86, .78); opacity: 1; }
+  55% { transform: scale(1.06, 1.06); opacity: .92; }
+  100% { transform: scale(1.42, .3); opacity: 0; }
+}
 
 /* 1초 꾹 — 차오르는 게이지 */
 .burn__gauge {
-  position: absolute; left: 50%; bottom: 22%; width: 132px; height: 4px; margin-left: -66px;
+  position: absolute; left: 50%; bottom: 31%; width: 112px; height: 3.5px; margin-left: -56px;
   border-radius: 999px; background: rgba(255, 255, 255, .13);
   opacity: 0; transition: opacity .18s ease; z-index: 4; overflow: hidden; pointer-events: none;
 }
