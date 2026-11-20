@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261120v">
+<link rel="stylesheet" href="assets/style.css?v=20261120w">
 </head>
 <body>
 
@@ -186,7 +186,20 @@
       <p class="cal__summary" id="calSummary"></p>
 
       <div class="cal__tools">
+        <button type="button" class="soundbtn lockbtn" id="lockBtn" aria-expanded="false" aria-controls="lockPanel">🔑 입장 코드 입력</button>
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
+      </div>
+
+      <!-- 입장 코드 — 카톡으로 받은 코드를 넣으면 이 기기에서 2027년 전체가 열린다 -->
+      <div class="lockpanel" id="lockPanel" hidden>
+        <label class="lockpanel__label" for="lockCode">카톡으로 받은 입장 코드를 넣어 주세요</label>
+        <div class="lockpanel__row">
+          <input class="lockpanel__input" id="lockCode" type="text" inputmode="text" autocomplete="off"
+                 autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="코드를 입력하세요">
+          <button type="button" class="lockpanel__go" id="lockGo">열기</button>
+        </div>
+        <p class="lockpanel__msg" id="lockMsg" role="status" aria-live="polite"></p>
+        <button type="button" class="lockpanel__reset" id="lockReset" hidden>해제하기</button>
       </div>
 
       <!-- 이 캘린더 보는 법 -->
@@ -306,10 +319,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261120v"></script>
-<script src="assets/manse.js?v=20261120v"></script>
-<script src="assets/timing.js?v=20261120v"></script>
-<script src="assets/chars.js?v=20261120v"></script>
-<script src="assets/calendar.js?v=20261120v"></script>
+<script src="vendor/lunar.js?v=20261120w"></script>
+<script src="assets/manse.js?v=20261120w"></script>
+<script src="assets/timing.js?v=20261120w"></script>
+<script src="assets/chars.js?v=20261120w"></script>
+<script src="assets/calendar.js?v=20261120w"></script>
 </body>
 </html>

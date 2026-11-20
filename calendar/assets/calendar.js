@@ -20,6 +20,15 @@
         무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = false;
   var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 오늘 포함 3일(D+0·D+1·D+2)
+
+  /* ── 입장 코드 (결제 확인 후 카톡으로 보내 드리는 코드) ──────────────────
+     ★ 코드를 바꾸려면 아래 ENTRY_CODES 배열만 고치면 됩니다. 여러 개를 넣어도 됩니다.
+       (대소문자·띄어쓰기·하이픈은 무시하고 비교합니다. 예: 'YOON2027' = 'yoon-2027')
+     코드를 넣으면 그 브라우저(localStorage)에 해제 상태가 저장되고,
+     FREE_TRIAL_ENABLED = true 인 동안에도 2026년 11월 ~ 2027년 12월 전체 날짜가 바로 열립니다.
+     FREE_TRIAL_ENABLED = false 인 지금도 그대로 동작합니다(= 테스트용으로도 쓸 수 있음). */
+  var ENTRY_CODES = ['YOON2027'];
+  var UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 해제 상태 저장 키 ('1' = 열림)
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -181,6 +190,7 @@
     gender: '', calendar: 'solar', res: null, natal: null,
     terms: null, view: null, sel: null, todayISO: '', cache: {},
     stamps: {}, justStamped: null, pendingStamp: null,
+    unlocked: false,      // 입장 코드로 잠금 해제됨(localStorage) — FREE_TRIAL_ENABLED 와 별개
     filter: 'all',        // all | bad | good — 달력의 '조심할 날만 / 좋은 날만' 보기
     yearDigest: null,     // 2027 한 해 요약(조심할 달·좋은 달). 사주가 바뀌면 다시 계산
     mDigest: {}           // 달별 주의 날·좋은 날 목록 캐시
@@ -455,13 +465,15 @@
     if (v > hi) v = hi;
     return { y: Math.floor(v / 12), m: (v % 12) + 1 };
   }
-  /** 잠금 판정 — 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
+  /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
+    if (state.unlocked) return iso >= RANGE_FROM && iso <= RANGE_TO;
     if (!FREE_TRIAL_ENABLED) return iso >= RANGE_FROM && iso <= RANGE_TO;
     return iso >= state.todayISO && iso <= T.addDays(state.todayISO, FREE_DAYS - 1);
   }
-  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. */
+  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다) */
   function isOpenDay(iso) {
+    if (state.unlocked) return true;
     return !FREE_TRIAL_ENABLED || iso >= state.todayISO;
   }
   function infoFor(iso) {
@@ -563,6 +575,48 @@
     if (!state.stamps[sig]) state.stamps[sig] = {};
     state.stamps[sig][iso] = { el: el, at: new Date().toISOString() };
     try { localStorage.setItem(STAMP_KEY, JSON.stringify(state.stamps)); } catch (e) {}
+  }
+
+  /* ── 입장 코드 잠금 해제 ─────────────────────────────────────
+     결제 후 카톡으로 받은 코드를 넣으면 이 기기에서 2027년 전체가 열린다.
+     FREE_TRIAL_ENABLED = true 로 바꿔 3일 무료 체험을 켜도, 코드를 넣은 사람은 전부 열린다. */
+  function loadUnlock() {
+    try { state.unlocked = localStorage.getItem(UNLOCK_KEY) === '1'; } catch (e) { state.unlocked = false; }
+  }
+  function saveUnlock(on) {
+    state.unlocked = !!on;
+    try {
+      if (on) localStorage.setItem(UNLOCK_KEY, '1');
+      else localStorage.removeItem(UNLOCK_KEY);
+    } catch (e) {}
+  }
+  /** 코드 비교 — 대소문자·띄어쓰기·하이픈은 무시한다 */
+  function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
+  function codeValid(v) {
+    var n = normCode(v);
+    if (!n) return false;
+    for (var i = 0; i < ENTRY_CODES.length; i++) {
+      if (normCode(ENTRY_CODES[i]) === n) return true;
+    }
+    return false;
+  }
+
+  /* ── 토스트 (복사 완료·입장 코드 안내) ───────────────────── */
+  var toastEl = null, toastTimer = 0;
+  function toast(msg) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.classList.remove('is-on');
+    void toastEl.offsetWidth;
+    toastEl.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-on'); }, 2800);
   }
 
   /** 원국 글자에서 가장 적은 오행 → 1년 대표 부적.
@@ -820,6 +874,87 @@
     return dayElement(info);
   }
 
+  /* ── 날짜 팝업 부적 패(牌) — 한지 · 금박 이중 테두리 · 구름문 ─────────────
+     chars.js 의 5종 캐릭터는 그대로 두고, 그 둘레를 진짜 부적처럼 감싼다.
+     (배너·확대 팝업의 부적 패와 같은 결: 금박선 · 구름문 · 노리개 · 주홍 낙관)
+     완료(3타) 상태는 CSS(.ritual.is-done)가 금빛 테두리와 낙관을 맡는다. */
+  var padSeq = 0;
+
+  /** 부적 패 위에 다는 노리개 — 금고리 · 매듭 · 주홍 끈 세 줄과 구슬.
+      (배너 부적 패의 고리와 같은 결을 쓰되, 날짜 팝업에는 더 작고 단정하게) */
+  function padNorigaeArt() {
+    var u = 'pn' + (++padSeq) + '_';
+    return '<svg viewBox="0 0 40 54" aria-hidden="true" focusable="false">' +
+      '<defs><linearGradient id="' + u + 'g" x1="0" y1="0" x2=".4" y2="1">' +
+      '<stop offset="0" stop-color="#F5E3B4"/><stop offset=".45" stop-color="#C9A265"/>' +
+      '<stop offset="1" stop-color="#8E6C34"/></linearGradient></defs>' +
+      /* 매다는 끈 */
+      '<path d="M20 0v5.4" stroke="#B2433A" stroke-width="1.6" stroke-linecap="round"/>' +
+      /* 금고리 */
+      '<ellipse cx="20" cy="13.2" rx="5.6" ry="6.4" fill="none" stroke="url(#' + u + 'g)" stroke-width="2.2"/>' +
+      '<ellipse cx="20" cy="12.9" rx="3.3" ry="3.8" fill="rgba(255,247,226,.6)" ' +
+      'stroke="rgba(140,104,48,.35)" stroke-width=".6"/>' +
+      /* 매듭 */
+      '<path d="M20 19.9v2.6" stroke="url(#' + u + 'g)" stroke-width="1.5"/>' +
+      '<path d="M20 22.6l4.3 4.1-4.3 4.1-4.3-4.1z" fill="url(#' + u + 'g)" ' +
+      'stroke="rgba(120,86,36,.5)" stroke-width=".5"/>' +
+      '<circle cx="20" cy="26.7" r="1.55" fill="#F8EAC4" stroke="rgba(120,86,36,.45)" stroke-width=".4"/>' +
+      /* 늘어뜨린 끈 세 줄 */
+      '<g stroke="#B2433A" stroke-width="1.15" stroke-linecap="round" opacity=".92">' +
+      '<path d="M16.7 31.8 15 45.4"/><path d="M20 32.4v13"/><path d="M23.3 31.8l1.7 13.6"/></g>' +
+      /* 끈 끝 구슬 */
+      '<g fill="url(#' + u + 'g)"><circle cx="14.9" cy="47.1" r="1.7"/>' +
+      '<circle cx="20" cy="47.6" r="1.9"/><circle cx="25.1" cy="47.1" r="1.7"/></g>' +
+      '</svg>';
+  }
+  function padFrameArt(el) {
+    var color = (EL_THEME[el] || EL_THEME['화']).color;
+    var u = 'pd' + (++padSeq) + '_';
+    var gold = '#C79A4E';
+    var cloudPath = '<path d="M0 9.2a4.2 4.2 0 0 1 8.4 0 4.2 4.2 0 0 1 8.4 0 4.2 4.2 0 0 1 8.4 0"/>' +
+      '<path d="M0 12.6h25.2"/>';
+    function clouds(x, y, s, o, r) {
+      return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ') rotate(' + (r || 0) + ')"' +
+        ' fill="none" stroke="' + gold + '" stroke-width="1" stroke-linecap="round" opacity="' + o + '">' +
+        cloudPath + '</g>';
+    }
+    var meander = '<g fill="none" stroke="url(#' + u + 'g)" stroke-width="1.4" opacity=".5" stroke-linecap="square">' +
+      '<path d="M13 27V13h14"/><path d="M18 27V18h9"/></g>';
+    return '<svg class="talis-pad__art" viewBox="0 0 320 400" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+      '<linearGradient id="' + u + 'bg" x1=".1" y1="0" x2=".75" y2="1">' +
+      '<stop offset="0" stop-color="#FFFDF7"/><stop offset=".42" stop-color="#FBF5E7"/>' +
+      '<stop offset="1" stop-color="#F3E8D0"/></linearGradient>' +
+      '<linearGradient id="' + u + 'g" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#F3E0B0"/><stop offset=".34" stop-color="#D3AA67"/>' +
+      '<stop offset=".62" stop-color="#9E7838"/><stop offset="1" stop-color="#EBD3A0"/></linearGradient>' +
+      '<radialGradient id="' + u + 'h" cx=".5" cy=".46" r=".55">' +
+      '<stop offset="0" stop-color="' + color + '" stop-opacity=".20"/>' +
+      '<stop offset=".58" stop-color="' + color + '" stop-opacity=".06"/>' +
+      '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/></radialGradient>' +
+      '<filter id="' + u + 't" x="0" y="0" width="100%" height="100%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="7" result="n"/>' +
+      '<feColorMatrix type="saturate" values="0"/></filter>' +
+      '</defs>' +
+      '<rect width="320" height="400" fill="url(#' + u + 'bg)"/>' +
+      '<rect width="320" height="400" fill="url(#' + u + 'h)"/>' +
+      /* 한지 섬유 질감 */
+      '<rect width="320" height="400" filter="url(#' + u + 't)" opacity=".15" style="mix-blend-mode:multiply"/>' +
+      /* 위·아래 구름문 */
+      clouds(12, 24, 1.05, '.30', -1) + clouds(96, 16, .78, '.22', 2) +
+      clouds(150, 26, .92, '.18', 0) + clouds(208, 16, .78, '.22', -2) + clouds(272, 24, 1.05, '.30', 1) +
+      clouds(14, 342, 1.05, '.26', 1) + clouds(272, 340, 1.05, '.26', -1) +
+      /* 금박 이중 테두리 */
+      '<rect x="5" y="5" width="310" height="390" rx="7" fill="none" stroke="url(#' + u + 'g)" stroke-width="2.6" opacity=".92"/>' +
+      '<rect x="12.5" y="12.5" width="295" height="375" rx="3" fill="none" stroke="url(#' + u + 'g)" stroke-width="1" opacity=".55"/>' +
+      /* 네 귀퉁이 뇌문 */
+      meander +
+      '<g transform="translate(320 0) scale(-1 1)">' + meander + '</g>' +
+      '<g transform="translate(0 400) scale(1 -1)">' + meander + '</g>' +
+      '<g transform="translate(320 400) scale(-1 -1)">' + meander + '</g>' +
+      '</svg>';
+  }
+
   function ritualHTML(info) {
     var st = stampOf(info.iso);
     var auto = dayElement(info);
@@ -835,6 +970,7 @@
     // 무슨 부적인지 한눈에 — 날짜 로테이션으로 이름이 매일 바뀐다
     var tname = Chars ? Chars.name(el, tag, info.iso) : '수호 부적';
     var ticon = Chars ? Chars.icon(el, tag) : th.badge;
+    var seal = tag === '럭키' ? '吉' : '護';   // 완료(3타)에 찍히는 주홍 낙관
     var msg = done
       ? esc(lot.done) + '<small>' + esc(lot.sub) + '</small>'
       : (n > 0 ? lot.taps[n - 1] : '부적을 톡톡톡 세 번 두드리면 ' +
@@ -842,7 +978,13 @@
     return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso +
       '" data-el="' + el + '" data-stage="' + n + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + (tag ? ' · ' + esc(tag) : '') + '</p>' +
-      '<p class="ritual__name"><span class="ritual__name-icon">' + ticon + '</span>' + esc(tname) + '</p>' +
+      '<div class="talis-pad">' +
+      '<span class="talis-pad__norigae" aria-hidden="true">' + padNorigaeArt() + '</span>' +
+      '<div class="talis-pad__sheet">' +
+      padFrameArt(el) +
+      '<div class="talis-pad__namewrap">' +
+      '<span class="ritual__name"><span class="ritual__name-icon">' + ticon + '</span>' + esc(tname) + '</span>' +
+      '</div>' +
       '<div class="ritual__stage">' +
       '<span class="ritual__aura" aria-hidden="true"></span>' +
       '<span class="ritual__ring" aria-hidden="true"></span>' +
@@ -854,6 +996,10 @@
       '<span class="ritual__pop" aria-hidden="true"></span>' +
       '</div>' +
       '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +
+      '<span class="talis-pad__seal" aria-hidden="true">' + seal + '</span>' +
+      '<span class="talis-pad__shine" aria-hidden="true"></span>' +
+      '</div>' +
+      '</div>' +
       '<p class="ritual__msg" aria-live="polite">' + msg + '</p>' +
       '</div>';
   }
@@ -1130,9 +1276,9 @@
     renderSaeun(v, dim);
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    var noteText = FREE_TRIAL_ENABLED
-      ? freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.'
-      : '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.';
+    var noteText = (!FREE_TRIAL_ENABLED || state.unlocked)
+      ? '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 챱 붙어요.'
+      : freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     $('#calNote').textContent = noteText;
   }
 
@@ -1318,7 +1464,8 @@
       '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">' +
       '<span class="shop-btn__no">3</span><span class="shop-btn__label">⚡ 긴급 개운템 · 낱개 2,900원</span></button>' +
       '</div>' +
-      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>';
+      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
+      '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
   }
 
   /* ── 앱 안 구입 팝업 (1년 패스 · 올인원 패키지 · 긴급 개운템) ──────
@@ -1397,6 +1544,62 @@
   function openKakao() {
     try { window.open(KAKAO, '_blank', 'noopener'); } catch (e) { }
   }
+
+  /* ── 결제 완료 → 카톡으로 신청 내용 보내기 (노란 카카오 버튼) ─────────────
+     누르면 ① 신청 내용을 클립보드에 복사하고(토스트로 알려 줌)
+             ② 카카오톡 채널 채팅방으로 이동한다.
+     신청 내용 양식: [윤이세 2027 캘린더 신청] 상품명 / 내 생년월일시(입력한 경우) */
+  function orderLabel(item) {
+    var it = String(item || '');
+    if (it === 'pass') return '2027 1년 패스 ' + PASS_PRICE;
+    if (it === 'allinone') return '2027 올인원 패키지 ' + ALLINONE_PRICE;
+    if (it === 'consult') return '윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE;
+    var m = /^care-(card|objet|bowl|set)$/.exec(it);
+    if (m) return '긴급 개운템 — ' + careItemLabel(m[1]);
+    return it;
+  }
+  /** 내 생년월일시 — 사주를 넣었을 때만. 시간을 모르면 날짜만. */
+  function birthLine() {
+    var r = state.res;
+    if (!r || !r.solar) return '';
+    var p = function (v) { return (v < 10 ? '0' : '') + v; };
+    var s = '내 생년월일시 ' + r.solar.y + '-' + p(r.solar.m) + '-' + p(r.solar.d);
+    s += (r.input && r.input.timeKnown) ? ' ' + p(r.input.hh) + ':' + p(r.input.mm) : ' (시간 모름)';
+    if (r.input && r.input.calendar === 'lunar' && r.lunar) {
+      s += ' (음력 ' + r.lunar.m + '.' + r.lunar.d + (r.lunar.leap ? ' 윤달' : '') + ')';
+    }
+    return s;
+  }
+  function orderTextFor(item) {
+    var parts = ['[윤이세 2027 캘린더 신청] ' + orderLabel(item)];
+    var b = birthLine();
+    if (b) parts.push(b);
+    return parts.join(' / ');
+  }
+  /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래 */
+  function kakaoOrderHTML(item, label) {
+    return '<div class="kakaobar">' +
+      '<button type="button" class="kakaobar__btn" data-kakao-order="' + esc(item) + '">' +
+      '<b>' + label + '</b>' +
+      '<span>누르면 신청 내용이 복사되고 카카오톡 채널이 열려요</span>' +
+      '</button>' +
+      '</div>';
+  }
+  function goKakaoOrder(item) {
+    if (String(item) === 'care') item = 'care-' + (care && care.buy ? care.buy : 'set');
+    var text = orderTextFor(item);
+    copyText(text, function (copied) {
+      toast(copied === true
+        ? '✅ 신청 내용을 복사했어요 — 카톡에 붙여서 보내 주세요'
+        : '카톡 채널로 이동해요 — 신청 내용을 함께 보내 주세요');
+    });
+    vibrate(18);
+    // 카카오톡 채널 채팅방으로 이동 — 새 창이 막히면 같은 창에서 이어서
+    var w = null;
+    try { w = window.open(KAKAO, '_blank'); } catch (e) { w = null; }
+    if (w) { try { w.opener = null; } catch (e) { } }
+    else setTimeout(function () { window.location.href = KAKAO; }, 700);
+  }
   /* 새 탭이 차단될 수 있으니 안내 안에 한 번 더 누를 수 있는 링크를 함께 둔다 */
   function kakaoLinkHTML(label) {
     return '<a class="pay__kakao" href="' + KAKAO + '" target="_blank" rel="noopener">' + label + '</a>';
@@ -1473,7 +1676,7 @@
       '</ul>' +
       priceHTML('2027 1년 패스', PASS_PRICE) +
       payActionsHTML('pass') +
-      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 신청 확인하고 바로 열어 드려요.</p>';
+      kakaoOrderHTML('pass', '💬 결제 완료 · 카톡으로 입장코드 받기');
   }
 
   /* 2번 — 2027 올인원 패키지 (19,900원 · 추천) */
@@ -1489,7 +1692,7 @@
       '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>년수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
       priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
       payActionsHTML('allinone') +
-      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 알려 주세요 — 신청 확인하고 바로 열어 드려요.</p>';
+      kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장코드 받기');
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
@@ -1703,7 +1906,8 @@
       '</ul>' +
       priceHTML('윤이세 1:1 원포인트 리딩', CONSULT_PRICE) +
       payActionsHTML('consult') +
-      '<p class="shop__note">결제가 끝나면 카카오톡 채널로 <b>질문 하나 + 생년월일시</b>를 보내 주세요 — 상담 일정을 바로 잡아 드립니다.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
+      kakaoOrderHTML('consult', '💬 결제 완료 · 카톡으로 질문 보내기') +
+      '<p class="shop__note">질문 하나와 생년월일시를 함께 보내 주시면 일정을 바로 잡아 드려요.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
   }
 
   function careShopHTML() {
@@ -1808,12 +2012,13 @@
       '</div>' +
       '<p class="pay__guide">소액(1만 원 미만) 상품은 계좌이체 전용이에요 · <b>' + esc(String(BANK_NAME).trim()) + ' ' + esc(String(BANK_ACCOUNT).trim()) + '</b></p>' +
       payActionsHTML('care-' + care.buy, { card: false, bankSub: esc(careItemLabel(care.buy)) + ' · 계좌번호 복사' }) +
+      kakaoOrderHTML('care', '💬 결제 완료 · 카톡으로 알려 주기') +
       '<div class="shop__consult">' +
       '<b>🔎 윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE + '</b>' +
       '<span>캘린더·개운템으로도 계속 걸리는 딱 1가지, 질문 하나만 놓고 짚어 드려요.</span>' +
       '<button type="button" class="shop__consult-btn" data-shop="consult">원포인트 리딩 보기 →</button>' +
       '</div>' +
-      '<p class="shop__note">3종은 지금 여기서 그대로 체험할 수 있어요. 결제가 끝나면 카카오톡 채널로 알려 주세요.</p>';
+      '<p class="shop__note">3종은 지금 여기서 그대로 체험할 수 있어요 — 결제 전에 먼저 눌러 보세요.</p>';
   }
 
   /* ── 긴급 개운템 동작 ───────────────────────────── */
@@ -2502,6 +2707,63 @@
     });
   }
 
+  /* ── 입장 코드 UI (달력 카드의 🔑 입장 코드 입력) ─────────────────
+     코드가 맞으면 localStorage 에 저장 — 새로고침해도 그 기기에서는 계속 열린다. */
+  function syncLockUI() {
+    var btn = $('#lockBtn'), msg = $('#lockMsg'), reset = $('#lockReset');
+    // 무료 체험 문구(js-trial)는 체험이 켜져 있고 아직 코드를 넣지 않았을 때만
+    var trialMode = !!(FREE_TRIAL_ENABLED && !state.unlocked);
+    if (btn) {
+      btn.textContent = state.unlocked ? '🔓 입장 코드 적용됨' : '🔑 입장 코드 입력';
+      btn.classList.toggle('is-on', !!state.unlocked);
+      btn.setAttribute('aria-pressed', state.unlocked ? 'true' : 'false');
+      btn.setAttribute('aria-label', state.unlocked ? '입장 코드 적용됨 — 2027년 전체 열림' : '입장 코드 입력');
+    }
+    if (reset) reset.hidden = !state.unlocked;
+    if (msg && state.unlocked && !msg.textContent) msg.textContent = '이 기기에서는 이미 열려 있어요.';
+    document.body.setAttribute('data-trial', trialMode ? 'on' : 'off');
+  }
+  function openLockPanel() {
+    var p = $('#lockPanel'), btn = $('#lockBtn');
+    if (!p) return;
+    p.hidden = false;
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    syncLockUI();
+    try { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    var inp = $('#lockCode');
+    if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }
+  }
+  function closeLockPanel() {
+    var p = $('#lockPanel'), btn = $('#lockBtn');
+    if (!p || p.hidden) return;
+    p.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+  function tryUnlock() {
+    var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
+    var v = inp ? inp.value : '';
+    if (codeValid(v)) {
+      saveUnlock(true);
+      if (msg) { msg.textContent = '🔓 확인됐어요 — 2026년 11월부터 2027년 12월까지 모두 열렸습니다.'; msg.classList.add('is-ok'); }
+      if (inp) inp.value = '';
+      syncLockUI();
+      renderCalendar();
+      toast('🔓 입장 코드 확인 — 전체 날짜가 열렸어요');
+      sfxOpen();
+      return;
+    }
+    if (msg) { msg.textContent = '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.'; msg.classList.remove('is-ok'); }
+    if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
+    vibrate([40, 30, 60]);
+    if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+  }
+  function lockAgain() {
+    saveUnlock(false);
+    syncLockUI();
+    renderCalendar();
+    toast('다시 잠갔어요 — 입장 코드를 넣으면 또 열립니다');
+  }
+
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open)를 스위치에 맞춰 보인다
@@ -2510,6 +2772,8 @@
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
     loadStamps();
+    loadUnlock();
+    syncLockUI();
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
 
@@ -2536,6 +2800,22 @@
       });
     });
 
+    // 입장 코드 — 🔑 버튼으로 열고, 코드를 넣으면 이 기기에서 전체 날짜가 열린다
+    var lockBtn = $('#lockBtn');
+    if (lockBtn) lockBtn.addEventListener('click', function () {
+      var p = $('#lockPanel');
+      if (p && !p.hidden) { closeLockPanel(); return; }
+      openLockPanel();
+    });
+    var lockGo = $('#lockGo');
+    if (lockGo) lockGo.addEventListener('click', function (e) { e.preventDefault(); tryUnlock(); });
+    var lockInput = $('#lockCode');
+    if (lockInput) lockInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    });
+    var lockReset = $('#lockReset');
+    if (lockReset) lockReset.addEventListener('click', function (e) { e.preventDefault(); lockAgain(); });
+
     // 대표 부적 — 배너 부적 패 탭 → 크게 보기 모달 / 모달 안 부적·버튼 탭 → 오늘 기운 받기
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
@@ -2551,9 +2831,17 @@
       if (e.target.closest('[data-modal-close]')) closeDayModal();
     });
 
-    // 구입 팝업 — 맨 아래 카드 3개 버튼과 잠금 카드 버튼
+    // 구입 팝업 — 맨 아래 카드 3개 버튼과 잠금 카드의 입장 코드 버튼
     document.addEventListener('click', function (e) {
-      var b = e.target.closest ? e.target.closest('[data-shop]') : null;
+      if (!e.target.closest) return;
+      var lc = e.target.closest('[data-lock-open]');
+      if (lc) {
+        e.preventDefault();
+        if (modalEl && !modalEl.hidden) { closeDayModal(); setTimeout(openLockPanel, 200); }
+        else openLockPanel();
+        return;
+      }
+      var b = e.target.closest('[data-shop]');
       if (!b) return;
       e.preventDefault();
       var kind = b.getAttribute('data-shop');
@@ -2567,6 +2855,8 @@
     if (shopEl) {
       shopEl.addEventListener('click', function (e) {
         if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
+        var ko = e.target.closest ? e.target.closest('[data-kakao-order]') : null;
+        if (ko) { e.preventDefault(); goKakaoOrder(ko.getAttribute('data-kakao-order')); return; }
         var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
         if (pay) { e.preventDefault(); handlePay(pay.getAttribute('data-pay'), pay.getAttribute('data-item')); return; }
         var pick = e.target.closest ? e.target.closest('[data-careitem]') : null;

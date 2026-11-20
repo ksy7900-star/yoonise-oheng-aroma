@@ -240,3 +240,33 @@ python3 -m http.server 8000
 - **`calendar/index.html`**: 카드 아래 문구 `달을 누르면 그 달 달력으로 바로 넘어가요.` → **`달력은 보시던 달 그대로 두었어요. 궁금한 달은 아래 달력에서 넘겨 보세요.`**
 - **검증**: 로컬 서버 + 헤드리스 크롬(390·1280) — 칩 5개 모두 `DIV`, `[data-jump]` 0개, 카드 안 `button` 0개, `cursor:auto`, 칩을 눌러도 `#calTitle`(2026 11월)과 `scrollY` 그대로, `.is-jump` 없음, 콘솔 오류 0.
 - **캐시**: `?v=20261120v` (index.html의 CSS·JS 5개 전부).
+
+## 22. 2026-11-20 — 결제 후 노란 카톡 버튼 + 입장 코드 잠금 해제
+
+- **왜**: 결제 팝업에서 결제를 마친 사람이 "그다음에 뭘 해야 하는지"가 작은 회색 글씨 한 줄에만 묻혀 있었습니다(사용자 지시: *"결제 후 카톡 연결 개선"*). 결제 버튼 아래에 **눈에 띄는 카카오 노랑 버튼**을 두고, 누르면 신청 내용이 클립보드에 복사되면서 카톡 채널로 바로 넘어가게 했습니다.
+- **`calendar/assets/calendar.js`**:
+  - `kakaoOrderHTML(item, label)` — 결제 카드·계좌이체 바로 아래 `.kakaobar` 버튼. 문구는 1년 패스·올인원 `💬 결제 완료 · 카톡으로 입장코드 받기`, 원포인트 `💬 결제 완료 · 카톡으로 질문 보내기`, 개운템 `💬 결제 완료 · 카톡으로 알려 주기`.
+  - `orderTextFor(item)` — 양식 `[윤이세 2027 캘린더 신청] 상품명 / 내 생년월일시`. 사주를 넣었을 때만 생년월일시를 붙이고(시간 모름이면 날짜만, 음력 입력이면 음력 날짜 병기), 개운템은 그때 고른 구성(`care.buy`)을 그대로 담습니다.
+  - `goKakaoOrder(item)` — `copyText()`로 복사 → 토스트(`✅ 신청 내용을 복사했어요 — 카톡에 붙여서 보내 주세요`) → `window.open(KAKAO)` (새 창이 막히면 0.7초 뒤 같은 창에서 `location.href = KAKAO`). `KAKAO = https://pf.kakao.com/_hxfbCG/chat`.
+  - 기존 작은 회색 안내(`.shop__note`의 "결제가 끝나면 카카오톡 채널로 알려 주세요…")는 1년 패스·올인원에서 **삭제**, 원포인트는 일정 안내 문장만 남겨 버튼 아래로, 개운템은 "3종은 지금 여기서 체험" 한 줄만 남겼습니다.
+  - **입장 코드**: `ENTRY_CODES = ['YOON2027']` (이 배열만 고치면 코드 변경, 대소문자·공백·하이픈 무시), 해제 상태는 `localStorage['yoonise.timing.unlock.v1'] = '1'`. `inFree()`·`isOpenDay()` 가 `state.unlocked` 를 먼저 보므로 **`FREE_TRIAL_ENABLED = true` 로 3일 무료 체험을 켜도 코드를 넣은 기기는 2026-11-01~2027-12-31 전체가 열립니다.** 해제하면 `body[data-trial]` 도 `off` 로 바뀌어 `js-trial`/`js-open` 문구와 달력 아래 안내까지 함께 전체 오픈 문구로 전환됩니다.
+  - `syncLockUI() · openLockPanel() · tryUnlock() · lockAgain()` + `toast()`(신규, `.toast`). 틀린 코드는 패널이 흔들리고 안내 문구, 맞는 코드는 확인 문구·토스트·`renderCalendar()`.
+- **`calendar/index.html`**: 달력 카드 `.cal__tools` 에 `🔑 입장 코드 입력` 버튼(`#lockBtn`)과 `#lockPanel`(입력·열기·안내·해제하기) 추가. 잠금 카드(`lockModalHTML`) 맨 아래에도 `🔑 입장 코드가 있어요`(`data-lock-open`) — 누르면 날짜 팝업을 닫고 코드 패널로 이동합니다. 입력 placeholder 는 코드를 노출하지 않도록 `코드를 입력하세요`.
+- **`calendar/assets/style.css`**: `.kakaobar__btn`(카카오 노랑 #FEE500 · 검정 글자), `.lockbtn`, `.lockpanel*`, `.lock__code`, `.toast`.
+- **테스트**: `FREE_TRIAL_ENABLED` 를 임시로 `true` 로 바꾼 사본에서 — 체험 중 12/7 은 잠금 카드, 잠금 카드의 코드 링크 → 패널 → `YOON2027` 입력 → `data-trial=off`, 안내 문구 전체 오픈으로 교체, 같은 날짜가 부적 팝업으로 열림, 새로고침 후에도 `🔓 입장 코드 적용됨` 유지 확인. 잘못된 코드(`ABC123`)는 저장되지 않고 안내만. 원상 복구 후 `FREE_TRIAL_ENABLED = false` 유지.
+
+## 23. 2026-11-20 — 날짜 팝업에 '진짜 부적' 패(牌) 프레임 + 3타 낙관
+
+- **왜**: 캐릭터는 귀엽지만 팝업이 흰 배경이라 '부적' 느낌이 약했습니다(사용자 지시: *"진짜 부적 느낌 프레임"*). `chars.js` 5종 캐릭터는 손대지 않고, 감싸는 판만 부적으로 바꿨습니다.
+- **`calendar/assets/calendar.js`** — `ritualHTML()` 재구성 + `padFrameArt(el)`, `padNorigaeArt()`:
+  - 구조: `.ritual` > `.talis-pad` > (`.talis-pad__norigae` + `.talis-pad__sheet` > art SVG · 이름표 · 캐릭터 무대 · `톡·톡·톡 n/3` · 낙관 · 금빛 샤인).
+  - `padFrameArt()` — 한지 바탕(아이보리 그라데이션 + `feTurbulence` 섬유 질감) · 오행 색 광륜 · 위아래 **구름문** · **금박 이중 테두리** · 네 귀퉁이 뇌문. viewBox 320×400, `preserveAspectRatio="none"` (배너 부적 패와 같은 방식).
+  - `padNorigaeArt()` — 패 위에 다는 **노리개**(금고리 · 매듭 · 주홍 끈 세 줄 · 구슬). 배너의 `plaqueLoopArt()` 는 그대로 두고 날짜 팝업용으로 작고 단정한 것을 따로 그림.
+  - 부적 이름표는 기존 `.ritual__name`(날짜 로테이션 이름 + 배지 아이콘)을 패 안쪽 상단으로 옮겨 `🍀 한 방 럭키 부적` 처럼 그대로 읽히게.
+  - 낙관 글자: 럭키는 `吉`, 나머지는 `護`.
+- **`calendar/assets/style.css`** — `.talis-pad*`:
+  - **3타 완료(`.ritual.is-done`)**: `.talis-pad__sheet` 가 `padGlow` 로 **금빛 테두리 발광**, `::after` 로 안쪽 금테가 함께 켜지고, `padShine` 한 줄기가 지나갑니다. 우측 하단 주홍 **낙관이 `sealStamp`(2배 → 쾅) 로 찍히고** `sealRing` 잉크 파문이 퍼집니다. 이미 찍힌 날은 다시 열어도 `is-done` 이라 낙관이 찍힌 채로 보입니다.
+  - 한지·금빛 배색은 팝업의 크림 배경과 이어지게, 금색은 배너 부적 패와 같은 계열(`#C79A4E` 선 · `#D3AA67` 하이라이트). 좁은 화면(≤380px)은 패 여백·낙관 크기만 줄입니다(`max-width:100%`).
+  - `prefers-reduced-motion` 에서 발광·낙관·샤인 애니메이션 정지.
+- **검증**: 로컬 390·360·1280 뷰포트 — 패 330×429 / 300×369 / 340×429, 이름표·노리개·낙관 모두 렌더, 3타 후 `is-done` · 낙관 `opacity 1` · `animationName=padGlow` · `3/3`, 닫았다 다시 열어도 낙관 유지, 콘솔 오류 0.
+- **캐시**: `?v=20261120w` (index.html의 CSS·JS 5개 전부).
