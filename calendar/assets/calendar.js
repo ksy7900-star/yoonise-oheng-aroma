@@ -1788,8 +1788,8 @@
   function hintHTML(dow, row) {
     var cls = 'day__hint';
     if (row === 0) cls += ' day__hint--down';
-    if (dow <= 1) cls += ' day__hint--l';
-    else if (dow >= 5) cls += ' day__hint--r';
+    if (dow === 0) cls += ' day__hint--l';        // 일요일 칸 — 왼쪽 끝에 붙여 잘리지 않게
+    else if (dow === 6) cls += ' day__hint--r';   // 토요일 칸 — 오른쪽 끝에 붙여서
     return '<span class="' + cls + '" aria-hidden="true">눌러서 부적 붙이기 <b>👆</b></span>';
   }
 
