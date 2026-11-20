@@ -2972,6 +2972,8 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .day--static:hover { background-image: none; }
 /* 모아보기 하이라이트는 링 두 겹으로 — 틴트 위에서도 또렷하게 */
 .cal .day.day--pick { box-shadow: inset 0 0 0 2px rgba(29, 28, 25, .18); }
+/* 무료 체험 구간(오늘~D+2) 금빛 링은 틴트 위에서도 살아 있게 */
+.day--free { box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .22); }
 
 /* 부적 스티커는 날짜 숫자를 가리지 않고 나란히 앉는다 (칸이 넓어진 만큼) */
 .day__sticker { width: 21px; height: 21px; margin: -2px 0 0 -1px; }
