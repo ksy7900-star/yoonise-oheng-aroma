@@ -376,7 +376,7 @@ a { color: inherit; }
   <ul class="guide">
     <li>결제 확인은 <b>카드결제면 결제할 때 넣은 휴대폰 번호</b>, <b>계좌이체면 입금자명</b>으로 대조해요.</li>
     <li>접수 순서대로 카톡에서 일정과 진행 방법을 안내해 드려요.</li>
-    <li>적어 주신 내용은 신청서 접수에만 쓰고, 입력한 값은 이 브라우저 탭에만 잠시 남아요(창을 닫으면 지워져요).</li>
+    <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 저장되지 않아요.</li>
   </ul>
 
   <p class="foot">
@@ -447,16 +447,19 @@ a { color: inherit; }
   var $ = function (id) { return document.getElementById(id); };
   var shakeTimer = null;
 
-  /* ── 입력값 임시 저장·복원 ───────────────
-     카드결제(페이앱)에 다녀오거나 새로고침해도 적던 내용이 날아가지 않도록
-     같은 탭 안에서만 살아 있는 sessionStorage 에 적어 두고 되살린다.
-     (창을 닫으면 흔적 없이 사라진다) */
+  /* ── 입력값 되살리기 — '카드결제에 다녀온 그 순간' 하나뿐 ───────
+     평상시에는 아무것도 저장하지 않는다. 새 링크로 열든, 새로고침을 하든,
+     다른 상품 탭을 고르든 언제나 빈 초기 상태로 시작한다.
+     오직 💳 카드결제(페이앱) 버튼을 누른 순간에만, 결제창에 다녀와도
+     적던 내용이 날아가지 않도록 같은 탭 안에서만 살아 있는
+     sessionStorage 에 잠깐 적어 두고, 돌아와 한 번만 되살린 뒤 바로 지운다. */
   var STORE_KEY = 'yoonise.apply.v1';
   var storeOk = true;
   function storeSave() {
     if (!storeOk) return;
     try {
       sessionStorage.setItem(STORE_KEY, JSON.stringify({
+        fromPay: true,          /* 결제 다녀온 복귀용 — 이 표시가 있을 때만 되살린다 */
         type: state.type,
         fName: $('fName').value,
         fHanja: $('fHanja').value,
@@ -477,6 +480,9 @@ a { color: inherit; }
       var d = JSON.parse(raw);
       return (d && typeof d === 'object') ? d : null;
     } catch (e) { return null; }
+  }
+  function storeClear() {
+    try { sessionStorage.removeItem(STORE_KEY); } catch (e) { }
   }
   function setChips(attr, val) {
     Array.prototype.forEach.call(document.querySelectorAll('[' + attr + ']'), function (x) {
@@ -505,6 +511,30 @@ a { color: inherit; }
       $('fBirth').placeholder = '예: 1979-08-08';
     }
     if (d.fPrivacy) $('fPrivacy').checked = true;
+  }
+  /* 모든 칸을 '처음 받았을 때' 그대로 — 양력 · 성별 미선택 · 빈 칸 · 동의 미체크 */
+  function resetForm() {
+    ['fName', 'fHanja', 'fBirth', 'fWho', 'fQ'].forEach(function (id) { $(id).value = ''; });
+    $('fTimeUnknown').checked = false;
+    $('fBirth').placeholder = '예: 1979-08-08 08:30';
+    $('fPrivacy').checked = false;
+    state.cal = 'solar';
+    setChips('data-cal', 'solar');
+    state.gender = '';
+    setChips('data-gender', '');      /* 아무것도 골라지지 않은 상태 */
+    $('copybox').hidden = true;
+    clearMsg();
+  }
+
+  /* 페이지가 열릴 때 — 결제 복귀(fromPay)일 때만 되살린다. 그 밖에는 깨끗이. */
+  var payRestored = false;
+  function initForm() {
+    var d = storeLoad();
+    var fromPay = !!(d && d.fromPay === true);
+    if (d) storeClear();              /* 1회성 — 읽는 즉시 지워 두 번 되살아나지 않게 */
+    payRestored = !!(fromPay && PRODUCTS[d.type] && d.type === state.type);
+    if (payRestored) restoreForm(d);
+    return payRestored;
   }
 
   function esc(s) {
@@ -578,7 +608,8 @@ a { color: inherit; }
   Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) {
     b.addEventListener('click', function () {
       setType(b.getAttribute('data-type'));
-      storeSave();
+      storeClear();          /* 다른 상품으로 옮기면 앞서 적던 값은 남기지 않는다 */
+      resetForm();
       $('prodEyebrow').scrollIntoView({ block: 'nearest' });
     });
   });
@@ -593,7 +624,6 @@ a { color: inherit; }
         x.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       clearMsg();
-      storeSave();
     });
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-gender]'), function (b) {
@@ -609,7 +639,6 @@ a { color: inherit; }
         }
       });
       clearMsg();
-      storeSave();
     });
   });
 
@@ -626,22 +655,17 @@ a { color: inherit; }
       if (birthEl.value !== out) birthEl.value = out;
     }
     clearMsg();
-    storeSave();
   });
   $('fTimeUnknown').addEventListener('change', function () {
     var on = $('fTimeUnknown').checked;
     birthEl.placeholder = on ? '예: 1979-08-08' : '예: 1979-08-08 08:30';
     if (on) birthEl.value = birthEl.value.replace(/\s+\d{1,2}(:\d{1,2})?$/, '');
     clearMsg();
-    storeSave();
   });
   ['fName', 'fHanja', 'fWho', 'fQ'].forEach(function (id) {
-    $(id).addEventListener('input', function () { clearMsg(); storeSave(); });
+    $(id).addEventListener('input', clearMsg);
   });
-  $('fPrivacy').addEventListener('change', function () {
-    clearMsg();
-    storeSave();
-  });
+  $('fPrivacy').addEventListener('change', clearMsg);
 
   /* ── 확인 ─────────────────────────────── */
   function clearMsg() {
@@ -801,6 +825,7 @@ a { color: inherit; }
     copyText(text, function (copied) {
       if (copied) {
         $('copybox').hidden = true;
+        storeClear();      /* 접수를 마쳤으니 되살릴 값도 남기지 않는다 */
         toast('✅ 신청 내용을 복사했어요 — 카톡에 붙여넣고 보내 주세요');
         setTimeout(function () { goNoRef(KAKAO); }, 90);
       } else {
@@ -819,6 +844,7 @@ a { color: inherit; }
      새 탭이 열려 화면을 벗어났으면(blur·hidden) 넘기지 않는다. */
   var card = $('payCard');
   card.addEventListener('click', function () {
+    storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
     var url = card.href;
     toast('페이앱 결제창을 열었어요 — 결제 후 노란 버튼을 눌러 주세요');
     setTimeout(function () {
@@ -826,6 +852,9 @@ a { color: inherit; }
       try { location.href = url; } catch (e) { }
     }, 900);
   });
+
+  /* 결제창이 안 보여 '여기 누르기'로 나가는 경우도 같은 복귀용 저장 */
+  $('payFallback').addEventListener('click', function () { storeSave(); });
 
   /* ── 계좌이체: 원클릭 복사 ─────────────── */
   $('payBank').addEventListener('click', function () {
@@ -853,11 +882,17 @@ a { color: inherit; }
     else if (start === 'full' || start === 'jonghap' || start === 'jonghab') start = 'saju';
     else if (start === 'name' || start === 'rename' || start === 'baby') start = 'naming';
   }
-  var saved = storeLoad();
-  var savedType = saved && PRODUCTS[saved.type] ? saved.type : '';
-  /* 주소에 ?type= 이 있으면 그 탭을 먼저 따르고, 없으면 마지막에 보던 탭으로 */
-  setType(PRODUCTS[start] ? start : (savedType || 'onepoint'), false);
-  restoreForm(saved);
+  /* 주소에 ?type= 이 있으면 그 탭, 없으면 맨 앞 탭(원포인트)부터 */
+  setType(PRODUCTS[start] ? start : 'onepoint', false);
+
+  /* 열릴 때 — 결제 복귀(fromPay)면 그 값만 되살리고, 그 밖에는 무조건 빈 초기 상태 */
+  if (!initForm()) resetForm();
+
+  /* 결제창에 다녀와 뒤로·앞으로로 돌아온 경우까지 같은 규칙으로 (bfcache 포함) */
+  window.addEventListener('pageshow', function () {
+    if (payRestored) return;               /* 이미 결제 복귀 값이 올라와 있다 */
+    if (!initForm()) resetForm();          /* 브라우저가 폼 값을 스스로 되살렸어도 지운다 */
+  });
 })();
 </script>
 </body>
