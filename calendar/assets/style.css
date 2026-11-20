@@ -926,13 +926,13 @@ button.talis-plaque:active { transform: scale(.972); }
   font-size: 10.5px; font-weight: 400; color: var(--mute); letter-spacing: 0;
 }
 
-/* 달력 칸 — 그날의 미니 오행 캐릭터 스티커 (챱!) */
+/* 달력 칸 — 그날의 미니 오행 캐릭터 스티커 (착!) */
 .day { position: relative; }
 .day__top { display: flex; align-items: center; justify-content: center; }
 .day__sticker {
   display: flex; align-items: center; justify-content: center; flex: none;
   width: 23px; height: 23px;
-  margin: -7px 0 0 -4px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '챱' 붙은 느낌 */
+  margin: -7px 0 0 -4px;                 /* 날짜 숫자 옆에 살짝 겹쳐 '착' 붙은 느낌 */
   border-radius: 50%;
   background: radial-gradient(circle at 50% 34%, #fff 0%, #FFFDF8 68%, #F6F0E2 100%);
   box-shadow: 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
@@ -2165,4 +2165,375 @@ body.is-modal-open { overflow: hidden; }
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* ==========================================================
+   v5 ① 팝업 상단 컨트롤 분리 — 모바일에서 제목·부제가 잘리거나
+         🔊 소리 / ✕ 버튼과 겹치던 문제 수정
+   ========================================================== */
+.modal__topbar {
+  position: relative; z-index: 4; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+  padding: 10px 12px 0;
+}
+.modal__topbar .modal__close,
+.modal__topbar .modal__sound { position: static; top: auto; right: auto; }
+.modal__topbar + .modal__content { padding-top: 10px; }
+/* 내용이 길어도 팝업이 화면 밖으로 커지지 않고, 내용만 안에서 스크롤된다 */
+.modal__content { min-height: 0; }
+.modal__dialog { max-height: 92vh; max-height: calc(100dvh - 24px); }
+.modal .modal__eyebrow,
+.modal .modal__date,
+.modal .modal__sub { padding-right: 0; }
+@media (max-width: 430px) {
+  .modal { padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .modal__dialog { border-radius: 22px; max-height: calc(100dvh - 20px); }
+  .modal__content { padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0px)); }
+  .modal__topbar + .modal__content { padding-top: 8px; }
+  .modal__topbar { padding: 8px 10px 0; }
+  .modal__close { width: 32px; height: 32px; }
+  .modal__sound { height: 30px; font-size: 10px; }
+}
+
+/* ==========================================================
+   v5 ② 🔥 오늘 액운 태우기 — 달력 위 카드
+   ========================================================== */
+.card--burn {
+  position: relative; overflow: hidden;
+  border-color: rgba(174, 138, 80, .22);
+  background:
+    radial-gradient(120% 90% at 92% -10%, rgba(196, 92, 44, .14), transparent 58%),
+    radial-gradient(90% 80% at -6% 108%, rgba(174, 138, 80, .12), transparent 62%),
+    var(--paper);
+}
+.card--burn::after {
+  content: "火"; position: absolute; right: -8px; bottom: -28px;
+  font-family: var(--serif); font-size: 108px; line-height: 1; color: rgba(196, 92, 44, .055);
+  pointer-events: none;
+}
+.burn__top { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.burn__eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .22em; color: #A9754A; }
+.burn__left {
+  flex: 0 0 auto; margin-top: 3px; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+  font-size: 10px; font-weight: 700; letter-spacing: -.01em; color: #A8562E;
+  background: rgba(196, 92, 44, .1); border: 1px solid rgba(196, 92, 44, .26);
+}
+.burn__left.is-unlimited { color: #6B5A2E; background: #FBF1D6; border-color: rgba(174, 138, 80, .45); }
+.burn__left.is-out { color: #8A8073; background: #F5F2EA; border-color: var(--hair); }
+.burn__sub { position: relative; z-index: 1; margin-top: 8px; font-size: 12.5px; line-height: 1.85; color: var(--ink-2); }
+.burn__sub span { color: var(--mute); font-size: 11px; }
+.burn__cta {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  width: 100%; margin-top: 14px; padding: 12px 16px 13px; border: 0; border-radius: 15px;
+  background: linear-gradient(135deg, #2A1F17 0%, #4A2A18 55%, #6B3A1C 100%);
+  color: #F6E3C4; box-shadow: 0 14px 26px -18px rgba(60, 28, 10, .9); font-family: inherit;
+}
+.burn__cta span { font-size: 9.5px; font-weight: 600; letter-spacing: .06em; color: rgba(246, 227, 196, .62); }
+.burn__cta b { font-size: 14px; font-weight: 800; letter-spacing: -.01em; color: #F9D9A2; }
+.burn__cta:active { transform: translateY(1px); }
+
+/* ── 액운 태우기 팝업 (큰 의식) ─────────────────── */
+.modal__dialog--burn { max-width: 414px; transition: background .5s ease, box-shadow .5s ease; }
+.modal__dialog--burn.is-dark {
+  background: radial-gradient(130% 90% at 50% -10%, #2C221A 0%, #16120F 52%, #0B0A09 100%);
+  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, .85), inset 0 0 0 1px rgba(214, 168, 106, .16);
+}
+.modal__dialog--burn.is-dark .modal__eyebrow { color: rgba(230, 196, 138, .75); }
+.modal__dialog--burn.is-dark .burn__rite { color: #F4E6CC; }
+.modal__dialog--burn.is-dark .burn__hint { color: rgba(240, 230, 212, .62); }
+.modal__dialog--burn.is-dark .burn__hint b { color: #EBC77E; }
+.modal__dialog--burn.is-dark .burn__foot { color: rgba(240, 230, 212, .45); }
+.modal__dialog--burn.is-dark .modal__close {
+  background: rgba(255, 244, 226, .12); border-color: rgba(230, 196, 138, .3); color: #F4E6CC;
+}
+.burn__title { margin-top: 6px; font-family: var(--serif); font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -.02em; }
+.burn__guide { margin-top: 10px; font-size: 12px; line-height: 1.85; color: var(--ink-2); }
+.burn__count { display: inline-block; margin-top: 12px; padding: 4px 11px; border-radius: 999px; font-size: 10.5px; font-weight: 700; color: #A8562E; background: rgba(196, 92, 44, .09); }
+.burn__input {
+  width: 100%; margin-top: 14px; padding: 13px 14px; border-radius: 14px;
+  border: 1px solid rgba(29, 28, 25, .14); background: #FDFBF6;
+  font-family: inherit; font-size: 13.5px; color: var(--ink);
+}
+.burn__input:focus { outline: 2px solid rgba(196, 92, 44, .38); outline-offset: 1px; border-color: rgba(196, 92, 44, .42); }
+.burn__input.is-shake { animation: burnShake .32s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes burnShake {
+  0%, 100% { transform: translateX(0); }
+  22% { transform: translateX(-5px); }
+  46% { transform: translateX(4px); }
+  70% { transform: translateX(-2px); }
+}
+.burn__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.burn__chip {
+  padding: 7px 12px; border-radius: 999px; font-family: inherit; font-size: 11px; font-weight: 600;
+  color: #7A6535; background: #FBF6EC; border: 1px solid rgba(174, 138, 80, .34);
+}
+.burn__chip:active { transform: scale(.97); }
+.burn__go {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 16px; padding: 14px 16px; border: 0; border-radius: 15px;
+  font-family: inherit; font-size: 13.5px; font-weight: 700; color: #FCEFD8;
+  background: linear-gradient(135deg, #2A1F17, #55301A 60%, #6B3A1C);
+  box-shadow: 0 14px 26px -18px rgba(40, 20, 8, .95);
+}
+.burn__go:active { transform: translateY(1px); }
+.burn__go:disabled { opacity: .72; }
+.burn__go--squeeze { background: linear-gradient(135deg, #3A2A1E, #6A4426); }
+.burn__go--fire { background: linear-gradient(135deg, #8A2F12, #C25417 52%, #D98A2B); color: #FFF4E0; }
+.burn__hint { margin-top: 12px; text-align: center; font-size: 11px; line-height: 1.75; color: var(--mute); }
+.burn__hint b { color: #A8562E; }
+.burn__foot { margin-top: 10px; text-align: center; font-size: 10.5px; color: var(--mute); }
+.burn__rite { margin-top: 10px; font-family: var(--serif); font-size: 18px; line-height: 1.55; letter-spacing: -.02em; color: var(--ink); }
+
+/* 소각대 — 크게, 불이 붙으면 먹빛·금빛으로 */
+.burn__stage {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-height: 292px; margin: 14px -2px 0; padding: 10px 0 14px;
+  border-radius: 20px; overflow: hidden;
+  background: radial-gradient(90% 70% at 50% 100%, rgba(174, 138, 80, .1), transparent 62%);
+  transition: background .5s ease, box-shadow .5s ease;
+}
+/* 돌 제단 위에 한지를 올린 느낌 */
+.burn__stage::before {
+  content: ""; position: absolute; left: 50%; bottom: 44px; width: 76%; height: 34px; margin-left: -38%;
+  border-radius: 50%; pointer-events: none; transition: opacity .4s ease;
+  background: radial-gradient(closest-side, rgba(28, 27, 25, .16), rgba(28, 27, 25, .05) 62%, transparent 100%);
+}
+.burn__stage.is-dark::before { opacity: 0; }
+.burn__stage.is-dark {
+  background:
+    radial-gradient(58% 42% at 50% 104%, rgba(255, 150, 52, .32), rgba(255, 110, 30, .09) 46%, transparent 70%),
+    radial-gradient(130% 100% at 50% -20%, #2A211A 0%, #12100E 58%, #0A0908 100%);
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, .85);
+}
+.burn__pyre { position: absolute; left: 0; right: 0; bottom: -4%; height: 96%; opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+.burn__pyre.is-lit { opacity: 1; }
+.burn__pyre i {
+  position: absolute; bottom: 0; width: 30%; height: 78%;
+  border-radius: 50% 50% 44% 44% / 72% 72% 28% 28%;
+  background: radial-gradient(50% 60% at 50% 84%, #FFF0C0 0%, #FFB450 26%, #EC5A17 54%, rgba(150, 40, 12, .04) 84%);
+  filter: blur(6px); transform-origin: 50% 100%; mix-blend-mode: screen;
+  animation: burnTongue 1.5s ease-in-out infinite;
+}
+.burn__pyre i:nth-child(2) { left: 2%; width: 34%; height: 62%; opacity: .82; animation-delay: .12s; }
+.burn__pyre i:nth-child(3) { left: 22%; width: 30%; height: 92%; animation-delay: .34s; }
+.burn__pyre i:nth-child(4) { left: 41%; width: 28%; height: 74%; animation-delay: .05s; }
+.burn__pyre i:nth-child(5) { left: 58%; width: 30%; height: 98%; animation-delay: .26s; }
+.burn__pyre i:nth-child(6) { left: 76%; width: 32%; height: 66%; opacity: .85; animation-delay: .18s; }
+@keyframes burnTongue {
+  0%, 100% { transform: scale(1, 1) translateY(0) rotate(-2deg); opacity: .8; }
+  50% { transform: scale(.86, 1.18) translateY(-4%) rotate(3deg); opacity: 1; }
+}
+.burn__glow {
+  position: absolute; left: 50%; bottom: -26%; width: 170%; height: 150%; margin-left: -85%;
+  background: radial-gradient(closest-side, rgba(255, 176, 78, .38), rgba(255, 120, 36, .12) 46%, transparent 72%);
+  animation: burnGlowPulse 1.9s ease-in-out infinite;
+}
+@keyframes burnGlowPulse { 0%, 100% { opacity: .8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+
+/* 한지 — 적은 글은 여기에만 있고, 다 타면 사라진다 */
+.burn__paper {
+  position: relative; z-index: 2; display: flex; align-items: center; justify-content: center;
+  width: 226px; height: 152px; padding: 18px; border-radius: 5px;
+  background: linear-gradient(158deg, #FFFDF6, #F7F0E1 66%, #EFE6D2);
+  border: 1px solid rgba(174, 138, 80, .38);
+  box-shadow: 0 18px 30px -20px rgba(60, 45, 25, .6), inset 0 0 0 1px rgba(255, 255, 255, .6);
+  transform: rotate(-1.4deg);
+  transition: transform .24s ease, filter .4s ease;
+  will-change: transform, opacity, filter;
+}
+.burn__paper::before { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(174, 138, 80, .2); border-radius: 3px; pointer-events: none; }
+.burn__paper-text {
+  font-family: var(--serif); font-size: 15px; line-height: 1.65; letter-spacing: -.01em;
+  color: #3B352C; text-align: center; max-height: 106px; overflow: hidden;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+}
+.burn__paper.is-pressing { transform: rotate(-1.4deg) scale(.965); filter: brightness(.98); }
+/* 구겨진 덩어리 — 각진 클립과 눌린 명암으로 '뭉친 한지'를 만든다 */
+.burn__paper.is-crumpled,
+.burn__paper.is-burning {
+  border-radius: 46%; border-color: transparent;
+  clip-path: polygon(40% 2%, 63% 7%, 82% 18%, 95% 38%, 97% 62%, 86% 82%, 66% 95%, 43% 98%, 22% 90%, 7% 72%, 2% 50%, 9% 24%);
+  background:
+    repeating-linear-gradient(58deg, rgba(110, 88, 52, .12) 0 1px, rgba(255, 255, 255, 0) 1px 9px),
+    repeating-linear-gradient(-36deg, rgba(110, 88, 52, .09) 0 1px, rgba(255, 255, 255, 0) 1px 12px),
+    radial-gradient(24% 20% at 26% 20%, rgba(255, 250, 230, .95), rgba(255, 250, 230, 0) 70%),
+    radial-gradient(24% 20% at 70% 68%, rgba(120, 96, 58, .65), rgba(120, 96, 58, 0) 72%),
+    radial-gradient(20% 16% at 44% 80%, rgba(96, 76, 44, .5), rgba(96, 76, 44, 0) 74%),
+    radial-gradient(40% 32% at 64% 30%, rgba(255, 246, 220, .7), rgba(255, 246, 220, 0) 72%),
+    linear-gradient(150deg, #E5D5B4, #CCB995 56%, #B7A17A);
+  box-shadow: inset -8px -10px 18px rgba(110, 86, 50, .38), inset 6px 8px 16px rgba(255, 252, 240, .55);
+}
+.burn__paper.is-crumpled::before,
+.burn__paper.is-burning::before { opacity: 0; }
+.burn__paper.is-crumpled { animation: burnCrumple .7s cubic-bezier(.3, .9, .3, 1) both; }
+@keyframes burnCrumple {
+  0% { transform: rotate(-1.4deg) scale(1); }
+  32% { transform: rotate(4deg) scale(.84) skewX(-5deg); }
+  60% { transform: rotate(-7deg) scale(.56) skewY(6deg); }
+  100% { transform: rotate(-5deg) scale(.44); }
+}
+.burn__paper.is-crumpled .burn__paper-text { opacity: 0; transition: opacity .3s ease .25s; }
+/* 불은 소각대 위에서 크게 숫는다 — 종이에 갇히지 않게 */
+.burn__flame {
+  position: absolute; left: 50%; bottom: 12%; width: 74%; height: 62%; margin-left: -37%;
+  pointer-events: none; opacity: 0; border-radius: 50%; mix-blend-mode: screen; z-index: 3;
+  background: radial-gradient(50% 54% at 50% 82%, rgba(255, 234, 178, .95), rgba(252, 140, 48, .92) 32%, rgba(186, 56, 18, .55) 60%, transparent 78%);
+  filter: blur(5px);
+}
+.burn__stage.is-burning .burn__flame { opacity: 1; animation: burnFlameUp 3.2s ease-in both; }
+@keyframes burnFlameUp {
+  0% { transform: scale(.35) translateY(12%); opacity: 0; }
+  18% { transform: scale(1.05) translateY(0); opacity: 1; }
+  62% { transform: scale(1.16) translateY(-8%); opacity: .92; }
+  100% { transform: scale(1.32) translateY(-20%); opacity: 0; }
+}
+.burn__paper.is-burning { animation: burnAway 3.4s cubic-bezier(.4, 0, .55, 1) both; }
+@keyframes burnAway {
+  0% { transform: rotate(-5deg) scale(.44); opacity: 1; filter: brightness(1); }
+  14% { transform: rotate(-3deg) scale(.5); filter: brightness(1.4) saturate(1.3); }
+  38% { transform: rotate(2deg) scale(.4) translateY(-8px); opacity: .95; filter: brightness(.6); }
+  62% { transform: rotate(6deg) scale(.26) translateY(-26px); opacity: .58; filter: brightness(.26); }
+  100% { transform: rotate(9deg) scale(.06) translateY(-64px); opacity: 0; filter: brightness(.06); background: #14100C; }
+}
+.burn__ash { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.burn__ash i {
+  position: absolute; left: var(--x); bottom: 42%; width: var(--sz, 4px); height: var(--sz, 4px);
+  border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle at 34% 30%, #FFE1A8, #F0A24A 46%, #8A4A1E 100%);
+  box-shadow: 0 0 6px rgba(255, 160, 60, .8);
+  animation: burnAsh var(--du, 2s) cubic-bezier(.2, .6, .3, 1) var(--dl, 0s) forwards;
+}
+/* 굵은 재 + 금빛 불티가 섞여 올라간다 */
+.burn__ash i:nth-child(2n) {
+  width: calc(var(--sz, 4px) * 1.6); height: calc(var(--sz, 4px) * 1.6);
+  background: radial-gradient(circle at 40% 34%, #5A5248, #2B2620 72%);
+  box-shadow: none; opacity: 0;
+  animation-name: burnAshDark;
+}
+.burn__ash i:nth-child(3n) {
+  background: radial-gradient(circle, #FFF2C4, #FFC24E 50%, #E07A1E 100%);
+  box-shadow: 0 0 12px rgba(255, 190, 80, .95);
+}
+@keyframes burnAshDark {
+  0% { opacity: 0; transform: translate(0, 0) scale(1.1) rotate(0); }
+  12% { opacity: .95; }
+  55% { opacity: .8; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1.4px), -210px) scale(.34) rotate(140deg); }
+}
+@keyframes burnAsh {
+  0% { opacity: 0; transform: translate(0, 0) scale(1.1) rotate(0); }
+  10% { opacity: 1; }
+  60% { opacity: .9; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1px), -190px) scale(.3) rotate(90deg); }
+}
+
+/* 다 탄 뒤 — 내 사주로 빈자리 채우기 */
+.burn__done-title { margin-top: 14px; font-family: var(--serif); font-size: 18px; line-height: 1.55; font-weight: 600; text-align: center; letter-spacing: -.02em; }
+.burn__done-sub { margin-top: 8px; font-size: 11.5px; line-height: 1.85; color: var(--mute); text-align: center; }
+.burn__done-sub b { color: var(--ink-2); font-weight: 700; }
+.burn__rx {
+  margin-top: 14px; padding: 13px 15px; border-radius: 14px; text-align: left;
+  background: #FBF6EC; border: 1px solid rgba(174, 138, 80, .3);
+  font-size: 12.5px; line-height: 1.85; color: #6B5A2E;
+}
+.burn__rx b { display: block; margin-bottom: 5px; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: #A9754A; }
+.burn__purify {
+  position: relative; margin-top: 14px; padding: 20px 16px 16px; border-radius: 18px; overflow: hidden;
+  text-align: center; border: 1px solid rgba(174, 138, 80, .22);
+  background: linear-gradient(180deg, #EAF3FB, #F8FBFE);
+  animation: burnPurifyIn .6s ease-out both;
+}
+@keyframes burnPurifyIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.burn__hanja {
+  position: absolute; right: 12px; top: 4px; font-family: var(--serif); font-size: 54px; line-height: 1;
+  color: rgba(40, 60, 80, .08); pointer-events: none;
+}
+.burn__wave {
+  position: absolute; left: 50%; top: 52%; width: 240px; height: 240px; margin: -120px 0 0 -120px;
+  border-radius: 50%; border: 1px solid rgba(110, 150, 190, .5); pointer-events: none;
+  animation: burnWave 3.2s ease-out infinite;
+}
+@keyframes burnWave {
+  0% { opacity: .55; transform: scale(.2); }
+  70% { opacity: .12; }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+.burn__sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.burn__sky i {
+  position: absolute; left: var(--x); top: -12%; width: var(--sz); height: var(--sz);
+  border-radius: 50%; opacity: 0; background: var(--bp-dot, #8FC2E0);
+  animation-name: burnFall; animation-duration: var(--du); animation-delay: var(--dl);
+  animation-iteration-count: infinite; animation-timing-function: linear;
+}
+.burn__purify-name { position: relative; z-index: 2; font-family: var(--serif); font-size: 20px; font-weight: 600; letter-spacing: -.02em; color: #29404F; }
+.burn__purify-el { position: relative; z-index: 2; margin-top: 4px; font-size: 10.5px; letter-spacing: .04em; color: rgba(41, 64, 79, .62); }
+/* 수 — 시원한 소나기 */
+.burn__purify--수 { background: linear-gradient(180deg, #E6F2FA, #F7FBFE 62%, #EFF7FC); }
+.burn__purify--수 .burn__sky i { background: linear-gradient(180deg, #CFE8F6, #7FB8DA); border-radius: 50% 50% 60% 60%; }
+@keyframes burnFall {
+  0% { opacity: 0; transform: translate(0, 0); }
+  12% { opacity: .9; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1px), 250px); }
+}
+/* 화 — 따뜻한 햇살 */
+.burn__purify--화 { background: linear-gradient(180deg, #FFF6E4, #FFFBF3 60%, #FFF3DE); }
+.burn__purify--화 .burn__hanja { color: rgba(170, 90, 30, .1); }
+.burn__purify--화 .burn__sky i { background: radial-gradient(circle, #FFE2A6, #F6AE55); animation-name: burnRise; }
+@keyframes burnRise {
+  0% { opacity: 0; transform: translate(0, 40px) scale(.8); }
+  20% { opacity: .95; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1px), -190px) scale(1.2); }
+}
+/* 목 — 새 바람 */
+.burn__purify--목 { background: linear-gradient(180deg, #EDF6E8, #F9FCF6 62%, #EEF6E8); }
+.burn__purify--목 .burn__hanja { color: rgba(60, 110, 60, .1); }
+.burn__purify--목 .burn__sky i { background: linear-gradient(140deg, #BFE0A0, #6FAE5B); border-radius: 60% 10% 60% 10%; animation-name: burnDrift; }
+@keyframes burnDrift {
+  0% { opacity: 0; transform: translate(0, -20px) rotate(0); }
+  18% { opacity: .9; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1px + 26px), 220px) rotate(220deg); }
+}
+/* 금 — 서늘한 크리스탈 */
+.burn__purify--금 { background: linear-gradient(180deg, #F2F5F8, #FCFDFE 62%, #EEF3F7); }
+.burn__purify--금 .burn__hanja { color: rgba(90, 110, 125, .1); }
+.burn__purify--금 .burn__sky i { border-radius: 1px; background: #CBD9E4; animation-name: burnTwinkle; animation-timing-function: ease-in-out; }
+@keyframes burnTwinkle {
+  0%, 100% { opacity: 0; transform: scale(.6) rotate(0); }
+  50% { opacity: 1; transform: scale(1.3) rotate(45deg); }
+}
+/* 토 — 고른 황금빛 흙 */
+.burn__purify--토 { background: linear-gradient(180deg, #FBF3E1, #FEFBF3 62%, #F7EEDC); }
+.burn__purify--토 .burn__hanja { color: rgba(140, 105, 30, .1); }
+.burn__purify--토 .burn__sky i { background: radial-gradient(circle, #F7DC9E, #C79A4E); animation-name: burnSettle; animation-timing-function: ease-out; }
+@keyframes burnSettle {
+  0% { opacity: 0; transform: translate(0, -30px) scale(1.1); }
+  30% { opacity: .85; }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 0) * 1px), 150px) scale(.7); }
+}
+
+/* 긴급 개운템 팝업 안 — 액운 태우기 입구 */
+.burn__entry {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  margin-top: 14px; padding: 12px 14px; border-radius: 14px; text-align: left; font-family: inherit;
+  border: 1px solid rgba(196, 92, 44, .3);
+  background: linear-gradient(135deg, rgba(196, 92, 44, .12), rgba(174, 138, 80, .08));
+  color: #A8562E; font-size: 12.5px; font-weight: 700; line-height: 1.4;
+}
+.burn__entry i { font-style: normal; font-size: 10px; font-weight: 600; color: #A9754A; }
+.burn__entry b { font-size: 10.5px; color: #8A6A3E; white-space: nowrap; }
+.burn__upgrade { margin-top: 14px; }
+
+/* 입장 코드 패널 — 지금 적용된 티어 */
+.lockpanel__tier {
+  margin-top: 7px; padding: 7px 10px; border-radius: 10px;
+  font-size: 10.5px; line-height: 1.5; color: #6B5A2E;
+  background: rgba(174, 138, 80, .12); border: 1px solid rgba(174, 138, 80, .26);
+}
+.lockpanel__tier b { font-weight: 800; }
+.lockpanel__tier.is-allinone { color: #7A4A16; background: rgba(196, 92, 44, .1); border-color: rgba(196, 92, 44, .24); }
+
+@media (prefers-reduced-motion: reduce) {
+  .burn__pyre i, .burn__glow, .burn__sky i, .burn__wave, .burn__ash i { animation: none !important; }
+  .burn__paper.is-crumpled { animation-duration: .01ms !important; }
+  .burn__paper.is-burning { animation: none !important; opacity: 0; }
 }
