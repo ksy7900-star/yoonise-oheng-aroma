@@ -1968,15 +1968,21 @@
   function payActionsHTML(item, opts) {
     opts = opts || {};
     var withCard = opts.card !== false;
-    var card = !!cardUrlOf(item);
+    var cardUrl = cardUrlOf(item);
+    var card = !!cardUrl;
     var bank = bankReady();
     var bankSub = opts.bankSub || (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내');
-    return '<div class="pay' + (withCard ? '' : ' pay--single') + '" role="group" aria-label="결제 방법">' +
-      (withCard ? ('<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' +
-      '<span class="pay__ico" aria-hidden="true">💳</span>' +
+    var cardInner = '<span class="pay__ico" aria-hidden="true">💳</span>' +
       '<span class="pay__label"><b>카드결제 (페이앱)</b>' +
-      '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>' +
-      '</button>') : '') +
+      '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>';
+    /* 카드결제 링크가 있으면 버튼을 **진짜 링크**로 만든다(#8847) —
+       인앱 브라우저는 스크립트가 여는 새 창(window.open)을 팝업으로 막지만,
+       사용자가 누르는 <a target="_blank"> 이동은 막지 않는다. */
+    var cardBtn = card
+      ? '<a class="pay__btn pay__btn--card" href="' + esc(cardUrl) + '" target="_blank" rel="noopener" data-pay="card" data-item="' + esc(item) + '" data-pay-link="1">' + cardInner + '</a>'
+      : '<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' + cardInner + '</button>';
+    return '<div class="pay' + (withCard ? '' : ' pay--single') + '" role="group" aria-label="결제 방법">' +
+      (withCard ? cardBtn : '') +
       '<button type="button" class="pay__btn pay__btn--bank" data-pay="bank" data-item="' + esc(item) + '">' +
       '<span class="pay__ico" aria-hidden="true">🏦</span>' +
       '<span class="pay__label"><b>계좌이체</b>' +
@@ -2300,13 +2306,18 @@
     cb(legacyCopy(text));
   }
 
+  /* 결제창을 연 니 발에 남기는 안내 — 안 보이면 직접 누를 수 있는 링크까지 */
+  function cardNote(url) {
+    payNote('페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
+      '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
+  }
+
   function handlePay(kind, item) {
     if (kind === 'card' || kind === 'bank') payChoice[String(item)] = kind;   // 카톡 확인 항목을 이 방법으로
     if (kind === 'card') {
       var url = cardUrlOf(item);
       if (url) {
-        payNote('페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
-          '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
+        cardNote(url);
         openPayApp(url);
       } else {
         payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
@@ -4450,7 +4461,16 @@
         var ko = e.target.closest ? e.target.closest('[data-kakao-order]') : null;
         if (ko) { e.preventDefault(); goKakaoOrder(ko.getAttribute('data-kakao-order')); return; }
         var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
-        if (pay) { e.preventDefault(); handlePay(pay.getAttribute('data-pay'), pay.getAttribute('data-item')); return; }
+        if (pay) {
+          /* 카드 버튼이 진짜 링크면(#8847) 기본 이동을 막지 않는다 — 브라우저가 직접 새 장을 열어
+             인앱 브라우저의 팝업차단을 피한다. 스크립트로 여는 길은 링크가 없을 때만 남는다. */
+          if (pay.getAttribute('data-pay-link')) {
+            payChoice[String(pay.getAttribute('data-item'))] = 'card';
+            cardNote(pay.getAttribute('href'));
+            return;
+          }
+          e.preventDefault(); handlePay(pay.getAttribute('data-pay'), pay.getAttribute('data-item')); return;
+        }
         var pick = e.target.closest ? e.target.closest('[data-careitem]') : null;
         if (pick) { e.preventDefault(); setCareItem(pick.getAttribute('data-careitem')); return; }
         var up = e.target.closest ? e.target.closest('[data-burn-upgrade]') : null;
