@@ -2081,7 +2081,7 @@
       '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
       '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>액운 태우기 무제한</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고 싶다면 여기서 시작하세요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>1년 패스 전부</b><span>2027 내 사주 타이밍 맵 + 1년 수호 부적 + 액운 태우기 5회</span></li>' +
+      '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
       '<li><b>매일 일진 부적</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
       '<li><b>매일 액운 태우기 무제한</b><span>매일, 몇 장이든 — 적고, 구기고, 태워 보내기</span></li>' +
       '</ul>' +
@@ -2099,9 +2099,9 @@
       '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
       '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>올인원 전부</b><span>1년 타이밍 맵 + 수호 부적 + 매일 일진 부적 + 액운 태우기 무제한</span></li>' +
+      '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 액운 태우기 무제한</span></li>' +
       '<li><b>365일 1줄 성찰 다이어리</b><span>날마다 다른 맞춤 질문 하나, 부담 없는 한 줄</span></li>' +
-      '<li><b>기록 저장·달력 표시</b><span>남긴 날은 달력에 펜 점 · 📖 내 성찰 기록 보기에서 .txt 백업</span></li>' +
+      '<li><b>내 기록 저장</b><span>달력 펜 점 · 📖 내 성찰 기록 보기 · .txt 백업</span></li>' +
       '</ul>' +
       priceHTML('2027 성찰 에디션', DIARY_PRICE) +
       payActionsHTML('diary') +
@@ -3688,21 +3688,20 @@
     var pass = state.tier === 'pass';
     return '<p class="modal__eyebrow">ALL-IN-ONE · 액운 태우기 무제한</p>' +
       '<h2 class="shop__title" id="shopTitle">🔥 무료 5장을 다 태우셨어요</h2>' +
-      '<p class="shop__sub">오늘의 액운은 <b>올인원 패키지</b>에서 <b>횟수 제한 없이</b> 계속 태울 수 있어요. 1년 달력 전체에 액운 태우기 무제한까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
+      '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>횟수 제한 없이</b> 계속 태울 수 있어요. 1년 달력 전체에 액운 태우기 무제한까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
       (pass
         ? '<div class="shop__save"><b>이미 1년 패스(14,900원)를 이용 중이세요</b>' +
           '<span>카톡으로 추가 업그레이드(' + BURN_UPGRADE_PRICE + ')를 신청하시면 올인원 코드로 바로 바꿔 드려요</span></div>' +
           '<button type="button" class="btn btn--primary burn__upgrade" data-burn-upgrade="1">💬 카톡으로 ' + BURN_UPGRADE_PRICE + ' 업그레이드 신청</button>' +
           '<p class="shop__note">누르면 신청 내용이 복사되고 카카오톡 채널이 열려요. 확인 후 올인원 입장 코드를 보내 드려요.</p>'
         : '<ul class="shop__list">' +
-          '<li><b>1년 패스 전부</b><span>2027년 1~12월 365일 + 사전 신청 시 12월 한 달 서비스</span></li>' +
-          '<li><b>2027년 내 수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
+          '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
           '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
           '<li><b>🔥 오늘 액운 태우기 무제한</b><span>매일, 몇 장이든 — 구워서 재로 날려 버리기</span></li>' +
           '</ul>' +
           '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
           '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
-          priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
+          priceHTML('2027 올인원', ALLINONE_PRICE) +
           payActionsHTML('allinone') +
           kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기')) +
       '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>';
