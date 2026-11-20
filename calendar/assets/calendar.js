@@ -414,6 +414,7 @@
         state.view = clampView(today.getFullYear(), today.getMonth() + 1);
         $('#formCard').hidden = true;
         $('#result').hidden = false;
+        document.body.classList.add('is-result');   // 달력이 열리면 히어로는 얇은 브랜드 줄로 접힌다
         render();
         $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
@@ -465,6 +466,7 @@
   }
 
   function openForm() {
+    document.body.classList.remove('is-result');
     $('#formCard').hidden = false;
     $('#formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -555,6 +557,13 @@
     $('#yearWarnChips').innerHTML = d.warn.length
       ? d.warn.map(function (m) { return chip(m, true); }).join('')
       : '<p class="year__none">2027년에는 유난히 부딪히는 달이 없어요. 흐름이 고른 한 해입니다.</p>';
+    var meta = $('#yearMeta');
+    if (meta) {
+      var wm = d.warn.map(function (m) { return m.m + '월'; }).join('·');
+      var gm = d.good.map(function (m) { return m.m + '월'; }).join('·');
+      meta.textContent = (wm ? '조심 ' + wm : '') + (wm && gm ? ' · ' : '') + (gm ? '좋은 ' + gm : '');
+    }
+
     $('#yearGoodChips').innerHTML = d.good.length
       ? d.good.map(function (m) { return chip(m, false); }).join('')
       : '<p class="year__none">좋은 달이 따로 없이 고르게 열려 있어요.</p>';
@@ -1573,9 +1582,9 @@
       if (iso === state.todayISO) cls.push('is-today');
       if (iso === state.sel) cls.push('is-sel');
 
-      // 셀 배경 틴트는 입단속·럭키에만 — 결정·머니·리셋은 배지로만 표시해 색을 아낀다
+      // 다섯 기운 모두 은은한 파스텔 바탕으로 구분한다 (2026-11-20 여백 개편)
       var lead = badges.length ? badges[0].cat : '';
-      if (lead === 'red' || lead === 'gold') cls.push('day--t-' + lead);
+      if (lead) cls.push('day--t-' + lead);
 
       badges.forEach(function (b) { if (stat[b.cat] != null) stat[b.cat]++; });
 
@@ -1658,7 +1667,7 @@
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     var noteText = (!FREE_TRIAL_ENABLED || state.unlocked)
-      ? '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 부적이 나오고, 아래에 ✨ 오늘의 1줄 성찰이 함께 있어요. 기록을 남긴 날은 달력 칸에 작은 펜 점이 찍혀요.'
+      ? '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.'
       : freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     $('#calNote').textContent = noteText;
 
@@ -4545,8 +4554,10 @@
         state.mDigest = {};
         $('#formCard').hidden = true;
         $('#result').hidden = false;
+        document.body.classList.add('is-result');
         render();
       } catch (err) {
+        document.body.classList.remove('is-result');
         $('#formCard').hidden = false;
       }
     }
