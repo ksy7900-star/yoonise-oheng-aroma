@@ -2439,7 +2439,7 @@ body.is-modal-open { overflow: hidden; }
 .burn__stage.is-ready .burn__ember:focus-visible { box-shadow: 0 0 0 2px rgba(255, 190, 110, .8); }
 .burn__ember.is-grab { cursor: grabbing; animation: none; transition: none; }
 .burn__ember-core {
-  display: block; width: 11px; height: 11px; border-radius: 50%;
+  display: block; width: 13px; height: 13px; border-radius: 50%;
   background: radial-gradient(circle at 42% 38%, #FFF3C6 0%, #FFB552 38%, #E2581B 72%, rgba(170, 46, 8, .08) 100%);
   box-shadow: 0 0 12px 4px rgba(255, 132, 40, .5), 0 0 28px 10px rgba(255, 96, 20, .18);
 }
@@ -2469,26 +2469,29 @@ body.is-modal-open { overflow: hidden; }
   width: var(--sz, 5px); height: calc(var(--sz, 5px) * var(--h, .62));
   opacity: 0;
   border-radius: 44% 56% 40% 60% / 54% 46% 58% 42%;
-  background: linear-gradient(138deg, #7C766F 0%, #575049 48%, #38332E 100%);
+  background: linear-gradient(138deg, #6B655E 0%, #4A453F 48%, #2E2A26 100%);
   animation: burnAshDrift var(--du, 3s) cubic-bezier(.25, .5, .4, 1) var(--dl, 0s) forwards;
   will-change: transform, opacity;
 }
-/* 검게 탄 조각 · 중간 잿빛 · 옅은 재 — 색을 섞어 진짜 재처럼 */
-.burn__ash i:nth-child(2n) { background: linear-gradient(138deg, #4A453F 0%, #2A2622 58%, #191614 100%); }
-.burn__ash i:nth-child(3n) { background: linear-gradient(122deg, #9A948C 0%, #6B655E 55%, #46413C 100%); }
-.burn__ash i:nth-child(4n) { background: linear-gradient(165deg, #ABA59C 0%, #7A746C 52%, #4E4843 100%); }
+/* 검게 탄 조각 · 잿빛 · 마른 재 — 밝은 금빛 없이 회색 계열만 */
+.burn__ash i:nth-child(2n) { background: linear-gradient(138deg, #443F3A 0%, #26221F 58%, #151312 100%); }
+.burn__ash i:nth-child(3n) { background: linear-gradient(122deg, #7D776F 0%, #57524C 55%, #3A3631 100%); }
+.burn__ash i:nth-child(4n) { background: linear-gradient(165deg, #5A5550 0%, #3E3A35 52%, #242120 100%); }
 .burn__ash i:nth-child(5n) { animation-name: burnAshFlutter; }
 .burn__ash i:nth-child(7n) { border-radius: 62% 38% 55% 45% / 40% 60% 42% 58%; }
+/* 찢긴 탄 종이 조각 — 각진 가장자리 */
+.burn__ash i:nth-child(6n) { clip-path: polygon(6% 0, 100% 12%, 92% 100%, 0 82%); border-radius: 0; }
+.burn__ash i:nth-child(8n) { clip-path: polygon(0 18%, 88% 0, 100% 86%, 14% 100%); border-radius: 0; }
 @keyframes burnAshDrift {
   0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(.86); }
-  9% { opacity: .94; transform: translate3d(calc(var(--dx, 0) * .18px), -18px, 0) rotate(calc(var(--rot, 120deg) * .16)) scale(1); }
+  9% { opacity: .88; transform: translate3d(calc(var(--dx, 0) * .18px), -18px, 0) rotate(calc(var(--rot, 120deg) * .16)) scale(1); }
   40% { opacity: .86; transform: translate3d(calc(var(--dx, 0) * .55px + var(--sway, 8px)), -78px, 0) rotate(calc(var(--rot, 120deg) * .5)); }
   70% { opacity: .52; transform: translate3d(calc(var(--dx, 0) * 1.05px - var(--sway, 8px)), -146px, 0) rotate(calc(var(--rot, 120deg) * .82)) scale(.92); }
   100% { opacity: 0; transform: translate3d(calc(var(--dx, 0) * 1.6px + var(--sway, 8px)), -216px, 0) rotate(var(--rot, 120deg)) scale(.7); }
 }
 @keyframes burnAshFlutter {
   0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(.8); }
-  10% { opacity: .92; transform: translate3d(calc(var(--dx, 0) * .22px - var(--sway, 8px)), -14px, 0) rotate(40deg) scale(1); }
+  10% { opacity: .86; transform: translate3d(calc(var(--dx, 0) * .22px - var(--sway, 8px)), -14px, 0) rotate(40deg) scale(1); }
   42% { opacity: .84; transform: translate3d(calc(var(--dx, 0) * .6px + var(--sway, 8px)), -70px, 0) rotate(150deg) scale(.96); }
   72% { opacity: .5; transform: translate3d(calc(var(--dx, 0) * 1.1px - var(--sway, 8px)), -134px, 0) rotate(260deg) scale(.86); }
   100% { opacity: 0; transform: translate3d(calc(var(--dx, 0) * 1.55px + var(--sway, 8px)), -208px, 0) rotate(400deg) scale(.62); }
