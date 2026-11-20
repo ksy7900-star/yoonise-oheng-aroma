@@ -27,15 +27,18 @@
      코드를 넣으면 그 브라우저(localStorage)에 해제 상태가 저장되고,
      FREE_TRIAL_ENABLED = true 인 동안에도 2026년 11월 ~ 2027년 12월 전체 날짜가 바로 열립니다.
      FREE_TRIAL_ENABLED = false 인 지금도 그대로 동작합니다(= 테스트용으로도 쓸 수 있음). */
-  /* 2티어 — 대소문자·띄어쓰기·하이픈은 무시하고 비교합니다.
-       YOON2027    → tier 'pass'      : 1년 달력 전체 열기
-       YOONALL2027 → tier 'allinone'  : 1년 달력 전체 + 오늘 액운 태우기 무제한 */
+  /* 3티어 — 대소문자·띄어쓰기·하이픈은 무시하고 비교합니다.
+       YOON2027       → tier 'pass'      : 2027 내 사주 타이밍 맵 + 1년 수호 부적 (액운 태우기 5회 무료)
+       YOONALL2027    → tier 'allinone'  : 1년 패스 + 매일 일진 부적 + 매일 액운 태우기 무제한
+       YOONDIARY2027  → tier 'diary'     : 올인원 전부 + 365일 1줄 성찰 다이어리 */
   var ENTRY_CODES = [
     { code: 'YOON2027', tier: 'pass', name: '1년 패스' },
-    { code: 'YOONALL2027', tier: 'allinone', name: '올인원 패키지' }
+    { code: 'YOONALL2027', tier: 'allinone', name: '올인원' },
+    { code: 'YOONDIARY2027', tier: 'diary', name: '성찰 에디션' }
   ];
-  var TIER_NAME = { pass: '1년 패스', allinone: '올인원 패키지' };
-  var UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 해제 티어 저장 키 ('pass' | 'allinone' · 예전 '1' 은 pass)
+  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
+  var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };   // 위 티어가 아래 티어의 기능을 모두 포함한다
+  var UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 해제 티어 저장 키 ('pass' | 'allinone' | 'diary' · 예전 '1' 은 pass)
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -47,8 +50,9 @@
         비워 두면 카카오톡 채널에서 계좌를 안내하고,
         채우면 계좌번호 원클릭 복사 + 입금 확인 카톡 연결이 동작합니다.
      ※ 계좌번호·예금주는 실제로 확인된 값만 넣습니다. 지어내지 않습니다. */
-  var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 2027년 1년 타이밍 패스 14,900원 (페이앱 페이지에서 금액 확인)
-  var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 2027 올인원 패키지 19,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 1년 패스 14,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 올인원 19,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_DIARY_URL = '';       // ✨ 성찰 에디션 24,900원 — 비어 있으면 계좌이체 + 노란 카톡 버튼으로 안내
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
   var PAYAPP_CONSULT_URL = '';    // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
@@ -595,7 +599,7 @@
     state.tier = raw === '1' ? 'pass' : (TIER_NAME[raw] ? raw : '');
     state.unlocked = !!state.tier;
   }
-  /** tier: 'pass' | 'allinone' | '' (해제) */
+  /** tier: 'pass' | 'allinone' | 'diary' | '' (해제) */
   function saveUnlock(tier) {
     state.tier = TIER_NAME[tier] ? tier : '';
     state.unlocked = !!state.tier;
@@ -606,7 +610,7 @@
   }
   /** 코드 비교 — 대소문자·띄어쓰기·하이픈은 무시한다 */
   function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
-  /** 코드 → 티어('pass' | 'allinone'), 모르는 코드면 '' */
+  /** 코드 → 티어('pass' | 'allinone' | 'diary'), 모르는 코드면 '' */
   function tierOfCode(v) {
     var n = normCode(v);
     if (!n) return '';
@@ -616,6 +620,347 @@
     return '';
   }
   function codeValid(v) { return !!tierOfCode(v); }
+  /** 이 기기에 적용된 티어가 t 이상인가 (pass < allinone < diary) */
+  function tierAtLeast(t) { return (TIER_RANK[state.tier] || 0) >= (TIER_RANK[t] || 99); }
+
+  /* ══ ✨ 365일 1줄 성찰 다이어리 ═══════════════════════════════════════
+     · 날짜마다 다른 질문 — 5가지 기운(럭키·입단속·결정·머니·리셋)별 10개, 모두 50개.
+       기운 배지가 없는 잔잔한 날은 날짜 순서로 다섯 결을 돌아가며 물어본다(365일 모두 질문이 있다).
+     · 같은 날짜는 언제 열어도 같은 질문 — 날짜 숫자(ordinal)로만 고른다.
+     · 저장은 이 기기(브라우저)에만. 서버로 보내지 않는다. 키: yoonise.timing.diary.v1
+     · 정적 웹이라 브라우저 기록을 지우면 사라지므로 '📖 내 성찰 기록 보기'에서 .txt 백업을 둔다. */
+  var DIARY_KEY = 'yoonise.timing.diary.v1';
+  var DIARY_MAX = 120;
+  var DIARY_CATS = ['럭키', '입단속', '결정', '머니', '리셋'];
+  var DIARY_CAT_CLASS = { '럭키': 'gold', '입단속': 'red', '결정': 'blue', '머니': 'blue', '리셋': 'gray' };
+  var DIARY_Q = {
+    '럭키': [
+      '오늘 누군가에게 먼저 건넨 말 중, 가장 따뜻했던 한마디는?',
+      '기회가 왔을 때 나는 어떤 표정을 지었나요? 한 줄로 적어 보세요.',
+      '오늘 나를 웃게 한 사람은 누구였고, 그 사람에게 뭐라고 말해 주고 싶나요?',
+      '칭찬을 들었을 때 나는 뭐라고 대답했나요? 다음엔 이렇게 말해 보고 싶어요.',
+      '오늘의 좋은 일 하나를 골라, 그중 내가 만든 부분을 적어 보세요.',
+      '붙잡고 싶은 인연 하나, 이번 주에 먼저 보낼 한마디는?',
+      '문이 열렸다고 느낀 순간은 언제였고, 나는 한 걸음 내디뎠나요?',
+      '오늘의 나를 축하해 줄 사람에게 들려주고 싶은 이야기는?',
+      '기분 좋은 일이 생기면 나는 누구에게 가장 먼저 말하고 싶나요?',
+      '잘 풀린 일 하나를 골라, 그게 왜 잘 풀렸는지 한 줄로 적어 보세요.'
+    ],
+    '입단속': [
+      '오늘 삼킨 말 중, 내일 다시 꺼낸다면 어떤 말투로 말하겠나요?',
+      '답장하기 전에 잠깐 멈춘 순간, 그 몇 초 동안 무슨 생각이 들었나요?',
+      '오늘 서운했던 일, 상대 입장에서 한 줄로 적어 본다면?',
+      '지금 가장 보내고 싶지 않은 카톡은 무엇이고, 왜인가요?',
+      '“네 말이 맞아”라고 먼저 말할 수 있었던 순간이 있었나요?',
+      '오늘 화가 난 이유를 “사실은 ~이 서운해서”로 다시 써 보세요.',
+      '기분이 상했을 때 내 몸은 어디가 먼저 아팠나요?',
+      '오늘 참은 말 한마디, 내일 아침에도 여전히 하고 싶은가요?',
+      '누군가와 부딪힌 뒤, 내가 지키고 싶었던 것은 무엇이었나요?',
+      '오늘의 감정을 날씨에 비유하면? 그 날씨에 우산을 하나 준다면 어떤 우산인가요?'
+    ],
+    '결정': [
+      '오늘 미뤄 둔 결정 하나, 작은 버전으로라면 무엇부터 할 수 있나요?',
+      '지금 정해야 할 일을 “하기 / 안 하기” 둘로만 적는다면?',
+      '이번 주에 꼭 끝내고 싶은 일 하나는 무엇인가요?',
+      '결정을 못 내리는 이유는 정보가 부족해서인가요, 두려워서인가요?',
+      '3년 뒤의 내가 오늘의 이 결정을 본다면 뭐라고 할까요?',
+      '오늘 정리한 것 중, 내일도 그대로 두고 싶은 것은?',
+      '“일단 보류”도 결정이라면, 오늘 무엇을 보류할까요?',
+      '오늘의 결정에서 내가 가장 아끼는 가치는 무엇인가요?',
+      '누군가에게 물어보고 싶은 결정 하나, 그 질문을 한 줄로 적어 보세요.',
+      '결정을 내린 뒤, 나에게 해 주고 싶은 한마디는?'
+    ],
+    '머니': [
+      '오늘 쓴 돈 중, 하나도 아깝지 않았던 지출은?',
+      '오늘 들어온 돈(또는 들어올 돈)의 쓸 곳을 한 줄로 정해 보세요.',
+      '이번 달에 줄이고 싶은 지출 하나는 무엇인가요?',
+      '받을 돈이 있다면, 오늘 한 줄로 물어볼 수 있는 문장을 적어 보세요.',
+      '돈 걱정이 올라올 때, 나를 안심시키는 한마디는?',
+      '오늘 산 것 중 한 달 뒤에도 고마울 것 하나는?',
+      '내가 돈을 쓸 때 가장 편안한 순간은 언제인가요?',
+      '저축하고 싶은 이유를 “누구를 위해서”로 한 줄 적어 보세요.',
+      '오늘의 지출을 세 단어로 요약한다면? (예: 필요·기분·사람)',
+      '다음 달의 나에게 써 주고 싶은 돈 한 가지는?'
+    ],
+    '리셋': [
+      '이번 달에 내려놓고 싶은 습관 하나는?',
+      '새로 시작하고 싶은 일 하나, 첫 10분은 무엇인가요?',
+      '지난달의 나에게 고맙다고 말한다면, 어떤 일 때문에인가요?',
+      '이번 달의 나를 한 단어로 정한다면?',
+      '지금 정리하고 싶은 공간 하나는 어디인가요?',
+      '이번 달에 꼭 비워 둘 하루는 언제인가요?',
+      '새 마음으로 정리하고 싶은 약속 하나는?',
+      '이번 달 나를 지켜 줄 한 가지 규칙은?',
+      '지난달에 배운 것 중, 이번 달에도 들고 갈 것은?',
+      '이번 달 마지막 날의 나에게 미리 한 줄 남긴다면?'
+    ]
+  };
+  var diary = { entries: {} };
+
+  function diaryAllowed() {
+    if (!FREE_TRIAL_ENABLED) return true;        // 지금 모드 — 전부 열린 상태(테스트 포함)
+    return tierAtLeast('diary');                 // 무료 체험을 켜면 성찰 에디션부터
+  }
+  function loadDiary() {
+    var o = null;
+    try { o = JSON.parse(localStorage.getItem(DIARY_KEY)); } catch (e) { o = null; }
+    diary.entries = (o && o.entries && typeof o.entries === 'object') ? o.entries : {};
+  }
+  function saveDiary() {
+    try { localStorage.setItem(DIARY_KEY, JSON.stringify({ v: 1, entries: diary.entries })); } catch (e) {}
+  }
+  function diaryOf(iso) { return diary.entries[iso] || null; }
+  function diaryCount() {
+    var n = 0;
+    for (var k in diary.entries) if (Object.prototype.hasOwnProperty.call(diary.entries, k)) n++;
+    return n;
+  }
+  /** 날짜 → 며칠째인지(1970-01-01 기준 일수) — 같은 날짜는 항상 같은 질문이 되게 하는 숫자 */
+  function diaryOrd(iso) {
+    var p = T.parseISO(iso);
+    return Math.floor(Date.UTC(p.y, p.m - 1, p.d) / 86400000);
+  }
+  /** 그날의 결 — 배지가 있으면 그 기운, 잔잔한 날은 날짜 순서로 다섯 결을 돌아가며 */
+  function diaryCatFor(iso, info) {
+    var bs = (info && info.badges) || [];
+    for (var i = 0; i < bs.length; i++) if (DIARY_Q[bs[i].text]) return bs[i].text;
+    return DIARY_CATS[Math.abs(diaryOrd(iso)) % DIARY_CATS.length];
+  }
+  function diaryAsk(iso, info) {
+    var cat = diaryCatFor(iso, info);
+    var pool = DIARY_Q[cat];
+    var idx = Math.abs(diaryOrd(iso) * 3 + cat.length) % pool.length;
+    return { cat: cat, q: pool[idx] };
+  }
+  function diaryStampOf(iso) {
+    var rec = diaryOf(iso);
+    if (!rec || !rec.at) return '';
+    var d = new Date(rec.at);
+    if (isNaN(d.getTime())) return '';
+    return (d.getMonth() + 1) + '.' + d.getDate();
+  }
+  function diaryDotHTML() {
+    return '<span class="day__pen" aria-hidden="true"></span>';
+  }
+
+  /** 날짜 팝업 안 성찰 섹션 — 부적 톡톡톡 완료 영역 아래 */
+  function diarySectionHTML(info) {
+    if (!diaryAllowed()) {
+      return '<section class="diary diary--locked" aria-label="365일 1줄 성찰 다이어리">' +
+        '<p class="diary__eyebrow">✨ 365일 1줄 성찰 다이어리</p>' +
+        '<p class="diary__q">매일 다른 질문 한 줄이, 1년이 쌓이면 내 기록이 돼요.</p>' +
+        '<button type="button" class="diary__unlock" data-shop="diary">✨ 성찰 에디션 24,900원에서 열기</button>' +
+        '</section>';
+    }
+    return '<section class="diary" data-diary="' + info.iso + '" aria-labelledby="diaryTitle">' +
+      '<div class="diary__head">' +
+      '<p class="diary__eyebrow" id="diaryTitle">✨ 오늘의 1줄 성찰</p>' +
+      '<span class="diary__day">365일 다이어리</span>' +
+      '</div>' +
+      '<div class="diary__body" data-diary-body>' + diaryBodyHTML(info) + '</div>' +
+      '</section>';
+  }
+  function diaryBodyHTML(info, draft) {
+    var ask = diaryAsk(info.iso, info);
+    var rec = diaryOf(info.iso);
+    var editing = typeof draft === 'string';
+    var hasBadge = !!((info.badges || []).length);
+    var cat = (rec && !editing) ? (rec.cat || ask.cat) : ask.cat;
+    var q = (rec && !editing && rec.q) ? rec.q : ask.q;
+    var head =
+      '<div class="diary__meta">' +
+      '<span class="badge badge--' + (DIARY_CAT_CLASS[cat] || 'gray') + '">' + esc(cat) + '</span>' +
+      '<span class="diary__tag">' + (hasBadge ? '그날의 결' : '잔잔한 날의 결') + '</span>' +
+      '</div>' +
+      '<p class="diary__q">' + esc(q) + '</p>';
+
+    if (rec && !editing) {
+      return head +
+        '<div class="diary__saved">' +
+        '<p class="diary__saved-label"><span aria-hidden="true">✍️</span> 내가 남긴 한 줄</p>' +
+        '<p class="diary__saved-text">' + esc(rec.text) + '</p>' +
+        '<div class="diary__saved-row">' +
+        '<span class="diary__saved-at">' + (diaryStampOf(info.iso) ? diaryStampOf(info.iso) + ' 기록' : '기록됨') + ' · 이 기기에 저장</span>' +
+        '<span class="diary__saved-btns">' +
+        '<button type="button" class="diary__mini" data-diary-edit>고치기</button>' +
+        '<button type="button" class="diary__mini" data-diary-del>지우기</button>' +
+        '</span>' +
+        '</div>' +
+        '</div>';
+    }
+
+    var val = editing ? draft : '';
+    return head +
+      '<div class="diary__form">' +
+      '<textarea class="diary__input" id="diaryText" rows="2" maxlength="' + DIARY_MAX + '" ' +
+      'placeholder="한 줄이면 충분해요" aria-label="오늘의 1줄 성찰">' + esc(val) + '</textarea>' +
+      '<div class="diary__foot">' +
+      '<span class="diary__count" data-diary-count>' + String(val.length) + '/' + DIARY_MAX + '</span>' +
+      '<button type="button" class="diary__save" data-diary-save>기록 남기기</button>' +
+      '</div>' +
+      '</div>' +
+      '<p class="diary__hint">이 기기에만 저장돼요 · 📖 내 성찰 기록 보기에서 .txt로 백업할 수 있어요</p>';
+  }
+
+  /** 성찰 섹션만 다시 그린다 (팝업 스크롤·부적 상태를 건드리지 않게) */
+  function paintDiary(iso, draft) {
+    var info = infoFor(iso);
+    var box = modalBody ? modalBody.querySelector('[data-diary-body]') : null;
+    if (!info || !box) return;
+    box.innerHTML = diaryBodyHTML(info, draft);
+    var ta = box.querySelector('#diaryText');
+    if (ta) { try { ta.focus({ preventScroll: true }); } catch (e) { ta.focus(); } }
+  }
+  function saveDiaryFromModal() {
+    if (!modalBody) return;
+    var wrap = modalBody.querySelector('[data-diary]');
+    if (!wrap) return;
+    var iso = wrap.getAttribute('data-diary');
+    var info = infoFor(iso);
+    var ta = wrap.querySelector('#diaryText');
+    if (!info || !ta) return;
+    var text = String(ta.value || '').replace(/\s+$/g, '').replace(/^\s+/, '');
+    if (!text) {
+      ta.classList.remove('is-shake');
+      void ta.offsetWidth;
+      ta.classList.add('is-shake');
+      try { ta.focus({ preventScroll: true }); } catch (e) {}
+      toast('한 줄을 적어 주세요');
+      return;
+    }
+    if (text.length > DIARY_MAX) text = text.slice(0, DIARY_MAX);
+    var ask = diaryAsk(iso, info);
+    diary.entries[iso] = { cat: ask.cat, q: ask.q, text: text, at: new Date().toISOString() };
+    saveDiary();
+    paintDiary(iso);
+    renderCalendar();
+    sfxDone();
+    vibrate(18);
+    toast('✍️ ' + fmtMD(iso) + ' 성찰 한 줄을 남겼어요 — 달력에 펜 점이 찍혔어요');
+  }
+  function deleteDiaryFromModal() {
+    var wrap = modalBody ? modalBody.querySelector('[data-diary]') : null;
+    if (!wrap) return;
+    var iso = wrap.getAttribute('data-diary');
+    if (!diary.entries[iso]) return;
+    delete diary.entries[iso];
+    saveDiary();
+    paintDiary(iso);
+    renderCalendar();
+    sfxTap(1);
+    toast('이 날의 기록을 지웠어요');
+  }
+
+  /* ── 📖 내 성찰 기록 모아보기 · 백업 ───────────────────── */
+  function diaryKeys() {
+    var keys = [];
+    for (var k in diary.entries) {
+      if (!Object.prototype.hasOwnProperty.call(diary.entries, k)) continue;
+      if (!diary.entries[k] || !diary.entries[k].text) continue;
+      keys.push(k);
+    }
+    keys.sort();
+    return keys;
+  }
+  function diaryAllText() {
+    var keys = diaryKeys();
+    var out = ['윤이세 · 2027 내 인생 타이밍 캘린더 — 내 성찰 기록',
+      '남긴 날 ' + keys.length + '일 · 내려받은 날 ' + fmtKoDate(state.todayISO), ''];
+    keys.forEach(function (k) {
+      var r = diary.entries[k];
+      var p = T.parseISO(k);
+      var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
+      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.cat || '') + ']');
+      out.push('Q. ' + (r.q || ''));
+      out.push('A. ' + (r.text || ''));
+      out.push('');
+    });
+    if (!keys.length) out.push('아직 남긴 기록이 없어요.');
+    return out.join('\n');
+  }
+  function downloadDiary() {
+    var text = diaryAllText();
+    var name = '윤이세_성찰기록_' + state.todayISO.replace(/-/g, '') + '.txt';
+    try {
+      var blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 3000);
+      toast('📄 성찰 기록을 .txt 파일로 내려받았어요');
+    } catch (e) {
+      copyText(text, function (copied) {
+        toast(copied === true ? '파일 저장이 막혀 .txt 내용을 복사했어요' : '파일 저장·복사가 막혀 있어요');
+      });
+    }
+  }
+
+  var dbookEl = null, dbookBody = null, dbookDialog = null, dbookLastFocus = null, dbookClosing = false;
+
+  function diaryBookHTML() {
+    var keys = diaryKeys();
+    var body = keys.length
+      ? '<div class="dbook__list">' + keys.map(function (k) {
+        var r = diary.entries[k];
+        var p = T.parseISO(k);
+        var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
+        return '<button type="button" class="dbook__item" data-dbook-day="' + k + '" aria-label="' +
+          p.m + '월 ' + p.d + '일 성찰 기록 — 그날 열기">' +
+          '<span class="dbook__date">' + p.y + '.' + p.m + '.' + p.d +
+          '<em>(' + dow + ')</em></span>' +
+          '<span class="badge badge--' + (DIARY_CAT_CLASS[r.cat] || 'gray') + '">' + esc(r.cat || '성찰') + '</span>' +
+          '<span class="dbook__q">' + esc(r.q || '') + '</span>' +
+          '<span class="dbook__a">' + esc(r.text || '') + '</span>' +
+          '</button>';
+      }).join('') + '</div>'
+      : '<div class="dbook__empty">' +
+        '<p class="dbook__empty-title">아직 남긴 한 줄이 없어요</p>' +
+        '<p class="dbook__empty-sub">달력에서 날짜를 눌러 오늘의 질문에 한 줄만 남겨 보세요.<br>한 줄이 쌓이면 1년 뒤 내 기록이 됩니다.</p>' +
+        '</div>';
+
+    return '<p class="modal__eyebrow">MY REFLECTIONS · 성찰 기록</p>' +
+      '<h2 class="dbook__title" id="dbookTitle">📖 내 성찰 기록</h2>' +
+      '<p class="dbook__sub">' + (keys.length
+        ? '<b>' + keys.length + '일</b>의 한 줄이 쌓였어요. 날짜를 누르면 그날 팝업이 열려요.'
+        : '아직 남긴 기록이 없어요.') + '</p>' +
+      (keys.length
+        ? '<div class="dbook__acts">' +
+          '<button type="button" class="dbook__act" data-diary-copy>전체 복사</button>' +
+          '<button type="button" class="dbook__act dbook__act--gold" data-diary-dl>.txt로 내려받기</button>' +
+          '</div>'
+        : '') +
+      body +
+      '<p class="dbook__note">성찰 기록은 <b>이 브라우저에만</b> 저장돼요. 기기를 바꾸거나 브라우저 기록을 지우면 사라지니, 가끔 .txt로 내려받아 두세요.</p>'; 
+  }
+  function openDiaryBook() {
+    if (!dbookEl) return;
+    dbookLastFocus = document.activeElement;
+    dbookBody.innerHTML = diaryBookHTML();
+    dbookEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    dbookBody.scrollTop = 0;
+    sfxOpen();
+    try { dbookDialog.focus({ preventScroll: true }); } catch (e) { dbookDialog.focus(); }
+  }
+  function closeDiaryBook() {
+    if (!dbookEl || dbookEl.hidden || dbookClosing) return;
+    dbookClosing = true;
+    dbookEl.classList.add('is-closing');
+    setTimeout(function () {
+      dbookEl.classList.remove('is-closing');
+      dbookEl.hidden = true;
+      dbookBody.innerHTML = '';
+      dbookClosing = false;
+      if ((!modalEl || modalEl.hidden) && (!shopEl || shopEl.hidden)) document.body.classList.remove('is-modal-open');
+      var target = dbookLastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      dbookLastFocus = null;
+    }, 180);
+  }
 
   /* ── 토스트 (복사 완료·입장 코드 안내) ───────────────────── */
   var toastEl = null, toastTimer = 0;
@@ -1240,7 +1585,7 @@
       var open = isOpenDay(iso);
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
       var pastDay = iso < state.todayISO;
-      var clickable = badges.length ? true : (!open && !pastDay);
+      var clickable = badges.length ? true : (diaryAllowed() ? open : (!open && !pastDay));
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
@@ -1250,6 +1595,12 @@
         if (iso >= state.todayISO) label += ', 부적 스티커 붙음';
       }
       var stampEl = stamp ? stampElement(info) : '';
+      // 내가 성찰 한 줄을 남긴 날 — 달력 칸에 작은 잉크 펜 점
+      var noted = !!diaryOf(iso);
+      if (noted) {
+        cls.push('day--noted');
+        label += ', 성찰 기록 있음';
+      }
 
       var cellInner = '<span class="day__top">' +
         '<span class="day__num">' + d + '</span>' +
@@ -1258,7 +1609,8 @@
             stickerSVG(stampEl) + '</span>'
           : '') +
         '</span>' +
-        '<span class="day__badges">' + badgeHtml + '</span>';
+        '<span class="day__badges">' + badgeHtml + '</span>' +
+        (noted ? diaryDotHTML() : '');
 
       if (clickable) {
         html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
@@ -1294,9 +1646,19 @@
 
     var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
     var noteText = (!FREE_TRIAL_ENABLED || state.unlocked)
-      ? '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 눌러 부적을 톡톡톡 세 번 두드리면, 달력 칸에 그날의 캐릭터 부적 스티커가 착 붙어요.'
+      ? '지금은 2026년 11월부터 2027년 12월까지 모든 날짜가 보여요. 기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 부적이 나오고, 아래에 ✨ 오늘의 1줄 성찰이 함께 있어요. 기록을 남긴 날은 달력 칸에 작은 펜 점이 찍혀요.'
       : freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     $('#calNote').textContent = noteText;
+
+    // 📖 내 성찰 기록 보기 버튼의 일수
+    var bk = $('#diaryBookCount');
+    if (bk) {
+      var nNote = diaryCount();
+      bk.textContent = nNote ? nNote + '일' : '';
+      bk.hidden = !nNote;
+    }
+    var bookBtn = $('#diaryBookBtn');
+    if (bookBtn) bookBtn.hidden = !diaryAllowed();
   }
 
   /* ── 달력 아래: 이 달 조심할 날 · 좋은 날 목록 ─────────── */
@@ -1395,13 +1757,15 @@
   function openDayModal(iso) {
     var info = infoFor(iso);
     if (!info || !modalEl) return;
-    // 기운 태그(럭키·입단속·결정·머니·리셋)가 하나도 없는 평범한 날은 팝업을 열지 않는다
-    if (!info.badges || !info.badges.length) return;
+    var hasBadges = !!(info.badges && info.badges.length);
+    // 기운 태그가 없는 잔잔한 날은 원래 팝업을 열지 않는다.
+    // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 연다.
+    if (!hasBadges && !diaryAllowed()) return;
     var lock = FREE_TRIAL_ENABLED && !inFree(iso);
     lastFocus = document.activeElement;
     state.sel = iso;
     renderCalendar();                       // 날짜 칸 선택 표시
-    modalBody.innerHTML = lock ? lockModalHTML(info) : briefModalHTML(info);
+    modalBody.innerHTML = lock ? lockModalHTML(info) : (hasBadges ? briefModalHTML(info) : plainModalHTML(info));
     modalDialog.classList.toggle('modal__dialog--lock', lock);
     modalEl.hidden = false;
     document.body.classList.add('is-modal-open');
@@ -1444,7 +1808,7 @@
 
   function briefModalHTML(info) {
     var today = info.iso === state.todayISO;
-    // 부적 팝업은 캐릭터·이름표·톡톡톡·대사·스티커 완료 안내·닫기만 남긴다.
+    // 부적 팝업은 캐릭터·이름표·톡톡톡·대사·스티커 완료 안내 → 그 아래 ✨ 오늘의 1줄 성찰 → 닫기 순서
     // (예전 맨 아래 '+ 이 날의 사주 풀이 보기' 접이식 풀이는 뺐다 — 2026-11-20)
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
@@ -1452,6 +1816,16 @@
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
       '✨ 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 착 붙였어요!</p>' +
+      diarySectionHTML(info) +
+      '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
+  }
+
+  /** 기운 배지가 없는 잔잔한 날 — 부적 없이 오늘의 성찰만 남기는 팝업 */
+  function plainModalHTML(info) {
+    return modalHead(info) +
+      '<p class="modal__headline">' + esc(info.headline) + '</p>' +
+      '<p class="modal__calm">이 날은 부적이 나오는 날은 아니에요. 잔잔한 날일수록 한 줄 적어 두기 좋아요.</p>' +
+      diarySectionHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
@@ -1468,18 +1842,18 @@
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>2027년 1~12월 전체 열기</p>' +
-      '<p class="lock__sub">2027 1년 패스 / 올인원 패키지 / 긴급 개운템</p>' +
+      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션</p>' +
       '<p class="lock__early">사전 신청 시 12월 한 달 무료!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
       '지금 사전 신청하면 2026년 12월 한 달을 먼저 열어 드리고, 2027년 1~12월 365일을 이어서 볼 수 있어요.</p>' +
       '<div class="lock__actions">' +
       '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 2027 1년 패스 · 14,900원</span></button>' +
-      '<button type="button" class="btn btn--cream shop-btn" data-shop="allinone">' +
-      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 2027 올인원 패키지 · 19,900원</span></button>' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">' +
-      '<span class="shop-btn__no">3</span><span class="shop-btn__label">⚡ 긴급 개운템 · 낱개 2,900원</span></button>' +
+      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">' +
+      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 올인원 · 19,900원</span></button>' +
+      '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
+      '<span class="shop-btn__no">3</span><span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span></button>' +
       '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
       '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
@@ -1493,6 +1867,7 @@
      100% 디지털 상품입니다. 실물 다이어리·배송은 넣지 않습니다. */
   var PASS_PRICE = '14,900원';
   var ALLINONE_PRICE = '19,900원';
+  var DIARY_PRICE = '24,900원';
   var CARE_PRICE = '1종 2,900원 · 3종 풀세트 5,900원';
   var CONSULT_PRICE = '49,000원';
 
@@ -1511,6 +1886,7 @@
     var map = {
       'pass': PAYAPP_PASS_URL,
       'allinone': PAYAPP_ALLINONE_URL,
+      'diary': PAYAPP_DIARY_URL,
       'care-one': PAYAPP_CARE_ONE_URL,
       'care-set': PAYAPP_CARE_SET_URL,
       'consult': PAYAPP_CONSULT_URL
@@ -1569,7 +1945,8 @@
   function orderLabel(item) {
     var it = String(item || '');
     if (it === 'pass') return '2027 1년 패스 ' + PASS_PRICE;
-    if (it === 'allinone') return '2027 올인원 패키지 ' + ALLINONE_PRICE;
+    if (it === 'allinone') return '2027 올인원 ' + ALLINONE_PRICE;
+    if (it === 'diary') return '2027 성찰 에디션 ' + DIARY_PRICE;
     if (it === 'consult') return '윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE;
     var m = /^care-(card|objet|bowl|set)$/.exec(it);
     if (m) return '긴급 개운템 — ' + careItemLabel(m[1]);
@@ -1681,37 +2058,53 @@
     openKakao();
   }
 
-  /* 1번 — 2027 1년 패스 (14,900원) */
+  /* 1번 — 🎟️ 1년 패스 (14,900원) */
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
-      '<h2 class="shop__title" id="shopTitle">🎟️ 2027 1년 패스</h2>' +
+      '<h2 class="shop__title" id="shopTitle">🎟️ 1년 패스</h2>' +
       '<p class="shop__sub">생년월일만 넣으면 <b>2027년 1월 1일부터 12월 31일까지 365일</b>이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>2027년 1~12월 1년 운기 흐름</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
-      '<li><b>사전 신청 시 12월 한 달 서비스</b><span>2026년 12월 달력을 먼저 열어 드려요</span></li>' +
-      '<li><b>내 기본 부적 1개</b><span>2027년 내내 나를 받쳐 주는 기본 부적</span></li>' +
+      '<li><b>2027 내 사주 타이밍 맵</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
+      '<li><b>1년 수호 부적</b><span>2027년 내내 나를 받쳐 주는 부적 (사전 신청 시 12월 한 달 먼저)</span></li>' +
+      '<li><b>액운 태우기 5회 무료</b><span>적고 · 구기고 · 태워 보내기, 다섯 장</span></li>' +
       '</ul>' +
       priceHTML('2027 1년 패스', PASS_PRICE) +
       payActionsHTML('pass') +
       kakaoOrderHTML('pass', '💬 결제 완료 · 카톡으로 입장 코드 받기');
   }
 
-  /* 2번 — 2027 올인원 패키지 (19,900원 · 추천) */
+  /* 2번 — 👑 올인원 (19,900원) */
   function allinoneShopHTML() {
     return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
-      '<h2 class="shop__title" id="shopTitle">👑 2027 올인원 패키지</h2>' +
-      '<p class="shop__sub">1년 패스에 <b>2027년 내 수호 부적</b>, <b>매일 일진 부적</b>, 그리고 <b>오늘 액운 태우기 무제한</b>까지 다 열리는 구성이에요. 처음부터 올인원으로 시작하시면 업그레이드 대비 <b>2,900원 더 유리</b>해요.</p>' +
+      '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
+      '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>액운 태우기 무제한</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고 싶다면 여기서 시작하세요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>1년 패스 전부</b><span>2027년 1~12월 365일 + 사전 신청 시 12월 한 달 서비스</span></li>' +
-      '<li><b>2027년 내 수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
-      '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 튀어나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
-      '<li><b>🔥 오늘 액운 태우기 무제한</b><span>매일, 몇 장이든 — 적고, 구기고, 태워 보내기</span></li>' +
+      '<li><b>1년 패스 전부</b><span>2027 내 사주 타이밍 맵 + 1년 수호 부적 + 액운 태우기 5회</span></li>' +
+      '<li><b>매일 일진 부적</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
+      '<li><b>매일 액운 태우기 무제한</b><span>매일, 몇 장이든 — 적고, 구기고, 태워 보내기</span></li>' +
       '</ul>' +
       '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
       '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
-      priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
+      priceHTML('2027 올인원', ALLINONE_PRICE) +
       payActionsHTML('allinone') +
       kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기');
+  }
+
+  /* 3번 — ✨ 성찰 에디션 (24,900원) — 올인원 전부 + 365일 1줄 성찰 다이어리
+     PAYAPP_DIARY_URL 이 비어 있으면 카드 버튼은 '카톡으로 결제 링크 받기', 계좌이체 + 노란 카톡 버튼으로 안내한다. */
+  function diaryShopHTML() {
+    return '<p class="modal__eyebrow">REFLECTION EDITION · 365일 1줄 성찰 다이어리</p>' +
+      '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
+      '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>올인원 전부</b><span>1년 타이밍 맵 + 수호 부적 + 매일 일진 부적 + 액운 태우기 무제한</span></li>' +
+      '<li><b>365일 1줄 성찰 다이어리</b><span>날마다 다른 맞춤 질문 하나, 부담 없는 한 줄</span></li>' +
+      '<li><b>기록 저장·달력 표시</b><span>남긴 날은 달력에 펜 점 · 📖 내 성찰 기록 보기에서 .txt 백업</span></li>' +
+      '</ul>' +
+      priceHTML('2027 성찰 에디션', DIARY_PRICE) +
+      payActionsHTML('diary') +
+      kakaoOrderHTML('diary', '💬 결제 완료 · 카톡으로 성찰 에디션 코드 받기') +
+      '<p class="shop__note">이미 올인원을 쓰고 계시면 카톡으로 알려 주시면 차액을 안내해 드려요.</p>';
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
@@ -2670,7 +3063,8 @@
     shopBody.innerHTML = kind === 'burn' ? burnShopHTML()
       : (kind === 'care' ? careShopHTML()
         : (kind === 'consult' ? consultShopHTML()
-          : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML())));
+          : (kind === 'diary' ? diaryShopHTML()
+            : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML()))));
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -2751,10 +3145,10 @@
   function saveBurn() {
     try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, at: new Date().toISOString() })); } catch (e) {}
   }
-  function burnUnlimited() { return state.tier === 'allinone'; }
+  function burnUnlimited() { return tierAtLeast('allinone'); }
   function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
   function burnLeftText() {
-    if (burnUnlimited()) return '올인원 패키지 · 무제한';
+    if (burnUnlimited()) return (state.tier === 'diary' ? '성찰 에디션' : '올인원') + ' · 무제한';
     var l = burnLeft();
     return l > 0 ? '남은 무료 ' + l + '회' : '무료 5회를 다 썼어요';
   }
@@ -2763,7 +3157,7 @@
     var el = $('#burnLeft'), card = $('#burnCard');
     if (!el) return;
     var un = burnUnlimited(), out = !un && burnLeft() <= 0;
-    el.textContent = un ? '올인원 · 무제한' : (out ? '무료 5회 모두 사용' : '남은 무료 ' + burnLeft() + '회');
+    el.textContent = un ? (state.tier === 'diary' ? '성찰 에디션 · 무제한' : '올인원 · 무제한') : (out ? '무료 5회 모두 사용' : '남은 무료 ' + burnLeft() + '회');
     el.classList.toggle('is-unlimited', un);
     el.classList.toggle('is-out', out);
     if (card) card.classList.toggle('is-out', out);
@@ -3505,8 +3899,9 @@
     // 무료 체험 문구(js-trial)는 체험이 켜져 있고 아직 코드를 넣지 않았을 때만
     var trialMode = !!(FREE_TRIAL_ENABLED && !state.unlocked);
     if (btn) {
-      btn.textContent = state.tier === 'allinone' ? '🔓 올인원 패키지 적용됨'
-        : (state.tier === 'pass' ? '🔓 1년 패스 적용됨' : '🔑 입장 코드 입력');
+      btn.textContent = state.tier === 'diary' ? '🔓 성찰 에디션 적용됨'
+        : (state.tier === 'allinone' ? '🔓 올인원 적용됨'
+          : (state.tier === 'pass' ? '🔓 1년 패스 적용됨' : '🔑 입장 코드 입력'));
       btn.classList.toggle('is-on', !!state.unlocked);
       btn.setAttribute('aria-pressed', state.unlocked ? 'true' : 'false');
       btn.setAttribute('aria-label', state.unlocked
@@ -3519,8 +3914,9 @@
       if (state.tier) {
         tierEl.hidden = false;
         tierEl.innerHTML = '지금 적용된 티어 · <b>' + esc(TIER_NAME[state.tier]) + '</b>' +
-          (state.tier === 'allinone' ? ' — 액운 태우기 무제한 포함' : ' — 달력 전체 열림');
-        tierEl.classList.toggle('is-allinone', state.tier === 'allinone');
+          (state.tier === 'diary' ? ' — 달력 전체 + 성찰 다이어리 + 액운 태우기 무제한'
+            : (state.tier === 'allinone' ? ' — 액운 태우기 무제한 포함' : ' — 달력 전체 열림'));
+        tierEl.classList.toggle('is-allinone', state.tier === 'allinone' || state.tier === 'diary');
       } else {
         tierEl.hidden = true;
         tierEl.textContent = '';
@@ -3554,18 +3950,22 @@
     if (tier) {
       saveUnlock(tier);
       if (msg) {
-        msg.textContent = tier === 'allinone'
-          ? '🔓 올인원 패키지 확인됐어요 — 1년 달력 전체 + 액운 태우기 무제한이 열렸습니다.'
-          : '🔓 1년 패스 확인됐어요 — 2026년 11월부터 2027년 12월까지 모두 열렸습니다.';
+        msg.textContent = tier === 'diary'
+          ? '🔓 성찰 에디션 확인됐어요 — 365일 성찰 다이어리까지 모두 열렸습니다.'
+          : (tier === 'allinone'
+            ? '🔓 올인원 확인됐어요 — 1년 달력 전체 + 액운 태우기 무제한이 열렸습니다.'
+            : '🔓 1년 패스 확인됐어요 — 2026년 11월부터 2027년 12월까지 모두 열렸습니다.');
         msg.classList.add('is-ok');
       }
       if (inp) inp.value = '';
       syncLockUI();
       renderCalendar();
       renderBurnCard();
-      toast(tier === 'allinone'
-        ? '🔓 올인원 패키지 — 달력 전체 + 액운 태우기 무제한'
-        : '🔓 1년 패스 확인 — 전체 날짜가 열렸어요');
+      toast(tier === 'diary'
+        ? '🔓 성찰 에디션 — 다이어리까지 모두 열렸어요'
+        : (tier === 'allinone'
+          ? '🔓 올인원 — 달력 전체 + 액운 태우기 무제한'
+          : '🔓 1년 패스 확인 — 전체 날짜가 열렸어요'));
       sfxOpen();
       return;
     }
@@ -3593,6 +3993,7 @@
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
     loadStamps();
     loadUnlock();
+    loadDiary();
     syncLockUI();
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
@@ -3609,6 +4010,9 @@
     burnEl = $('#burnModal');
     burnBody = $('#burnBody');
     burnDialog = $('#burnDialog');
+    dbookEl = $('#diaryBookModal');
+    dbookBody = $('#diaryBookBody');
+    dbookDialog = $('#diaryBookDialog');
 
     loadBurn();
     renderBurnCard();
@@ -3641,6 +4045,39 @@
     var lockReset = $('#lockReset');
     if (lockReset) lockReset.addEventListener('click', function (e) { e.preventDefault(); lockAgain(); });
 
+    // 📖 내 성찰 기록 보기 — 달력 아래 버튼
+    var dbookBtn = $('#diaryBookBtn');
+    if (dbookBtn) dbookBtn.addEventListener('click', function (e) { e.preventDefault(); openDiaryBook(); });
+    if (dbookEl) {
+      dbookEl.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        if (e.target.closest('[data-dbook-close]')) { closeDiaryBook(); return; }
+        if (e.target.closest('[data-diary-copy]')) {
+          copyText(diaryAllText(), function (copied) {
+            toast(copied === true ? '📋 성찰 기록 전체를 복사했어요' : '복사가 막혀 있어요 — .txt 내려받기를 써 주세요');
+          });
+          return;
+        }
+        if (e.target.closest('[data-diary-dl]')) { downloadDiary(); return; }
+        var day = e.target.closest('[data-dbook-day]');
+        if (day) {
+          var iso = day.getAttribute('data-dbook-day');
+          closeDiaryBook();
+          setTimeout(function () { openDayModal(iso); }, 200);
+        }
+      });
+    }
+
+    // ✨ 성찰 다이어리 — 기록 남기기 · 고치기 · 지우기 · 글자 수
+    if (modalEl) {
+      modalEl.addEventListener('input', function (e) {
+        if (!e.target || e.target.id !== 'diaryText') return;
+        var wrap = e.target.closest('[data-diary]');
+        var cnt = wrap ? wrap.querySelector('[data-diary-count]') : null;
+        if (cnt) cnt.textContent = String(e.target.value || '').length + '/' + DIARY_MAX;
+      });
+    }
+
     // 대표 부적 — 배너 부적 패 탭 → 크게 보기 모달 / 모달 안 부적·버튼 탭 → 오늘 기운 받기
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
@@ -3653,6 +4090,18 @@
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
       if (tap) { onRitualTap(tap, e); return; }
+      if (!e.target.closest) return;
+      if (e.target.closest('[data-diary-save]')) { e.preventDefault(); saveDiaryFromModal(); return; }
+      var editBtn = e.target.closest('[data-diary-edit]');
+      if (editBtn) {
+        e.preventDefault();
+        var wrapE = editBtn.closest('[data-diary]');
+        var isoE = wrapE ? wrapE.getAttribute('data-diary') : '';
+        var recE = isoE ? diaryOf(isoE) : null;
+        if (recE) paintDiary(isoE, recE.text || '');
+        return;
+      }
+      if (e.target.closest('[data-diary-del]')) { e.preventDefault(); deleteDiaryFromModal(); return; }
       if (e.target.closest('[data-modal-close]')) closeDayModal();
     });
 
@@ -3742,6 +4191,21 @@
 
     // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
     document.addEventListener('keydown', function (e) {
+      if (dbookEl && !dbookEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeDiaryBook(); return; }
+        if (e.key !== 'Tab') return;
+        var df = $$('a[href], button:not([disabled])', dbookDialog).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!df.length) return;
+        var dFirst = df[0], dLast = df[df.length - 1];
+        if (e.shiftKey && (document.activeElement === dFirst || document.activeElement === dbookDialog)) {
+          e.preventDefault(); dLast.focus();
+        } else if (!e.shiftKey && document.activeElement === dLast) {
+          e.preventDefault(); dFirst.focus();
+        }
+        return;
+      }
       if (talisEl && !talisEl.hidden) {
         if (e.key === 'Escape') { e.preventDefault(); closeTalisModal(); return; }
         if (e.key !== 'Tab') return;

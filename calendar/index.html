@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261120ak">
+<link rel="stylesheet" href="assets/style.css?v=20261120am">
 </head>
 <body>
 
@@ -231,6 +231,7 @@
         <p class="howto__free js-trial">오늘부터 <b>3일</b>은 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요.</p>
         <p class="howto__free js-open">지금은 <b>2027년 1~12월 전체</b>가 열려 있어요. <b>딱지가 붙은 날</b>을 누르면 그날의 부적이 나옵니다.</p>
         <p class="howto__free howto__free--ritual">부적은 <b>기운이 크게 흔들리거나 경고등이 켜진 날</b>(딱지가 붙은 날)에만 짠 하고 나타나요. 그날의 부적을 팝업에서 <b>톡·톡·톡 세 번</b> 두드리면, 그날의 캐릭터 부적 스티커가 달력 칸에 <b>착!</b> 붙어요.</p>
+        <p class="howto__free">날짜를 누르면 팝업 아래 <b>✨ 오늘의 1줄 성찰</b>이 함께 나와요. 한 줄을 남긴 날은 달력 칸에 <b>작은 펜 점</b>이 찍혀요.</p>
       </div>
 
       <!-- 모아보기 — 조심할 날만 · 좋은 날만 -->
@@ -248,6 +249,13 @@
       <div class="calfocus" id="calFocus" hidden></div>
 
       <p class="cal__note" id="calNote">기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
+
+      <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
+      <button type="button" class="diarybook" id="diaryBookBtn">
+        <span class="diarybook__ico" aria-hidden="true">📖</span>
+        <span class="diarybook__txt">내 성찰 기록 보기</span>
+        <span class="diarybook__n" id="diaryBookCount" hidden></span>
+      </button>
     </section>
 
     <!-- 🔥 오늘 액운 태우기 — 적고 · 구기고 · 태워 보내기 -->
@@ -266,8 +274,8 @@
       </button>
     </section>
 
-    <!-- CTA — 1. 1년 패스 · 2. 올인원 패키지 · 3. 긴급 개운템 (모두 앱 안 결제 안내 팝업) -->
-    <section class="cta" aria-label="2027 1년 패스 · 올인원 패키지 · 긴급 개운템">
+    <!-- CTA — 1. 1년 패스 · 2. 올인원 · 3. 성찰 에디션 (모두 앱 안 결제 안내 팝업) -->
+    <section class="cta" aria-label="1년 패스 · 올인원 · 성찰 에디션">
       <p class="cta__eyebrow">2027 정미년 · 사전 신청 시 12월 한 달 무료</p>
       <h2 class="cta__title">2027년 한 해,<br>지금 시작하는 세 가지 방법</h2>
       <p class="cta__sub js-trial">지금 보고 계신 달력이 2027년 1~12월 365일 전부예요. 사전 신청하면 2026년 12월 한 달을 먼저 열어 드려요.</p>
@@ -276,26 +284,27 @@
         <button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">
           <span class="shop-btn__no">1</span>
           <span class="shop-btn__text">
-            <span class="shop-btn__label">🎟️ 2027 1년 패스 <b>14,900원</b></span>
-            <span class="shop-btn__desc">2027년 1~12월 1년 운기 흐름 + 사전 신청 시 12월 한 달 서비스 + 내 기본 부적 1개</span>
+            <span class="shop-btn__label">🎟️ 1년 패스 <b>14,900원</b></span>
+            <span class="shop-btn__desc">2027 내 사주 타이밍 맵 + 1년 수호 부적 (액운 태우기 5회 무료)</span>
           </span>
         </button>
-        <button type="button" class="btn btn--cream shop-btn" data-shop="allinone">
+        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">
           <span class="shop-btn__no">2</span>
           <span class="shop-btn__text">
-            <span class="shop-btn__label">👑 2027 올인원 패키지 <b>19,900원</b> <span class="shop-btn__tag">추천</span></span>
-            <span class="shop-btn__desc">1년 패스 + 2027년 내 수호 부적 + 매일 일진 부적(특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커 전부)</span>
+            <span class="shop-btn__label">👑 올인원 <b>19,900원</b></span>
+            <span class="shop-btn__desc">1년 패스 + 매일 일진 부적 + 매일 액운 태우기 무제한</span>
           </span>
         </button>
-        <button type="button" class="btn btn--ghost-light shop-btn" data-shop="care">
+        <button type="button" class="btn btn--cream shop-btn" data-shop="diary">
           <span class="shop-btn__no">3</span>
           <span class="shop-btn__text">
-            <span class="shop-btn__label">⚡ 극도로 힘들 때 긴급 개운템 <b>1종 2,900원 · 3종 풀세트 5,900원</b></span>
-            <span class="shop-btn__desc">부적을 붙여도 유독 막히는 날, 앱에서 바로 꺼내 쓰는 3종 · 아래에서 바로 체험해 보세요</span>
+            <span class="shop-btn__label">✨ 성찰 에디션 <b>24,900원</b> <span class="shop-btn__tag">추천</span></span>
+            <span class="shop-btn__desc">올인원 전부 + 365일 1줄 성찰 다이어리 (매일 맞춤 질문·기록 저장)</span>
           </span>
         </button>
       </div>
       <p class="cta__consult">딱 1가지가 계속 걸리면 <button type="button" class="cta__consult-btn" data-shop="consult">🔎 <b>윤이세 1:1 원포인트 리딩 49,000원</b> · 질문 하나로 짚기 →</button></p>
+      <p class="cta__consult">부적을 붙여도 유독 막히는 날 <button type="button" class="cta__consult-btn" data-shop="care">⚡ <b>긴급 개운템 1종 2,900원 · 3종 5,900원</b> 체험해 보기 →</button></p>
     </section>
 
     <footer class="foot">
@@ -331,6 +340,17 @@
   </div>
 </div>
 
+<!-- ───────── 📖 내 성찰 기록 모아보기 · 백업 ───────── -->
+<div class="modal modal--dbook" id="diaryBookModal" hidden>
+  <div class="modal__backdrop" data-dbook-close></div>
+  <div class="modal__dialog modal__dialog--dbook" id="diaryBookDialog" role="dialog" aria-modal="true" aria-labelledby="dbookTitle" tabindex="-1">
+    <div class="modal__topbar">
+      <button type="button" class="modal__close" data-dbook-close aria-label="팝업 닫기">✕</button>
+    </div>
+    <div class="modal__content" id="diaryBookBody"></div>
+  </div>
+</div>
+
 <!-- ───────── 2027 대표 부적 확대 팝업 ───────── -->
 <div class="modal modal--talis" id="talisModal" hidden>
   <div class="modal__backdrop" data-talis-close></div>
@@ -353,10 +373,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261120ak"></script>
-<script src="assets/manse.js?v=20261120ak"></script>
-<script src="assets/timing.js?v=20261120ak"></script>
-<script src="assets/chars.js?v=20261120ak"></script>
-<script src="assets/calendar.js?v=20261120ak"></script>
+<script src="vendor/lunar.js?v=20261120am"></script>
+<script src="assets/manse.js?v=20261120am"></script>
+<script src="assets/timing.js?v=20261120am"></script>
+<script src="assets/chars.js?v=20261120am"></script>
+<script src="assets/calendar.js?v=20261120am"></script>
 </body>
 </html>
