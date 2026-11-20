@@ -40,8 +40,8 @@
         비워 두면 카카오톡 채널에서 계좌를 안내하고,
         채우면 계좌번호 원클릭 복사 + 입금 확인 카톡 연결이 동작합니다.
      ※ 계좌번호·예금주는 실제로 확인된 값만 넣습니다. 지어내지 않습니다. */
-  var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 2027년 1년 타이밍패스 14,900원 (페이앱 페이지에서 금액 확인)
-  var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 2027 올인원패키지 19,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 2027년 1년 타이밍 패스 14,900원 (페이앱 페이지에서 금액 확인)
+  var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 2027 올인원 패키지 19,900원 (페이앱 페이지에서 금액 확인)
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
   var PAYAPP_CONSULT_URL = '';    // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
@@ -1676,83 +1676,94 @@
       '</ul>' +
       priceHTML('2027 1년 패스', PASS_PRICE) +
       payActionsHTML('pass') +
-      kakaoOrderHTML('pass', '💬 결제 완료 · 카톡으로 입장코드 받기');
+      kakaoOrderHTML('pass', '💬 결제 완료 · 카톡으로 입장 코드 받기');
   }
 
   /* 2번 — 2027 올인원 패키지 (19,900원 · 추천) */
   function allinoneShopHTML() {
     return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
       '<h2 class="shop__title" id="shopTitle">👑 2027 올인원 패키지</h2>' +
-      '<p class="shop__sub">1년 패스에 <b>2027년 내 년수호 부적</b>과 <b>매일 일진 부적</b>까지 다 열리는 구성이에요. 14,900원에 <b>5,000원만</b> 보태면 여기까지 와요.</p>' +
+      '<p class="shop__sub">1년 패스에 <b>2027년 내 수호 부적</b>과 <b>매일 일진 부적</b>까지 다 열리는 구성이에요. 14,900원에 <b>5,000원만</b> 보태면 여기까지 와요.</p>' +
       '<ul class="shop__list">' +
       '<li><b>1년 패스 전부</b><span>2027년 1~12월 365일 + 사전 신청 시 12월 한 달 서비스</span></li>' +
-      '<li><b>2027년 내 년수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
+      '<li><b>2027년 내 수호 부적</b><span>2027년 한 해 나를 지켜 주는 수호 부적</span></li>' +
       '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 튀어나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
       '</ul>' +
-      '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>년수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
+      '<div class="shop__save"><b>14,900원 + 5,000원 = 19,900원</b><span>1년 수호 부적 + 매일 일진 부적까지 한 번에</span></div>' +
       priceHTML('2027 올인원 패키지', ALLINONE_PRICE) +
       payActionsHTML('allinone') +
-      kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장코드 받기');
+      kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기');
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
      ① 주역 대나무 산가지 — 부채꼴 6개 중 '딱 1개'만 뽑는 의식
+        · 오행마다 처방 8개, 뽑을 때마다 한 바퀴 돌기 전엔 같은 처방이 다시 나오지 않는다
      ② 디지털 개운 오브제 — 손가락으로 문지르면 기운이 차오르는 촉감(pointermove)
-     ③ 1분 오행 싱잉볼 — 60초 지속 공명 + 호흡별 재타종 + 수동 타종 */
+     ③ 1분 오행 싱잉볼 — 60초 지속 공명 + 4·2·6 복식호흡(12초)마다 재타종 + 수동 타종 */
   var CARE = {
     목: {
       obj: 'sprout', name: '새싹 화분', josa: '을',
       missions: [
-        { tag: '색', text: '초록·연두 중 하나를 오늘 몸에 걸쳐 보세요.' },
-        { tag: '음식', text: '신맛 한 입 — 레몬물이나 식초 한 방울이면 충분해요.' },
-        { tag: '동선', text: '집 앞 나무가 있는 길로 한 바퀴 돌아오세요.' },
-        { tag: '말', text: '미뤄 둔 연락 하나, 오늘 먼저 보내 보세요.' },
-        { tag: '손', text: '창문을 열고 3분만 바깥 공기를 들이세요.' },
-        { tag: '마음', text: '나를 답답하게 하는 것 하나를 종이에 적어 접어 두세요.' }
+        { tag: '색', text: '초록 잎이나 화분을 30초만 가만히 바라보세요. 눈이 먼저 쉬어요.' },
+        { tag: '동선', text: '창문을 열고 3분만 바깥 공기를 들이세요.' },
+        { tag: '손', text: '가까운 화분 잎을 손끝으로 쓸어 주고 물 한 모금 주세요.' },
+        { tag: '음식', text: '레몬 물 한 모금이나 신맛 한 입으로 입 안을 새로 고르세요.' },
+        { tag: '말', text: '미뤄 둔 안부 하나, 세 줄이면 충분해요. 지금 보내세요.' },
+        { tag: '몸', text: '목을 길게 빼고 어깨를 천천히 세 번 돌려 보세요.' },
+        { tag: '마음', text: '지금 뻗어 보고 싶은 일 하나를 메모에 한 줄로 적으세요.' },
+        { tag: '시간', text: '새로 시작할 일 하나를 5분짜리 한 걸음으로 쪼개 적으세요.' }
       ]
     },
     화: {
       obj: 'incense', name: '따뜻한 향로', josa: '를',
       missions: [
-        { tag: '색', text: '빨강·주황 소품 하나를 눈에 보이는 자리에 두세요.' },
-        { tag: '음식', text: '따뜻한 차 한 잔을 식기 전에 천천히 드세요.' },
-        { tag: '동선', text: '햇볕 드는 창가에 3분만 서 있어 보세요.' },
-        { tag: '말', text: '망설인 결정 하나를 오늘 안에 딱 정하세요.' },
-        { tag: '손', text: '미뤄 둔 답장 하나, 지금 3줄로 끝내세요.' },
-        { tag: '마음', text: '오늘 고마웠던 사람 한 명을 떠올리고 이름만 적어 두세요.' }
+        { tag: '음식', text: '따뜻한 차 한 잔을 양손으로 감싸고 천천히 드세요.' },
+        { tag: '동선', text: '햇볕 드는 창가에 5분만 서 있어 보세요.' },
+        { tag: '색', text: '빨강·주황 소품 하나를 눈에 띄는 자리로 옮기세요.' },
+        { tag: '손', text: '손바닥을 10초 비벼 따뜻해지면 눈 위에 살짝 얹어 보세요.' },
+        { tag: '말', text: '망설인 결정 하나를 오늘 안에 한 줄로 정해 적으세요.' },
+        { tag: '마음', text: '오늘 고마웠던 사람 한 명을 떠올리고 이름만 적어 두세요.' },
+        { tag: '정리', text: '안 쓰는 알림 세 개를 지금 꺼 두세요.' },
+        { tag: '몸', text: '일어나 팔을 위로 쭉 뻗고 숨을 크게 한 번 들이세요.' }
       ]
     },
     토: {
       obj: 'stone', name: '황금 수호석', josa: '을',
       missions: [
-        { tag: '색', text: '베이지·노랑으로 손 닿는 자리부터 정리하세요.' },
-        { tag: '음식', text: '단맛 한 조각, 밥은 평소보다 천천히 드세요.' },
-        { tag: '동선', text: '책상 위 서류 세 장만 치우고 시작하세요.' },
-        { tag: '말', text: '안 쓸 약속 하나를 오늘 정중히 접으세요.' },
-        { tag: '손', text: '지갑 속 영수증을 다 꺼내 버리세요.' },
-        { tag: '마음', text: '지금 앉은 자리에서 발바닥 감각을 10초 느껴 보세요.' }
+        { tag: '손', text: '책상 위 어지러운 물건 세 개만 제자리에 두세요.' },
+        { tag: '몸', text: '맨발로 바닥을 딛고 1분 서서 발바닥 감각을 느껴 보세요.' },
+        { tag: '음식', text: '단맛 한 조각을 물 한 모금과 함께 천천히 드세요.' },
+        { tag: '색', text: '베이지·노랑 계열 소품 하나를 손 닿는 자리에 두세요.' },
+        { tag: '정리', text: '지갑 속 영수증과 쿠폰을 다 꺼내 버리세요.' },
+        { tag: '말', text: '안 쓸 약속 하나를 오늘 정중히 정리해 두세요.' },
+        { tag: '마음', text: '앉은 자리에서 발바닥과 엉덩이 감각을 30초 느껴 보세요.' },
+        { tag: '손', text: '서랍 하나만 열어 안 쓰는 것 한 개를 덜어 내세요.' }
       ]
     },
     금: {
       obj: 'bell', name: '수정 종', josa: '을',
       missions: [
-        { tag: '색', text: '흰색·은색으로 지갑이나 가방을 정리하세요.' },
-        { tag: '음식', text: '매운맛 한 입으로 막힌 숨을 트여 보세요.' },
-        { tag: '동선', text: '안 쓰는 구독 하나를 오늘 확인해서 끊으세요.' },
-        { tag: '말', text: '받을 돈 한 건, 오늘 문자로 물어보세요.' },
-        { tag: '손', text: '결제 3초 전, 한 번만 더 물어보고 누르세요.' },
-        { tag: '마음', text: '정리 안 된 생각 세 개를 한 줄씩 적고 하나만 남기세요.' }
+        { tag: '손', text: '안 쓰는 사진이나 카톡방 세 개를 정리하세요.' },
+        { tag: '손', text: '은색이나 흰색 소품 하나를 반짝이게 닦아 주세요.' },
+        { tag: '정리', text: '안 쓰는 결제·구독 하나를 확인해서 끊으세요.' },
+        { tag: '음식', text: '물 한 모금으로 입 안을 헹구고 숨을 길게 한 번 내쉬세요.' },
+        { tag: '색', text: '흰 손수건이나 은색 소품 하나를 눈에 보이게 두세요.' },
+        { tag: '말', text: '받을 돈 한 건, 오늘 문자 한 줄로 물어보세요.' },
+        { tag: '마음', text: '정리 안 된 생각 세 개를 한 줄씩 적고 하나만 남기세요.' },
+        { tag: '손', text: '장바구니에 담아 둔 것 하나를 지금 지우세요.' }
       ]
     },
     수: {
       obj: 'orb', name: '행운 물결구슬', josa: '를',
       missions: [
-        { tag: '색', text: '파랑·남색 계열로 물 한 잔 옆에 두세요.' },
-        { tag: '음식', text: '미지근한 물 한 잔을 한 번에 비우세요.' },
-        { tag: '동선', text: '손목을 10초 물에 적시고 돌아오세요.' },
-        { tag: '말', text: '보내려던 답장은 초안에만 넣어 두세요.' },
-        { tag: '손', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' },
-        { tag: '마음', text: '소리 나는 곳을 하나 골라 1분만 가만히 들어 보세요.' }
+        { tag: '음식', text: '미지근한 물 한 컵을 천천히 끝까지 마셔 보세요.' },
+        { tag: '손', text: '세수나 손 씻기로 얼굴의 열기를 먼저 식히세요.' },
+        { tag: '손', text: '손목을 10초 물에 적시고 물기를 톡 털어 내세요.' },
+        { tag: '말', text: '보내려던 답장은 오늘 초안에만 넣어 두세요.' },
+        { tag: '마음', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' },
+        { tag: '동선', text: '물소리나 빗소리 하나를 골라 1분만 가만히 들어 보세요.' },
+        { tag: '마음', text: '지금 드는 감정을 한 단어로 적어 보세요. 그걸로 충분해요.' },
+        { tag: '말', text: '급한 말은 "조금 있다 말할게요"로 한 번만 미뤄 보세요.' }
       ]
     }
   };
@@ -1805,22 +1816,50 @@
   };
 
   /* 뽑기·문지르기·싱잉볼의 화면 상태 (팝업을 닫으면 초기화) */
-  var PICK_KEY = 'yoonise.timing.carepick.v1';
+  var PICK_KEY = 'yoonise.timing.carepick.v2';
   var STICK_NUM = ['一', '二', '三', '四', '五', '六'];
-  var care = { pick: -1, charge: 0, lit: false, chargeStep: 0, dustAcc: 0, buy: 'set' };
+  var care = { pick: -1, mi: -1, lastMi: -1, bag: {}, charge: 0, lit: false, chargeStep: 0, dustAcc: 0, buy: 'set' };
 
-  function loadCarePick() {
+  function loadCarePick(el) {
     try {
       var o = JSON.parse(localStorage.getItem(PICK_KEY) || 'null');
-      if (o && o.iso === state.todayISO && typeof o.idx === 'number' && o.idx >= 0 && o.idx < 6) return o.idx;
+      if (o && o.iso === state.todayISO && (!o.el || o.el === el) &&
+          typeof o.stick === 'number' && o.stick >= 0 && o.stick < 6 &&
+          typeof o.mi === 'number' && o.mi >= 0) {
+        care.bag = (o.bag && typeof o.bag === 'object') ? o.bag : {};
+        return { stick: o.stick, mi: o.mi };
+      }
     } catch (e) {}
-    return -1;
+    care.bag = {};
+    return null;
   }
-  function saveCarePick(idx) {
+  function saveCarePick(o, el) {
     try {
-      if (idx == null) localStorage.removeItem(PICK_KEY);
-      else localStorage.setItem(PICK_KEY, JSON.stringify({ iso: state.todayISO, idx: idx }));
+      if (!o) localStorage.removeItem(PICK_KEY);
+      else localStorage.setItem(PICK_KEY, JSON.stringify({ iso: state.todayISO, el: el, stick: o.stick, mi: o.mi, bag: care.bag }));
     } catch (e) {}
+  }
+
+  /* 오늘의 처방 고르기 — 한 바퀴(8개)를 다 쓸 때까지는 같은 처방이 다시 나오지 않는다.
+     산가지 번호와 처방은 따로 뽑기 때문에, 같은 대나무를 다시 뽑아도 내용은 달라진다. */
+  function shuffleIdx(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function drawMission(el, avoid) {
+    var list = (CARE[el] || CARE['화']).missions;
+    var bag = care.bag[el];
+    if (!bag || !bag.length) {
+      bag = shuffleIdx(list.map(function (m, i) { return i; }));
+      care.bag[el] = bag;
+      if (bag.length > 1 && bag[0] === avoid) { bag[0] = bag[1]; bag[1] = avoid; }
+    }
+    var idx = bag.shift();
+    if (idx === avoid && bag.length) { bag.push(idx); idx = bag.shift(); }
+    return idx;
   }
 
   /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트 */
@@ -1854,10 +1893,6 @@
   function careElement() {
     return state.res ? repElement().el : '화';
   }
-  function careMission(el, idx) {
-    var list = (CARE[el] || CARE['화']).missions;
-    return list[((idx % list.length) + list.length) % list.length];
-  }
 
   /* ① 대나무 산가지 6개 — 나란히 부채처럼 세워 두고 한 개만 뽑는다 */
   var STICK_SPREAD = 30;                            // 산가지 사이 간격(px)
@@ -1885,9 +1920,10 @@
     return out;
   }
 
-  function bambooResultHTML(el, idx) {
-    var m = careMission(el, idx);
-    return '<span class="bamboo__drawn-no">' + STICK_NUM[idx % 6] + '</span>' +
+  function bambooResultHTML(el, stick, mi) {
+    var list = (CARE[el] || CARE['화']).missions;
+    var m = list[((mi % list.length) + list.length) % list.length];
+    return '<span class="bamboo__drawn-no">' + STICK_NUM[stick % 6] + '</span>' +
       '<span class="bamboo__tag">' + esc(m.tag) + '</span>' +
       '<b class="bamboo__text">' + esc(m.text) + '</b>';
   }
@@ -1914,8 +1950,11 @@
     var el = careElement();
     var c = CARE[el] || CARE['화'];
     var thr = EL_THEME[el] || EL_THEME['화'];
-    care.pick = loadCarePick();
-    var picked = care.pick >= 0;
+    var saved = loadCarePick(el);
+    care.pick = saved ? saved.stick : -1;
+    care.mi = saved ? saved.mi : -1;
+    care.lastMi = saved ? saved.mi : -1;
+    var picked = care.pick >= 0 && care.mi >= 0;
     return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
       '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
       '<p class="care__place"><b>📍 추천 공간:</b> ' + esc(CARE_PLACE[el] || CARE_PLACE['화']) + '</p>' +
@@ -1932,10 +1971,10 @@
       '<div class="bamboo__fan">' + bambooSticksHTML() + '</div>' +
       '</div>' +
       '<div class="bamboo__result' + (picked ? ' is-show' : '') + '" data-bamboo-result' + (picked ? '' : ' hidden') + '>' +
-      (picked ? bambooResultHTML(el, care.pick) : '') + '</div>' +
+      (picked ? bambooResultHTML(el, care.pick, care.mi) : '') + '</div>' +
       '<p class="care__hint" data-bamboo-hint>' + (picked
-        ? '이 날은 <b>딱 1번만</b> 뽑았어요 — 그 한 개로 오늘을 버텨 보세요. '
-        : '한 번 뽑으면 오늘은 그 하나로 갑니다.') +
+        ? '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. '
+        : '여섯 개 중 마음이 끌리는 하나만 — 한 번에 하나씩 뽑아요.') +
       (picked ? '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>' : '') + '</p>' +
       '</section>' +
 
@@ -1968,7 +2007,7 @@
       '<section class="care care--bowl">' +
       '<p class="care__no">03</p>' +
       '<p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' +
-      '<p class="care__desc">한 번 울리고 끝나지 않아요 — <b>60초 내내</b> 낮게 공명하고, 숨을 쉴 때마다 다시 울려요.</p>' +
+      '<p class="care__desc">코로 4초 · 멈춤 2초 · 입으로 6초, <b>12초 복식호흡</b>을 다섯 번 하는 동안 낮게 공명해요. 숨이 바뀔 때마다 다시 울려요.</p>' +
       '<div class="bowl' + (careBowl.on && !careBowl.paused ? ' is-on' : '') + '" data-bowl>' +
       '<button type="button" class="bowl__art" data-care="bowlTap" aria-label="싱잉볼 치기 — 1분 공명 시작">' +
       '<span class="bowl__halo"></span>' +
@@ -1990,7 +2029,7 @@
       '</button>' +
       '<p class="bowl__phase" data-bowl-phase>' + (careBowl.on
         ? (careBowl.paused ? '잠시 멈춤' : '공명 중')
-        : '탭하면 시작 · 60초 공명') + '</p>' +
+        : '탭하면 시작 · 60초 복식호흡') + '</p>' +
       '<div class="bowl__bar"><i data-bowl-bar></i></div>' +
       '<p class="bowl__time"><span data-bowl-clock>00:00</span> / 01:00</p>' +
       '</div>' +
@@ -2041,10 +2080,13 @@
   }
 
   function pickBamboo(i) {
-    if (care.pick >= 0) { vibrate(12); return; }
+    if (care.pick === i && care.mi >= 0) { vibrate(12); return; }   // 같은 산가지 다시 누름 — 그대로
     var el = careElement();
+    var mi = drawMission(el, care.lastMi >= 0 ? care.lastMi : care.mi);
     care.pick = i;
-    saveCarePick(i);
+    care.mi = mi;
+    care.lastMi = mi;
+    saveCarePick({ stick: i, mi: mi }, el);
     var wrap = careEl('[data-bamboo]');
     if (wrap) wrap.classList.add('is-picked');
     $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
@@ -2056,11 +2098,12 @@
     sfxBambooDraw();
     var panel = careEl('[data-bamboo-result]');
     var hint = careEl('[data-bamboo-hint]');
-    if (hint) hint.innerHTML = '이 날은 <b>딱 1번만</b> 뽑았어요 — 그 한 개로 오늘을 버텨 보세요. ' +
+    if (hint) hint.innerHTML = '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. ' +
       '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>';
+    if (panel) panel.classList.remove('is-show');
     setTimeout(function () {
       if (!panel) return;
-      panel.innerHTML = bambooResultHTML(el, i);
+      panel.innerHTML = bambooResultHTML(el, i, mi);
       panel.hidden = false;
       panel.classList.add('is-show');
       sfxBambooReveal();
@@ -2070,6 +2113,7 @@
 
   function resetBamboo() {
     care.pick = -1;
+    care.mi = -1;                      // lastMi 는 남겨 둔다 — 다시 뽑을 때 바로 앞 처방이 또 나오지 않게
     saveCarePick(null);
     var wrap = careEl('[data-bamboo]');
     if (wrap) wrap.classList.remove('is-picked');
@@ -2080,7 +2124,7 @@
     var panel = careEl('[data-bamboo-result]');
     if (panel) { panel.classList.remove('is-show'); panel.hidden = true; panel.innerHTML = ''; }
     var hint = careEl('[data-bamboo-hint]');
-    if (hint) hint.textContent = '한 번 뽑으면 오늘은 그 하나로 갑니다.';
+    if (hint) hint.textContent = '여섯 개 중 마음이 끌리는 하나만 뽑아 보세요.';
     sfxTap(1);
   }
 
@@ -2271,13 +2315,24 @@
     });
   }
 
-  /* ③ 싱잉볼 — 60초 지속 공명 + 호흡 주기 재타종 + 수동 타종 */
+  /* ③ 싱잉볼 — 60초 지속 공명 + 12초 복식호흡(4·2·6) 재타종 + 수동 타종 */
   var BOWL = {
     base: 196,                                        // G3 — 낮고 편안한 울림
     total: 60,
-    inSec: 4, outSec: 6,                              // 들이쉬기 4초 · 내쉬기 6초 = 10초 한 호흡
-    strikeAt: [0, 4, 10, 14, 20, 24, 30, 34, 40, 44, 50, 54]
+    inSec: 4, holdSec: 2, outSec: 6,                  // 들이쉬기 4초 · 멈춤 2초 · 내쉬기 6초 = 12초 한 호흡
+    cycle: 12
   };
+  /* 타종 시각 — 숨이 시작되는 자리(12초마다)와 내쉬기로 넘어가는 자리(6초 뒤)에 맞춘다 */
+  BOWL.beats = (function () {
+    var out = [];
+    for (var c = 0; c < BOWL.total; c += BOWL.cycle) {
+      out.push({ at: c, gain: c === 0 ? 0.95 : 0.55 });
+      var ex = c + BOWL.inSec + BOWL.holdSec;
+      if (ex < BOWL.total) out.push({ at: ex, gain: 0.3 });
+    }
+    return out;
+  })();
+  BOWL.strikeAt = BOWL.beats.map(function (b) { return b.at; });
   var careBowl = {
     on: false, paused: false, elapsed: 0, resumedAt: 0,
     timer: null, ctx: null, master: null, nodes: [], ringIdx: 0, lastBeat: -1
@@ -2401,19 +2456,30 @@
 
   function paintBowl(el) {
     var left = Math.max(0, Math.ceil(BOWL.total - el));
-    var cyc = el % 10;
+    var cyc = el % BOWL.cycle;
     var inhale = cyc < BOWL.inSec;
-    var into = inhale ? cyc : cyc - BOWL.inSec;
-    var span = inhale ? BOWL.inSec : BOWL.outSec;
-    var p = Math.max(0, Math.min(1, into / span));
+    var hold = !inhale && cyc < BOWL.inSec + BOWL.holdSec;
+    var p, scale;
+    if (inhale) {
+      p = cyc / BOWL.inSec;
+      scale = 1 + p * 0.28;                          // 들이마시면 배가 볼록 — 천천히 부풀어 오른다
+    } else if (hold) {
+      scale = 1.28;                                  // 잠깐 머무는 2초 동안 그대로
+    } else {
+      p = (cyc - BOWL.inSec - BOWL.holdSec) / BOWL.outSec;
+      scale = 1.28 - p * 0.28;                       // 내쉬면 배가 쏙 들어간다
+    }
     var wrap = careEl('[data-bowl]');
     if (wrap) {
-      wrap.style.setProperty('--bs', (inhale ? 1 + p * 0.24 : 1.24 - p * 0.24).toFixed(3));
+      wrap.style.setProperty('--bs', scale.toFixed(3));
       wrap.classList.toggle('is-in', inhale);
-      wrap.classList.toggle('is-out', !inhale);
+      wrap.classList.toggle('is-hold', hold);
+      wrap.classList.toggle('is-out', !inhale && !hold);
     }
     var phase = careEl('[data-bowl-phase]');
-    if (phase) phase.textContent = (inhale ? '코로 들이쉬세요' : '천천히 내쉬세요') + ' · 남은 ' + left + '초';
+    if (phase) phase.textContent = inhale
+      ? '코로 들이마시기 · 배가 볼록 나와요'
+      : (hold ? '잠깐 멈춤 · 배는 그대로' : '입으로 내쉬기 · 배가 쏙 들어가요');
     var bar = careEl('[data-bowl-bar]');
     if (bar) bar.style.width = (el / BOWL.total * 100).toFixed(1) + '%';
     var clock = careEl('[data-bowl-clock]');
@@ -2453,11 +2519,9 @@
       var d = bowlDrone(ctx);
       careBowl.ctx = ctx; careBowl.master = d.master; careBowl.nodes = d.nodes;
       bowlStrikeAt(ctx, d.master, ctx.currentTime + 0.03, { gain: 0.95 });
-      BOWL.strikeAt.forEach(function (sec) {
-        var off = sec - from;
-        if (off > 0.4) {
-          bowlStrikeAt(ctx, d.master, ctx.currentTime + off, { gain: sec % 10 === 0 ? 0.6 : 0.4 });
-        }
+      BOWL.beats.forEach(function (b) {
+        var off = b.at - from;
+        if (off > 0.4) bowlStrikeAt(ctx, d.master, ctx.currentTime + off, { gain: b.gain });
       });
     }
     bowlRing();
@@ -2477,7 +2541,7 @@
     var phase = careEl('[data-bowl-phase]');
     if (phase) phase.textContent = '잠시 멈춤 · 남은 ' + left + '초';
     var wrap = careEl('[data-bowl]');
-    if (wrap) { wrap.classList.remove('is-in', 'is-out'); wrap.style.setProperty('--bs', '1'); }
+    if (wrap) { wrap.classList.remove('is-in', 'is-out', 'is-hold'); wrap.style.setProperty('--bs', '1'); }
     bowlUI();
     vibrate(10);
   }
@@ -2492,11 +2556,11 @@
     if (careBowl.timer) { clearInterval(careBowl.timer); careBowl.timer = null; }
     bowlAudioOff(0.5);
     var phase = careEl('[data-bowl-phase]');
-    if (phase) phase.textContent = '탭하면 시작 · 60초 공명';
+    if (phase) phase.textContent = '탭하면 시작 · 60초 복식호흡';
     var bar = careEl('[data-bowl-bar]'); if (bar) bar.style.width = '0%';
     var clock = careEl('[data-bowl-clock]'); if (clock) clock.textContent = '00:00';
     var wrap = careEl('[data-bowl]');
-    if (wrap) { wrap.classList.remove('is-in', 'is-out'); wrap.style.setProperty('--bs', '1'); }
+    if (wrap) { wrap.classList.remove('is-in', 'is-out', 'is-hold'); wrap.style.setProperty('--bs', '1'); }
     bowlUI();
     if (was) vibrate(12);
   }
@@ -2519,7 +2583,7 @@
     var bar = careEl('[data-bowl-bar]'); if (bar) bar.style.width = '100%';
     var clock = careEl('[data-bowl-clock]'); if (clock) clock.textContent = '00:00';
     var wrap = careEl('[data-bowl]');
-    if (wrap) { wrap.classList.remove('is-on', 'is-in', 'is-out', 'is-paused'); wrap.style.setProperty('--bs', '1'); }
+    if (wrap) { wrap.classList.remove('is-on', 'is-in', 'is-out', 'is-hold', 'is-paused'); wrap.style.setProperty('--bs', '1'); }
     bowlRing();
     sfxBowlDone();
     vibrate([30, 50, 30, 50, 120]);
