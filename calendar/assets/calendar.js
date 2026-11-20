@@ -1985,9 +1985,37 @@
     return n;
   }
 
-  function openKakao() {
-    try { window.open(KAKAO, '_blank', 'noopener'); } catch (e) { }
+  /* ── 카톡 채널로 넘어갈 때 '- 이전 페이지: https://...' 자동 문구가 붙지 않게 (#8618) ──
+     카카오톡 채널 채팅 링크는 referrer 를 받으면 대화창에
+     "안녕하세요. 무엇을 도와드릴까요? - 이전 페이지: https://..." 를 자동으로 붙인다.
+     그래서 referrer 를 아예 보내지 않는다(noreferrer).
+     · window.open(url, '_blank', 'noopener,noreferrer') 은 referrer 는 지워지지만
+       noopener 때문에 돌려주는 창이 항상 null 이라 '차단됐는지'를 알 수 없다.
+     · 그래서 noreferrer 앵커를 만들어 누른다 — 새 창으로 열리고(사용자 클릭 안이면 차단되지 않음)
+       referrer 는 전송되지 않는다. 앵커 클릭이 막히는 환경에서만 window.open → 같은 창 순서로 넘어간다. */
+  function openNoRef(url) {
+    try {
+      var a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+      a.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+      return true;
+    } catch (e) { }
+    try { window.open(url, '_blank', 'noopener,noreferrer'); return true; } catch (e2) { }
+    try {
+      var b = document.createElement('a');
+      b.href = url; b.target = '_self'; b.rel = 'noreferrer';
+      document.body.appendChild(b); b.click();
+    } catch (e3) { window.location.href = url; }
+    return false;
   }
+
+  function openKakao() { openNoRef(KAKAO); }
 
   /* ── 결제 완료 → 카톡으로 신청 내용 보내기 (노란 카카오 버튼) ─────────────
      누르면 ① 신청 내용을 클립보드에 복사하고(토스트로 알려 줌)
@@ -2047,6 +2075,7 @@
   /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
       부제는 버튼을 그릴 때 굳으므로(payChoice 는 누른 뒤에 정해진다) 두 방법을 함께 안내한다. */
   function kakaoSubText(item) {
+    if (String(item || '') === 'consult') return '누르면 신청 양식이 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝';
     return kakaoCareItem(item)
       ? '누르면 신청 내용이 복사돼요 — 입금자명을 적어 보내 주세요'
       : '누르면 신청 내용이 복사돼요 — 결제하신 연락처(계좌는 입금자명)를 적어 보내 주세요';
@@ -2059,8 +2088,115 @@
       '</button>' +
       '</div>';
   }
+  /* ── 1:1 원포인트 리딩 신청 양식 (#8729) ──────────────────────────────
+     결제 팝업 안에서 고객이 바로 채우는 네 칸 — 생년월일시 · 성별 · 연락처(입금자명) · 핵심 고민 1가지.
+     노란 카톡 버튼 한 번이면 네 칸이 한 통의 신청 메시지로 정리돼 클립보드에 담기고,
+     referrer 없이 카톡 채널이 열려 붙여넣기만 하면 접수가 끝난다.
+     · 생년월일시·성별은 캘린더에 이미 넣어 둔 사주가 있으면 그대로 채워 두고, 고객이 고칠 수 있다.
+     · 입력값은 이 화면(메모리)에만 둔다 — 저장소에 남기지 않는다. */
+  var consultForm = null;   // { birth, gender, who, q, sig }
+  function consultBirthValue() {
+    var r = state.res;
+    if (!r || !r.solar) return '';
+    var p = function (v) { return (v < 10 ? '0' : '') + v; };
+    var s = r.solar.y + '-' + p(r.solar.m) + '-' + p(r.solar.d);
+    if (r.input && r.input.timeKnown) s += ' ' + p(r.input.hh) + ':' + p(r.input.mm);
+    if (r.input && r.input.calendar === 'lunar' && r.lunar) {
+      s += ' (음력 ' + r.lunar.m + '.' + r.lunar.d + (r.lunar.leap ? ' 윤달' : '') + ')';
+    } else {
+      s += ' (양력)';
+    }
+    return s;
+  }
+  function consultFormState() {
+    var sig = sigOf();
+    var g = (state.res && state.res.input && state.res.input.gender) || state.gender || '';
+    if (!consultForm) {
+      consultForm = { birth: consultBirthValue(), gender: g, who: '', q: '', sig: sig };
+    } else if (sig !== consultForm.sig) {   // 사주를 새로 넣었으면 빈 칸만 최신 값으로 (고객이 고친 값은 그대로)
+      consultForm.sig = sig;
+      if (!String(consultForm.birth || '').trim()) consultForm.birth = consultBirthValue();
+      if (!consultForm.gender) consultForm.gender = g;
+    }
+    return consultForm;
+  }
+  function consultMissing() {
+    var f = consultFormState();
+    if (!String(f.birth || '').trim()) return { key: 'birth', msg: '생년월일시를 적어 주세요 — 시간을 모르면 날짜만 적어도 돼요.' };
+    if (!f.gender) return { key: 'gender', msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
+    if (!String(f.who || '').trim()) return { key: 'who', msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
+    if (!String(f.q || '').trim()) return { key: 'q', msg: '가장 궁금한 고민을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
+    return null;
+  }
+  function clearConsultMsg() {
+    if (!shopBody) return;
+    var msg = shopBody.querySelector('[data-cf-msg]');
+    if (msg) { msg.hidden = true; msg.textContent = ''; }
+  }
+  function consultWarn(miss) {
+    if (!shopBody || !miss) return;
+    var msg = shopBody.querySelector('[data-cf-msg]');
+    if (msg) { msg.textContent = miss.msg; msg.hidden = false; }
+    $$('.cform__row', shopBody).forEach(function (r) { r.classList.remove('is-error'); });
+    var anchorEl = miss.key === 'gender' ? shopBody.querySelector('[data-cf-gender]') : shopBody.querySelector('[data-cf="' + miss.key + '"]');
+    var row = anchorEl && anchorEl.closest ? anchorEl.closest('.cform__row') : null;
+    if (row) row.classList.add('is-error');
+    if (miss.key !== 'gender' && anchorEl) {
+      anchorEl.classList.remove('is-shake');
+      void anchorEl.offsetWidth;
+      anchorEl.classList.add('is-shake');
+      try { anchorEl.focus({ preventScroll: false }); } catch (e) {}
+    }
+    if (msg) { try { msg.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+    vibrate([25, 40]);
+  }
+  function setConsultGender(g) {
+    var f = consultFormState();
+    f.gender = g === 'M' ? 'M' : 'F';
+    if (shopBody) {
+      $$('[data-cf-gender]', shopBody).forEach(function (b) {
+        var on = b.getAttribute('data-cf-gender') === f.gender;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (on) {
+          var r = b.closest ? b.closest('.cform__row') : null;
+          if (r) r.classList.remove('is-error');
+        }
+      });
+      clearConsultMsg();
+    }
+    sfxTap(1);
+  }
+  /* 신청 메시지 — 양식에 적은 그대로, 한 줄에 하나씩 */
+  function consultOrderText() {
+    var f = consultFormState();
+    var birth = String(f.birth || '').trim();
+    var who = String(f.who || '').trim();
+    var q = String(f.q || '').trim();
+    return [
+      '[윤이세 1:1 원포인트 리딩 신청] ' + CONSULT_PRICE,
+      '생년월일시: ' + birth,
+      '성별: ' + (f.gender === 'M' ? '남성' : '여성'),
+      '결제 확인 — 연락처(카드결제) 또는 입금자명(계좌이체): ' + who,
+      '궁금한 고민: ' + q
+    ].join('\n');
+  }
+  /* 노란 카톡 버튼 — 원포인트 리딩은 양식 네 칸을 먼저 확인한다 */
+  function goConsultOrder() {
+    var miss = consultMissing();
+    if (miss) { consultWarn(miss); return; }
+    var text = consultOrderText();
+    copyText(text, function (copied) {
+      toast(copied === true
+        ? '✅ 신청 양식을 복사했어요 — 카톡에 붙여넣고 보내 주세요'
+        : '카톡 채널로 이동해요 — 양식에 적은 내용을 붙여 보내 주세요');
+    });
+    vibrate(18);
+    openNoRef(KAKAO);
+  }
   function goKakaoOrder(item) {
     if (String(item) === 'care') item = 'care-' + (care && care.buy ? care.buy : 'set');
+    if (String(item) === 'consult') { goConsultOrder(); return; }
     var text = orderTextFor(item);
     var who = kakaoCareItem(item) ? { what: '입금자명', josa: '을' } : { what: '연락처(입금자명)', josa: '를' };
     copyText(text, function (copied) {
@@ -2069,15 +2205,12 @@
         : '카톡 채널로 이동해요 — 상품·' + who.what + who.josa + ' 함께 보내 주세요');
     });
     vibrate(18);
-    // 카카오톡 채널 채팅방으로 이동 — 새 창이 막히면 같은 창에서 이어서
-    var w = null;
-    try { w = window.open(KAKAO, '_blank'); } catch (e) { w = null; }
-    if (w) { try { w.opener = null; } catch (e) { } }
-    else setTimeout(function () { window.location.href = KAKAO; }, 700);
+    // 카카오톡 채널 채팅방으로 이동 — referrer 없이(noreferrer) 새 창으로
+    openNoRef(KAKAO);
   }
   /* 새 탭이 차단될 수 있으니 안내 안에 한 번 더 누를 수 있는 링크를 함께 둔다 */
   function kakaoLinkHTML(label) {
-    return '<a class="pay__kakao" href="' + KAKAO + '" target="_blank" rel="noopener">' + label + '</a>';
+    return '<a class="pay__kakao" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
   }
 
   function legacyCopy(text) {
@@ -2422,6 +2555,29 @@
       '<b class="bamboo__text">' + esc(m.text) + '</b>';
   }
 
+  /* 신청 양식 마크업 — 결제 버튼 바로 위에 놓는다 */
+  function consultFormHTML() {
+    var f = consultFormState();
+    return '<div class="cform" data-consult-form>' +
+      '<p class="cform__head">📝 신청 양식 <span>네 칸만 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요</span></p>' +
+      '<label class="cform__row"><span class="cform__lb">① 생년월일시</span>' +
+      '<input type="text" class="cform__input" data-cf="birth" value="' + esc(f.birth) + '" ' +
+      'placeholder="예: 1979-10-25 09:30 (양력)" autocomplete="off" inputmode="text"></label>' +
+      '<div class="cform__row cform__row--chips"><span class="cform__lb">② 성별</span>' +
+      '<span class="chips">' +
+      '<button type="button" class="chip' + (f.gender === 'F' ? ' is-on' : '') + '" data-cf-gender="F" aria-pressed="' + (f.gender === 'F' ? 'true' : 'false') + '">여성</button>' +
+      '<button type="button" class="chip' + (f.gender === 'M' ? ' is-on' : '') + '" data-cf-gender="M" aria-pressed="' + (f.gender === 'M' ? 'true' : 'false') + '">남성</button>' +
+      '</span></div>' +
+      '<label class="cform__row"><span class="cform__lb">③ 연락처 또는 입금자명 <i>결제 확인용</i></span>' +
+      '<input type="text" class="cform__input" data-cf="who" value="' + esc(f.who) + '" ' +
+      'placeholder="카드결제는 휴대폰 번호 · 계좌이체는 입금자명" autocomplete="off"></label>' +
+      '<label class="cform__row"><span class="cform__lb">④ 가장 궁금한 고민 1가지</span>' +
+      '<input type="text" class="cform__input" data-cf="q" value="' + esc(f.q) + '" ' +
+      'placeholder="예: 지금 이직을 해도 될까요?" autocomplete="off"></label>' +
+      '<p class="cform__msg" data-cf-msg role="alert" hidden></p>' +
+      '</div>';
+  }
+
   /* 4번 — 윤이세 1:1 원포인트 리딩 (49,000원 · 질문 딱 1가지)
      ※ 종합 사주 컨설팅(100,000원 · 기질·대운 전체)과 섞이지 않게 씁니다.
        이 팝업은 '지금 걸리는 질문 하나'만 보는 원포인트 상품입니다. */
@@ -2432,12 +2588,13 @@
       '<ul class="shop__list">' +
       '<li><b>딱 1가지 핵심 질문 집중</b><span>이직·계약·관계·시기 중 지금 가장 급한 문제 하나만 깊게 봅니다</span></li>' +
       '<li><b>지금 할 일 · 미룰 일 정리</b><span>바로 움직일 때인지, 한 템포 쉴 때인지 방향을 딱 갈라 드려요</span></li>' +
-      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 채널로 질문 하나와 생년월일시를 보내 주시면 일정을 잡아 드려요</span></li>' +
+      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 아래 신청 양식을 채워 보내 주시면 일정을 바로 잡아 드려요</span></li>' +
       '</ul>' +
       priceHTML('윤이세 1:1 원포인트 리딩', CONSULT_PRICE) +
+      consultFormHTML() +
       payActionsHTML('consult') +
       kakaoOrderHTML('consult', '💬 결제 완료 · 카톡으로 질문 보내기') +
-      '<p class="shop__note">질문 하나와 생년월일시를 함께 보내 주시면 일정을 바로 잡아 드려요.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
+      '<p class="shop__note">양식을 채우고 결제한 뒤 노란 버튼을 누르면 신청 내용이 복사되고 카톡 채널이 열려요. 채팅창에 붙여넣기만 하면 접수 끝.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
   }
 
   function careShopHTML() {
@@ -3798,10 +3955,7 @@
         : '카톡 채널로 이동해요 — 올인원 업그레이드(' + BURN_UPGRADE_PRICE + ')라고 알려 주세요');
     });
     vibrate(18);
-    var w = null;
-    try { w = window.open(KAKAO, '_blank'); } catch (e) { w = null; }
-    if (w) { try { w.opener = null; } catch (e) {} }
-    else setTimeout(function () { window.location.href = KAKAO; }, 700);
+    openNoRef(KAKAO);
   }
 
   /* ── 효과음 · 진동 (Web Audio 합성, 음원 파일 없음) ── */
@@ -4220,6 +4374,8 @@
     if (shopEl) {
       shopEl.addEventListener('click', function (e) {
         if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
+        var gb = e.target.closest ? e.target.closest('[data-cf-gender]') : null;
+        if (gb) { e.preventDefault(); setConsultGender(gb.getAttribute('data-cf-gender')); return; }
         var ko = e.target.closest ? e.target.closest('[data-kakao-order]') : null;
         if (ko) { e.preventDefault(); goKakaoOrder(ko.getAttribute('data-kakao-order')); return; }
         var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
@@ -4232,6 +4388,17 @@
         if (bo) { e.preventDefault(); closeShop(); setTimeout(openBurnModal, 210); return; }
         var c = e.target.closest ? e.target.closest('[data-care]') : null;
         if (c) { e.preventDefault(); handleCare(c.getAttribute('data-care'), c, e); }
+      });
+      /* 신청 양식 입력 — 팝업을 다시 그려도 값이 남게 메모리에 담고, 안내 문구를 지진다 */
+      shopEl.addEventListener('input', function (e) {
+        var inp = e.target.closest ? e.target.closest('[data-cf]') : null;
+        if (!inp) return;
+        var k = inp.getAttribute('data-cf');
+        var f = consultFormState();
+        if (k === 'birth' || k === 'who' || k === 'q') f[k] = inp.value;
+        var row = inp.closest ? inp.closest('.cform__row') : null;
+        if (row) row.classList.remove('is-error');
+        clearConsultMsg();
       });
     }
 
