@@ -1192,6 +1192,7 @@
   }
   function openGuide(quiet) {
     if (!guideEl || !guideEl.hidden) return;
+    syncGuideTrial();
     guideLastFocus = document.activeElement;
     guideEl.hidden = false;
     document.body.classList.add('is-modal-open');
@@ -1211,6 +1212,23 @@
       if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
       guideLastFocus = null;
     }, 180);
+  }
+  /** 사용법 팝업 맨 위 '3일 무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
+      날짜는 오늘~모레(FREE_DAYS=3)를 오늘 기준으로 계산해 넣는다. */
+  function syncGuideTrial() {
+    var el = $('#guideTrial');
+    if (!el) return;
+    var on = FREE_TRIAL_ENABLED && !state.unlocked;
+    el.hidden = !on;
+    if (!on) return;
+    var sub = $('#guideTrialSub');
+    if (!sub || !state.todayISO || !T.addDays) return;
+    var endIso = T.addDays(state.todayISO, FREE_DAYS - 1);
+    var md = function (iso) {
+      var p = String(iso).split('-');
+      return parseInt(p[1], 10) + '/' + parseInt(p[2], 10);
+    };
+    sub.textContent = md(state.todayISO) + '~' + md(endIso) + ' 무료 · 부담 없이 먼저 써 보세요';
   }
   /** 달력이 처음 열릴 때 한 번 — 이미 본 기기면 아무 것도 하지 않는다 */
   function maybeAutoGuide() {
@@ -2330,6 +2348,33 @@
       '<b>' + esc(price) + '</b></div>';
   }
 
+  /* ── 결제 팝업 맨 위 3단 상품 비교·전환 (2026-11-21) ────────────────
+     1년 패스 버튼으로 팝업을 열면 다른 두 상품(올인원·성찰 에디션)이
+     아예 보이지 않던 문제를 없앤다. 지금 보는 구성은 금테+금색 배지로
+     강조하고, 나머지를 누르면 팝업 내용과 페이앱 결제 링크가 그 자리에서
+     바뀐다 (data-shop-switch="pass|allinone|diary"). */
+  var TIERSW = [
+    { k: 'pass', ic: '🎟️', nm: '1년 패스', pr: PASS_PRICE, df: '달력·1년 부적·태우기 5회', tag: '' },
+    { k: 'allinone', ic: '👑', nm: '올인원', pr: ALLINONE_PRICE, df: '매일 일진부적·태우기 무제한', tag: '인기' },
+    { k: 'diary', ic: '✨', nm: '성찰 에디션', pr: DIARY_PRICE, df: '365일 1줄 성찰 다이어리', tag: '추천' }
+  ];
+  function tierswHTML(active) {
+    return '<div class="tiersw" role="group" aria-label="2027 상품 세 가지 — 눌러서 비교하고 바꿔 보세요">' +
+      TIERSW.map(function (t) {
+        var on = t.k === active;
+        return '<button type="button" class="tiersw__b' + (on ? ' is-on' : '') + '"' +
+          ' data-shop-switch="' + t.k + '" aria-pressed="' + (on ? 'true' : 'false') + '"' +
+          ' aria-label="' + esc(t.nm + ' ' + t.pr + (t.tag ? ' ' + t.tag : '') + (on ? ' — 지금 보고 있는 구성' : ' — 이 구성 보기')) + '">' +
+          (t.tag ? '<span class="tiersw__tag">' + esc(t.tag) + '</span>' : '') +
+          '<span class="tiersw__nm"><span class="tiersw__ic" aria-hidden="true">' + t.ic + '</span> ' + esc(t.nm) + '</span>' +
+          '<span class="tiersw__pr">' + esc(t.pr) + '</span>' +
+          '<span class="tiersw__df">' + esc(t.df) + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<p class="tiersw__hint">다른 구성을 누르면 그 자리에서 바로 바뀌어요</p>';
+  }
+
   /* ── 결제 두 버튼 — 💳 카드결제 (페이앱) · 🏦 계좌이체 ────────────────────
      item: 'pass' | 'allinone' | 'care-one' | 'care-set' | 'consult'
      위쪽 '결제 설정' 값이 비어 있으면 카카오톡 채널로 안내하고,
@@ -2759,6 +2804,7 @@
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
       '<h2 class="shop__title" id="shopTitle">🎟️ 1년 패스</h2>' +
+      tierswHTML('pass') +
       trialShopNote() +
       '<p class="shop__sub">생년월일과 성별을 넣으면 <b>2026년 11월부터 2027년 12월까지 14개월</b>(2027년 1~12월 전체 포함)이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
       '<ul class="shop__list">' +
@@ -2775,6 +2821,7 @@
   function allinoneShopHTML() {
     return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
       '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
+      tierswHTML('allinone') +
       trialShopNote() +
       '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>액운 태우기 무제한</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고 싶다면 여기서 시작하세요.</p>' +
       '<ul class="shop__list">' +
@@ -2794,6 +2841,7 @@
   function diaryShopHTML() {
     return '<p class="modal__eyebrow">REFLECTION EDITION · 365일 1줄 성찰 다이어리</p>' +
       '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
+      tierswHTML('diary') +
       trialShopNote() +
       '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
       '<ul class="shop__list">' +
@@ -3864,10 +3912,25 @@
             : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML()))));
   }
 
+  /* 상품 팝업을 닫지 않고 1년 패스 ↔ 올인원 ↔ 성찰 에디션으로 갈아탄다.
+     이미 가진 등급이면 shopHTMLFor() 가 '적용 중'·'차액 업그레이드'로 그린다. */
+  var shopKind = '';
+  function switchShop(kind) {
+    if (!shopBody || !TIER_NAME[kind] || kind === shopKind) return;
+    shopKind = kind;
+    shopBody.innerHTML = shopHTMLFor(kind);
+    shopBody.scrollTop = 0;
+    vibrate(12);
+    sfxTap(1);
+    var nb = shopBody.querySelector('[data-shop-switch="' + kind + '"]');
+    if (nb) { try { nb.focus({ preventScroll: true }); } catch (e) { nb.focus(); } }
+  }
+
   function openShop(kind) {
     if (!shopEl) return;
     if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
+    shopKind = kind;
     shopBody.innerHTML = shopHTMLFor(kind);
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
@@ -3887,6 +3950,7 @@
       shopEl.hidden = true;
       shopBody.innerHTML = '';
       shopClosing = false;
+      shopKind = '';
       if ((!modalEl || modalEl.hidden) && (!burnEl || burnEl.hidden)) document.body.classList.remove('is-modal-open');
       var target = shopLastFocus;
       if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
@@ -5017,6 +5081,8 @@
     if (shopEl) {
       shopEl.addEventListener('click', function (e) {
         if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
+        var sw = e.target.closest ? e.target.closest('[data-shop-switch]') : null;
+        if (sw) { e.preventDefault(); switchShop(sw.getAttribute('data-shop-switch')); return; }
         var gb = e.target.closest ? e.target.closest('[data-cf-gender]') : null;
         if (gb) { e.preventDefault(); setConsultGender(gb.getAttribute('data-cf-gender')); return; }
         var cb = e.target.closest ? e.target.closest('[data-cf-cal]') : null;

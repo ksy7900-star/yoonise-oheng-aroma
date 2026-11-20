@@ -1543,6 +1543,64 @@ body.is-modal-open { overflow: hidden; }
 }
 .shop__sub { font-size: 12px; line-height: 1.8; color: var(--ink-2); margin-top: 10px; }
 .shop__sub b { color: #9E4A2E; }
+
+/* ── 결제 팝업 맨 위 3단 상품 비교·전환 (1년 패스 · 올인원 · 성찰 에디션) ──
+  390px에서 세 칸이 한 줄에 들어가고, 누르는 칸이 금테로 바뀐다. */
+.tiersw {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px; margin-top: 12px;
+}
+.tiersw__b {
+  position: relative; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 9px 4px 10px;
+  background: #FFFDF8; color: var(--ink-2);
+  border: 1px solid rgba(29, 28, 25, .13); border-radius: 13px;
+  font: inherit; text-align: center; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .12s ease;
+}
+.tiersw__b:active { transform: translateY(1px); }
+.tiersw__b:focus-visible { outline: 2px solid #AE8A50; outline-offset: 2px; }
+.tiersw__ic { font-size: 11px; line-height: 1; vertical-align: -1px; }
+.tiersw__nm {
+  display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 11px; font-weight: 600; letter-spacing: -.04em; line-height: 1.3; color: var(--ink);
+}
+.tiersw__pr {
+  display: inline-block; margin-top: 1px; padding: 1px 6px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; color: #9E4A2E;
+}
+.tiersw__df {
+  display: block; margin-top: 2px;
+  font-size: 8.5px; line-height: 1.45; letter-spacing: -.02em;
+  color: var(--mute); word-break: keep-all;
+}
+.tiersw__tag {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  padding: 1px 6px; border-radius: 999px;
+  font-size: 8px; font-weight: 700; letter-spacing: 0; line-height: 1.5;
+  background: #9E4A2E; color: #FFF6E6; white-space: nowrap;
+}
+/* 지금 보고 있는 구성 — 금테 + 진한 가격 알약 */
+.tiersw__b.is-on {
+  background: #FBF3E2; border-color: #AE8A50;
+  box-shadow: 0 0 0 1px rgba(174, 138, 80, .55) inset, 0 3px 10px rgba(174, 138, 80, .16);
+}
+.tiersw__b.is-on .tiersw__nm { color: #6B5324; font-weight: 700; }
+.tiersw__b.is-on .tiersw__pr { background: #1C1B19; color: #F6E7C8; }
+.tiersw__b.is-on .tiersw__df { color: #7E6229; }
+.tiersw__b.is-on .tiersw__tag { background: #AE8A50; color: #FFF8EC; }
+.tiersw__hint {
+  margin-top: 7px; text-align: center;
+  font-size: 9px; line-height: 1.6; letter-spacing: -.02em; color: var(--mute);
+}
+@media (max-width: 356px) {
+  .tiersw { gap: 4px; }
+  .tiersw__b { padding: 8px 3px 9px; }
+  .tiersw__nm { font-size: 10.5px; }
+}
 /* 결제 팝업 상단 '먼저 3일 무료' 안내 */
 .shop__trial {
   margin-top: 12px; padding: 9px 12px;
@@ -3265,6 +3323,27 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .guide__eyebrow {
   font-size: 9px; font-weight: 700; letter-spacing: .24em;
   color: #A4864B; line-height: 1.5;
+}
+/* 🎁 3일 무료 체험 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만 (2026-11-21d) */
+.guide__trial {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  width: -moz-fit-content; width: fit-content; max-width: 100%;
+  margin: 9px auto 0; padding: 8px 15px 9px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FCF1D6 0%, #EFD9A8 100%);
+  border: 1px solid rgba(174, 138, 80, .58);
+  box-shadow: 0 8px 18px -12px rgba(110, 82, 25, .95), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+.guide__trial[hidden] { display: none; }
+.guide__trial-h {
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.035em;
+  color: #6E5219; line-height: 1.3;
+}
+.guide__trial-h b { color: #9E4A2E; font-weight: 800; }
+.guide__trial-s {
+  font-size: 9.5px; font-weight: 600; letter-spacing: -.02em;
+  color: #8A6B2C; line-height: 1.35;
+  font-variant-numeric: tabular-nums;
 }
 .guide__title {
   font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.24;
