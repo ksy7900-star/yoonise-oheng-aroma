@@ -2787,7 +2787,7 @@
       '<p class="burn__guide">오늘 두고 갈 일, 잊고 싶은 일, 털어낼 걱정을 적어 보세요<br>(어디에도 저장되지 않고 바로 사라져요)</p>' +
       '<p class="burn__count">' + esc(burnLeftText()) + '</p>' +
       '<input class="burn__input" id="burnInput" type="text" maxlength="60" autocomplete="off" ' +
-      'placeholder="한 줄이면 충분합니다">' +
+      'aria-label="오늘 태워 보낼 한 줄" placeholder="한 줄이면 충분합니다">' +
       '<div class="burn__chips">' + BURN_CHIPS.map(function (c) {
         return '<button type="button" class="burn__chip" data-burn-chip="' + esc(c) + '">' + esc(c) + '</button>';
       }).join('') + '</div>' +
@@ -2798,6 +2798,7 @@
   /* ② 구기기 · 태우기 — 소각대를 크게 열어 두고, 불이 붙으면 먹빛·금빛으로 바뀐다 */
   function burnPaperHTML() {
     return '<p class="modal__eyebrow">STEP 2 · 구기고 태우기</p>' +
+      '<h2 class="sr-only" id="burnModalTitle">액운 태우기 — 구기고 태우기</h2>' +
       '<p class="burn__rite">오늘의 탁한 기운을,<br>불로 거두어 들입니다</p>' +
       '<div class="burn__stage" data-burn-stage>' +
       '<span class="burn__pyre" data-burn-pyre aria-hidden="true"><span class="burn__glow"></span><i></i><i></i><i></i><i></i><i></i></span>' +
@@ -2817,6 +2818,7 @@
     var p = BURN_PURIFY[el] || BURN_PURIFY['수'];
     var tal = TALIS[el] || TALIS['수'];
     return '<p class="modal__eyebrow">STEP 3 · 내 사주로 빈자리 채우기</p>' +
+      '<h2 class="sr-only" id="burnModalTitle">액운 태우기 — 다 탔습니다</h2>' +
       '<p class="burn__done-title">재가 되어 흩어졌으니,<br>이제 맑은 기운만 남았습니다</p>' +
       '<div class="burn__purify burn__purify--' + el + '" data-burn-purify>' +
       '<span class="burn__hanja" aria-hidden="true">' + p.hanja + '</span>' +
