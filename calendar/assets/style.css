@@ -3168,20 +3168,21 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
    모바일에서 스크롤 없이 1초에 읽히도록 한 줄·짧은 말로. */
 .calguide {
   display: flex; align-items: center; justify-content: center;
-  gap: 4px; margin: 12px 2px 2px; padding: 8px 7px;
+  gap: 3px; margin: 12px 2px 2px; padding: 8px 6px;
   border-radius: 12px;
-  background: rgba(29, 28, 25, .042);
-  box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .05);
-  font-size: 10.5px; font-weight: 600; letter-spacing: -.035em;
-  color: var(--ink-2); white-space: nowrap;
+  background: rgba(29, 28, 25, .055);
+  box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .055);
+  font-size: 12.5px; font-weight: 700; letter-spacing: -.045em;
+  color: var(--ink); white-space: nowrap;
 }
-.calguide__st { display: inline-flex; align-items: center; gap: 2px; }
+.calguide__st { display: inline-flex; align-items: center; gap: 1px; }
 .calguide__n {
-  font-size: 10px; font-weight: 800; color: #9A6F26; letter-spacing: 0;
+  font-size: 11.5px; font-weight: 800; color: #8A5F1C; letter-spacing: 0;
+  margin-right: 1px;
 }
-.calguide__st b { font-weight: 800; color: var(--ink); }
+.calguide__st b { font-weight: 800; color: #1C1B19; }
 .calguide__st em { font-style: normal; font-weight: 800; color: #8E4A3D; }
-.calguide__ar { font-size: 8.5px; color: #C6BEAE; padding: 0 1px; }
+.calguide__ar { font-size: 10px; color: #B6AC98; padding: 0 1px; }
 
 /* 부적이 나오는 날 칸 — 말풍선이 가리키는 칸은 테두리로 한 번 더 */
 .day--hint { box-shadow: inset 0 0 0 1.5px rgba(174, 138, 80, .5); }
@@ -3191,7 +3192,7 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
   bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
   padding: 5px 9px; border-radius: 10px;
   background: #2C2823; color: #FFF8EA;
-  font-size: 9.5px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em;
+  font-size: 10px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em;
   white-space: nowrap; pointer-events: none;
   box-shadow: 0 5px 12px rgba(28, 27, 25, .24);
   animation: hintGlow 2.4s ease-in-out infinite;
@@ -3223,8 +3224,8 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .lockpanel__hint b { font-weight: 800; color: #6B5A2E; }
 
 @media (max-width: 360px) {
-  .calguide { font-size: 9.6px; gap: 3px; padding: 7px 5px; }
-  .calguide__n { font-size: 9px; }
-  .calguide__ar { font-size: 8px; }
-  .day__hint { font-size: 9px; padding: 4px 7px; }
+  .calguide { font-size: 11.5px; gap: 2px; padding: 7px 4px; letter-spacing: -.05em; }
+  .calguide__n { font-size: 10.5px; }
+  .calguide__ar { font-size: 9px; }
+  .day__hint { font-size: 9.5px; padding: 4px 7px; }
 }
