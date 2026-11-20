@@ -2760,6 +2760,8 @@
   function lockAgain() {
     saveUnlock(false);
     syncLockUI();
+    var msg = $('#lockMsg');
+    if (msg) { msg.textContent = '다시 잠갔어요. 코드를 넣으면 또 열립니다.'; msg.classList.remove('is-ok'); }
     renderCalendar();
     toast('다시 잠갔어요 — 입장 코드를 넣으면 또 열립니다');
   }
