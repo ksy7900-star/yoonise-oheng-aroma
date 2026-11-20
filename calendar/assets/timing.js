@@ -5,6 +5,12 @@
  * 원칙
  *  - 모든 판정은 내 원국(일간·일지·월지)과 그날 일진의 실제 관계로만 계산한다.
  *  - 색 배지 4색 5단어: 럭키(금) / 입단속(적) / 결정·머니(청) / 리셋(회)
+ *  - 배지는 '진짜 강한 날·내게 반가운 날'에만 붙인다(2026-11-20 김나영 님 지시 #9029 #9057 #9069).
+ *    한 달의 절반 이상은 배지 없는 잔잔한 날로 남기는 것이 목표.
+ *    · 입단속 = 일지 충 · 일지 형 · 월지 충  (일지 해·월지 형·월지 해는 기록만)
+ *    · 럭키 = 천을귀인(충·형 날 제외) · 합화 오행이 내 원국에 부족한 육합·삼합 (천간합·반합은 기록만)
+ *    · 결정·머니 = 원국에 가장 적은 오행이 일진 천간·지지로 채워질 때만 (인성·재성 무조건 배지 금지)
+ *    · 리셋 = 월건이 바뀌는 12절만 (중기는 기록만)
  *  - 처방 문구는 미리 써 둔 표에서 고른다(즉석 생성하지 않음). 같은 날은 항상 같은 문구.
  *  - 계산은 브라우저 안에서만. 어디로도 전송하지 않는다.
  */
@@ -36,6 +42,24 @@
   // 형(刑)
   var HYEONG_G = [[2, 5, 8], [1, 10, 7], [0, 3]];
   var HYEONG_SELF = [4, 6, 9, 11];
+
+  /* ── 내 사주에 필요한 오행 ──────────────────────────
+   * 합이든 인성·재성이든 '들어오면 무조건 좋다'가 아니다(2026-11-20 김나영 님 지시 #9057 #9069).
+   * 원국 오행 개수를 세어 (1) 아주 적은 오행(scarce)과 (2) 부족한 편인 오행(fills)을 가린다.
+   *  - scarce: 원국에서 가장 적은 오행(보통 0~1개) — '결정·머니'는 여기에만 붙인다.
+   *  - fills : 1개 이하로 부족한 오행 — 합(육합·삼합)이 이쪽으로 바뀔 때만 '럭키'.
+   */
+  var EL_ORDER = ['목', '화', '토', '금', '수'];
+  var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };     // 내가 극하는 오행 = 재성
+  var EL_MOTHER = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };   // 나를 생하는 오행 = 인성
+
+  // 육합(六合) — 짝이 합해서 바뀌는 오행. 자축→토 · 인해→목 · 묘술→화 · 진유→금 · 사신→수 · 오미→화(토)
+  var YUKHAP_ELS = {
+    0: ['토'], 1: ['토'], 2: ['목'], 3: ['화'], 4: ['금'], 5: ['수'],
+    6: ['화', '토'], 7: ['화', '토'], 8: ['수'], 9: ['금'], 10: ['화'], 11: ['목']
+  };
+  // 삼합국이 완성될 때 바뀌는 오행 (SAMHAP 순서와 같다)
+  var SAMHAP_EL = ['수', '목', '화', '금'];
 
   var CAT = {
     red:  { label: '입단속',   color: '#C0563F', icon: '🔴', order: 0 },
@@ -74,6 +98,21 @@
   function samhapGroupOf(i) {
     for (var k = 0; k < SAMHAP.length; k++) if (SAMHAP[k].indexOf(i) >= 0) return k;
     return -1;
+  }
+
+  /** 원국 오행 분포에서 '필요한 오행'을 가린다. res.counts = {목·화·토·금·수} */
+  function needOf(res) {
+    var counts = (res && res.counts) || null;
+    if (!counts) return null;
+    var me = M.GAN_EL[res.pillars.day.ganIndex];
+    var min = 99;
+    EL_ORDER.forEach(function (e) { var c = counts[e] || 0; if (c < min) min = c; });
+    var scarce = EL_ORDER.filter(function (e) { return (counts[e] || 0) === min; });
+    var fills = EL_ORDER.filter(function (e) { return (counts[e] || 0) <= 1; });
+    return {
+      counts: counts, min: min, scarce: scarce, fills: fills,
+      wealthEl: EL_OVER[me], docEl: EL_MOTHER[me]
+    };
   }
 
   /* ── 24절기 ────────────────────────────────────────── */
@@ -173,14 +212,17 @@
   /* ── 원국 요약 ─────────────────────────────────────── */
   function natalOf(res) {
     var d = res.pillars.day, mo = res.pillars.month, y = res.pillars.year, t = res.pillars.time;
-    return {
+    var natal = {
       dayGanIndex: d.ganIndex, dayZhiIndex: d.zhiIndex,
       monthZhiIndex: mo.zhiIndex, yearZhiIndex: y.zhiIndex,
       timeZhiIndex: t ? t.zhiIndex : null,
       gan: d.gan, zhi: d.zhi, ganKo: d.ganKo, zhiKo: d.zhiKo,
       element: M.GAN_EL[d.ganIndex],
-      pillars: res.pillars, tenGod: res.tenGod, res: res
+      pillars: res.pillars, tenGod: res.tenGod, res: res,
+      need: null
     };
+    natal.need = needOf(res);
+    return natal;
   }
 
   /* ── 그날의 일진·관계·처방 ─────────────────────────── */
@@ -204,7 +246,11 @@
       marks.push({ cat: cat, kind: kind, weight: weight, label: label, detail: detail, minor: !!minor });
     }
 
-    // ── 입단속: 충·형·해 ──
+    var need = natal.need || needOf(natal.res);
+
+    // ── 입단속: 충격이 큰 날만 배지로 ──
+    //  배지: 일지 충 · 일지 형 · 월지 충   (2026-11-20 김나영 님 지시 #9057)
+    //  배지 없이 기록만: 일지 해 · 월지 형 · 월지 해 — 자리가 살짝 어긋나는 약한 신호
     if (chungOf(tz) === dz) {
       add('red', 'chung', 60, '일지 충', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 충(沖), 자리와 관계가 흔들리는 날');
     } else if (chungOf(tz) === mz) {
@@ -213,28 +259,48 @@
     if (isHyeong(tz, dz)) {
       add('red', 'hyeong', 50, '일지 형', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 마찰과 서류의 엉킴');
     } else if (isHyeong(tz, mz)) {
-      add('red', 'hyeong', 25, '월지 형', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 절차가 꼬이기 쉬운 날', true);
+      add('red', 'hyeong', 25, '월지 형', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 절차가 꼬이기 쉬운 날 (약한 신호라 배지 없음)', true);
     }
     if (haeOf(tz) === dz) {
-      add('red', 'hae', 40, '일지 해', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 말과 뜻이 엇갈리는 날');
+      add('red', 'hae', 40, '일지 해', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 말과 뜻이 엇갈리는 날 (약한 신호라 배지 없음)', true);
     } else if (haeOf(tz) === mz) {
-      add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날', true);
+      add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날 (약한 신호라 배지 없음)', true);
     }
+    // 충·형이 걸린 날에는 귀인도 힘을 쓰기 어렵다 — 아래 럭키 판정에서 쓴다
+    var hardRed = marks.some(function (mk) { return mk.cat === 'red' && !mk.minor; });
 
-    // ── 럭키: 귀인·합 ──
+    /* ── 럭키: 내 사주에 반가운 날만 ──
+     *  합이 된다고 다 좋은 게 아니다(김나영 님 지시 #9057 #9069).
+     *  - 천을귀인: 살리되 일지 충·형이 걸린 날은 띄우지 않는다.
+     *  - 천간합: 배지에서 뺀다(기록만).
+     *  - 일지 육합·삼합 완성: 합화 오행이 내 원국에 부족한 쪽일 때만. 반합은 기록만.
+     */
+    function fillsNeed(els) {
+      if (!need) return false;
+      for (var i = 0; i < els.length; i++) if (need.fills.indexOf(els[i]) >= 0) return true;
+      return false;
+    }
     if (CHEONEUL[dg].indexOf(tz) >= 0) {
-      add('gold', 'gwiyin', 65, '천을귀인',
-        '천을귀인(天乙貴人) — 일간 ' + GAN[dg] + '의 귀인 자리 ' +
-        CHEONEUL[dg].map(function (i) { return ZHI[i]; }).join('·') + ' 중 ' + zhiFull(tz) + '이 온 날');
+      var gwiyinWhere = '천을귀인(天乙貴人) — 일간 ' + GAN[dg] + '의 귀인 자리 ' +
+        CHEONEUL[dg].map(function (i) { return ZHI[i]; }).join('·') + ' 중 ' + zhiFull(tz) + '이 온 날';
+      if (hardRed) add('gold', 'gwiyin', 65, '천을귀인', gwiyinWhere + ' — 다만 충·형이 걸려 귀인이 힘을 쓰기 어렵습니다', true);
+      else add('gold', 'gwiyin', 65, '천을귀인', gwiyinWhere);
     }
     if ((tg + 5) % 10 === dg) {
       add('gold', 'hap', 45, '천간합',
-        '일간 ' + GAN[dg] + ' ↔ 일진 ' + GAN[tg] + ' — 천간합(合), 사람과 일이 붙는 날');
+        '일간 ' + GAN[dg] + ' ↔ 일진 ' + GAN[tg] + ' — 천간합(合), 사람과 일이 붙는 날이지만 합이 늘 좋은 건 아니라 배지로는 띄우지 않습니다', true);
     }
     if (yukhapOf(tz) === dz) {
-      add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 관계가 이어지는 날');
+      var yels = YUKHAP_ELS[tz] || [];
+      if (fillsNeed(yels)) {
+        add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), ' +
+          yels.join('·') + '(으)로 합해 내 사주에 모자란 기운을 보태는 날');
+      } else {
+        add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합이지만 ' +
+          yels.join('·') + '은(는) 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
+      }
     } else if (yukhapOf(tz) === mz) {
-      add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날', true);
+      add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날 (약한 신호라 배지 없음)', true);
     }
     var sg = samhapGroupOf(tz);
     if (sg >= 0) {
@@ -246,39 +312,56 @@
         if (SAMHAP[sg].indexOf(z) >= 0 && two.indexOf(z) < 0) two.push(z);
       }
       if (two.length >= 2) {
-        add('gold', 'hap', 50, '삼합 완성',
-          '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] + ' 삼합이 완성되는 날');
+        var sEl = SAMHAP_EL[sg];
+        if (fillsNeed([sEl])) {
+          add('gold', 'hap', 50, '삼합 완성',
+            '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] +
+            ' 삼합이 완성되고 ' + sEl + '이(가) 내 사주에 모자란 기운을 채우는 날');
+        } else {
+          add('gold', 'hap', 50, '삼합 완성',
+            '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] +
+            ' 삼합이 완성되지만 ' + sEl + '은(는) 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
+        }
       } else if (two.length === 1) {
         var where = two[0] === dz ? '내 일지 ' : (two[0] === mz ? '내 월지 ' : '내 원국 ');
         add('gold', 'hap', 22, '반합',
-          where + zhiFull(two[0]) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합', true);
+          where + zhiFull(two[0]) + ' ↔ 일진 ' + zhiFull(tz) + ' — ' + SAMHAP_KO[sg] + '의 반합 (약한 신호라 배지 없음)', true);
       }
     }
 
-    // ── 머니·결정: 재물·문서(십신) ──
+    /* ── 결정·머니: 내 사주에 비어 있는 인성·재성만 ──
+     *  인성·재성이 들어오는 날을 다 '결정·머니'로 띄우면 인성이 이미 넘치는 사주까지 파란 날이 된다(#9057).
+     *  원국에서 가장 적은 오행(scarce)이 일진 천간으로 오고, 일진 지지가 그것을 받쳐 줄 때만 배지.
+     */
     var tgName = TEN(dg, tg);
-    if (tgName === '정재' || tgName === '편재') {
-      add('blue', 'wealth', 32, '머니', '일진 천간 ' + GAN[tg] + ' — 내 일간 ' + GAN[dg] + ' 기준 ' + tgName + '(財), 돈이 오가는 신호');
-    }
-    if (tgName === '정인' || tgName === '편인') {
-      add('blue', 'doc', 32, '문서', '일진 천간 ' + GAN[tg] + ' — 내 일간 ' + GAN[dg] + ' 기준 ' + tgName + '(印), 문서·공부의 신호');
-    }
-    var mainStem = HIDDEN[gz.zhi][0];
-    var zgName = TEN(dg, GAN.indexOf(mainStem));
-    if ((zgName === '정재' || zgName === '편재') && tgName !== '정재' && tgName !== '편재') {
-      add('blue', 'wealth', 20, '머니', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(財), 재물 자리가 열린 날', true);
-    }
-    if ((zgName === '정인' || zgName === '편인') && tgName !== '정인' && tgName !== '편인') {
-      add('blue', 'doc', 20, '문서', '일진 지지 ' + zhiFull(tz) + '의 본기 ' + mainStem + ' — ' + zgName + '(印), 문서 자리가 열린 날', true);
+    var tgEl = M.GAN_EL[tg];
+    var zEl = M.ZHI_EL[tz];
+    var zMainEl = M.GAN_EL[GAN.indexOf(HIDDEN[gz.zhi][0])];
+    var isWealth = tgName === '정재' || tgName === '편재';
+    var isDoc = tgName === '정인' || tgName === '편인';
+    var tgScarce = !!(need && need.scarce.indexOf(tgEl) >= 0);
+    if ((isWealth || isDoc) && tgScarce) {
+      var whoKo = isDoc ? '인성' : '재성';
+      var label = isDoc ? '결정' : '머니';
+      var kind = isDoc ? 'doc' : 'wealth';
+      if (zEl === tgEl || zMainEl === tgEl) {
+        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + '가 내 사주에 ' + need.min +
+          '개뿐인 ' + tgEl + '을 ' + whoKo + '으로 채우고, 지지도 같은 기운으로 받쳐 주는 날');
+      } else {
+        add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + '이(가) 내 사주에 모자란 ' + tgEl + '을 ' + whoKo +
+          '으로 채우지만 지지가 받쳐 주지 않아 배지로는 띄우지 않습니다', true);
+      }
     }
 
-    // ── 리셋: 24절기 ──
+    // ── 리셋: 월건이 실제로 바뀌는 12절(입춘·경칩·청명…)만 ──
     var term = terms && terms.byDate ? terms.byDate[iso] : null;
+    var isReset = !!(term && term.isJie);
     if (term) {
-      add('gray', 'jie', 12, term.ko,
+      add('gray', 'jie', isReset ? 12 : 6, term.ko,
         term.isJie
           ? term.ko + ' 절입 ' + term.time + ' — ' + (term.monthText ? term.monthText + '월' : '월건') + '이 바뀝니다'
-          : term.ko + ' ' + term.time + ' — 24절기', true);
+          : term.ko + ' ' + term.time + ' — 24절기의 중기, 달의 기준은 그대로 (배지 없음)',
+        !term.isJie);
     }
 
     // 점: 하루에 1~2개. 강한 신호만 점이 된다(약한 신호는 상세 설명에만)
@@ -291,7 +374,8 @@
     if (!strongRed && !strongGold && strongBlue) dots.push({ cat: 'blue' });
 
     // 배지: 달력 셀에 바로 보이는 짧은 한글 (하루 최대 2개)
-    //  입단속 = 충·형이 걸린 날 / 럭키 = 귀인·합이 들어온 날 / 결정·머니 = 문서·돈의 신호 / 리셋 = 월운 전환일
+    //  입단속 = 일지 충·형, 월지 충이 걸린 날 / 럭키 = 귀인·내게 맞는 합이 들어온 날
+    //  결정·머니 = 비어 있던 인성·재성이 채워지는 날 / 리셋 = 월건이 바뀌는 12절
     var maxWeight = function (cat) {
       var w = 0;
       marks.forEach(function (mk) { if (mk.cat === cat && !mk.minor && mk.weight > w) w = mk.weight; });
@@ -304,7 +388,7 @@
       var isDoc = marks.some(function (mk) { return mk.cat === 'blue' && mk.kind === 'doc' && !mk.minor; });
       badges.push({ cat: 'blue', text: isDoc ? '결정' : '머니', weight: maxWeight('blue') });
     }
-    if (term) badges.push({ cat: 'gray', text: '리셋', weight: term.isJie ? 14 : 12 });
+    if (isReset) badges.push({ cat: 'gray', text: '리셋', weight: 14 });
     var BADGE_ORDER = { red: 0, gold: 1, blue: 2, gray: 3 };
     badges.sort(function (a, b) { return BADGE_ORDER[a.cat] - BADGE_ORDER[b.cat]; });
     if (badges.length > 2) badges = badges.slice(0, 2);
@@ -314,10 +398,10 @@
     else if (strongRed) { headline = '입단속 · 결정은 하루 뒤로'; tone = 'red'; }
     else if (strongGold) { headline = '럭키한 날 · 먼저 손 내밀기'; tone = 'gold'; }
     else if (strongBlue) { headline = '결정·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
-    else if (term) { headline = '리셋 · 새 달의 기준이 서는 날'; tone = 'gray'; }
+    else if (isReset) { headline = '리셋 · 새 달의 기준이 서는 날'; tone = 'gray'; }
     else { headline = '잔잔한 날 · 흐름 정리'; tone = 'none'; }
 
-    var lines = prescribe(marks, term, gz);
+    var lines = prescribe(marks, isReset ? term : null, gz);
     var saeun = saeunOf(iso, terms);
 
     return {
@@ -477,7 +561,7 @@
     m.good = m.gwiyin ? MONTH_GOOD.gwiyin
       : (m.yukhapDay ? MONTH_GOOD.hap
       : (m.lack ? MONTH_GOOD.fill
-      : (m.blue >= 6 ? MONTH_GOOD.doc : MONTH_GOOD.flow)));
+      : (m.blue >= 2 ? MONTH_GOOD.doc : MONTH_GOOD.flow)));
 
     // 그 달에 해당하는 이유를 순서대로 모아 둠 — 이웃 달과 같은 이유가 겹치지 않게 고를 때 쓴다
     m.warnAll = [];
@@ -492,7 +576,7 @@
     if (m.gwiyin) m.goodAll.push(MONTH_GOOD.gwiyin);
     if (m.yukhapDay) m.goodAll.push(MONTH_GOOD.hap);
     if (m.lack) m.goodAll.push(MONTH_GOOD.fill);
-    if (m.blue >= 6) m.goodAll.push(MONTH_GOOD.doc);
+    if (m.blue >= 2) m.goodAll.push(MONTH_GOOD.doc);
     m.goodAll.push(MONTH_GOOD.flow);        // 앞 달과 이유가 겹칠 때의 마지막 안전판
 
     return m;
@@ -657,6 +741,7 @@
     CAT: CAT,
     buildTerms: buildTerms,
     natalOf: natalOf,
+    needOf: needOf,
     dayInfo: dayInfo,
     saeunOf: saeunOf,
     addDays: addDays,
