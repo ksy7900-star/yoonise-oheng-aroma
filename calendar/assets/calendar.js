@@ -529,28 +529,44 @@
     if (!d) { box.hidden = true; return; }
     box.hidden = false;
 
+    /* 무료 체험 중에는 '몇 월을 조심하라'는 결론을 캡처해 가는 사람이 있다(#9098).
+       3일 체험 + 코드 미입력 상태에서는 개수만 보이고, 카드 안의 월 이름은 가린다. */
+    var locked = FREE_TRIAL_ENABLED && !state.unlocked;
+    box.classList.toggle('yearfold--locked', locked);
+
     /* 일수 카운트는 쓰지 않는다 — 조심할 날이 많아 보이면 오히려 기가 빠진다는 피드백(2026-11-20).
-       '어느 달을 조심하고 어느 달을 밟을지'만 남긴다. */
+       '어느 달을 조심하고 어느 달을 밝을지'만 남긴다. */
     var firstWarn = d.warn[0] ? d.warn[0].m + '월' : '';
     var firstGood = d.good[0] ? d.good[0].m + '월' : '';
-    $('#yearLead').innerHTML = firstWarn && firstGood
-      ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
-      : (firstWarn
-        ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>이에요.'
-        : (firstGood
-          ? '2027년에 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
-          : '2027년은 어느 달도 유난히 치우치지 않고 고르게 열려 있어요.'));
+    $('#yearLead').innerHTML = locked
+      ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
+        d.good.length + '곳</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>'
+      : (firstWarn && firstGood
+        ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
+        : (firstWarn
+          ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>이에요.'
+          : (firstGood
+            ? '2027년에 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
+            : '2027년은 어느 달도 유난히 치우치지 않고 고르게 열려 있어요.')));
 
     /* 달 칩은 읽기만 하는 표시 — 누를 수 있는 것처럼 보이지 않게 정적 div로 둔다.
        (예전에는 누르면 그 달로 달력이 점프해서, 보던 이번 달을 다시 손으로 찾아야 했다는 피드백 2026-11-20) */
     function chip(m, isBad) {
       var ln1 = isBad ? m.warn : m.good;
-      return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + '">' +
-        '<span class="ychip__no">' + m.m + '월</span>' +
+      var inner = '<span class="ychip__no">' + m.m + '월</span>' +
         '<span class="ychip__body">' +
         '<span class="ychip__title">' + esc(ln1.title) + '</span>' +
         '<span class="ychip__why">' + esc(ln1.why) + '</span>' +
-        '</span>' +
+        '</span>';
+      if (!locked) {
+        return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + '">' + inner + '</div>';
+      }
+      /* 잠금 카드 — 내용은 블러, 위에 잠금 버튼. 카드 아무 데나 눌러도 앱 안 결제 안내 팝업(1년 패스) */
+      return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + ' ychip--locked" data-shop="pass">' +
+        '<div class="ychip__inner" aria-hidden="true">' + inner + '</div>' +
+        '<button type="button" class="ychip__lock" data-shop="pass" ' +
+        'aria-label="1년 패스로 ' + (isBad ? '조심할 달' : '좋은 달') + '이 몇 월인지 확인하기">' +
+        '🔒 1년 패스(14,900원) 열고 확인</button>' +
         '</div>';
     }
 
@@ -559,9 +575,13 @@
       : '<p class="year__none">2027년에는 유난히 부딪히는 달이 없어요. 흐름이 고른 한 해입니다.</p>';
     var meta = $('#yearMeta');
     if (meta) {
-      var wm = d.warn.map(function (m) { return m.m + '월'; }).join('·');
-      var gm = d.good.map(function (m) { return m.m + '월'; }).join('·');
-      meta.textContent = (wm ? '조심 ' + wm : '') + (wm && gm ? ' · ' : '') + (gm ? '좋은 ' + gm : '');
+      if (locked) {
+        meta.textContent = '조심 ' + d.warn.length + '곳 · 좋은 ' + d.good.length + '곳 🔒';
+      } else {
+        var wm = d.warn.map(function (m) { return m.m + '월'; }).join('·');
+        var gm = d.good.map(function (m) { return m.m + '월'; }).join('·');
+        meta.textContent = (wm ? '조심 ' + wm : '') + (wm && gm ? ' · ' : '') + (gm ? '좋은 ' + gm : '');
+      }
     }
 
     $('#yearGoodChips').innerHTML = d.good.length
