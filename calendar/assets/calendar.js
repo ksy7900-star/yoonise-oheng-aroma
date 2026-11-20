@@ -2740,6 +2740,7 @@
   var burn = { used: 0, text: '', stage: 'write', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0 };
   var BURN_BURN_MS = 7800;        // 불이 붙은 뒤 재가 될 때까지 — 7.8초, 느리고 묵직하게
   var BURN_HOLD_MS = 1000;        // 구겨진 덩어리를 보는 한 박자
+  var BURN_PRESS_MS = 1000;       // 종이 아래를 꾹 눌러 불을 붙이는 시간(1초)
 
   function loadBurn() {
     var o = null;
@@ -2817,6 +2818,8 @@
       '<div class="burn__paper" data-burn-paper>' +
       '<span class="burn__paper-text">' + esc(burn.text) + '</span>' +
       '</div>' +
+      '<span class="burn__ember" data-burn-ember tabindex="0" role="button" aria-disabled="true" aria-label="불씨를 종이로 끌어 올리거나, 종이 아래를 1초 꾹 눌러 불을 붙입니다"><i class="burn__ember-core"></i></span>' +
+      '<span class="burn__gauge" data-burn-gauge aria-hidden="true"><i></i></span>' +
       '<span class="burn__ash" data-burn-ash aria-hidden="true"></span></div>' +
       '<p class="burn__hint" data-burn-hint>한지를 <b>꾹 눌러</b> 구기세요. 톡 눌러도 괜찮습니다.</p>' +
       '<button type="button" class="burn__go burn__go--squeeze" data-burn="crumple"><b>꾹 눌러 구기기</b></button>' +
@@ -2868,6 +2871,8 @@
     clearTimeout(burn.holdTimer);
     clearTimeout(burn.sparkTimer);
     clearTimeout(burn.sparkTimer2);
+    stopHold();
+    flick.dragging = false; flick.drag = null;
     burn.text = '';                       // 적은 글은 여기서 바로 지운다 — 어디에도 남기지 않는다
     burnEl.classList.add('is-closing');
     setTimeout(function () {
@@ -2899,6 +2904,7 @@
     burn.stage = 'paper';
     burnBody.innerHTML = burnPaperHTML();
     burnBody.scrollTop = 0;
+    initIgniteGestures();
     sfxTap(1);
   }
 
@@ -2920,15 +2926,129 @@
     if (hint) hint.innerHTML = '손끝에 힘이 들어가고, 적은 글은 <b>단단한 한 덩어리</b>로 뭉칩니다…';
     clearTimeout(burn.holdTimer);
     burn.holdTimer = setTimeout(function () {
-      if (burn.stage !== 'crumpled' || !btn || !btn.parentNode) return;
-      btn.disabled = false;
-      btn.setAttribute('data-burn', 'ignite');
-      btn.classList.remove('is-waiting');
-      btn.classList.add('burn__go--fire', 'is-ready');
-      btn.innerHTML = '<b>🔥 불을 붙입니다</b>';
-      if (hint) hint.innerHTML = '뭉친 덩어리를 한 번 바라보고, <b>불을 붙이세요</b>.';
+      if (burn.stage !== 'crumpled') return;
+      /* 버튼 대신 — 손으로 직접 불을 붙이는 의식 (불씨 끌어 올리기 / 1초 꾹 누르기) */
+      if (btn && btn.parentNode) btn.hidden = true;
+      var stage = burnEl.querySelector('[data-burn-stage]');
+      if (stage) stage.classList.add('is-ready');
+      var emberEl = burnEl.querySelector('[data-burn-ember]');
+      if (emberEl) {
+        emberEl.setAttribute('aria-disabled', 'false');
+        try { emberEl.focus({ preventScroll: true }); } catch (e) {}
+      }
+      if (hint) hint.innerHTML = '이제 종이 아래 <b>불씨를 끌어 올리거나</b>, 종이 아래를 <b>1초 꾹</b> 눌러 직접 불을 붙이세요.';
       vibrate(24);
     }, BURN_HOLD_MS);
+  }
+
+  /* ── 손으로 불을 붙이는 의식: 불씨 드래그 · 1초 꾹 누르기 ── */
+  var flick = { dragging: false, holding: false, raf: 0, t0: 0, drag: null };
+
+  function stopHold() {
+    if (flick.raf) { cancelAnimationFrame(flick.raf); flick.raf = 0; }
+    flick.holding = false;
+    if (!burnEl) return;
+    var stage = burnEl.querySelector('[data-burn-stage]');
+    if (stage) { stage.classList.remove('is-holding'); stage.style.removeProperty('--hold'); }
+  }
+
+  function startHold() {
+    if (burn.stage !== 'crumpled' || flick.dragging || flick.holding) return;
+    if (!burnEl) return;
+    var stage = burnEl.querySelector('[data-burn-stage]');
+    if (!stage) return;
+    flick.holding = true;
+    flick.t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+    stage.classList.add('is-holding');
+    stage.style.setProperty('--hold', '0');
+    vibrate(12);
+    var tick = function () {
+      if (!flick.holding) return;
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      var p = Math.min(1, (now - flick.t0) / BURN_PRESS_MS);
+      stage.style.setProperty('--hold', p.toFixed(3));
+      if (p >= 1) {
+        flick.holding = false;
+        stage.style.removeProperty('--hold');
+        stage.classList.remove('is-holding');
+        igniteByHand();
+        return;
+      }
+      flick.raf = requestAnimationFrame(tick);
+    };
+    flick.raf = requestAnimationFrame(tick);
+  }
+
+  function igniteByHand() {
+    if (burn.stage !== 'crumpled') return;
+    var stage = burnEl && burnEl.querySelector('[data-burn-stage]');
+    if (stage) { stage.classList.remove('is-ready', 'is-holding'); stage.style.removeProperty('--hold'); }
+    var emberEl = burnEl && burnEl.querySelector('[data-burn-ember]');
+    if (emberEl) emberEl.style.transform = '';
+    flick.dragging = false; flick.drag = null;
+    burnIgnite();
+  }
+
+  function initIgniteGestures() {
+    if (!burnEl) return;
+    var stage = burnEl.querySelector('[data-burn-stage]');
+    var paper = burnEl.querySelector('[data-burn-paper]');
+    var emberEl = burnEl.querySelector('[data-burn-ember]');
+    if (!stage || !paper || !emberEl) return;
+
+    function emberOnPaper() {
+      var pb = paper.getBoundingClientRect();
+      var eb = emberEl.getBoundingClientRect();
+      var cx = eb.left + eb.width / 2, cy = eb.top + eb.height / 2;
+      return cx > pb.left - 16 && cx < pb.right + 16 && cy > pb.top - 16 && cy < pb.bottom + 20;
+    }
+
+    emberEl.addEventListener('pointerdown', function (e) {
+      if (burn.stage !== 'crumpled') return;
+      e.preventDefault();
+      stopHold();
+      flick.dragging = true;
+      flick.drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      emberEl.classList.add('is-grab');
+      try { emberEl.setPointerCapture(e.pointerId); } catch (err) {}
+      vibrate(14);
+    });
+    emberEl.addEventListener('pointermove', function (e) {
+      if (!flick.dragging || !flick.drag || e.pointerId !== flick.drag.id) return;
+      e.preventDefault();
+      var dx = e.clientX - flick.drag.x;
+      var dy = Math.min(0, e.clientY - flick.drag.y);      // 위로 끌어 올린다
+      emberEl.style.transform = 'translate(' + Math.round(dx) + 'px,' + Math.round(dy) + 'px)';
+      if (emberOnPaper()) igniteByHand();
+    });
+    function endFlick(e) {
+      emberEl.classList.remove('is-grab');
+      if (!flick.dragging) return;
+      flick.dragging = false; flick.drag = null;
+      if (burn.stage === 'crumpled') { emberEl.style.transform = ''; vibrate(8); }
+      try { if (emberEl.hasPointerCapture && emberEl.hasPointerCapture(e.pointerId)) emberEl.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    emberEl.addEventListener('pointerup', endFlick);
+    emberEl.addEventListener('pointercancel', endFlick);
+
+    /* 종이(와 그 아래 여백)를 1초 꾹 누르면 게이지가 차오르며 불이 붙는다 */
+    stage.addEventListener('pointerdown', function (e) {
+      if (emberEl === e.target || emberEl.contains(e.target)) return;
+      if (burn.stage !== 'crumpled') return;
+      if (e.cancelable) e.preventDefault();
+      startHold();
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+      stage.addEventListener(t, function () { if (flick.holding) stopHold(); });
+    });
+
+    emberEl.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+      e.preventDefault();
+      if (burn.stage !== 'crumpled') return;
+      if (stage) stage.classList.add('is-holding');
+      startHold();
+    });
   }
 
   function burnIgnite() {

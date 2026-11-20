@@ -2427,6 +2427,41 @@ body.is-modal-open { overflow: hidden; }
   90% { transform: rotate(8deg) scale(.18) translateY(-56px); opacity: .34; filter: brightness(.18); }
   100% { transform: rotate(9deg) scale(.07) translateY(-72px); opacity: 0; filter: brightness(.06); background: #14100C; }
 }
+/* 손으로 불을 붙이는 의식 — 구겨진 한지 아래 불씨를 끌어 올리거나, 1초 꾹 */
+.burn__stage.is-ready { touch-action: none; }
+.burn__ember {
+  position: absolute; left: 50%; bottom: 5%; width: 40px; height: 40px; margin-left: -20px;
+  display: none; align-items: center; justify-content: center;
+  border-radius: 50%; z-index: 4; cursor: grab; touch-action: none; outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.burn__stage.is-ready .burn__ember { display: flex; animation: emberBreath 2.8s ease-in-out infinite; }
+.burn__stage.is-ready .burn__ember:focus-visible { box-shadow: 0 0 0 2px rgba(255, 190, 110, .8); }
+.burn__ember.is-grab { cursor: grabbing; animation: none; transition: none; }
+.burn__ember-core {
+  display: block; width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, #FFF3C6 0%, #FFB552 38%, #E2581B 72%, rgba(170, 46, 8, .08) 100%);
+  box-shadow: 0 0 12px 4px rgba(255, 132, 40, .5), 0 0 28px 10px rgba(255, 96, 20, .18);
+}
+@keyframes emberBreath {
+  0%, 100% { opacity: .78; transform: translateY(0) scale(.94); }
+  50% { opacity: 1; transform: translateY(-2px) scale(1.05); }
+}
+.burn__stage.is-burning .burn__ember { display: none; }
+
+/* 1초 꾹 — 차오르는 게이지 */
+.burn__gauge {
+  position: absolute; left: 50%; bottom: 22%; width: 132px; height: 4px; margin-left: -66px;
+  border-radius: 999px; background: rgba(255, 255, 255, .13);
+  opacity: 0; transition: opacity .18s ease; z-index: 4; overflow: hidden; pointer-events: none;
+}
+.burn__stage.is-holding .burn__gauge { opacity: 1; }
+.burn__gauge i {
+  display: block; height: 100%; width: calc(var(--hold, 0) * 100%);
+  border-radius: 999px; background: linear-gradient(90deg, #FFC46A, #FF8A33 60%, #F0561A);
+  box-shadow: 0 0 10px rgba(255, 140, 50, .72);
+}
+
 /* 진짜 재 — 잿빛·검회색으로 탄 종이 조각. 빛나는 불티 없이, 회전하며 바람에 흔들려 사라진다 */
 .burn__ash { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .burn__ash i {
