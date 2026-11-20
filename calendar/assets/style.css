@@ -2453,7 +2453,7 @@ body.is-modal-open { overflow: hidden; }
 .burn__ember.is-grab .burn__match { transform: rotate(-6deg) scale(1.06); }
 /* 성냥 — 나무 개비 + 머리 + 3중 불꽃. 끌어 올린 거리(--fl)만큼 불꽃이 피어오른다 */
 .burn__match {
-  display: block; width: 44px; height: 70px; overflow: visible;
+  display: block; width: 52px; height: 82px; overflow: visible;
   filter: drop-shadow(1px 5px 6px rgba(60, 40, 20, .32));
   transform: rotate(-6deg); transition: transform .18s ease;
 }
