@@ -2860,7 +2860,7 @@
     burnEl.hidden = false;
     document.body.classList.add('is-modal-open');
     burnBody.scrollTop = 0;
-    sfxOpen();
+    sfxBurnOpen();
     try { burnDialog.focus({ preventScroll: true }); } catch (e) { try { burnDialog.focus(); } catch (e2) {} }
   }
 
@@ -3222,6 +3222,13 @@
     var ctx = audioCtx(); if (!ctx) return;
     tone(ctx, { from: 880, to: 1320, dur: 0.34, glide: 0.13, type: 'sine', gain: 0.13 });
     tone(ctx, { from: 1320, to: 1760, dur: 0.28, type: 'sine', gain: 0.055, at: 0.07, glide: 0.12 });
+  }
+  /* 1-b) 액운 태우기 팝업 — 밝은 차임 대신 낮게 가라앉는 한 음. 의식의 시작 */
+  function sfxBurnOpen() {
+    vibrate([40]);
+    var ctx = audioCtx(); if (!ctx) return;
+    tone(ctx, { from: 196, to: 196, dur: 2.4, type: 'sine', gain: 0.075, attack: 0.18 });
+    tone(ctx, { from: 147, to: 146, dur: 2.8, type: 'sine', gain: 0.06, attack: 0.24 });
   }
   /* 2) 부적 두드리기(1/3·2/3) — 420→220Hz 톡, 두 번째는 살짝 높게 */
   function sfxTap(step) {
