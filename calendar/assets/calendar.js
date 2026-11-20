@@ -2737,8 +2737,8 @@
   };
 
   var burnEl = null, burnBody = null, burnDialog = null, burnLastFocus = null, burnClosing = false;
-  var burn = { used: 0, text: '', stage: 'write', timer: 0, holdTimer: 0, sparkTimer: 0 };
-  var BURN_BURN_MS = 5600;        // 불이 붙은 뒤 재가 될 때까지 — 천천히, 웅장하게
+  var burn = { used: 0, text: '', stage: 'write', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0 };
+  var BURN_BURN_MS = 7800;        // 불이 붙은 뒤 재가 될 때까지 — 7.8초, 느리고 묵직하게
   var BURN_HOLD_MS = 1000;        // 구겨진 덩어리를 보는 한 박자
 
   function loadBurn() {
@@ -2864,6 +2864,7 @@
     clearTimeout(burn.timer);
     clearTimeout(burn.holdTimer);
     clearTimeout(burn.sparkTimer);
+    clearTimeout(burn.sparkTimer2);
     burn.text = '';                       // 적은 글은 여기서 바로 지운다 — 어디에도 남기지 않는다
     burnEl.classList.add('is-closing');
     setTimeout(function () {
@@ -2939,25 +2940,35 @@
     if (pyre) pyre.classList.add('is-lit');
     if (burnDialog) burnDialog.classList.add('is-dark');
     var ash = burnEl.querySelector('[data-burn-ash]');
-    if (ash) ash.innerHTML = burnDustHTML(26, { d0: 0.2, d1: 2.6, u0: 2.6, u1: 3.6 });
+    if (ash) ash.innerHTML = burnDustHTML(24, { d0: 0.4, d1: 3.6, u0: 2.8, u1: 4.0 });
     var hint = burnEl.querySelector('[data-burn-hint]');
-    if (hint) hint.innerHTML = '불이 크게 번집니다 — 탁한 기운이 타들어 가고 있습니다…';
+    if (hint) hint.innerHTML = '탁한 기운이 천천히 타들어 가고 있습니다…';
     var btn = burnEl.querySelector('[data-burn="ignite"]');
     if (btn) btn.hidden = true;          // 타오르는 동안에는 글자 대신 불만 보이게
     sfxIgnite();
     if (!burnUnlimited()) { burn.used = Math.min(BURN_FREE, burn.used + 1); saveBurn(); }
     renderBurnCard();
-    /* 중반 — 굵은 재와 금빛 불티가 화면 가득 두 번째 물결로 올라간다 */
+    /* 중반·후반 — 굵은 재와 금빛 불티가 2·3차 물결로 화면 가득 올라간다 */
     clearTimeout(burn.sparkTimer);
-    if (stage) burn.sparkTimer = setTimeout(function () {
-      if (burn.stage !== 'burning' || !stage.parentNode) return;
+    clearTimeout(burn.sparkTimer2);
+    function ashWave(n, o) {
+      if (burn.stage !== 'burning' || !stage || !stage.parentNode) return;
       var extra = document.createElement('span');
       extra.className = 'burn__ash';
       extra.setAttribute('aria-hidden', 'true');
-      extra.innerHTML = burnDustHTML(30, { d0: 0, d1: 1.8, u0: 2.2, u1: 3.2, s0: 3.5, s1: 8, dx: 48 });
+      extra.innerHTML = burnDustHTML(n, o);
       stage.appendChild(extra);
-      vibrate([40, 50, 70]);
-    }, Math.round(BURN_BURN_MS * 0.45));
+    }
+    if (stage) {
+      burn.sparkTimer = setTimeout(function () {
+        ashWave(28, { d0: 0, d1: 2.0, u0: 2.4, u1: 3.4, s0: 3.5, s1: 8, dx: 48 });
+        var h = burnEl && burnEl.querySelector('[data-burn-hint]');
+        if (h) h.innerHTML = '재가 되어 흩어지고 있습니다…';
+      }, Math.round(BURN_BURN_MS * 0.42));
+      burn.sparkTimer2 = setTimeout(function () {
+        ashWave(22, { d0: 0, d1: 1.8, u0: 2.2, u1: 3.2, s0: 2.5, s1: 6, dx: 56 });
+      }, Math.round(BURN_BURN_MS * 0.72));
+    }
     clearTimeout(burn.timer);
     var reduce = false;
     try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -2967,6 +2978,7 @@
   function burnFinish() {
     burn.stage = 'done';
     clearTimeout(burn.sparkTimer);
+    clearTimeout(burn.sparkTimer2);
     if (burnDialog) burnDialog.classList.remove('is-dark');
     burnBody.innerHTML = burnDoneHTML();
     burnBody.scrollTop = 0;
@@ -3143,66 +3155,42 @@
     src.start(t0); src.stop(t0 + dur + 0.03);
   }
 
-  /* 5) 한지 구기기 — 뭉치는 두둑한 소리 + 바스락이 한 박자 길게 */
+  /* 5) 한지 구기기 — 짧고 묵직한 한 번. 촐싹대는 바스락 연타 없음 */
   function sfxCrumple() {
-    vibrate([70, 40, 120, 30, 90]);
+    vibrate([90]);
     var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 124, to: 48, dur: 0.62, glide: 0.42, type: 'sine', gain: 0.24, attack: 0.004 });
-    tone(ctx, { from: 196, to: 88, dur: 0.36, glide: 0.24, type: 'triangle', gain: 0.1, at: 0.16, attack: 0.005 });
-    for (var i = 0; i < 6; i++) {
-      noise(ctx, { filter: 'bandpass', f0: 1500 + i * 420, f1: 900 + i * 260, q: 1.4, dur: 0.09, at: 0.03 + i * 0.062, gain: 0.05 });
-    }
-    for (var k = 0; k < 11; k++) {   // 뭉치는 동안 계속 바스락 — 꽉 쥐는 감각
-      noise(ctx, { filter: 'bandpass', f0: 1250 + k * 240, f1: 720 + k * 130, q: 1.5, dur: 0.1, at: 0.24 + k * 0.058, gain: 0.045 });
-    }
-    noise(ctx, { filter: 'highpass', f0: 2600, dur: 0.72, at: 0.02, gain: 0.05, attack: 0.08 });
-    noise(ctx, { filter: 'lowpass', f0: 420, f1: 150, dur: 0.5, at: 0.62, gain: 0.08, attack: 0.05 });   // 툭, 자리를 잡는 소리
+    tone(ctx, { from: 132, to: 58, dur: 0.46, glide: 0.3, type: 'sine', gain: 0.26, attack: 0.006 });
+    noise(ctx, { filter: 'lowpass', f0: 1500, f1: 480, q: 0.7, dur: 0.36, at: 0.02, gain: 0.13, attack: 0.025 });
   }
 
-  /* 6) 불을 붙이는 순간 — 법고 세 번 + 긴 징 울림 + 5초 넘게 굵게 타오르는 불꽃 */
+  /* 6) 불을 붙이는 순간 — 낮고 깊은 범종 한 번(68Hz)과 잔잔한 모닥불.
+     북 세 번·높은 징·밝은 차임은 걷어 냈습니다. 경건한 의식의 소리만. */
   function sfxIgnite() {
-    vibrate([120, 60, 220, 80, 260, 60, 200, 70, 240]);
+    vibrate([280]);
     var ctx = audioCtx(); if (!ctx) return;
-    var drums = [0, 0.66, 1.42];
-    drums.forEach(function (at, i) {
-      tone(ctx, { from: 96 - i * 7, to: 34, dur: 0.66, glide: 0.44, type: 'sine', gain: 0.46 - i * 0.07, at: at, attack: 0.006 });
-      tone(ctx, { from: 148, to: 60, dur: 0.36, glide: 0.26, type: 'triangle', gain: 0.13, at: at, attack: 0.005 });
-      noise(ctx, { filter: 'lowpass', f0: 340, f1: 110, dur: 0.28, at: at, gain: 0.1 });
+    /* 범종 — 68Hz 기음에서 내려가는 배음만. 서로 다른 길이로 잦아들며 긴 여운을 만든다 */
+    [
+      { f: 34, dur: 7.2, gain: 0.12 },
+      { f: 68, dur: 7.6, gain: 0.32 },
+      { f: 102, dur: 6.2, gain: 0.14 },
+      { f: 136, dur: 4.8, gain: 0.07 },
+      { f: 204, dur: 3.0, gain: 0.028 }
+    ].forEach(function (b) {
+      tone(ctx, { from: b.f, to: b.f * 0.997, dur: b.dur, type: 'sine', gain: b.gain, attack: 0.025 });
     });
-    /* 징 — 소각이 끝날 때까지 낮게 깔리는 공명 */
-    [110, 165.5, 221, 293.5, 440].forEach(function (f, i) {
-      tone(ctx, { from: f, to: f * 0.996, dur: 5.2 - i * 0.5, type: 'sine', gain: 0.1 - i * 0.014, attack: 0.02, at: 0.05 });
-    });
-    noise(ctx, { filter: 'bandpass', f0: 3200, f1: 1700, q: 0.7, dur: 0.5, at: 0.06, gain: 0.045, attack: 0.03 });
-    /* 불 — 낮게 깔리며 굵게 타오르는 소리, 중반에 한 번 더 크게 숨을 들이쉰다 */
-    noise(ctx, { filter: 'lowpass', f0: 1100, f1: 320, q: 0.9, dur: 5.0, at: 0.2, gain: 0.16, attack: 0.5 });
-    noise(ctx, { filter: 'lowpass', f0: 900, f1: 420, q: 0.8, dur: 3.0, at: 2.1, gain: 0.12, attack: 0.7 });
-    noise(ctx, { filter: 'bandpass', f0: 700, f1: 280, q: 0.8, dur: 2.6, at: 3.1, gain: 0.07, attack: 0.6 });
-    /* 불티 — 0.3초부터 5초 가까이 고르게 터진다 */
-    for (var k = 0; k < 30; k++) {
-      noise(ctx, {
-        filter: 'bandpass', f0: 1800 + Math.random() * 2800, q: 2.2,
-        dur: 0.04 + Math.random() * 0.06, at: 0.3 + Math.random() * 4.6, gain: 0.025 + Math.random() * 0.03
-      });
-    }
-    /* 중반의 굵은 타닥임 — 재가 뭉쳐 떨어지는 소리 */
-    for (var j = 0; j < 9; j++) {
-      noise(ctx, {
-        filter: 'bandpass', f0: 860 + Math.random() * 900, q: 1.6,
-        dur: 0.09 + Math.random() * 0.08, at: 1.8 + Math.random() * 2.8, gain: 0.035 + Math.random() * 0.03
-      });
-    }
+    /* 모닥불 — 로우패스로 부드럽게 깔리는 숨결. 터지는 소리 없이 천천히 오르내린다 */
+    noise(ctx, { filter: 'lowpass', f0: 420, f1: 210, q: 0.5, dur: 7.6, at: 0.15, gain: 0.1, attack: 1.2 });
+    noise(ctx, { filter: 'lowpass', f0: 300, f1: 170, q: 0.6, dur: 4.6, at: 1.8, gain: 0.062, attack: 1.5 });
+    noise(ctx, { filter: 'lowpass', f0: 260, f1: 150, q: 0.6, dur: 3.6, at: 4.6, gain: 0.05, attack: 1.3 });
   }
 
-  /* 7) 다 탄 뒤 — 맑게 올라가는 정화음 (오행마다 색만 다르게) */
+  /* 7) 다 탄 뒤 — 낮게 깔리는 정화음. 밝은 차임 없이 조용하게 (오행마타 음높이만 다르게) */
   function sfxPurify(el) {
     var ctx = audioCtx(); if (!ctx) return;
-    var base = { 목: 523.25, 화: 587.33, 토: 493.88, 금: 659.25, 수: 440 }[el] || 523.25;
-    tone(ctx, { from: base, to: base, dur: 1.3, type: 'sine', gain: 0.1, attack: 0.03 });
-    tone(ctx, { from: base * 1.5, to: base * 1.5, dur: 1.6, type: 'sine', gain: 0.065, attack: 0.05, at: 0.12 });
-    tone(ctx, { from: base * 2, to: base * 2.5, dur: 1.2, glide: 0.6, type: 'triangle', gain: 0.04, at: 0.3 });
-    noise(ctx, { filter: 'highpass', f0: 5200, dur: 1.2, at: 0.05, gain: 0.026, attack: 0.35 });
-    wood(ctx, 0.02, 0.03);
+    var base = { 목: 261.63, 화: 293.66, 토: 246.94, 금: 329.63, 수: 220 }[el] || 261.63;
+    tone(ctx, { from: base / 2, to: base / 2, dur: 4.4, type: 'sine', gain: 0.07, attack: 0.3 });
+    tone(ctx, { from: base, to: base, dur: 3.6, type: 'sine', gain: 0.085, attack: 0.16 });
+    tone(ctx, { from: base * 1.5, to: base * 1.5, dur: 2.6, type: 'sine', gain: 0.04, attack: 0.24, at: 0.12 });
   }
 
   function syncSoundBtn() {
