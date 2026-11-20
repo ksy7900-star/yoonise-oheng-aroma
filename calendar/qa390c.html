@@ -60,7 +60,7 @@
   }
 
   async function load(fresh) {
-    if (fresh) {
+    if (fresh === true) {
       try {
         localStorage.removeItem(KEY_GUIDE);
         localStorage.removeItem(KEY_IN);
