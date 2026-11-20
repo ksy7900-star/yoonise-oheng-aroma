@@ -348,10 +348,10 @@
       var thinCnt = need.counts[tgEl] || 0;
       var thinKo = thinCnt === 0 ? '아예 없던 ' : thinCnt + '개뿐인 ';
       if (zEl === tgEl || zMainEl === tgEl) {
-        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + '가 내 사주에 ' + thinKo +
+        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + ', 내 사주에 ' + thinKo +
           tgEl + ' 기운을 ' + whoKo + '으로 채우고, 지지도 같은 기운으로 받쳐 주는 날');
       } else {
-        add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + '가 내 사주에 ' + thinKo + tgEl + ' 기운을 ' + whoKo +
+        add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + ', 내 사주에 ' + thinKo + tgEl + ' 기운을 ' + whoKo +
           '으로 채우지만 지지가 받쳐 주지 않아 배지로는 띄우지 않습니다', true);
       }
     }
