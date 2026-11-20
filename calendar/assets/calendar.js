@@ -767,10 +767,12 @@
     var hasBadge = !!((info.badges || []).length);
     var cat = (rec && !editing) ? (rec.cat || ask.cat) : ask.cat;
     var q = (rec && !editing && rec.q) ? rec.q : ask.q;
+    var plainDay = (rec && !editing) ? !!rec.plain : !hasBadge;
     var head =
       '<div class="diary__meta">' +
-      '<span class="badge badge--' + (DIARY_CAT_CLASS[cat] || 'gray') + '">' + esc(cat) + '</span>' +
-      '<span class="diary__tag">' + (hasBadge ? '그날의 결' : '잔잔한 날의 결') + '</span>' +
+      (plainDay
+        ? '<span class="badge badge--gray">잔잔한 날</span><span class="diary__tag">오늘의 결</span>'
+        : '<span class="badge badge--' + (DIARY_CAT_CLASS[cat] || 'gray') + '">' + esc(cat) + '</span><span class="diary__tag">그날의 결</span>') +
       '</div>' +
       '<p class="diary__q">' + esc(q) + '</p>';
 
@@ -830,7 +832,7 @@
     }
     if (text.length > DIARY_MAX) text = text.slice(0, DIARY_MAX);
     var ask = diaryAsk(iso, info);
-    diary.entries[iso] = { cat: ask.cat, q: ask.q, text: text, at: new Date().toISOString() };
+    diary.entries[iso] = { cat: ask.cat, q: ask.q, text: text, plain: !((info.badges || []).length), at: new Date().toISOString() };
     saveDiary();
     paintDiary(iso);
     renderCalendar();
@@ -870,7 +872,7 @@
       var r = diary.entries[k];
       var p = T.parseISO(k);
       var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
-      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.cat || '') + ']');
+      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.plain ? '잔잔한 날' : (r.cat || '')) + ']');
       out.push('Q. ' + (r.q || ''));
       out.push('A. ' + (r.text || ''));
       out.push('');
@@ -912,7 +914,7 @@
           p.m + '월 ' + p.d + '일 성찰 기록 — 그날 열기">' +
           '<span class="dbook__date">' + p.y + '.' + p.m + '.' + p.d +
           '<em>(' + dow + ')</em></span>' +
-          '<span class="badge badge--' + (DIARY_CAT_CLASS[r.cat] || 'gray') + '">' + esc(r.cat || '성찰') + '</span>' +
+          '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '잔잔한 날' : (r.cat || '성찰')) + '</span>' +
           '<span class="dbook__q">' + esc(r.q || '') + '</span>' +
           '<span class="dbook__a">' + esc(r.text || '') + '</span>' +
           '</button>';
