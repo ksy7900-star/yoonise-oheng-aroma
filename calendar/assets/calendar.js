@@ -1775,6 +1775,7 @@
     var best = '', bestDist = 99;
     for (var d = 1; d <= dim; d++) {
       var iso = T.isoOf(v.y, v.m, d);
+      if (iso < state.todayISO) continue;              // 지난 날에는 말풍선을 걸지 않는다 (붙일 수 없는 날)
       var info = infoFor(iso);
       if (!info || !(info.badges || []).length) continue;   // 부적이 나오는 날에만
       if (!dayClickable(iso, info)) continue;
