@@ -52,10 +52,10 @@
      ※ 계좌번호·예금주는 실제로 확인된 값만 넣습니다. 지어내지 않습니다. */
   var PAYAPP_PASS_URL = 'https://www.payapp.kr/L/z4otyE';       // 🎟️ 1년 패스 14,900원 (페이앱 페이지에서 금액 확인)
   var PAYAPP_ALLINONE_URL = 'https://www.payapp.kr/L/z4otzE';   // 👑 올인원 19,900원 (페이앱 페이지에서 금액 확인)
-  var PAYAPP_DIARY_URL = '';       // ✨ 성찰 에디션 24,900원 — 비어 있으면 계좌이체 + 노란 카톡 버튼으로 안내
+  var PAYAPP_DIARY_URL = 'https://www.payapp.kr/L/z4ovHA'; // ✨ 성찰 에디션 24,900원 — 비어 있으면 계좌이체 + 노란 카톡 버튼으로 안내
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
-  var PAYAPP_CONSULT_URL = '';    // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
+  var PAYAPP_CONSULT_URL = 'https://www.payapp.kr/L/z4ovI1'; // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
   var BANK_NAME = 'SC제일은행';                 // 은행 이름 (통장 사본 확인)
   var BANK_ACCOUNT = '504-20-454146';          // 계좌번호 (통장 사본 확인)
   var BANK_HOLDER = '김나영 (엔와이트레이드)';   // 예금주 (통장 사본 확인)
@@ -2026,6 +2026,36 @@
 
   function openKakao() { openNoRef(KAKAO); }
 
+  /* ── 페이앱 결제창 열기 (#8847) ───────────────────────────────────
+     네이버·카카오 인앱 브라우저는 window.open(url, '_blank', 'noopener') 을
+     팝업으로 보고 막는 일이 있는데, noopener 를 주면 돌려주는 창이 없어
+     막혔는지를 알 수 없다(막혀도 null 로 조용히 끝나 버린다).
+     그래서 ① window.open 결과를 실제로 확인 → ② 막혔으면 <a target="_blank"> 클릭
+     → ③ 그것도 안 되면 현재 창을 결제 페이지로 이동, 순서로 열어
+     어떤 인앱 브라우저에서도 결제창이 반드시 뜨게 한다. */
+  function openPayApp(url) {
+    var w = null;
+    try { w = window.open(url, '_blank'); } catch (e1) { w = null; }
+    if (w) {
+      try { w.opener = null; } catch (e2) { }
+      return true;
+    }
+    try {
+      var a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+      a.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+      return true;
+    } catch (e3) { }
+    try { window.location.href = url; } catch (e4) { window.location.assign(url); }
+    return false;
+  }
+
   /* ── 결제 완료 → 카톡으로 신청 내용 보내기 (노란 카카오 버튼) ─────────────
      누르면 ① 신청 내용을 클립보드에 복사하고(토스트로 알려 줌)
              ② 카카오톡 채널 채팅방으로 이동한다.
@@ -2253,9 +2283,9 @@
     if (kind === 'card') {
       var url = cardUrlOf(item);
       if (url) {
-        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
+        payNote('페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
           '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
-        try { window.open(url, '_blank', 'noopener'); } catch (e) { window.location.href = url; }
+        openPayApp(url);
       } else {
         payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
           kakaoLinkHTML('카카오톡 채널 열기 →'));
