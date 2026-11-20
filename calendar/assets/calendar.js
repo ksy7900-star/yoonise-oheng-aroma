@@ -78,7 +78,7 @@
   };
   var Chars = window.Chars || null;
   // 날짜 배지 5개 ↔ 오행 부적 5장 (plan 확정 매칭)
-  var BADGE_TO_EL = { '럭키': '목', '입단속': '수', '결정': '화', '머니': '금', '리셋': '토' };
+  var BADGE_TO_EL = { '소통': '목', '입단속': '수', '결정': '화', '머니': '금', '리셋': '토' };
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   // 나를 생하는(인성) / 같은 편(비겁) / 내가 생하는(식상) / 내가 극하는(재성) / 나를 극하는(관성)
   var EL_MOTHER = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
@@ -93,17 +93,17 @@
       key: 'wood', label: '목(木)', josa: '이',
       why: '새로 시작하고 뻗어 나가는 기운 — 기회를 붙잡고 사람에게 먼저 다가가는 힘을 채워 줍니다.',
       sets: [
-        { taps: ['오늘 운발 부스터 켜는 중...', '눈치 보지 말고 슬쩍 던져 볼까?'],
-          done: '✨ 럭키 풀충전! 오늘은 먼저 말 꺼낸 사람이 이기는 날!',
+        { taps: ['오늘 말문 트는 중...', '눈치 보지 말고 슬쩍 던져 볼까?'],
+          done: '✨ 말문 활짝! 오늘은 먼저 말 건넨 사람이 이기는 날!',
           sub: '먼저 보낸 카톡 한 줄이 오늘의 승부수.' },
         { taps: ['인연 필터 오늘만 꺼 두는 중...', '먼저 아는 척, 그게 오늘의 기술!'],
-          done: '✨ 럭키 ON! 오늘은 모르는 척보다 아는 척이 이득!',
+          done: '✨ 소통 순조! 오늘은 모르는 척보다 아는 척이 이득!',
           sub: '오늘 새로 인사한 한 명이 다음 달 기회.' },
         { taps: ['기회 문 두드리는 중, 쿵쿵...', '한 발만 더, 문 열리기 직전!'],
-          done: '✨ 기회 문 열림! 오늘 안 물어본 건 다음 달에도 안 물어봐요!',
+          done: '✨ 대화 문 열림! 오늘 안 물어본 건 다음 달에도 안 물어봐요!',
           sub: '물어보는 건 공짜, 안 물어보면 0%.' },
-        { taps: ['럭키 게이지 차오르는 중...', '이 타이밍, 그냥 가면 아깝다!'],
-          done: '✨ 럭키 만땅! 오늘은 고민 대신 연락 한 통!',
+        { taps: ['말 한마디 고르는 중...', '이 타이밍, 그냥 가면 아깝다!'],
+          done: '✨ 소통 만땅! 오늘은 고민 대신 연락 한 통!',
           sub: '망설인 3초가 기회를 놓친다.' }
       ]
     },
@@ -534,13 +534,24 @@
     var locked = FREE_TRIAL_ENABLED && !state.unlocked;
     box.classList.toggle('yearfold--locked', locked);
 
+    /* 무료 체험 잠금 맛보기 — 핵심(1·2순위) 조심할 달은 잠그고, 3순위 딱 한 곳만 선명하게 보여 준다.
+       전부 모자이크하면 "내 사주에 뭐가 잡혔는지" 감이 안 와서 결제로 이어지지 않는다(2026-11-20 김나영 님 결정 #9172). */
+    var teaserIdx = -1;
+    if (locked && d.warn.length >= 2) teaserIdx = d.warn.length - 1;          // 가장 약한 조심할 달 1곳
+    else if (locked && d.warn.length === 1 && d.good.length >= 1) teaserIdx = 0; // 잠글 카드가 따로 있을 때만
+    var teaserCount = teaserIdx >= 0 ? 1 : 0;
+
     /* 일수 카운트는 쓰지 않는다 — 조심할 날이 많아 보이면 오히려 기가 빠진다는 피드백(2026-11-20).
        '어느 달을 조심하고 어느 달을 밝을지'만 남긴다. */
     var firstWarn = d.warn[0] ? d.warn[0].m + '월' : '';
     var firstGood = d.good[0] ? d.good[0].m + '월' : '';
     $('#yearLead').innerHTML = locked
-      ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
-        d.good.length + '곳</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>'
+      ? (teaserCount
+        ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
+          d.good.length + '곳</b>이 잡혔어요. 그중 <b class="y-bad">' + teaserCount + '곳만</b> 먼저 열어 드렸어요.' +
+          '<span class="year__lead-lock">🔒 나머지 ' + (d.warn.length + d.good.length - teaserCount) + '곳은 1년 패스부터 확인</span>'
+        : '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
+          d.good.length + '곳</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>')
       : (firstWarn && firstGood
         ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
         : (firstWarn
@@ -551,7 +562,7 @@
 
     /* 달 칩은 읽기만 하는 표시 — 누를 수 있는 것처럼 보이지 않게 정적 div로 둔다.
        (예전에는 누르면 그 달로 달력이 점프해서, 보던 이번 달을 다시 손으로 찾아야 했다는 피드백 2026-11-20) */
-    function chip(m, isBad) {
+    function chip(m, isBad, teaser) {
       var ln1 = isBad ? m.warn : m.good;
       var inner = '<span class="ychip__no">' + m.m + '월</span>' +
         '<span class="ychip__body">' +
@@ -560,6 +571,10 @@
         '</span>';
       if (!locked) {
         return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + '">' + inner + '</div>';
+      }
+      if (teaser) {
+        return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + ' ychip--teaser">' + inner +
+          '<span class="ychip__preview">맛보기</span></div>';
       }
       /* 잠금 카드 — 내용은 블러, 위에 잠금 버튼. 카드 아무 데나 눌러도 앱 안 결제 안내 팝업(1년 패스) */
       return '<div class="ychip ychip--' + (isBad ? 'warn' : 'good') + ' ychip--locked" data-shop="pass">' +
@@ -571,12 +586,13 @@
     }
 
     $('#yearWarnChips').innerHTML = d.warn.length
-      ? d.warn.map(function (m) { return chip(m, true); }).join('')
+      ? d.warn.map(function (m, i) { return chip(m, true, i === teaserIdx); }).join('')
       : '<p class="year__none">2027년에는 유난히 부딪히는 달이 없어요. 흐름이 고른 한 해입니다.</p>';
     var meta = $('#yearMeta');
     if (meta) {
       if (locked) {
-        meta.textContent = '조심 ' + d.warn.length + '곳 · 좋은 ' + d.good.length + '곳 🔒';
+        meta.textContent = '조심 ' + d.warn.length + '곳 · 좋은 ' + d.good.length + '곳' +
+          (teaserCount ? ' · 1곳 맛보기' : '') + ' 🔒';
       } else {
         var wm = d.warn.map(function (m) { return m.m + '월'; }).join('·');
         var gm = d.good.map(function (m) { return m.m + '월'; }).join('·');
@@ -585,7 +601,7 @@
     }
 
     $('#yearGoodChips').innerHTML = d.good.length
-      ? d.good.map(function (m) { return chip(m, false); }).join('')
+      ? d.good.map(function (m) { return chip(m, false, false); }).join('')
       : '<p class="year__none">좋은 달이 따로 없이 고르게 열려 있어요.</p>';
   }
 
@@ -653,27 +669,27 @@
   function tierAtLeast(t) { return (TIER_RANK[state.tier] || 0) >= (TIER_RANK[t] || 99); }
 
   /* ══ ✨ 365일 1줄 성찰 다이어리 ═══════════════════════════════════════
-     · 날짜마다 다른 질문 — 5가지 기운(럭키·입단속·결정·머니·리셋)별 10개, 모두 50개.
+     · 날짜마다 다른 질문 — 5가지 기운(소통·입단속·결정·머니·리셋)별 10개, 모두 50개.
        기운 배지가 없는 잔잔한 날은 날짜 순서로 다섯 결을 돌아가며 물어본다(365일 모두 질문이 있다).
      · 같은 날짜는 언제 열어도 같은 질문 — 날짜 숫자(ordinal)로만 고른다.
      · 저장은 이 기기(브라우저)에만. 서버로 보내지 않는다. 키: yoonise.timing.diary.v1
      · 정적 웹이라 브라우저 기록을 지우면 사라지므로 '📖 내 성찰 기록 보기'에서 .txt 백업을 둔다. */
   var DIARY_KEY = 'yoonise.timing.diary.v1';
   var DIARY_MAX = 120;
-  var DIARY_CATS = ['럭키', '입단속', '결정', '머니', '리셋'];
-  var DIARY_CAT_CLASS = { '럭키': 'gold', '입단속': 'red', '결정': 'blue', '머니': 'blue', '리셋': 'gray' };
+  var DIARY_CATS = ['소통', '입단속', '결정', '머니', '리셋'];
+  var DIARY_CAT_CLASS = { '소통': 'gold', '럭키': 'gold', '입단속': 'red', '결정': 'blue', '머니': 'blue', '리셋': 'gray' };
   var DIARY_Q = {
-    '럭키': [
+    '소통': [
       '오늘 누군가에게 먼저 건넨 말 중, 가장 따뜻했던 한마디는?',
-      '기회가 왔을 때 나는 어떤 표정을 지었나요? 한 줄로 적어 보세요.',
+      '오늘 대화에서 내 말이 잘 통했다고 느낀 순간은 언제였나요?',
       '오늘 나를 웃게 한 사람은 누구였고, 그 사람에게 뭐라고 말해 주고 싶나요?',
       '칭찬을 들었을 때 나는 뭐라고 대답했나요? 다음엔 이렇게 말해 보고 싶어요.',
-      '오늘의 좋은 일 하나를 골라, 그중 내가 만든 부분을 적어 보세요.',
+      '부탁을 해야 했는데 망설인 일이 있나요? 다음번엔 이렇게 꺼내 볼래요.',
       '붙잡고 싶은 인연 하나, 이번 주에 먼저 보낼 한마디는?',
-      '문이 열렸다고 느낀 순간은 언제였고, 나는 한 걸음 내디뎠나요?',
+      '오늘 도움을 받은 일 하나, 고맙다는 말은 전했나요?',
       '오늘의 나를 축하해 줄 사람에게 들려주고 싶은 이야기는?',
-      '기분 좋은 일이 생기면 나는 누구에게 가장 먼저 말하고 싶나요?',
-      '잘 풀린 일 하나를 골라, 그게 왜 잘 풀렸는지 한 줄로 적어 보세요.'
+      '어색했던 대화 하나를 골라, 다음엔 이렇게 말해 볼 수 있겠다 싶은 문장은?',
+      '오늘 편하게 이야기 나눈 사람은 누구였고, 그 사람과 나는 어떤 사이인가요?'
     ],
     '입단속': [
       '오늘 삼킨 말 중, 내일 다시 꺼낸다면 어떤 말투로 말하겠나요?',
@@ -1372,7 +1388,7 @@
     // 무슨 부적인지 한눈에 — 날짜 로테이션으로 이름이 매일 바뀐다
     var tname = Chars ? Chars.name(el, tag, info.iso) : '수호 부적';
     var ticon = Chars ? Chars.icon(el, tag) : th.badge;
-    var seal = tag === '럭키' ? '吉' : '護';   // 완료(3타)에 찍히는 주홍 낙관
+    var seal = tag === '소통' ? '吉' : '護';   // 완료(3타)에 찍히는 주홍 낙관
     var msg = done
       ? esc(lot.done) + '<small>' + esc(lot.sub) + '</small>'
       : (n > 0 ? lot.taps[n - 1] : '부적을 톡톡톡 세 번 두드리면 ' +
@@ -1612,7 +1628,7 @@
         return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
       }).join('');
 
-      // 모아보기 — 조심할 날(입단속) / 좋은 날(럭키·결정·머니)
+      // 모아보기 — 조심할 날(입단속) / 좋은 날(소통·결정·머니)
       //  리셋(12절)은 달의 기준만 바꾸는 중립 신호라 어느 쪽에도 넣지 않는다(#9029 새 기준)
       var isBad = badges.some(function (b) { return b.cat === 'red'; });
       var isGood = badges.some(function (b) { return b.cat === 'gold' || b.cat === 'blue'; });
@@ -1675,7 +1691,7 @@
     renderFocusList(v);
 
     var bits = [];
-    if (stat.gold) bits.push('럭키 ' + stat.gold);
+    if (stat.gold) bits.push('소통 ' + stat.gold);
     if (stat.red) bits.push('입단속 ' + stat.red);
     if (stat.blue) bits.push('결정·머니 ' + stat.blue);
     if (stat.gray) bits.push('리셋 ' + stat.gray);
@@ -1733,7 +1749,7 @@
       return;
     }
 
-    var TAG_CAT = { '입단속': 'red', '리셋': 'gray', '럭키': 'gold', '결정': 'blue', '머니': 'blue' };
+    var TAG_CAT = { '입단속': 'red', '리셋': 'gray', '소통': 'gold', '결정': 'blue', '머니': 'blue' };
     box.innerHTML =
       '<div class="calfocus__head">' +
         '<p class="calfocus__title">' + (isBad ? '⚠️ 이 달 챙겨둘 조심할 날' : '🍀 이 달 기분 좋은 날') + '</p>' +

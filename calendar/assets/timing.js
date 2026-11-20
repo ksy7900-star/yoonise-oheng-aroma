@@ -4,12 +4,14 @@
  *
  * 원칙
  *  - 모든 판정은 내 원국(일간·일지·월지)과 그날 일진의 실제 관계로만 계산한다.
- *  - 색 배지 4색 5단어: 럭키(금) / 입단속(적) / 결정·머니(청) / 리셋(회)
+ *  - 색 배지 4색 5단어: 소통(금) / 입단속(적) / 결정·머니(청) / 리셋(회)
+ *    '럭키'라는 이름은 "오늘 대박이 와야 하는데" 하는 과한 기대를 만들어 역효과였다(2026-11-20 김나영 님 결정 #9136).
+ *    대신 '소통' — 말·만남·부탁·조율이 부드럽게 풀리는 날로 부른다.
  *  - 배지는 '진짜 강한 날·내게 반가운 날'에만 붙인다(2026-11-20 김나영 님 지시 #9029 #9057 #9069).
  *    한 달의 절반 이상은 배지 없는 잔잔한 날로 남기는 것이 목표.
  *    · 입단속 = 일지 충 · 일지 형 · 월지 충  (일지 해·월지 형·월지 해는 기록만)
- *    · 럭키 = 천을귀인(충·형 날 제외) · 합화 오행이 내 원국에 부족한 육합·삼합 (천간합·반합은 기록만)
- *    · 결정·머니 = 원국에 1개 이하로 모자란 인성·재성이 일진 천간·지지로 채워질 때만 (인성·재성 무조건 배지 금지)
+ *    · 소통 = 천을귀인(충·형·해 낀 날 제외) · 합화 오행이 내 원국에 부족한 육합·삼합 (천간합·반합은 기록만)
+ *    · 결정·머니 = 내게 모자란 인성·재성이 일진 천간으로 오고 지지가 받쳐 주는 날 (인성·재성 무조건 배지 금지)
  *    · 리셋 = 월건이 바뀌는 12절만 (중기는 기록만)
  *  - 처방 문구는 미리 써 둔 표에서 고른다(즉석 생성하지 않음). 같은 날은 항상 같은 문구.
  *  - 계산은 브라우저 안에서만. 어디로도 전송하지 않는다.
@@ -47,7 +49,7 @@
    * 합이든 인성·재성이든 '들어오면 무조건 좋다'가 아니다(2026-11-20 김나영 님 지시 #9057 #9069).
    * 원국 오행 개수를 세어 (1) 아주 적은 오행(scarce)과 (2) 부족한 편인 오행(fills)을 가린다.
    *  - scarce: 원국에서 가장 적은 오행(보통 0~1개) — 기록·설명에 쓸 기준
-   *  - fills : 1개 이하로 모자란 오행 — '결정·머니'와 합(육합·삼합)이 이쪽으로 바뀔 때만 '럭키'
+   *  - fills : 1개 이하로 모자란 오행 — '결정·머니'와 합(육합·삼합)이 이쪽으로 바뀔 때만 '소통'
    */
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };     // 내가 극하는 오행 = 재성
@@ -63,7 +65,7 @@
 
   var CAT = {
     red:  { label: '입단속',   color: '#C0563F', icon: '🔴', order: 0 },
-    gold: { label: '럭키',     color: '#C08B32', icon: '🟡', order: 1 },
+    gold: { label: '소통',     color: '#C08B32', icon: '🟡', order: 1 },
     blue: { label: '결정·머니', color: '#5C7E9E', icon: '🔵', order: 2 },
     gray: { label: '리셋',     color: '#A9A296', icon: '⚪', order: 3 }
   };
@@ -261,17 +263,21 @@
     } else if (isHyeong(tz, mz)) {
       add('red', 'hyeong', 25, '월지 형', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 형(刑), 절차가 꼬이기 쉬운 날 (약한 신호라 배지 없음)', true);
     }
+    var softHae = false;
     if (haeOf(tz) === dz) {
+      softHae = true;
       add('red', 'hae', 40, '일지 해', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 말과 뜻이 엇갈리는 날 (약한 신호라 배지 없음)', true);
     } else if (haeOf(tz) === mz) {
+      softHae = true;
       add('red', 'hae', 20, '월지 해', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 해(害), 전달이 어긋나기 쉬운 날 (약한 신호라 배지 없음)', true);
     }
-    // 충·형이 걸린 날에는 귀인도 힘을 쓰기 어렵다 — 아래 럭키 판정에서 쓴다
+    // 충·형이 걸린 날에는 귀인도 힘을 쓰기 어렵다 — 아래 소통 판정에서 쓴다
     var hardRed = marks.some(function (mk) { return mk.cat === 'red' && !mk.minor; });
 
-    /* ── 럭키: 내 사주에 반가운 날만 ──
+    /* ── 소통: 말·만남·부탁이 부드럽게 풀리는 날만 ──
      *  합이 된다고 다 좋은 게 아니다(김나영 님 지시 #9057 #9069).
-     *  - 천을귀인: 살리되 일지 충·형이 걸린 날은 띄우지 않는다.
+     *  - 천을귀인: 살리되 일지 충·형이 걸린 날, 해(害)가 끼어 말이 엇갈리는 날은 띄우지 않는다.
+     *    (해는 배지 없는 약한 신호지만, '소통' 배지를 달아 놓고 말이 엇갈리면 손님이 더 헷갈린다)
      *  - 천간합: 배지에서 뺀다(기록만).
      *  - 일지 육합·삼합 완성: 합화 오행이 내 원국에 부족한 쪽일 때만. 반합은 기록만.
      */
@@ -284,6 +290,7 @@
       var gwiyinWhere = '천을귀인(天乙貴人) — 일간 ' + GAN[dg] + '의 귀인 자리 ' +
         CHEONEUL[dg].map(function (i) { return ZHI[i]; }).join('·') + ' 중 ' + zhiFull(tz) + '이 온 날';
       if (hardRed) add('gold', 'gwiyin', 65, '천을귀인', gwiyinWhere + ' — 다만 충·형이 걸려 귀인이 힘을 쓰기 어렵습니다', true);
+      else if (softHae) add('gold', 'gwiyin', 65, '천을귀인', gwiyinWhere + ' — 다만 해(害)가 끼어 말이 엇갈리기 쉬워 배지로는 띄우지 않습니다', true);
       else add('gold', 'gwiyin', 65, '천을귀인', gwiyinWhere);
     }
     if ((tg + 5) % 10 === dg) {
@@ -329,28 +336,38 @@
       }
     }
 
-    /* ── 결정·머니: 내 사주에 모자란 인성·재성만 ──
+    /* ── 결정·머니: 내게 모자란 인성·재성이 오는 날 ──
      *  인성·재성이 들어오는 날을 다 '결정·머니'로 띄우면 인성이 이미 넘치는 사주까지 파란 날이 된다(#9057).
-     *  원국에 1개 이하로 모자란 오행(fills)이 일진 천간으로 오고, 일진 지지가 그것을 받쳐 줄 때만 배지.
-     *  → 인성·재성이 이미 2개 이상 넉넉한 사주엔 그 기운의 날이 배지로 뜨지 않는다.
+     *  그렇다고 '천간과 지지가 같은 오행으로 겹치는 날'만 남기면 한 달에 0~1일로 말라 버려
+     *  "이 날 계약·정산을 잡자"는 쓸모가 사라진다(2026-11-20 김나영 님 결정 #9155).
+     *  그래서 일진 천간이 내 인성·재성이면서, 지지가 그 기운을 받쳐 주는 날을 배지로 띄운다.
+     *   - 받쳐 준다 = ① 지지가 같은 오행(통근)  ② 원국에 모자란 기운을 지지가 생해 줄 때
+     *                 ③ 지지가 내 인성·재성 자리일 때 (모자란 기운일 때만)
+     *   - 충·형이 걸린 날은 띄우지 않는다 — 그런 날은 '결정은 하루 뒤로'인 날이다.
+     *  → 인성·재성이 이미 넉넉하고 지지도 받쳐 주지 않는 사주엔 그 기운의 날이 배지로 뜨지 않는다.
      */
     var tgName = TEN(dg, tg);
     var tgEl = M.GAN_EL[tg];
     var zEl = M.ZHI_EL[tz];
-    var zMainEl = M.GAN_EL[GAN.indexOf(HIDDEN[gz.zhi][0])];
     var isWealth = tgName === '정재' || tgName === '편재';
     var isDoc = tgName === '정인' || tgName === '편인';
     var tgThin = !!(need && need.fills.indexOf(tgEl) >= 0);
-    if ((isWealth || isDoc) && tgThin) {
+    if ((isWealth || isDoc) && need && !hardRed) {
       var whoKo = isDoc ? '인성' : '재성';
       var label = isDoc ? '결정' : '머니';
       var kind = isDoc ? 'doc' : 'wealth';
       var thinCnt = need.counts[tgEl] || 0;
       var thinKo = thinCnt === 0 ? '아예 없던 ' : thinCnt + '개뿐인 ';
-      if (zEl === tgEl || zMainEl === tgEl) {
-        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + ', 내 사주에 ' + thinKo +
-          tgEl + ' 기운을 ' + whoKo + '으로 채우고, 지지도 같은 기운으로 받쳐 주는 날');
-      } else {
+      var sameZhi = zEl === tgEl;
+      var bornByZhi = zEl === EL_MOTHER[tgEl];            // 지지가 천간의 기운을 생한다
+      var familyZhi = zEl === need.docEl || zEl === need.wealthEl;
+      if (sameZhi) {
+        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + ' — ' + tgEl + ' 기운이 천간과 지지에 함께 와, ' +
+          (tgThin ? '내 사주에 ' + thinKo + tgEl + ' 기운을 ' + whoKo + '으로 채워 주는 날' : '내 ' + whoKo + ' 자리가 또렷해지는 날'));
+      } else if (tgThin && (bornByZhi || familyZhi)) {
+        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + ', 내 사주에 ' + thinKo + tgEl + ' 기운을 ' +
+          whoKo + '으로 채우고, 지지 ' + zhiKo(tz) + '이 그 기운을 ' + (bornByZhi ? '생해 주는' : '받아 주는') + ' 날');
+      } else if (tgThin) {
         add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + ', 내 사주에 ' + thinKo + tgEl + ' 기운을 ' + whoKo +
           '으로 채우지만 지지가 받쳐 주지 않아 배지로는 띄우지 않습니다', true);
       }
@@ -377,7 +394,7 @@
     if (!strongRed && !strongGold && strongBlue) dots.push({ cat: 'blue' });
 
     // 배지: 달력 셀에 바로 보이는 짧은 한글 (하루 최대 2개)
-    //  입단속 = 일지 충·형, 월지 충이 걸린 날 / 럭키 = 귀인·내게 맞는 합이 들어온 날
+    //  입단속 = 일지 충·형, 월지 충이 걸린 날 / 소통 = 귀인·내게 맞는 합이 들어온 날
     //  결정·머니 = 비어 있던 인성·재성이 채워지는 날 / 리셋 = 월건이 바뀌는 12절
     var maxWeight = function (cat) {
       var w = 0;
@@ -386,7 +403,7 @@
     };
     var badges = [];
     if (strongRed) badges.push({ cat: 'red', text: '입단속', weight: maxWeight('red') });
-    if (strongGold) badges.push({ cat: 'gold', text: '럭키', weight: maxWeight('gold') });
+    if (strongGold) badges.push({ cat: 'gold', text: '소통', weight: maxWeight('gold') });
     if (!strongRed && !strongGold && strongBlue) {
       var isDoc = marks.some(function (mk) { return mk.cat === 'blue' && mk.kind === 'doc' && !mk.minor; });
       badges.push({ cat: 'blue', text: isDoc ? '결정' : '머니', weight: maxWeight('blue') });
@@ -397,9 +414,9 @@
     if (badges.length > 2) badges = badges.slice(0, 2);
 
     var headline, tone;
-    if (strongRed && strongGold) { headline = '럭키와 입단속이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
+    if (strongRed && strongGold) { headline = '소통과 입단속이 함께 · 조건 확인하고 움직이기'; tone = 'red'; }
     else if (strongRed) { headline = '입단속 · 결정은 하루 뒤로'; tone = 'red'; }
-    else if (strongGold) { headline = '럭키한 날 · 먼저 손 내밀기'; tone = 'gold'; }
+    else if (strongGold) { headline = '말이 잘 통하는 날 · 먼저 손 내밀기'; tone = 'gold'; }
     else if (strongBlue) { headline = '결정·문서 체크 · 기록으로 남기기'; tone = 'blue'; }
     else if (isReset) { headline = '리셋 · 새 달의 기준이 서는 날'; tone = 'gray'; }
     else { headline = '잔잔한 날 · 흐름 정리'; tone = 'none'; }
@@ -420,7 +437,7 @@
    * 화면의 '1월'과 사주의 '축월'은 겹쳐 있다. 2027-01-01~01-05는 아직 자월(子月),
    * 01-06 소한부터 축월(丑月). 그래서 달마다 '가장 많은 날을 덮는 월건'을 그 달의 월운으로 본다.
    * 판정은 월건 지지 ↔ 내 일지·월지의 실제 관계(충·형·해·복음·귀인·육합)와
-   * 그 달에 깔린 일진 신호(입단속·리셋·럭키·결정·머니)의 빈도만 쓴다.
+   * 그 달에 깔린 일진 신호(입단속·리셋·소통·결정·머니)의 빈도만 쓴다.
    * 문장은 미리 써 둔 표에서 고른다 — 같은 사주면 같은 달은 항상 같은 말.
    */
   var MONTH_WARN = {
@@ -437,7 +454,7 @@
     hap:    { key: 'hap',    title: '사람·일이 붙는 달',      why: '미팅·제안 밀어붙이기 좋아요' },
     fill:   { key: 'fill',   title: '비어 있던 기운이 오는 달', why: '새 시작·새 사람에게 열려 있기' },
     doc:    { key: 'doc',    title: '문서·돈이 트이는 달',    why: '계약·정산·지원서에 힘이 실려요' },
-    flow:   { key: 'flow',   title: '럭키가 넉넉한 달',      why: '먼저 손 내밀면 붙는 달' }
+    flow:   { key: 'flow',   title: '소통이 넉넉한 달',     why: '먼저 손 내밀면 붙는 달' }
   };
 
   /** 그날이 속한 월건(月建) — 12절기가 달을 연다. */
@@ -498,7 +515,7 @@
       badges.forEach(function (b) {
         if (b.cat === 'red') { isRed = true; badTags.push('입단속'); }
         else if (b.cat === 'gray') { isGray = true; }        // 리셋(12절)은 중립 — '조심할 날' 목록에는 넣지 않는다
-        else if (b.cat === 'gold') { isGold = true; goodTags.push('럭키'); }
+        else if (b.cat === 'gold') { isGold = true; goodTags.push('소통'); }
         else if (b.cat === 'blue') { isBlue = true; goodTags.push(b.text); }
       });
       if (isRed) m.red++;

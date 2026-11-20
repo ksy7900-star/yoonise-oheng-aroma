@@ -369,6 +369,17 @@ form { margin-top: 22px; }
 }
 .ychip__lock:hover { background: #FFF7E6; }
 .ychip__lock:focus-visible { outline: 2px solid rgba(174, 138, 80, .55); outline-offset: 2px; }
+
+/* 맛보기 칸 — 3순위 조심할 달 한 곳만 블러 없이 열어 둔다(#9172) */
+.ychip--teaser { position: relative; padding-top: 20px; border-style: dashed; }
+.ychip--teaser.ychip--warn { background: #FFF9F6; }
+.ychip--teaser.ychip--good { background: #FFFCF2; }
+.ychip__preview {
+  position: absolute; right: 10px; top: 8px;
+  padding: 2px 8px; border-radius: 999px;
+  background: #FFFDF8; border: 1px solid rgba(174, 138, 80, .45);
+  font-size: 9.5px; font-weight: 700; letter-spacing: -0.01em; color: #7C5F1F; line-height: 1.6;
+}
 .year__note { margin-top: 14px; font-size: 10px; color: var(--mute); line-height: 1.5; }
 
 /* ── 모아보기 필터 ─────────────────────────────────── */
@@ -495,7 +506,7 @@ form { margin-top: 22px; }
 
 /* 무료 구간(오늘~D+2)은 은은한 테두리로 */
 .day--free { box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .22); }
-/* 중요한 날의 파스텔 틴트 — 입단속은 코랄, 럭키는 골드 */
+/* 중요한 날의 파스텔 틴트 — 입단속은 코랄, 소통은 골드 */
 .day--t-red { background: rgba(191, 106, 91, .085); }
 .day--t-gold { background: rgba(196, 154, 80, .12); }
 
