@@ -1992,7 +1992,19 @@
   /* ── 결제 완료 → 카톡으로 신청 내용 보내기 (노란 카카오 버튼) ─────────────
      누르면 ① 신청 내용을 클립보드에 복사하고(토스트로 알려 줌)
              ② 카카오톡 채널 채팅방으로 이동한다.
-     신청 내용 양식: [윤이세 2027 캘린더 신청] 상품명 / 내 생년월일시(입력한 경우) */
+
+     신청 내용 양식 — 한 줄에 하나씩:
+       [윤이세 2027 캘린더 신청] 상품명 금액
+       결제 확인 — 카드결제 연락처(또는 계좌 입금자명):   ← 고객이 뒤에 적어 보낸다
+       내 생년월일시 1990-01-01 12:34 (사주를 넣었을 때만)
+
+     결제 확인은 '무엇으로 찾을 수 있는지'가 결제 방법마다 다르다.
+       · 페이앱 카드결제(z4otyE·z4otzE) — 구매자 이름 칸이 없고 **연락처(휴대폰 번호)만** 받는다
+         → 결제할 때 넣은 번호로 대조
+       · 계좌이체 — 통장에 찍히는 **입금자명**으로 대조
+     그래서 방금 누른 결제 버튼(handlePay)을 payChoice 에 기억해 두고 그 방법의 항목을 앞세운다.
+     (결제 버튼을 누르지 않았거나 새로고침으로 기억이 없으면 두 방법을 함께 적어 준다) */
+  var payChoice = {};   // { item: 'card' | 'bank' } — 이 화면에서 마지막으로 누른 결제 방법
   function orderLabel(item) {
     var it = String(item || '');
     if (it === 'pass') return '2027 1년 패스 ' + PASS_PRICE;
@@ -2015,28 +2027,46 @@
     }
     return s;
   }
+  /** 긴급 개운템은 계좌이체 전용(payActionsHTML card:false) — 확인 항목도 입금자명 하나 */
+  function kakaoCareItem(item) { return /^care(-|$)/.test(String(item || '')); }
+  /** 결제 확인 항목 — 카드결제는 결제할 때 넣은 연락처, 계좌이체는 입금자명. 값은 고객이 뒤에 적는다. */
+  function payIdLine(item) {
+    var it = String(item || '');
+    var kind = kakaoCareItem(it) ? 'bank' : payChoice[it];
+    if (kind === 'card') return '결제 확인 — 카드결제 연락처(뒷자리만 적어도 돼요):';
+    if (kind === 'bank') return '결제 확인 — 계좌 입금자명:';
+    return '결제 확인 — 카드결제 연락처(또는 계좌 입금자명):';
+  }
   function orderTextFor(item) {
     var parts = ['[윤이세 2027 캘린더 신청] ' + orderLabel(item)];
+    parts.push(payIdLine(item));
     var b = birthLine();
     if (b) parts.push(b);
-    return parts.join(' / ');
+    return parts.join('\n');
   }
-  /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래 */
+  /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
+      부제는 버튼을 그릴 때 굳으므로(payChoice 는 누른 뒤에 정해진다) 두 방법을 함께 안내한다. */
+  function kakaoSubText(item) {
+    return kakaoCareItem(item)
+      ? '누르면 신청 내용이 복사돼요 — 입금자명을 적어 보내 주세요'
+      : '누르면 신청 내용이 복사돼요 — 결제하신 연락처(계좌는 입금자명)를 적어 보내 주세요';
+  }
   function kakaoOrderHTML(item, label) {
     return '<div class="kakaobar">' +
       '<button type="button" class="kakaobar__btn" data-kakao-order="' + esc(item) + '">' +
       '<b>' + label + '</b>' +
-      '<span>누르면 신청 내용이 복사되고 카카오톡 채널이 열려요</span>' +
+      '<span>' + kakaoSubText(item) + '</span>' +
       '</button>' +
       '</div>';
   }
   function goKakaoOrder(item) {
     if (String(item) === 'care') item = 'care-' + (care && care.buy ? care.buy : 'set');
     var text = orderTextFor(item);
+    var who = kakaoCareItem(item) ? { what: '입금자명', josa: '을' } : { what: '연락처(입금자명)', josa: '를' };
     copyText(text, function (copied) {
       toast(copied === true
-        ? '✅ 신청 내용을 복사했어요 — 카톡에 붙여서 보내 주세요'
-        : '카톡 채널로 이동해요 — 신청 내용을 함께 보내 주세요');
+        ? '✅ 신청 내용을 복사했어요 — ' + who.what + '만 채워 보내 주세요'
+        : '카톡 채널로 이동해요 — 상품·' + who.what + who.josa + ' 함께 보내 주세요');
     });
     vibrate(18);
     // 카카오톡 채널 채팅방으로 이동 — 새 창이 막히면 같은 창에서 이어서
@@ -2077,10 +2107,11 @@
   }
 
   function handlePay(kind, item) {
+    if (kind === 'card' || kind === 'bank') payChoice[String(item)] = kind;   // 카톡 확인 항목을 이 방법으로
     if (kind === 'card') {
       var url = cardUrlOf(item);
       if (url) {
-        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다. ' +
+        payNote('페이앱 결제창을 새 창에서 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
           '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
         try { window.open(url, '_blank', 'noopener'); } catch (e) { window.location.href = url; }
       } else {
@@ -2096,7 +2127,7 @@
       var bankNote = function (copied) {
         payNote((label ? '<b>' + esc(label) + '</b> 결제 · ' : '') +
           (copied === true ? '계좌번호를 복사했어요' : (copied === false ? '아래 계좌로 입금해 주세요' : '입금 계좌는 여기예요')) +
-          ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, 입금 확인을 보내 주세요.' +
+          ' · <b>' + esc(text) + '</b><br>은행 앱에 붙여넣어 이체하신 뒤, <b>입금자명</b>을 카톡으로 보내 주세요.' +
           kakaoLinkHTML('입금 확인 카톡 보내기 →'));
       };
       bankNote(null);
