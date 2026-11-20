@@ -3163,26 +3163,8 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
   .card--cal { padding: 24px 16px 20px; }
 }
 
-/* ══ 달력 바로 위 3단계 사용법 · 첫 부적 말풍선 (2026-11-21) ═════════════
-   ① 색깔 칸 누르기 → ② 부적 3번 톡톡톡 → ③ 달력에 착! 붙이기
-   모바일에서 스크롤 없이 1초에 읽히도록 한 줄·짧은 말로. */
-.calguide {
-  display: flex; align-items: center; justify-content: center;
-  gap: 3px; margin: 12px 2px 2px; padding: 8px 6px;
-  border-radius: 12px;
-  background: rgba(29, 28, 25, .055);
-  box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .055);
-  font-size: 12.5px; font-weight: 700; letter-spacing: -.045em;
-  color: var(--ink); white-space: nowrap;
-}
-.calguide__st { display: inline-flex; align-items: center; gap: 1px; }
-.calguide__n {
-  font-size: 11.5px; font-weight: 800; color: #8A5F1C; letter-spacing: 0;
-  margin-right: 1px;
-}
-.calguide__st b { font-weight: 800; color: #1C1B19; }
-.calguide__st em { font-style: normal; font-weight: 800; color: #8E4A3D; }
-.calguide__ar { font-size: 10px; color: #B6AC98; padding: 0 1px; }
+/* ══ 첫 부적 말풍선 (2026-11-21) ════════════════════════════════════
+   첫 방문 3단계 안내는 한 줄 바 대신 큰 팝업(.guide)으로 옮겼다 (2026-11-21c). */
 
 /* 부적이 나오는 날 칸 — 말풍선이 가리키는 칸은 테두리로 한 번 더 */
 .day--hint { box-shadow: inset 0 0 0 1.5px rgba(174, 138, 80, .5); }
@@ -3225,8 +3207,123 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .lockpanel__hint b { font-weight: 800; color: #6B5A2E; }
 
 @media (max-width: 360px) {
-  .calguide { font-size: 11.5px; gap: 2px; padding: 7px 4px; letter-spacing: -.05em; }
-  .calguide__n { font-size: 10.5px; }
-  .calguide__ar { font-size: 9px; }
   .day__hint { font-size: 9.5px; padding: 4px 7px; }
+  .cal__help { font-size: 11px; padding: 5px 10px; }
+  .guide__title { font-size: 25px; }
+  .guide-step { padding: 12px 12px 13px; gap: 10px; }
+  .guide-step__n { width: 28px; height: 28px; font-size: 13px; }
+  .guide-step__t { font-size: 14px; }
+  .guide-step__d { font-size: 11px; }
+  .guide__cta { font-size: 15.5px; padding: 15px 16px 16px; }
 }
+
+/* ══ 달력 상단 `? 사용법` 버튼 (2026-11-21c) ═══════════════════════════
+   첫 방문 팝업을 닫은 뒤에도 언제든 다시 열 수 있게, 달력 카드 오른쪽 위에
+   금박 테두리 알약으로 남긴다. */
+.cal__toolbar {
+  display: flex; justify-content: flex-end;
+  margin: -6px -2px 2px;
+}
+.cal__help {
+  display: inline-flex; align-items: center; gap: 5px;
+  appearance: none; cursor: pointer;
+  padding: 6px 12px 6px 7px; border-radius: 999px;
+  border: 1px solid rgba(174, 138, 80, .48);
+  background: linear-gradient(180deg, #FFFDF8 0%, #F6ECD6 100%);
+  color: #6E5219; font-family: inherit;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1;
+  box-shadow: 0 6px 14px -12px rgba(110, 82, 25, .9), inset 0 1px 0 rgba(255, 255, 255, .85);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .16s ease, background .16s ease;
+}
+.cal__help:active { transform: translateY(1px); }
+.cal__help:focus-visible { outline: 2px solid #8E6B2C; outline-offset: 2px; }
+.cal__help-q {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #1C1B19; color: #F6EFDD;
+  font-family: var(--serif); font-size: 10px; font-weight: 700;
+  line-height: 1; letter-spacing: 0;
+}
+
+/* ══ 첫 방문 사용법 팝업 (2026-11-21c) ════════════════════════════════
+   한지 바탕 + 금박 테두리 · 큰 글씨 3단계로 1초에 읽히게.
+   localStorage 로 최초 1회만 자동으로 뜬다. */
+.modal__dialog--guide {
+  max-width: 400px;
+  background:
+    radial-gradient(120% 78% at 102% -8%, rgba(196, 154, 80, .18), transparent 56%),
+    radial-gradient(90% 70% at -10% 110%, rgba(174, 138, 80, .13), transparent 60%),
+    linear-gradient(180deg, #FFFDF8 0%, #F8F1E1 100%);
+  box-shadow:
+    0 34px 74px -28px rgba(20, 18, 15, .62),
+    inset 0 0 0 1px rgba(174, 138, 80, .24),
+    0 2px 8px rgba(20, 18, 15, .1);
+}
+.modal--guide .modal__content { padding-top: 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+.guide { text-align: center; }
+.guide__eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: .24em;
+  color: #A4864B; line-height: 1.5;
+}
+.guide__title {
+  font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.24;
+  letter-spacing: -.03em; color: #6B6354; margin-top: 8px;
+}
+.guide__title-em {
+  display: block; font-size: 34px; font-weight: 700; color: var(--ink);
+  letter-spacing: -.045em; margin-top: 1px; line-height: 1.14;
+}
+.guide__sub {
+  margin-top: 9px; font-size: 11.5px; line-height: 1.55;
+  color: #7C7568; letter-spacing: -.02em;
+}
+
+.guide__steps {
+  margin-top: 17px; display: flex; flex-direction: column; gap: 8px;
+  text-align: left;
+}
+.guide-step {
+  display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 12px;
+  padding: 13px 14px 14px 13px; border-radius: 16px;
+  background: rgba(255, 255, 255, .84);
+  border: 1px solid rgba(174, 138, 80, .26);
+  box-shadow: 0 10px 22px -20px rgba(110, 82, 25, .7), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+.guide-step__n {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #F8E8C2 0%, #E7CD93 100%);
+  color: #6E5219; font-family: var(--serif); font-size: 15px; font-weight: 700; line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .45), 0 2px 5px -3px rgba(110, 82, 25, .85);
+  margin-top: 1px;
+}
+.guide-step__body { min-width: 0; }
+.guide-step__t {
+  font-size: 15px; font-weight: 800; letter-spacing: -.038em;
+  color: var(--ink); line-height: 1.34;
+}
+.guide-step__d {
+  margin-top: 3px; font-size: 11.5px; line-height: 1.55;
+  color: #7C7568; letter-spacing: -.02em;
+}
+.guide-step__badges {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+}
+.guide-step__badges .badge {
+  font-size: 9.5px; font-weight: 700; padding: 4px 8px;
+}
+
+.guide__cta {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; margin-top: 17px; padding: 17px 18px 18px;
+  border-radius: 16px; border: 1px solid rgba(174, 138, 80, .52);
+  background: linear-gradient(180deg, #2C2823 0%, #1C1B19 100%);
+  color: #F7EBD0; font-family: inherit;
+  font-size: 17px; font-weight: 800; letter-spacing: -.03em; line-height: 1;
+  box-shadow: 0 16px 30px -20px rgba(20, 18, 15, .95), inset 0 1px 0 rgba(255, 255, 255, .13);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+.guide__cta:active { transform: translateY(1px); }
+.guide__cta:focus-visible { outline: 2px solid #8E6B2C; outline-offset: 3px; }

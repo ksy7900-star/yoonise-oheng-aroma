@@ -426,6 +426,7 @@
           toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — 지금 사주로는 3일 무료 체험만 열려요');
         }
         $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        maybeAutoGuide();     // 달력이 처음 열린 기기라면 사용법 팝업 한 번
       } catch (err) {
         alertEl.hidden = false;
         alertEl.textContent = err && err.message ? err.message : '입력을 다시 확인해 주세요.';
@@ -1170,6 +1171,54 @@
     }, 180);
   }
 
+  /* ── 첫 방문 사용법 팝업 (2026-11-21c) ───────────────────────
+     사주를 넣어 달력이 처음 열릴 때 **딱 한 번** 자동으로 뜬다.
+     뜬 사실을 localStorage 에 남겨 재방문 때는 조용하고, 달력 위
+     `? 사용법` 버튼(.cal__help)으로는 언제든 다시 열 수 있다. */
+  var GUIDE_KEY = 'yoonise.timing.guide.v1';
+  var guideEl = null, guideDialog = null, guideLastFocus = null, guideClosing = false;
+
+  function guideSeen() {
+    try { return localStorage.getItem(GUIDE_KEY) === '1'; } catch (e) { return true; }  // 저장이 막힌 환경에서는 자동 팝업을 띄우지 않는다
+  }
+  function markGuideSeen() {
+    try { localStorage.setItem(GUIDE_KEY, '1'); } catch (e) {}
+  }
+  /** 열려 있는 팝업이 하나라도 있으면 body 스크롤 잠금을 유지한다 */
+  function anyModalOpen() {
+    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl];
+    for (var i = 0; i < els.length; i++) if (els[i] && !els[i].hidden) return true;
+    return false;
+  }
+  function openGuide(quiet) {
+    if (!guideEl || !guideEl.hidden) return;
+    guideLastFocus = document.activeElement;
+    guideEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    if (!quiet) sfxOpen();      // 자동으로 뜰 때는 소리 없이 (손가락 없이 오디오를 열지 않는다)
+    try { guideDialog.focus({ preventScroll: true }); } catch (e) { guideDialog.focus(); }
+  }
+  function closeGuide() {
+    if (!guideEl || guideEl.hidden || guideClosing) return;
+    guideClosing = true;
+    guideEl.classList.add('is-closing');
+    setTimeout(function () {
+      guideEl.classList.remove('is-closing');
+      guideEl.hidden = true;
+      guideClosing = false;
+      if (!anyModalOpen()) document.body.classList.remove('is-modal-open');
+      var target = guideLastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      guideLastFocus = null;
+    }, 180);
+  }
+  /** 달력이 처음 열릴 때 한 번 — 이미 본 기기면 아무 것도 하지 않는다 */
+  function maybeAutoGuide() {
+    if (guideSeen()) return;
+    markGuideSeen();          // 닫는 방법과 상관없이 '한 번 보여 줬다'로 기록
+    setTimeout(function () { openGuide(true); }, 520);   // 스크롤이 달력에 닿은 뒤에 뜨게
+  }
+
   /* ── 토스트 (복사 완료·입장 코드 안내) ───────────────────── */
   var toastEl = null, toastTimer = 0;
   function toast(msg) {
@@ -1745,8 +1794,9 @@
       (state.res.input.timeKnown ? ' 글자 사이의 관계는 각 글자의 대표 기운으로 봤어요.' : ' 시간을 몰라 시주는 비워 두었습니다.');
   }
 
-  /* ── 달력 바로 위 3단계 사용법 · 첫 부적 말풍선 힌트 (2026-11-21) ────────
-     · 3단계 바는 index.html 에 늘 떠 있고(.calguide),
+  /* ── 첫 부적 말풍선 힌트 (2026-11-21) ──────────────────────────
+     · 3단계 사용법은 첫 방문 팝업(#guideModal)과 달력 위 `? 사용법`
+       버튼(.cal__help)이 맡고(2026-11-21c),
      · 말풍선은 부적을 아직 한 번도 붙이지 않은 사람에게만 이번 달 '오늘 칸'
        (오늘이 부적 없는 잔잔한 날이면 가장 가까운 부적 있는 날) 위에 뜬다.
        부적을 하나라도 붙이거나 그 칸을 누르면 사라진다. */
@@ -4830,6 +4880,8 @@
     dbookEl = $('#diaryBookModal');
     dbookBody = $('#diaryBookBody');
     dbookDialog = $('#diaryBookDialog');
+    guideEl = $('#guideModal');
+    guideDialog = $('#guideDialog');
 
     loadBurn();
     renderBurnCard();
@@ -4861,6 +4913,15 @@
     });
     var lockReset = $('#lockReset');
     if (lockReset) lockReset.addEventListener('click', function (e) { e.preventDefault(); lockAgain(); });
+
+    // ? 사용법 — 첫 방문 팝업을 닫은 뒤에도 언제든 다시 열기
+    var calHelp = $('#calHelp');
+    if (calHelp) calHelp.addEventListener('click', function (e) { e.preventDefault(); openGuide(); });
+    if (guideEl) {
+      guideEl.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-guide-close]')) { closeGuide(); }
+      });
+    }
 
     // 📖 내 성찰 기록 보기 — 달력 아래 버튼
     var dbookBtn = $('#diaryBookBtn');
@@ -5045,6 +5106,21 @@
 
     // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
     document.addEventListener('keydown', function (e) {
+      if (guideEl && !guideEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeGuide(); return; }
+        if (e.key !== 'Tab') return;
+        var gf = $$('a[href], button:not([disabled])', guideDialog).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!gf.length) return;
+        var gFirst = gf[0], gLast = gf[gf.length - 1];
+        if (e.shiftKey && (document.activeElement === gFirst || document.activeElement === guideDialog)) {
+          e.preventDefault(); gLast.focus();
+        } else if (!e.shiftKey && document.activeElement === gLast) {
+          e.preventDefault(); gFirst.focus();
+        }
+        return;
+      }
       if (dbookEl && !dbookEl.hidden) {
         if (e.key === 'Escape') { e.preventDefault(); closeDiaryBook(); return; }
         if (e.key !== 'Tab') return;
@@ -5147,6 +5223,7 @@
         $('#result').hidden = false;
         document.body.classList.add('is-result');
         render();
+        maybeAutoGuide();     // 저장된 사주로 바로 열린 첫 방문에도 한 번
       } catch (err) {
         document.body.classList.remove('is-result');
         $('#formCard').hidden = false;
