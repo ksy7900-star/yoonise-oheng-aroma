@@ -264,6 +264,30 @@ form { margin-top: 22px; }
   border: 1px solid var(--hair); border-radius: 999px; padding: 6px 13px;
 }
 
+/* ── 코드로 열린 사주 고정 배지 · 수정 잠금 (#9247) ──────── */
+.savedbar__lock {
+  display: inline-block; margin-top: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: -0.01em;
+  color: #6B5A2E; background: rgba(174, 138, 80, .13);
+  border: 1px solid rgba(174, 138, 80, .3); border-radius: 999px;
+  padding: 3px 9px; line-height: 1.45;
+}
+.savedbar__btn.is-locked {
+  color: #6B5A2E; border-color: rgba(174, 138, 80, .38);
+  background: rgba(174, 138, 80, .09); cursor: default;
+}
+.savedbar__btn.is-refuse { animation: lockShake .34s cubic-bezier(.36, .07, .19, .97) both; }
+
+/* 코드 주인과 다른 사주일 때 · 전용으로 열렸을 때 안내 */
+.codetie {
+  margin: 10px 0 0; padding: 9px 12px;
+  font-size: 10.5px; line-height: 1.65; color: #6B5A2E;
+  background: rgba(174, 138, 80, .075);
+  border: 1px dashed rgba(174, 138, 80, .33); border-radius: 12px;
+  word-break: keep-all;
+}
+.codetie b { color: #4A3E1F; font-weight: 700; }
+
 /* ── 원국 (정통 4칸 표) ────────────────────────── */
 .natal {
   display: grid; grid-template-columns: repeat(4, 1fr);
@@ -1510,6 +1534,15 @@ body.is-modal-open { overflow: hidden; }
 }
 .shop__sub { font-size: 12px; line-height: 1.8; color: var(--ink-2); margin-top: 10px; }
 .shop__sub b { color: #9E4A2E; }
+/* 결제 팝업 상단 '먼저 3일 무료' 안내 */
+.shop__trial {
+  margin-top: 12px; padding: 9px 12px;
+  font-size: 10.5px; line-height: 1.7; color: #6B5A2E;
+  background: rgba(174, 138, 80, .1);
+  border: 1px solid rgba(174, 138, 80, .26); border-radius: 12px;
+  word-break: keep-all;
+}
+.shop__trial b { color: #4A3E1F; }
 .shop__list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
 .shop__list li {
   padding: 11px 13px; border-radius: 14px;

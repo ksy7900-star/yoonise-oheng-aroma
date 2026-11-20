@@ -12,33 +12,35 @@
   var RANGE_TO = '2027-12-31';   // 2027년 1~12월 1년 패스 — 달력은 2026-11 ~ 2027-12까지
   var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
   /* ── 무료 체험 잠금 스위치 (판매 세팅은 이 두 줄만 보면 됩니다) ──────────
-     FREE_TRIAL_ENABLED = false → 지금 모드. 2026-11-01 ~ 2027-12-31
-        모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다.
-     FREE_TRIAL_ENABLED = true  → 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
+     FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
         그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)로 바뀝니다.
-     → 나중에 "3일 무료 체험" 판매를 다시 켤 때는 FREE_TRIAL_ENABLED 하나만 true 로 바꾸세요.
-        무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
-  var FREE_TRIAL_ENABLED = false;
+     FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다(테스트용).
+     → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
+  var FREE_TRIAL_ENABLED = true;
   var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 오늘 포함 3일(D+0·D+1·D+2)
 
-  /* ── 입장 코드 (결제 확인 후 카톡으로 보내 드리는 코드) ──────────────────
-     ★ 코드를 바꾸려면 아래 ENTRY_CODES 배열만 고치면 됩니다. 여러 개를 넣어도 됩니다.
-       (대소문자·띄어쓰기·하이픈은 무시하고 비교합니다. 예: 'YOON2027' = 'yoon-2027')
-     코드를 넣으면 그 브라우저(localStorage)에 해제 상태가 저장되고,
-     FREE_TRIAL_ENABLED = true 인 동안에도 2026년 11월 ~ 2027년 12월 전체 날짜가 바로 열립니다.
-     FREE_TRIAL_ENABLED = false 인 지금도 그대로 동작합니다(= 테스트용으로도 쓸 수 있음). */
-  /* 3티어 — 대소문자·띄어쓰기·하이픈은 무시하고 비교합니다.
-       YOON2027       → tier 'pass'      : 2027 내 사주 타이밍 맵 + 1년 수호 부적 (액운 태우기 5회 무료)
-       YOONALL2027    → tier 'allinone'  : 1년 패스 + 매일 일진 부적 + 매일 액운 태우기 무제한
-       YOONDIARY2027  → tier 'diary'     : 올인원 전부 + 365일 1줄 성찰 다이어리 */
-  var ENTRY_CODES = [
-    { code: 'YOON2027', tier: 'pass', name: '1년 패스' },
-    { code: 'YOONALL2027', tier: 'allinone', name: '올인원' },
-    { code: 'YOONDIARY2027', tier: 'diary', name: '성찰 에디션' }
-  ];
+  /* ── 개인 전용 입장 코드 (1결제 = 1사주) ─────────────────────────────────
+     결제한 손님의 생년월일(양력) + 성별 + 상품 등급에 비밀 salt 서명을 묶은 코드입니다.
+
+       YS-P-791025F-K7QM3
+         YS       윤이세 타이밍 캘린더
+         P/A/D    상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션
+         791025   손님 생년월일(양력)의 뒤 두 자리 해 + 월 + 일
+         F/M      성별
+         K7QM3    서명 5자 — 아래 CODE_SALT 를 모르면 만들 수 없다
+
+     → 다른 생년월일이나 다른 성별의 사주로 코드를 넣으면 그 자리에서 잠기고
+       "이 코드는 1979년 10월 25일 · 여성 사주 전용" 안내가 뜬다. (1결제 2인 사용 차단)
+     → 나영 님 전용 발급기: 저장소 안 비공개 경로(README §37) — 일반 달력 화면에는 링크를 두지 않는다.
+     ★ 아래 CODE_SALT·서명 함수는 발급기(issuer-7910/index.html)와 반드시 똑같이 맞춰야 한다. */
+  var CODE_SALT = 'yoonise-2027-timing-9f3a';
+  var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
+  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary' };
+  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D' };
   var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
   var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };   // 위 티어가 아래 티어의 기능을 모두 포함한다
-  var UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 해제 티어 저장 키 ('pass' | 'allinone' | 'diary' · 예전 '1' 은 pass)
+  var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
+  var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -201,8 +203,10 @@
     gender: '', calendar: 'solar', res: null, natal: null,
     terms: null, view: null, sel: null, todayISO: '', cache: {},
     stamps: {}, justStamped: null, pendingStamp: null,
-    unlocked: false,      // 입장 코드로 잠금 해제됨(localStorage) — FREE_TRIAL_ENABLED 와 별개
-    tier: '',             // '' | 'pass'(1년 패스) | 'allinone'(올인원 패키지 — 액운 태우기 무제한 포함)
+    unlocked: false,      // 개인 전용 입장 코드로 잠금 해제됨(localStorage) — FREE_TRIAL_ENABLED 와 별개
+    tier: '',             // '' | 'pass'(1년 패스) | 'allinone'(올인원 패키지) | 'diary'(성찰 에디션)
+    code: null,           // 지금 이 기기에 넣어 둔 코드 { code, tier, ymd, gender }
+    mismatch: null,       // 코드 주인과 지금 사주가 다를 때 { code, id } — 이때는 잠금 상태
     filter: 'all',        // all | bad | good — 달력의 '조심할 날만 / 좋은 날만' 보기
     yearDigest: null,     // 2027 한 해 요약(조심할 달·좋은 달). 사주가 바뀌면 다시 계산
     mDigest: {}           // 달별 주의 날·좋은 날 목록 캐시
@@ -402,6 +406,7 @@
         saveInput(o);
         state.res = res;
         state.natal = T.natalOf(res);
+        var codeOk = syncCodeBinding();      // 코드 주인과 다른 사주면 여기서 곧바로 다시 잠근다 (#9247)
         state.cache = {};
         state.yearDigest = null;
         state.mDigest = {};
@@ -416,6 +421,9 @@
         $('#result').hidden = false;
         document.body.classList.add('is-result');   // 달력이 열리면 히어로는 얇은 브랜드 줄로 접힌다
         render();
+        if (!codeOk && state.mismatch) {
+          toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — 지금 사주로는 3일 무료 체험만 열려요');
+        }
         $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
         alertEl.hidden = false;
@@ -466,6 +474,14 @@
   }
 
   function openForm() {
+    /* 코드로 열린 캘린더는 그 1명의 사주에 묶여 있다 — 다른 사람 사주를 넣는 길을 열지 않는다 (#9247) */
+    if (state.unlocked) {
+      var id = currentIdentity();
+      toast('🔒 ' + (id ? id.label : '이') + ' 전용 캘린더예요 — 다른 사주는 그 사주로 새 코드(3일 무료 체험 후 구매)가 필요해요');
+      var b = $('#editBtn');
+      if (b) { b.classList.remove('is-refuse'); void b.offsetWidth; b.classList.add('is-refuse'); }
+      return;
+    }
     document.body.classList.remove('is-result');
     $('#formCard').hidden = false;
     $('#formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -634,39 +650,129 @@
     try { localStorage.setItem(STAMP_KEY, JSON.stringify(state.stamps)); } catch (e) {}
   }
 
-  /* ── 입장 코드 잠금 해제 ─────────────────────────────────────
-     결제 후 카톡으로 받은 코드를 넣으면 이 기기에서 2027년 전체가 열린다.
-     FREE_TRIAL_ENABLED = true 로 바꿔 3일 무료 체험을 켜도, 코드를 넣은 사람은 전부 열린다. */
-  function loadUnlock() {
-    var raw = '';
-    try { raw = localStorage.getItem(UNLOCK_KEY) || ''; } catch (e) { raw = ''; }
-    // 예전에는 '1' 만 저장했다 — 그 값은 1년 패스(pass)로 읽는다.
-    state.tier = raw === '1' ? 'pass' : (TIER_NAME[raw] ? raw : '');
-    state.unlocked = !!state.tier;
+  /* ── 개인 코드 서명 — 발급기와 똑같은 계산 ───────────────────────── */
+  function fnv1a(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
   }
-  /** tier: 'pass' | 'allinone' | 'diary' | '' (해제) */
-  function saveUnlock(tier) {
-    state.tier = TIER_NAME[tier] ? tier : '';
-    state.unlocked = !!state.tier;
+  /** 서명 5자 — 상품 등급 · 생년월일(YYMMDD) · 성별 + 비밀 SALT */
+  function codeSign(letter, ymd, gender) {
+    var base = CODE_SALT + '|' + letter + '|' + ymd + '|' + gender;
+    var h1 = fnv1a(base), h2 = fnv1a(base + '#2');
+    var n = h1 % 28629151;          // 31^5 — 다섯 자리에 담을 수 있는 경우의 수
+    var out = '';
+    for (var i = 0; i < 5; i++) {
+      out += CODE_ALPHA.charAt((n % 31 + ((h2 >>> (i * 3)) & 31)) % 31);
+      n = Math.floor(n / 31);
+    }
+    return out;
+  }
+  function formatCode(letter, ymd, gender, sign) {
+    return 'YS-' + letter + '-' + ymd + gender + '-' + sign;
+  }
+  /** 코드 문자열 → { code, tier, letter, ymd, gender } · 형식과 서명이 맞지 않으면 null */
+  function parseCode(v) {
+    var n = normCode(v);
+    var m = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
+    if (!m) return null;
+    var sign = codeSign(m[1], m[2], m[3]);
+    if (sign !== m[4]) return null;
+    return {
+      code: formatCode(m[1], m[2], m[3], m[4]), tier: CODE_TIER_OF_LETTER[m[1]],
+      letter: m[1], ymd: m[2], gender: m[3]
+    };
+  }
+  function pad2(v) { var n = Number(v) || 0; return (n < 10 ? '0' : '') + n; }
+  /** 지금 넣어 둔 사주를 코드와 맞춰 볼 열쇠 — 양력 생년월일(YYMMDD) + 성별 */
+  function currentIdentity() {
+    var r = state.res;
+    if (!r || !r.solar) return null;
+    var s = r.solar;
+    var g = (r.input && r.input.gender === 'M') ? 'M' : 'F';
+    return {
+      ymd: String(s.y).slice(-2) + pad2(s.m) + pad2(s.d),
+      gender: g,
+      label: s.y + '.' + pad2(s.m) + '.' + pad2(s.d) + ' (' + (g === 'M' ? '남' : '여') + ')'
+    };
+  }
+  /** 코드 주인 표기 — '1979년 10월 25일 · 여성' */
+  function codeOwnerLabel(code) {
+    if (!code || !code.ymd) return '이 코드의 주인';
+    var yy = Number(code.ymd.slice(0, 2)), mm = Number(code.ymd.slice(2, 4)), dd = Number(code.ymd.slice(4, 6));
+    var thisYY = new Date().getFullYear() % 100;
+    var year = yy <= thisYY ? 2000 + yy : 1900 + yy;
+    return year + '년 ' + mm + '월 ' + dd + '일 · ' + (code.gender === 'M' ? '남성' : '여성');
+  }
+
+  /* ── 입장 코드 잠금 해제 ─────────────────────────────────────
+     결제 후 카톡으로 받은 '개인 전용 코드'를 넣으면 그 사주에 한해 2026-11 ~ 2027-12 전체가 열린다.
+     코드 주인(생년월일·성별)까지 함께 저장하고, 다른 사주로 바꾸면 다시 잠근다. */
+  function loadUnlock() {
+    state.code = null; state.tier = ''; state.unlocked = false; state.mismatch = null;
+    var raw = '', old = '';
+    try { raw = localStorage.getItem(UNLOCK_KEY) || ''; old = localStorage.getItem(LEGACY_UNLOCK_KEY) || ''; } catch (e) { raw = ''; old = ''; }
+    var o = null;
+    try { o = raw ? JSON.parse(raw) : null; } catch (e) { o = null; }
+    if (o && o.code && TIER_NAME[o.tier]) {
+      state.code = { code: o.code, tier: o.tier, ymd: o.ymd || '', gender: o.gender || '' };
+      state.tier = o.tier;
+      state.unlocked = true;
+      return;
+    }
+    /* 예전 공용 코드(YOON2027 등)로 열어 둔 기기 — 그때 저장된 사주 1명에게만 묶어 이어 준다. */
+    var legacy = old === '1' ? 'pass' : (TIER_NAME[old] ? old : '');
+    if (legacy) {
+      state.code = { code: '', tier: legacy, ymd: '', gender: '', legacy: true };
+      state.tier = legacy;
+      state.unlocked = true;
+    }
+  }
+  /** 코드 저장 — o 가 없으면 잠금. { code, tier, ymd, gender } */
+  function saveUnlock(o) {
+    var tier = o && TIER_NAME[o.tier] ? o.tier : '';
+    state.tier = tier;
+    state.code = tier ? { code: o.code || '', tier: tier, ymd: o.ymd || '', gender: o.gender || '', legacy: !!o.legacy } : null;
+    state.unlocked = !!tier;
     try {
-      if (state.tier) localStorage.setItem(UNLOCK_KEY, state.tier);
-      else localStorage.removeItem(UNLOCK_KEY);
+      if (tier) {
+        localStorage.setItem(UNLOCK_KEY, JSON.stringify({
+          v: 2, code: o.code || '', tier: tier, ymd: o.ymd || '', gender: o.gender || '',
+          at: new Date().toISOString()
+        }));
+      } else {
+        localStorage.removeItem(UNLOCK_KEY);
+      }
+      if (tier) localStorage.removeItem(LEGACY_UNLOCK_KEY);
     } catch (e) {}
   }
-  /** 코드 비교 — 대소문자·띄어쓰기·하이픈은 무시한다 */
-  function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
-  /** 코드 → 티어('pass' | 'allinone' | 'diary'), 모르는 코드면 '' */
-  function tierOfCode(v) {
-    var n = normCode(v);
-    if (!n) return '';
-    for (var i = 0; i < ENTRY_CODES.length; i++) {
-      if (normCode(ENTRY_CODES[i].code) === n) return ENTRY_CODES[i].tier;
+  /** 코드 주인과 지금 사주가 같은 사람인지 확인 — 다르면 곧바로 잠금으로 되돌린다. */
+  function syncCodeBinding() {
+    state.mismatch = null;
+    if (!state.tier || !state.code) { state.unlocked = false; return false; }
+    var id = currentIdentity();
+    if (!state.code.ymd) {                     // 예전 고정 코드 — 지금 사주 1명에게 묶는다
+      if (!id) { state.unlocked = false; return false; }
+      saveUnlock({ code: state.code.code, tier: state.tier, ymd: id.ymd, gender: id.gender });
+      return true;
     }
-    return '';
+    if (!id) { state.unlocked = false; return false; }
+    if (id.ymd !== state.code.ymd || id.gender !== state.code.gender) {
+      state.unlocked = false;
+      state.mismatch = { code: state.code, id: id };
+      return false;
+    }
+    state.unlocked = true;
+    return true;
   }
-  function codeValid(v) { return !!tierOfCode(v); }
+  /** 코드 비교 — 대소문자·띄어쓰기·하이픈은 버리고 비교한다 */
+  function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
   /** 이 기기에 적용된 티어가 t 이상인가 (pass < allinone < diary) */
-  function tierAtLeast(t) { return (TIER_RANK[state.tier] || 0) >= (TIER_RANK[t] || 99); }
+  /** 이 기기에 코드가 살아 있는가 — 코드 주인과 지금 사주가 같을 때만 '열림' */
+  function tierAtLeast(t) { return !!state.unlocked && (TIER_RANK[state.tier] || 0) >= (TIER_RANK[t] || 99); }
 
   /* ══ ✨ 365일 1줄 성찰 다이어리 ═══════════════════════════════════════
      · 날짜마다 다른 질문 — 5가지 기운(소통·입단속·결정·머니·리셋)별 10개, 모두 50개.
@@ -1534,6 +1640,7 @@
 
   /* ── 렌더 ──────────────────────────────────────────── */
   function render() {
+    syncLockUI();          // 🔒 전용 배지·입력 잠금은 사주가 정해진 뒤에야 맞춰진다
     renderSavedBar();
     renderNatal();
     renderTalisman();
@@ -1939,7 +2046,7 @@
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>2027년 1~12월 전체 열기</p>' +
-      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션</p>' +
+      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>내 생년월일·성별 전용 코드</b>를 카톡으로 보내 드려요</p>' +
       '<p class="lock__early">사전 신청 시 12월 한 달 무료!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
@@ -2125,13 +2232,14 @@
     if (m) return '긴급 개운템 — ' + careItemLabel(m[1]);
     return it;
   }
-  /** 내 생년월일시 — 사주를 넣었을 때만. 시간을 모르면 날짜만. */
+  /** 내 생년월일시·성별 — 사주를 넣었을 때만. 시간을 모르면 날짜만. 코드는 이 값에 묶여 발급된다. */
   function birthLine() {
     var r = state.res;
     if (!r || !r.solar) return '';
     var p = function (v) { return (v < 10 ? '0' : '') + v; };
     var s = '내 생년월일시 ' + r.solar.y + '-' + p(r.solar.m) + '-' + p(r.solar.d);
     s += (r.input && r.input.timeKnown) ? ' ' + p(r.input.hh) + ':' + p(r.input.mm) : ' (시간 모름)';
+    s += ' · ' + (r.input && r.input.gender === 'M' ? '남성' : '여성');
     if (r.input && r.input.calendar === 'lunar' && r.lunar) {
       s += ' (음력 ' + r.lunar.m + '.' + r.lunar.d + (r.lunar.leap ? ' 윤달' : '') + ')';
     }
@@ -2152,6 +2260,7 @@
     parts.push(payIdLine(item));
     var b = birthLine();
     if (b) parts.push(b);
+    parts.push('→ 이 생년월일·성별 전용 코드로 보내 드려요.');
     return parts.join('\n');
   }
   /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
@@ -2394,9 +2503,15 @@
   }
 
   /* 1번 — 🎟️ 1년 패스 (14,900원) */
+  /** 무료 체험 중이면 결제 팝업 상단에 '먼저 3일 무료' 안내 한 줄 — 결제 전에 체험부터 */
+  function trialShopNote() {
+    if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
+    return '<p class="shop__trial">먼저 <b>오늘부터 3일</b>을 무료로 써 보세요. 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
+  }
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
       '<h2 class="shop__title" id="shopTitle">🎟️ 1년 패스</h2>' +
+      trialShopNote() +
       '<p class="shop__sub">생년월일만 넣으면 <b>2027년 1월 1일부터 12월 31일까지 365일</b>이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
       '<ul class="shop__list">' +
       '<li><b>2027 내 사주 타이밍 맵</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
@@ -2412,6 +2527,7 @@
   function allinoneShopHTML() {
     return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
       '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
+      trialShopNote() +
       '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>액운 태우기 무제한</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고 싶다면 여기서 시작하세요.</p>' +
       '<ul class="shop__list">' +
       '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
@@ -2430,6 +2546,7 @@
   function diaryShopHTML() {
     return '<p class="modal__eyebrow">REFLECTION EDITION · 365일 1줄 성찰 다이어리</p>' +
       '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
+      trialShopNote() +
       '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
       '<ul class="shop__list">' +
       '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 액운 태우기 무제한</span></li>' +
@@ -3512,8 +3629,7 @@
   function saveBurn() {
     try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, at: new Date().toISOString() })); } catch (e) {}
   }
-  function burnUnlimited() { return tierAtLeast('allinone'); }
-  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
+  function burnUnlimited() { return tierAtLeast('allinone'); }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
   function burnLeftText() {
     if (burnUnlimited()) return (state.tier === 'diary' ? '성찰 에디션' : '올인원') + ' · 무제한';
     var l = burnLeft();
@@ -4050,7 +4166,7 @@
 
   /* 5장을 다 쓴 뒤 — 올인원 안내(1년 패스 사용자는 7,900원 업그레이드) */
   function burnShopHTML() {
-    var pass = state.tier === 'pass';
+    var pass = !!state.unlocked && state.tier === 'pass';
     return '<p class="modal__eyebrow">ALL-IN-ONE · 액운 태우기 무제한</p>' +
       '<h2 class="shop__title" id="shopTitle">🔥 무료 5장을 다 태우셨어요</h2>' +
       '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>횟수 제한 없이</b> 계속 태울 수 있어요. 1년 달력 전체에 액운 태우기 무제한까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
@@ -4262,28 +4378,68 @@
     // 무료 체험 문구(js-trial)는 체험이 켜져 있고 아직 코드를 넣지 않았을 때만
     var trialMode = !!(FREE_TRIAL_ENABLED && !state.unlocked);
     if (btn) {
-      btn.textContent = state.tier === 'diary' ? '🔓 성찰 에디션 적용됨'
-        : (state.tier === 'allinone' ? '🔓 올인원 적용됨'
-          : (state.tier === 'pass' ? '🔓 1년 패스 적용됨' : '🔑 입장 코드 입력'));
+      btn.textContent = !state.unlocked ? '🔑 입장 코드 입력'
+        : (state.tier === 'diary' ? '🔓 성찰 에디션 적용됨'
+          : (state.tier === 'allinone' ? '🔓 올인원 적용됨'
+            : (state.tier === 'pass' ? '🔓 1년 패스 적용됨' : '🔑 입장 코드 입력')));
       btn.classList.toggle('is-on', !!state.unlocked);
       btn.setAttribute('aria-pressed', state.unlocked ? 'true' : 'false');
       btn.setAttribute('aria-label', state.unlocked
-        ? (TIER_NAME[state.tier] || '입장 코드') + ' 적용됨 — 2027년 전체 열림'
+        ? (TIER_NAME[state.tier] || '입장 코드') + ' 적용됨 — 이 사주 전체 열림'
         : '입장 코드 입력');
     }
     // 지금 이 기기에 적용된 티어를 패널 안에 그대로 보여 준다
     var tierEl = $('#lockTier');
     if (tierEl) {
-      if (state.tier) {
+      if (state.tier && state.unlocked) {
         tierEl.hidden = false;
         tierEl.innerHTML = '지금 적용된 티어 · <b>' + esc(TIER_NAME[state.tier]) + '</b>' +
-          (state.tier === 'diary' ? ' — 달력 전체 + 성찰 다이어리 + 액운 태우기 무제한'
-            : (state.tier === 'allinone' ? ' — 액운 태우기 무제한 포함' : ' — 달력 전체 열림'));
+          (state.tier === 'diary' ? ' — 이 사주 달력 전체 + 성찰 다이어리 + 액운 태우기 무제한'
+            : (state.tier === 'allinone' ? ' — 이 사주 달력 전체 + 액운 태우기 무제한' : ' — 이 사주 달력 전체'));
         tierEl.classList.toggle('is-allinone', state.tier === 'allinone' || state.tier === 'diary');
+      } else if (state.tier && state.mismatch) {
+        tierEl.hidden = false;
+        tierEl.innerHTML = '저장된 코드 · <b>' + esc(TIER_NAME[state.tier]) + '</b> (' + esc(codeOwnerLabel(state.mismatch.code)) +
+          ') — 지금 사주와 달라 <b>잠겨 있어요</b>.';
+        tierEl.classList.remove('is-allinone');
       } else {
         tierEl.hidden = true;
         tierEl.textContent = '';
         tierEl.classList.remove('is-allinone');
+      }
+    }
+
+    /* 🔒 전용 배지 — 코드로 열린 사주를 상단에 고정 표시하고, '수정' 버튼을 잠근다 (#9247) */
+    var id = currentIdentity();
+    var badge = $('#savedBarLock');
+    if (badge) {
+      badge.hidden = !(state.unlocked && id);
+      badge.textContent = state.unlocked && id ? '🔒 ' + id.label + ' 전용 캘린더' : '';
+    }
+    var ebtn = $('#editBtn');
+    if (ebtn) {
+      ebtn.classList.toggle('is-locked', !!state.unlocked);
+      ebtn.textContent = state.unlocked ? '🔒 전용' : '수정';
+      ebtn.setAttribute('aria-label', state.unlocked
+        ? '이 사주 전용으로 잠겨 있어 생년월일·성별을 바꿀 수 없어요'
+        : '내 사주 수정');
+    }
+
+    /* 코드로 열렸거나, 다른 사주로 코드를 넣었을 때의 안내 한 줄 */
+    var bindNote = $('#codeBindNote');
+    if (bindNote) {
+      if (state.mismatch) {
+        bindNote.hidden = false;
+        bindNote.innerHTML = '🔒 이 코드는 <b>' + esc(codeOwnerLabel(state.mismatch.code)) + '</b> 사주 전용이에요.' +
+          (state.mismatch.id
+            ? ' 지금 넣으신 사주(<b>' + esc(state.mismatch.id.label) + '</b>)로는 열리지 않아 <b>3일 무료 체험</b>으로 보여 드려요.'
+            : ' 코드 주인의 사주를 넣어야 열려요.');
+      } else if (state.unlocked && id) {
+        bindNote.hidden = false;
+        bindNote.innerHTML = '🔒 <b>' + esc(id.label) + '</b> 사주 1명 전용으로 열렸어요. 생년월일·성별을 바꿔 다른 사주를 보는 건 열리지 않아요.';
+      } else {
+        bindNote.hidden = true;
+        bindNote.textContent = '';
       }
     }
     if (reset) reset.hidden = !state.unlocked;
@@ -4306,44 +4462,69 @@
     p.hidden = true;
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }
+  /** 코드 주인과 다른 사주 — 열어 주지 않고 안내만 (지금 사주에 맞는 코드가 이미 있으면 그건 그대로 둔다) */
+  function cannotUseCode(code) {
+    var stillOpen = syncCodeBinding();
+    var id = currentIdentity();
+    var msg = $('#lockMsg');
+    if (msg) {
+      msg.textContent = '이 코드는 ' + codeOwnerLabel(code) + ' 사주 전용이에요.' +
+        (id ? ' 지금 넣으신 사주(' + id.label + ')로는 열리지 않아요.' : ' 코드 주인의 사주를 넣어야 열려요.') +
+        (stillOpen ? '' : ' 지금은 3일 무료 체험으로만 열려 있어요.');
+      msg.classList.remove('is-ok');
+    }
+    var panel = $('#lockPanel');
+    if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
+    vibrate([40, 30, 60]);
+    syncLockUI();
+    renderCalendar();
+    renderYearSummary();
+    renderBurnCard();
+  }
   function tryUnlock() {
     var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
     var v = inp ? inp.value : '';
-    var tier = tierOfCode(v);
-    if (tier) {
-      saveUnlock(tier);
-      if (msg) {
-        msg.textContent = tier === 'diary'
-          ? '🔓 성찰 에디션 확인됐어요 — 365일 성찰 다이어리까지 모두 열렸습니다.'
-          : (tier === 'allinone'
-            ? '🔓 올인원 확인됐어요 — 1년 달력 전체 + 액운 태우기 무제한이 열렸습니다.'
-            : '🔓 1년 패스 확인됐어요 — 2026년 11월부터 2027년 12월까지 모두 열렸습니다.');
-        msg.classList.add('is-ok');
-      }
-      if (inp) inp.value = '';
-      syncLockUI();
-      renderCalendar();
-      renderBurnCard();
-      toast(tier === 'diary'
-        ? '🔓 성찰 에디션 — 다이어리까지 모두 열렸어요'
-        : (tier === 'allinone'
-          ? '🔓 올인원 — 달력 전체 + 액운 태우기 무제한'
-          : '🔓 1년 패스 확인 — 전체 날짜가 열렸어요'));
-      sfxOpen();
+    var p = parseCode(v);
+    if (!p) {
+      if (msg) { msg.textContent = '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.'; msg.classList.remove('is-ok'); }
+      if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
+      vibrate([40, 30, 60]);
+      if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
       return;
     }
-    if (msg) { msg.textContent = '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.'; msg.classList.remove('is-ok'); }
-    if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
-    vibrate([40, 30, 60]);
-    if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+    var id = currentIdentity();
+    /* 남의 생년월일·성별 사주에 코드를 넣는 경우 — 열지 않고 그대로 잠가 둔다 (1결제 2인 사용 차단) */
+    if (!id || id.ymd !== p.ymd || id.gender !== p.gender) {
+      cannotUseCode(p);
+      return;
+    }
+    saveUnlock({ code: p.code, tier: p.tier, ymd: p.ymd, gender: p.gender });
+    state.mismatch = null;
+    if (msg) {
+      msg.textContent = p.tier === 'diary'
+        ? '🔓 성찰 에디션 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
+        : (p.tier === 'allinone'
+          ? '🔓 올인원 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 액운 태우기 무제한이 열렸습니다.'
+          : '🔓 1년 패스 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 2026년 11월부터 2027년 12월까지 열렸습니다.');
+      msg.classList.add('is-ok');
+    }
+    if (inp) inp.value = '';
+    syncLockUI();
+    render();
+    toast(p.tier === 'diary'
+      ? '🔓 성찰 에디션 — 이 사주 전용으로 다이어리까지 열렸어요'
+      : (p.tier === 'allinone'
+        ? '🔓 올인원 — 이 사주 전용으로 달력 전체 + 액운 태우기 무제한'
+        : '🔓 1년 패스 확인 — 이 사주 전용으로 전체 날짜가 열렸어요'));
+    sfxOpen();
   }
   function lockAgain() {
-    saveUnlock('');
+    saveUnlock(null);
+    state.mismatch = null;
     syncLockUI();
-    renderBurnCard();
+    render();
     var msg = $('#lockMsg');
     if (msg) { msg.textContent = '다시 잠갔어요. 코드를 넣으면 또 열립니다.'; msg.classList.remove('is-ok'); }
-    renderCalendar();
     toast('다시 잠갔어요 — 입장 코드를 넣으면 또 열립니다');
   }
 
@@ -4680,6 +4861,7 @@
         o.gender = saved.gender;
         state.res = M.compute(o);
         state.natal = T.natalOf(state.res);
+        syncCodeBinding();     // 저장된 사주가 코드 주인과 같을 때만 계속 열린다
         state.cache = {};
         state.yearDigest = null;
         state.mDigest = {};
