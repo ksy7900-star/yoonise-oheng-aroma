@@ -2815,7 +2815,7 @@
       '<div class="burn__stage" data-burn-stage>' +
       '<span class="burn__pyre" data-burn-pyre aria-hidden="true"><span class="burn__glow"></span><i></i><i></i><i></i><i></i><i></i></span>' +
       '<span class="burn__flame" aria-hidden="true"></span>' +
-      '<div class="burn__paper" data-burn-paper>' +
+      '<div class="burn__paper" data-burn-paper aria-label="구겨진 한지 — 1초 꾹 누르면 불이 붙습니다">' +
       '<span class="burn__paper-text">' + esc(burn.text) + '</span>' +
       '</div>' +
       '<span class="burn__ember" data-burn-ember tabindex="0" role="button" aria-disabled="true" aria-label="불씨를 종이로 끌어 올리거나, 종이 아래를 1초 꾹 눌러 불을 붙입니다"><i class="burn__ember-core"></i></span>' +
