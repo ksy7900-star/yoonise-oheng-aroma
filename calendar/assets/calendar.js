@@ -1777,7 +1777,7 @@
       missions: [
         { tag: '음식', text: '미지근한 물 한 컵을 천천히 끝까지 마셔 보세요.' },
         { tag: '손', text: '세수나 손 씻기로 얼굴의 열기를 먼저 식히세요.' },
-        { tag: '손', text: '손목을 10초 물에 적시고 물기를 톡 털어 내세요.' },
+        { tag: '손', text: '손을 10초 씻고 물기를 톡 털어 내세요.' },
         { tag: '말', text: '보내려던 답장은 오늘 초안에만 넣어 두세요.' },
         { tag: '마음', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' },
         { tag: '동선', text: '물소리나 빗소리 하나를 골라 1분만 가만히 들어 보세요.' },
@@ -2732,12 +2732,14 @@
     수: {
       name: '시원한 소나기', hanja: '水',
       why: '가라앉히는 기운이 비면, 생각이 마르고 자꾸 조급해져요.',
-      line: '찬물 한 모금, 손목을 시원하게 적셔 보세요. 타는 마음이 한 칸 내려갑니다.'
+      line: '미지근한 물 한 모금, 손을 씻어 보세요. 타는 마음이 한 칸 내려갑니다.'
     }
   };
 
   var burnEl = null, burnBody = null, burnDialog = null, burnLastFocus = null, burnClosing = false;
-  var burn = { used: 0, text: '', stage: 'write', timer: 0 };
+  var burn = { used: 0, text: '', stage: 'write', timer: 0, holdTimer: 0, sparkTimer: 0 };
+  var BURN_BURN_MS = 5600;        // 불이 붙은 뒤 재가 될 때까지 — 천천히, 웅장하게
+  var BURN_HOLD_MS = 1000;        // 구겨진 덩어리를 보는 한 박자
 
   function loadBurn() {
     var o = null;
@@ -2769,13 +2771,19 @@
     try { return (state.res && repElement().el) || '수'; } catch (e) { return '수'; }
   }
 
-  /* 재·정화 파티클 — 위치와 시간만 흔들고, 글은 담지 않는다 */
-  function burnDustHTML(n) {
+  /* 재·정화 파티클 — 위치와 시간만 흔들고, 글은 담지 않는다
+     o 없이 부르면 기존 기본값(정화 파티클용), o 로 지연·지속·크기를 늘려 소각용으로 쓴다 */
+  function burnDustHTML(n, o) {
+    o = o || {};
+    var d0 = o.d0 == null ? 0 : o.d0, d1 = o.d1 == null ? 1.5 : o.d1;
+    var u0 = o.u0 == null ? 1.5 : o.u0, u1 = o.u1 == null ? 2.8 : o.u1;
+    var s0 = o.s0 == null ? 3 : o.s0, s1 = o.s1 == null ? 7 : o.s1;
+    var sp = o.dx == null ? 35 : o.dx;
     var out = '';
     for (var i = 0; i < n; i++) {
       out += '<i style="--x:' + (4 + Math.random() * 92).toFixed(1) + '%;--dx:' +
-        (Math.random() * 70 - 35).toFixed(0) + ';--dl:' + (Math.random() * 1.5).toFixed(2) +
-        's;--du:' + (1.5 + Math.random() * 1.3).toFixed(2) + 's;--sz:' + (3 + Math.random() * 4).toFixed(1) + 'px"></i>';
+        (Math.random() * sp * 2 - sp).toFixed(0) + ';--dl:' + (d0 + Math.random() * (d1 - d0)).toFixed(2) +
+        's;--du:' + (u0 + Math.random() * (u1 - u0)).toFixed(2) + 's;--sz:' + (s0 + Math.random() * (s1 - s0)).toFixed(1) + 'px"></i>';
     }
     return out;
   }
@@ -2854,6 +2862,8 @@
     if (!burnEl || burnEl.hidden || burnClosing) return;
     burnClosing = true;
     clearTimeout(burn.timer);
+    clearTimeout(burn.holdTimer);
+    clearTimeout(burn.sparkTimer);
     burn.text = '';                       // 적은 글은 여기서 바로 지운다 — 어디에도 남기지 않는다
     burnEl.classList.add('is-closing');
     setTimeout(function () {
@@ -2888,25 +2898,39 @@
     sfxTap(1);
   }
 
+  /* 구기기 — 묵직하게 꽉 뭉친 뒤, 덩어리를 한 박자 보여 주고 나서 불 붙이기 버튼이 살아난다 */
   function burnCrumple() {
     if (burn.stage !== 'paper') return;
     burn.stage = 'crumpled';
     var paper = burnEl.querySelector('[data-burn-paper]');
     if (paper) paper.classList.add('is-crumpled');
     sfxCrumple();
+    vibrate([70, 40, 120, 30, 90]);
     var btn = burnEl.querySelector('[data-burn="crumple"]');
     if (btn) {
-      btn.setAttribute('data-burn', 'ignite');
-      btn.classList.add('burn__go--fire');
-      btn.innerHTML = '<b>🔥 불을 붙입니다</b>';
+      btn.disabled = true;
+      btn.classList.add('is-waiting');
+      btn.innerHTML = '<b>꾹… 단단하게 뭉치는 중</b>';
     }
     var hint = burnEl.querySelector('[data-burn-hint]');
-    if (hint) hint.innerHTML = '이제 불을 붙이면 <b>재가 되어 흩어집니다</b>.';
+    if (hint) hint.innerHTML = '손끝에 힘이 들어가고, 적은 글은 <b>단단한 한 덩어리</b>로 뭉칩니다…';
+    clearTimeout(burn.holdTimer);
+    burn.holdTimer = setTimeout(function () {
+      if (burn.stage !== 'crumpled' || !btn || !btn.parentNode) return;
+      btn.disabled = false;
+      btn.setAttribute('data-burn', 'ignite');
+      btn.classList.remove('is-waiting');
+      btn.classList.add('burn__go--fire', 'is-ready');
+      btn.innerHTML = '<b>🔥 불을 붙입니다</b>';
+      if (hint) hint.innerHTML = '뭉친 덩어리를 한 번 바라보고, <b>불을 붙이세요</b>.';
+      vibrate(24);
+    }, BURN_HOLD_MS);
   }
 
   function burnIgnite() {
     if (burn.stage !== 'crumpled') return;
     burn.stage = 'burning';
+    clearTimeout(burn.holdTimer);
     var paper = burnEl.querySelector('[data-burn-paper]');
     if (paper) paper.classList.add('is-burning');
     var stage = burnEl.querySelector('[data-burn-stage]');
@@ -2915,20 +2939,34 @@
     if (pyre) pyre.classList.add('is-lit');
     if (burnDialog) burnDialog.classList.add('is-dark');
     var ash = burnEl.querySelector('[data-burn-ash]');
-    if (ash) ash.innerHTML = burnDustHTML(26);
+    if (ash) ash.innerHTML = burnDustHTML(26, { d0: 0.2, d1: 2.6, u0: 2.6, u1: 3.6 });
     var hint = burnEl.querySelector('[data-burn-hint]');
-    if (hint) hint.innerHTML = '탁한 기운이 불로 거두어지고 있습니다…';
+    if (hint) hint.innerHTML = '불이 크게 번집니다 — 탁한 기운이 타들어 가고 있습니다…';
     var btn = burnEl.querySelector('[data-burn="ignite"]');
     if (btn) btn.hidden = true;          // 타오르는 동안에는 글자 대신 불만 보이게
     sfxIgnite();
     if (!burnUnlimited()) { burn.used = Math.min(BURN_FREE, burn.used + 1); saveBurn(); }
     renderBurnCard();
+    /* 중반 — 굵은 재와 금빛 불티가 화면 가득 두 번째 물결로 올라간다 */
+    clearTimeout(burn.sparkTimer);
+    if (stage) burn.sparkTimer = setTimeout(function () {
+      if (burn.stage !== 'burning' || !stage.parentNode) return;
+      var extra = document.createElement('span');
+      extra.className = 'burn__ash';
+      extra.setAttribute('aria-hidden', 'true');
+      extra.innerHTML = burnDustHTML(30, { d0: 0, d1: 1.8, u0: 2.2, u1: 3.2, s0: 3.5, s1: 8, dx: 48 });
+      stage.appendChild(extra);
+      vibrate([40, 50, 70]);
+    }, Math.round(BURN_BURN_MS * 0.45));
     clearTimeout(burn.timer);
-    burn.timer = setTimeout(burnFinish, 3400);
+    var reduce = false;
+    try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+    burn.timer = setTimeout(burnFinish, reduce ? 1400 : BURN_BURN_MS);
   }
 
   function burnFinish() {
     burn.stage = 'done';
+    clearTimeout(burn.sparkTimer);
     if (burnDialog) burnDialog.classList.remove('is-dark');
     burnBody.innerHTML = burnDoneHTML();
     burnBody.scrollTop = 0;
@@ -3105,37 +3143,53 @@
     src.start(t0); src.stop(t0 + dur + 0.03);
   }
 
-  /* 5) 한지 구기기 — 뭉치는 두둑한 소리 + 바스락 */
+  /* 5) 한지 구기기 — 뭉치는 두둑한 소리 + 바스락이 한 박자 길게 */
   function sfxCrumple() {
-    vibrate([40, 30, 80]);
+    vibrate([70, 40, 120, 30, 90]);
     var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 118, to: 56, dur: 0.34, glide: 0.2, type: 'sine', gain: 0.2, attack: 0.004 });
+    tone(ctx, { from: 124, to: 48, dur: 0.62, glide: 0.42, type: 'sine', gain: 0.24, attack: 0.004 });
+    tone(ctx, { from: 196, to: 88, dur: 0.36, glide: 0.24, type: 'triangle', gain: 0.1, at: 0.16, attack: 0.005 });
     for (var i = 0; i < 6; i++) {
       noise(ctx, { filter: 'bandpass', f0: 1500 + i * 420, f1: 900 + i * 260, q: 1.4, dur: 0.09, at: 0.03 + i * 0.062, gain: 0.05 });
     }
-    noise(ctx, { filter: 'highpass', f0: 2600, dur: 0.44, at: 0.02, gain: 0.05, attack: 0.06 });
+    for (var k = 0; k < 11; k++) {   // 뭉치는 동안 계속 바스락 — 꽉 쥐는 감각
+      noise(ctx, { filter: 'bandpass', f0: 1250 + k * 240, f1: 720 + k * 130, q: 1.5, dur: 0.1, at: 0.24 + k * 0.058, gain: 0.045 });
+    }
+    noise(ctx, { filter: 'highpass', f0: 2600, dur: 0.72, at: 0.02, gain: 0.05, attack: 0.08 });
+    noise(ctx, { filter: 'lowpass', f0: 420, f1: 150, dur: 0.5, at: 0.62, gain: 0.08, attack: 0.05 });   // 툭, 자리를 잡는 소리
   }
 
-  /* 6) 불을 붙이는 순간 — 법고 세 번 + 긴 징 울림 + 굵게 타오르는 불꽃 */
+  /* 6) 불을 붙이는 순간 — 법고 세 번 + 긴 징 울림 + 5초 넘게 굵게 타오르는 불꽃 */
   function sfxIgnite() {
-    vibrate([120, 60, 220, 80, 260, 60, 180]);
+    vibrate([120, 60, 220, 80, 260, 60, 200, 70, 240]);
     var ctx = audioCtx(); if (!ctx) return;
-    var drums = [0, 0.54, 1.16];
+    var drums = [0, 0.66, 1.42];
     drums.forEach(function (at, i) {
       tone(ctx, { from: 96 - i * 7, to: 34, dur: 0.66, glide: 0.44, type: 'sine', gain: 0.46 - i * 0.07, at: at, attack: 0.006 });
       tone(ctx, { from: 148, to: 60, dur: 0.36, glide: 0.26, type: 'triangle', gain: 0.13, at: at, attack: 0.005 });
       noise(ctx, { filter: 'lowpass', f0: 340, f1: 110, dur: 0.28, at: at, gain: 0.1 });
     });
+    /* 징 — 소각이 끝날 때까지 낮게 깔리는 공명 */
     [110, 165.5, 221, 293.5, 440].forEach(function (f, i) {
-      tone(ctx, { from: f, to: f * 0.996, dur: 3.2 - i * 0.36, type: 'sine', gain: 0.1 - i * 0.014, attack: 0.02, at: 0.05 });
+      tone(ctx, { from: f, to: f * 0.996, dur: 5.2 - i * 0.5, type: 'sine', gain: 0.1 - i * 0.014, attack: 0.02, at: 0.05 });
     });
     noise(ctx, { filter: 'bandpass', f0: 3200, f1: 1700, q: 0.7, dur: 0.5, at: 0.06, gain: 0.045, attack: 0.03 });
-    /* 불 — 낮게 깔리며 굵게 타오르는 소리 + 불티 터지는 소리 */
-    noise(ctx, { filter: 'lowpass', f0: 1100, f1: 300, q: 0.9, dur: 2.6, at: 0.2, gain: 0.15, attack: 0.4 });
-    for (var k = 0; k < 16; k++) {
+    /* 불 — 낮게 깔리며 굵게 타오르는 소리, 중반에 한 번 더 크게 숨을 들이쉰다 */
+    noise(ctx, { filter: 'lowpass', f0: 1100, f1: 320, q: 0.9, dur: 5.0, at: 0.2, gain: 0.16, attack: 0.5 });
+    noise(ctx, { filter: 'lowpass', f0: 900, f1: 420, q: 0.8, dur: 3.0, at: 2.1, gain: 0.12, attack: 0.7 });
+    noise(ctx, { filter: 'bandpass', f0: 700, f1: 280, q: 0.8, dur: 2.6, at: 3.1, gain: 0.07, attack: 0.6 });
+    /* 불티 — 0.3초부터 5초 가까이 고르게 터진다 */
+    for (var k = 0; k < 30; k++) {
       noise(ctx, {
         filter: 'bandpass', f0: 1800 + Math.random() * 2800, q: 2.2,
-        dur: 0.04 + Math.random() * 0.05, at: 0.3 + Math.random() * 2.2, gain: 0.03 + Math.random() * 0.03
+        dur: 0.04 + Math.random() * 0.06, at: 0.3 + Math.random() * 4.6, gain: 0.025 + Math.random() * 0.03
+      });
+    }
+    /* 중반의 굵은 타닥임 — 재가 뭉쳐 떨어지는 소리 */
+    for (var j = 0; j < 9; j++) {
+      noise(ctx, {
+        filter: 'bandpass', f0: 860 + Math.random() * 900, q: 1.6,
+        dur: 0.09 + Math.random() * 0.08, at: 1.8 + Math.random() * 2.8, gain: 0.035 + Math.random() * 0.03
       });
     }
   }
