@@ -9,7 +9,7 @@
  *    한 달의 절반 이상은 배지 없는 잔잔한 날로 남기는 것이 목표.
  *    · 입단속 = 일지 충 · 일지 형 · 월지 충  (일지 해·월지 형·월지 해는 기록만)
  *    · 럭키 = 천을귀인(충·형 날 제외) · 합화 오행이 내 원국에 부족한 육합·삼합 (천간합·반합은 기록만)
- *    · 결정·머니 = 원국에 가장 적은 오행이 일진 천간·지지로 채워질 때만 (인성·재성 무조건 배지 금지)
+ *    · 결정·머니 = 원국에 1개 이하로 모자란 인성·재성이 일진 천간·지지로 채워질 때만 (인성·재성 무조건 배지 금지)
  *    · 리셋 = 월건이 바뀌는 12절만 (중기는 기록만)
  *  - 처방 문구는 미리 써 둔 표에서 고른다(즉석 생성하지 않음). 같은 날은 항상 같은 문구.
  *  - 계산은 브라우저 안에서만. 어디로도 전송하지 않는다.
@@ -46,8 +46,8 @@
   /* ── 내 사주에 필요한 오행 ──────────────────────────
    * 합이든 인성·재성이든 '들어오면 무조건 좋다'가 아니다(2026-11-20 김나영 님 지시 #9057 #9069).
    * 원국 오행 개수를 세어 (1) 아주 적은 오행(scarce)과 (2) 부족한 편인 오행(fills)을 가린다.
-   *  - scarce: 원국에서 가장 적은 오행(보통 0~1개) — '결정·머니'는 여기에만 붙인다.
-   *  - fills : 1개 이하로 부족한 오행 — 합(육합·삼합)이 이쪽으로 바뀔 때만 '럭키'.
+   *  - scarce: 원국에서 가장 적은 오행(보통 0~1개) — 기록·설명에 쓸 기준
+   *  - fills : 1개 이하로 모자란 오행 — '결정·머니'와 합(육합·삼합)이 이쪽으로 바뀔 때만 '럭키'
    */
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };     // 내가 극하는 오행 = 재성
@@ -294,10 +294,10 @@
       var yels = YUKHAP_ELS[tz] || [];
       if (fillsNeed(yels)) {
         add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), ' +
-          yels.join('·') + '(으)로 합해 내 사주에 모자란 기운을 보태는 날');
+          yels.join('·') + ' 기운으로 합해 내 사주에 모자란 곳을 보태는 날');
       } else {
-        add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합이지만 ' +
-          yels.join('·') + '은(는) 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
+        add('gold', 'hap', 55, '일지 육합', '내 일지 ' + zhiFull(dz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合)이지만 ' +
+          yels.join('·') + ' 기운은 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
       }
     } else if (yukhapOf(tz) === mz) {
       add('gold', 'hap', 22, '월지 육합', '내 월지 ' + zhiFull(mz) + ' ↔ 일진 ' + zhiFull(tz) + ' — 육합(六合), 일이 풀리는 날 (약한 신호라 배지 없음)', true);
@@ -316,11 +316,11 @@
         if (fillsNeed([sEl])) {
           add('gold', 'hap', 50, '삼합 완성',
             '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] +
-            ' 삼합이 완성되고 ' + sEl + '이(가) 내 사주에 모자란 기운을 채우는 날');
+            ' 삼합이 완성되고 ' + sEl + ' 기운이 내 사주에 모자란 곳을 채우는 날');
         } else {
           add('gold', 'hap', 50, '삼합 완성',
             '일진 ' + zhiFull(tz) + ' + 내 ' + two.slice(0, 2).map(zhiFull).join('·') + ' — ' + SAMHAP_KO[sg] +
-            ' 삼합이 완성되지만 ' + sEl + '은(는) 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
+            ' 삼합이 완성되지만 ' + sEl + ' 기운은 내 사주에 이미 넉넉해 배지로 띄우지 않습니다', true);
         }
       } else if (two.length === 1) {
         var where = two[0] === dz ? '내 일지 ' : (two[0] === mz ? '내 월지 ' : '내 원국 ');
@@ -329,9 +329,10 @@
       }
     }
 
-    /* ── 결정·머니: 내 사주에 비어 있는 인성·재성만 ──
+    /* ── 결정·머니: 내 사주에 모자란 인성·재성만 ──
      *  인성·재성이 들어오는 날을 다 '결정·머니'로 띄우면 인성이 이미 넘치는 사주까지 파란 날이 된다(#9057).
-     *  원국에서 가장 적은 오행(scarce)이 일진 천간으로 오고, 일진 지지가 그것을 받쳐 줄 때만 배지.
+     *  원국에 1개 이하로 모자란 오행(fills)이 일진 천간으로 오고, 일진 지지가 그것을 받쳐 줄 때만 배지.
+     *  → 인성·재성이 이미 2개 이상 넉넉한 사주엔 그 기운의 날이 배지로 뜨지 않는다.
      */
     var tgName = TEN(dg, tg);
     var tgEl = M.GAN_EL[tg];
@@ -339,16 +340,18 @@
     var zMainEl = M.GAN_EL[GAN.indexOf(HIDDEN[gz.zhi][0])];
     var isWealth = tgName === '정재' || tgName === '편재';
     var isDoc = tgName === '정인' || tgName === '편인';
-    var tgScarce = !!(need && need.scarce.indexOf(tgEl) >= 0);
-    if ((isWealth || isDoc) && tgScarce) {
+    var tgThin = !!(need && need.fills.indexOf(tgEl) >= 0);
+    if ((isWealth || isDoc) && tgThin) {
       var whoKo = isDoc ? '인성' : '재성';
       var label = isDoc ? '결정' : '머니';
       var kind = isDoc ? 'doc' : 'wealth';
+      var thinCnt = need.counts[tgEl] || 0;
+      var thinKo = thinCnt === 0 ? '아예 없던 ' : thinCnt + '개뿐인 ';
       if (zEl === tgEl || zMainEl === tgEl) {
-        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + '가 내 사주에 ' + need.min +
-          '개뿐인 ' + tgEl + '을 ' + whoKo + '으로 채우고, 지지도 같은 기운으로 받쳐 주는 날');
+        add('blue', kind, 40, label, '일진 ' + zhiFull(tz) + '의 천간 ' + GAN[tg] + '가 내 사주에 ' + thinKo +
+          tgEl + ' 기운을 ' + whoKo + '으로 채우고, 지지도 같은 기운으로 받쳐 주는 날');
       } else {
-        add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + '이(가) 내 사주에 모자란 ' + tgEl + '을 ' + whoKo +
+        add('blue', kind, 25, label, '일진 천간 ' + GAN[tg] + '가 내 사주에 ' + thinKo + tgEl + ' 기운을 ' + whoKo +
           '으로 채우지만 지지가 받쳐 주지 않아 배지로는 띄우지 않습니다', true);
       }
     }
