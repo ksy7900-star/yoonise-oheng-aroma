@@ -2469,19 +2469,20 @@ body.is-modal-open { overflow: hidden; }
   width: var(--sz, 5px); height: calc(var(--sz, 5px) * var(--h, .62));
   opacity: 0;
   border-radius: 44% 56% 40% 60% / 54% 46% 58% 42%;
-  background: linear-gradient(138deg, #6B655E 0%, #4A453F 48%, #2E2A26 100%);
+  background: linear-gradient(138deg, #56514B 0%, #3A3631 48%, #211E1B 100%);
   animation: burnAshDrift var(--du, 3s) cubic-bezier(.25, .5, .4, 1) var(--dl, 0s) forwards;
   will-change: transform, opacity;
 }
 /* 검게 탄 조각 · 잿빛 · 마른 재 — 밝은 금빛 없이 회색 계열만 */
-.burn__ash i:nth-child(2n) { background: linear-gradient(138deg, #443F3A 0%, #26221F 58%, #151312 100%); }
-.burn__ash i:nth-child(3n) { background: linear-gradient(122deg, #7D776F 0%, #57524C 55%, #3A3631 100%); }
-.burn__ash i:nth-child(4n) { background: linear-gradient(165deg, #5A5550 0%, #3E3A35 52%, #242120 100%); }
+.burn__ash i:nth-child(2n) { background: linear-gradient(138deg, #2E2B28 0%, #1B1917 58%, #100F0E 100%); }
+.burn__ash i:nth-child(3n) { background: linear-gradient(122deg, #6E6862 0%, #4A4540 55%, #2C2925 100%); }
+.burn__ash i:nth-child(4n) { background: linear-gradient(165deg, #464240 0%, #2A2724 52%, #191716 100%); }
 .burn__ash i:nth-child(5n) { animation-name: burnAshFlutter; }
 .burn__ash i:nth-child(7n) { border-radius: 62% 38% 55% 45% / 40% 60% 42% 58%; }
-/* 찢긴 탄 종이 조각 — 각진 가장자리 */
+/* 찢긴 탄 종이 조각 — 각진 가장자리, 회전하며 뒤집힌다 */
 .burn__ash i:nth-child(6n) { clip-path: polygon(6% 0, 100% 12%, 92% 100%, 0 82%); border-radius: 0; }
 .burn__ash i:nth-child(8n) { clip-path: polygon(0 18%, 88% 0, 100% 86%, 14% 100%); border-radius: 0; }
+.burn__ash i:nth-child(9n) { clip-path: polygon(0 0, 78% 4%, 100% 52%, 72% 100%, 18% 92%, 4% 46%); border-radius: 0; }
 @keyframes burnAshDrift {
   0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(.86); }
   9% { opacity: .88; transform: translate3d(calc(var(--dx, 0) * .18px), -18px, 0) rotate(calc(var(--rot, 120deg) * .16)) scale(1); }

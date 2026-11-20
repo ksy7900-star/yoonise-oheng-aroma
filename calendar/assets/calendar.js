@@ -3063,7 +3063,7 @@
     if (pyre) pyre.classList.add('is-lit');
     if (burnDialog) burnDialog.classList.add('is-dark');
     var ash = burnEl.querySelector('[data-burn-ash]');
-    if (ash) ash.innerHTML = burnDustHTML(24, { d0: 0.4, d1: 3.6, u0: 2.8, u1: 4.0 });
+    if (ash) ash.innerHTML = burnDustHTML(24, { d0: 0.4, d1: 3.6, u0: 2.8, u1: 4.0, s0: 3.5, s1: 9 });
     var hint = burnEl.querySelector('[data-burn-hint]');
     if (hint) hint.innerHTML = '탁한 기운이 천천히 타들어 가고 있습니다…';
     var btn = burnEl.querySelector('[data-burn="ignite"]');
@@ -3084,12 +3084,12 @@
     }
     if (stage) {
       burn.sparkTimer = setTimeout(function () {
-        ashWave(28, { d0: 0, d1: 2.0, u0: 2.4, u1: 3.4, s0: 3.5, s1: 8, dx: 48 });
+        ashWave(28, { d0: 0, d1: 2.0, u0: 2.4, u1: 3.4, s0: 4, s1: 10.5, dx: 48 });
         var h = burnEl && burnEl.querySelector('[data-burn-hint]');
         if (h) h.innerHTML = '재가 되어 흩어지고 있습니다…';
       }, Math.round(BURN_BURN_MS * 0.42));
       burn.sparkTimer2 = setTimeout(function () {
-        ashWave(22, { d0: 0, d1: 1.8, u0: 2.2, u1: 3.2, s0: 2.5, s1: 6, dx: 56 });
+        ashWave(24, { d0: 0, d1: 1.8, u0: 2.2, u1: 3.2, s0: 3, s1: 8, dx: 56 });
       }, Math.round(BURN_BURN_MS * 0.72));
     }
     clearTimeout(burn.timer);
