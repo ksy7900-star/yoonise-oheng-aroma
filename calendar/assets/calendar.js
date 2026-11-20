@@ -2128,44 +2128,67 @@
       '</div>';
   }
   /* ── 1:1 원포인트 리딩 신청 양식 (#8729) ──────────────────────────────
-     결제 팝업 안에서 고객이 바로 채우는 네 칸 — 생년월일시 · 성별 · 연락처(입금자명) · 핵심 고민 1가지.
-     노란 카톡 버튼 한 번이면 네 칸이 한 통의 신청 메시지로 정리돼 클립보드에 담기고,
+     결제 팝업 안에서 고객이 바로 채우는 여섯 칸 — 성함 · 생년월일시 · 양력/음력/윤달 · 성별 · 연락처(입금자명) · 궁금한 점(#8891).
+     노란 카톡 버튼 한 번이면 여섯 칸이 한 통의 신청 메시지로 정리돼 클립보드에 담기고,
      referrer 없이 카톡 채널이 열려 붙여넣기만 하면 접수가 끝난다.
      · 생년월일시·성별은 캘린더에 이미 넣어 둔 사주가 있으면 그대로 채워 두고, 고객이 고칠 수 있다.
      · 입력값은 이 화면(메모리)에만 둔다 — 저장소에 남기지 않는다. */
-  var consultForm = null;   // { birth, gender, who, q, sig }
+  var consultForm = null;   // { name, birth, cal, gender, who, q, sig }
+  /* 생년월일시는 날짜·시간만 적는다 — 양력/음력은 아래 '양력·음력·윤달' 칩이 따로 받는다(#8891) */
   function consultBirthValue() {
     var r = state.res;
     if (!r || !r.solar) return '';
     var p = function (v) { return (v < 10 ? '0' : '') + v; };
     var s = r.solar.y + '-' + p(r.solar.m) + '-' + p(r.solar.d);
     if (r.input && r.input.timeKnown) s += ' ' + p(r.input.hh) + ':' + p(r.input.mm);
-    if (r.input && r.input.calendar === 'lunar' && r.lunar) {
-      s += ' (음력 ' + r.lunar.m + '.' + r.lunar.d + (r.lunar.leap ? ' 윤달' : '') + ')';
-    } else {
-      s += ' (양력)';
-    }
     return s;
+  }
+  /* 달력 종류 — 사주를 음력(윤달)로 넣었으면 그대로 골라 둔다 */
+  function consultCalValue() {
+    var r = state.res;
+    if (r && r.input && r.input.calendar === 'lunar') return (r.lunar && r.lunar.leap) ? 'leap' : 'lunar';
+    return 'solar';
+  }
+  function calLabel(v) {
+    if (v === 'lunar') return '음력';
+    if (v === 'leap') return '음력 윤달';
+    return '양력';
   }
   function consultFormState() {
     var sig = sigOf();
     var g = (state.res && state.res.input && state.res.input.gender) || state.gender || '';
     if (!consultForm) {
-      consultForm = { birth: consultBirthValue(), gender: g, who: '', q: '', sig: sig };
+      consultForm = { name: '', birth: consultBirthValue(), cal: consultCalValue(), gender: g, who: '', q: '', sig: sig };
     } else if (sig !== consultForm.sig) {   // 사주를 새로 넣었으면 빈 칸만 최신 값으로 (고객이 고친 값은 그대로)
       consultForm.sig = sig;
       if (!String(consultForm.birth || '').trim()) consultForm.birth = consultBirthValue();
+      if (!consultForm.cal) consultForm.cal = consultCalValue();
       if (!consultForm.gender) consultForm.gender = g;
     }
+    if (!consultForm.cal) consultForm.cal = 'solar';
     return consultForm;
   }
   function consultMissing() {
     var f = consultFormState();
+    if (!String(f.name || '').trim()) return { key: 'name', msg: '성함을 적어 주세요 — 부르기 편한 이름이면 돼요.' };
     if (!String(f.birth || '').trim()) return { key: 'birth', msg: '생년월일시를 적어 주세요 — 시간을 모르면 날짜만 적어도 돼요.' };
     if (!f.gender) return { key: 'gender', msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
     if (!String(f.who || '').trim()) return { key: 'who', msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
     if (!String(f.q || '').trim()) return { key: 'q', msg: '가장 궁금한 고민을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
     return null;
+  }
+  function setConsultCal(v) {
+    var f = consultFormState();
+    f.cal = (v === 'lunar' || v === 'leap') ? v : 'solar';
+    if (shopBody) {
+      $$('[data-cf-cal]', shopBody).forEach(function (b) {
+        var on = b.getAttribute('data-cf-cal') === f.cal;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      clearConsultMsg();
+    }
+    sfxTap(1);
   }
   function clearConsultMsg() {
     if (!shopBody) return;
@@ -2209,18 +2232,17 @@
   /* 신청 메시지 — 양식에 적은 그대로, 한 줄에 하나씩 */
   function consultOrderText() {
     var f = consultFormState();
-    var birth = String(f.birth || '').trim();
-    var who = String(f.who || '').trim();
-    var q = String(f.q || '').trim();
     return [
       '[윤이세 1:1 원포인트 리딩 신청] ' + CONSULT_PRICE,
-      '생년월일시: ' + birth,
-      '성별: ' + (f.gender === 'M' ? '남성' : '여성'),
-      '결제 확인 — 연락처(카드결제) 또는 입금자명(계좌이체): ' + who,
-      '궁금한 고민: ' + q
+      '성함: ' + String(f.name || '').trim(),
+      '연락처(카드결제) 또는 입금자명(계좌이체): ' + String(f.who || '').trim(),
+      '생년월일시: ' + String(f.birth || '').trim(),
+      '양력·음력·윤달: ' + calLabel(f.cal),
+      '성별(남·여): ' + (f.gender === 'M' ? '남' : '여'),
+      '궁금한 점: ' + String(f.q || '').trim()
     ].join('\n');
   }
-  /* 노란 카톡 버튼 — 원포인트 리딩은 양식 네 칸을 먼저 확인한다 */
+  /* 노란 카톡 버튼 — 원포인트 리딩은 양식 여섯 칸을 먼저 확인한다 */
   function goConsultOrder() {
     var miss = consultMissing();
     if (miss) { consultWarn(miss); return; }
@@ -2597,20 +2619,28 @@
   /* 신청 양식 마크업 — 결제 버튼 바로 위에 놓는다 */
   function consultFormHTML() {
     var f = consultFormState();
+    var calChip = function (v, label) {
+      return '<button type="button" class="chip' + (f.cal === v ? ' is-on' : '') + '" data-cf-cal="' + v + '" aria-pressed="' + (f.cal === v ? 'true' : 'false') + '">' + label + '</button>';
+    };
     return '<div class="cform" data-consult-form>' +
-      '<p class="cform__head">📝 신청 양식 <span>네 칸만 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요</span></p>' +
-      '<label class="cform__row"><span class="cform__lb">① 생년월일시</span>' +
+      '<p class="cform__head">📝 신청 양식 <span>여섯 칸만 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요</span></p>' +
+      '<label class="cform__row"><span class="cform__lb">① 성함</span>' +
+      '<input type="text" class="cform__input" data-cf="name" value="' + esc(f.name) + '" ' +
+      'placeholder="예: 김나영" autocomplete="name"></label>' +
+      '<label class="cform__row"><span class="cform__lb">② 생년월일시</span>' +
       '<input type="text" class="cform__input" data-cf="birth" value="' + esc(f.birth) + '" ' +
-      'placeholder="예: 1979-10-25 09:30 (양력)" autocomplete="off" inputmode="text"></label>' +
-      '<div class="cform__row cform__row--chips"><span class="cform__lb">② 성별</span>' +
+      'placeholder="예: 1979-10-25 09:30 (시간을 모르면 날짜만)" autocomplete="off" inputmode="text"></label>' +
+      '<div class="cform__row cform__row--chips"><span class="cform__lb">③ 양력·음력·윤달</span>' +
+      '<span class="chips">' + calChip('solar', '양력') + calChip('lunar', '음력') + calChip('leap', '음력 윤달') + '</span></div>' +
+      '<div class="cform__row cform__row--chips"><span class="cform__lb">④ 성별</span>' +
       '<span class="chips">' +
       '<button type="button" class="chip' + (f.gender === 'F' ? ' is-on' : '') + '" data-cf-gender="F" aria-pressed="' + (f.gender === 'F' ? 'true' : 'false') + '">여성</button>' +
       '<button type="button" class="chip' + (f.gender === 'M' ? ' is-on' : '') + '" data-cf-gender="M" aria-pressed="' + (f.gender === 'M' ? 'true' : 'false') + '">남성</button>' +
       '</span></div>' +
-      '<label class="cform__row"><span class="cform__lb">③ 연락처 또는 입금자명 <i>결제 확인용</i></span>' +
+      '<label class="cform__row"><span class="cform__lb">⑤ 연락처 또는 입금자명 <i>결제 확인용</i></span>' +
       '<input type="text" class="cform__input" data-cf="who" value="' + esc(f.who) + '" ' +
       'placeholder="카드결제는 휴대폰 번호 · 계좌이체는 입금자명" autocomplete="off"></label>' +
-      '<label class="cform__row"><span class="cform__lb">④ 가장 궁금한 고민 1가지</span>' +
+      '<label class="cform__row"><span class="cform__lb">⑥ 궁금한 점 <i>1가지면 충분해요</i></span>' +
       '<input type="text" class="cform__input" data-cf="q" value="' + esc(f.q) + '" ' +
       'placeholder="예: 지금 이직을 해도 될까요?" autocomplete="off"></label>' +
       '<p class="cform__msg" data-cf-msg role="alert" hidden></p>' +
@@ -4415,6 +4445,8 @@
         if (e.target.closest('[data-shop-close]')) { closeShop(); return; }
         var gb = e.target.closest ? e.target.closest('[data-cf-gender]') : null;
         if (gb) { e.preventDefault(); setConsultGender(gb.getAttribute('data-cf-gender')); return; }
+        var cb = e.target.closest ? e.target.closest('[data-cf-cal]') : null;
+        if (cb) { e.preventDefault(); setConsultCal(cb.getAttribute('data-cf-cal')); return; }
         var ko = e.target.closest ? e.target.closest('[data-kakao-order]') : null;
         if (ko) { e.preventDefault(); goKakaoOrder(ko.getAttribute('data-kakao-order')); return; }
         var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
@@ -4434,7 +4466,7 @@
         if (!inp) return;
         var k = inp.getAttribute('data-cf');
         var f = consultFormState();
-        if (k === 'birth' || k === 'who' || k === 'q') f[k] = inp.value;
+        if (k === 'name' || k === 'birth' || k === 'who' || k === 'q') f[k] = inp.value;
         var row = inp.closest ? inp.closest('.cform__row') : null;
         if (row) row.classList.remove('is-error');
         clearConsultMsg();
