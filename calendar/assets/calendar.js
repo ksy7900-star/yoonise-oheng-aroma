@@ -477,7 +477,7 @@
     /* 코드로 열린 캘린더는 그 1명의 사주에 묶여 있다 — 다른 사람 사주를 넣는 길을 열지 않는다 (#9247) */
     if (state.unlocked) {
       var id = currentIdentity();
-      toast('🔒 ' + (id ? id.label : '이') + ' 전용 캘린더예요 — 다른 사주는 그 사주로 새 코드(3일 무료 체험 후 구매)가 필요해요');
+      toast('🔒 ' + (id ? id.label : '이') + ' 전용 캘린더예요 — 다른 사주는 새 코드가 필요해요');
       var b = $('#editBtn');
       if (b) { b.classList.remove('is-refuse'); void b.offsetWidth; b.classList.add('is-refuse'); }
       return;
@@ -717,8 +717,8 @@
     try { raw = localStorage.getItem(UNLOCK_KEY) || ''; old = localStorage.getItem(LEGACY_UNLOCK_KEY) || ''; } catch (e) { raw = ''; old = ''; }
     var o = null;
     try { o = raw ? JSON.parse(raw) : null; } catch (e) { o = null; }
-    if (o && o.code && TIER_NAME[o.tier]) {
-      state.code = { code: o.code, tier: o.tier, ymd: o.ymd || '', gender: o.gender || '' };
+    if (o && TIER_NAME[o.tier] && (o.code || o.ymd)) {
+      state.code = { code: o.code || '', tier: o.tier, ymd: o.ymd || '', gender: o.gender || '' };
       state.tier = o.tier;
       state.unlocked = true;
       return;
@@ -4430,7 +4430,8 @@
     if (bindNote) {
       if (state.mismatch) {
         bindNote.hidden = false;
-        bindNote.innerHTML = '🔒 이 코드는 <b>' + esc(codeOwnerLabel(state.mismatch.code)) + '</b> 사주 전용이에요.' +
+        bindNote.innerHTML = (state.mismatch.code && state.mismatch.code.code ? '🔒 이 코드는 <b>' : '🔒 이 기기에 저장된 이용권은 <b>') +
+          esc(codeOwnerLabel(state.mismatch.code)) + '</b> 사주 전용이에요.' +
           (state.mismatch.id
             ? ' 지금 넣으신 사주(<b>' + esc(state.mismatch.id.label) + '</b>)로는 열리지 않아 <b>3일 무료 체험</b>으로 보여 드려요.'
             : ' 코드 주인의 사주를 넣어야 열려요.');
