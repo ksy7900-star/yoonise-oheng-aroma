@@ -497,7 +497,7 @@
       var badTags = [], goodTags = [];
       badges.forEach(function (b) {
         if (b.cat === 'red') { isRed = true; badTags.push('입단속'); }
-        else if (b.cat === 'gray') { isGray = true; badTags.push('리셋'); }
+        else if (b.cat === 'gray') { isGray = true; }        // 리셋(12절)은 중립 — '조심할 날' 목록에는 넣지 않는다
         else if (b.cat === 'gold') { isGold = true; goodTags.push('럭키'); }
         else if (b.cat === 'blue') { isBlue = true; goodTags.push(b.text); }
       });

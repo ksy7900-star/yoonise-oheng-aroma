@@ -1612,12 +1612,13 @@
         return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
       }).join('');
 
-      // 모아보기 — 조심할 날(입단속·리셋) / 좋은 날(럭키·결정·머니)
-      var isBad = badges.some(function (b) { return b.cat === 'red' || b.cat === 'gray'; });
+      // 모아보기 — 조심할 날(입단속) / 좋은 날(럭키·결정·머니)
+      //  리셋(12절)은 달의 기준만 바꾸는 중립 신호라 어느 쪽에도 넣지 않는다(#9029 새 기준)
+      var isBad = badges.some(function (b) { return b.cat === 'red'; });
       var isGood = badges.some(function (b) { return b.cat === 'gold' || b.cat === 'blue'; });
       var pick = '';
       if (state.filter === 'bad' && isBad) {
-        pick = badges.some(function (b) { return b.cat === 'red'; }) ? 'red' : 'gray';
+        pick = 'red';
       } else if (state.filter === 'good' && isGood) {
         pick = badges.some(function (b) { return b.cat === 'gold'; }) ? 'gold' : 'blue';
       }
