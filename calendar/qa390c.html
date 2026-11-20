@@ -19,6 +19,7 @@
 <div id="acts">
   <button data-act="fresh">① 첫 방문 (기록 지우고 다시 열기)</button>
   <button data-act="revisit">② 재방문 (기록 그대로 다시 열기)</button>
+  <button data-act="guide">③ 저장된 사주 두고 사용법 기록만 지우기</button>
   <button data-act="dump">상태 읽기</button>
 </div>
 <script>
@@ -66,6 +67,9 @@
         localStorage.removeItem(KEY_OLD);
       } catch (e) {}
     }
+    if (fresh === 'guide') {
+      try { localStorage.removeItem(KEY_GUIDE); } catch (e) {}   // 사주는 그대로 두고 사용법 기록만 지운다
+    }
     var res = await fetch(BASE + '&r=' + Date.now(), { cache: 'no-store' });
     var html = await res.text();
     var base = new URL(BASE, location.href).href.replace(/[^/]*$/, '');
@@ -79,12 +83,14 @@
     var b = ev.target.closest('button'); if (!b) return;
     var a = b.getAttribute('data-act');
     if (a === 'fresh') load(true);
+    else if (a === 'guide') load('guide');
     else if (a === 'revisit') load(false);
     else dump('manual');
   });
 
   load(true);
   setInterval(function () { safe(dump); }, 4000);
+  window.__qaLoad = load;
 })();
 </script>
 </body>
