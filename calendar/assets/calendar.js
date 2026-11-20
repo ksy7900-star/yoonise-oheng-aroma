@@ -2781,9 +2781,12 @@
     var sp = o.dx == null ? 35 : o.dx;
     var out = '';
     for (var i = 0; i < n; i++) {
+      var sway = Math.round((Math.random() * 2 - 1) * (6 + Math.random() * 14));
       out += '<i style="--x:' + (4 + Math.random() * 92).toFixed(1) + '%;--dx:' +
         (Math.random() * sp * 2 - sp).toFixed(0) + ';--dl:' + (d0 + Math.random() * (d1 - d0)).toFixed(2) +
-        's;--du:' + (u0 + Math.random() * (u1 - u0)).toFixed(2) + 's;--sz:' + (s0 + Math.random() * (s1 - s0)).toFixed(1) + 'px"></i>';
+        's;--du:' + (u0 + Math.random() * (u1 - u0)).toFixed(2) + 's;--sz:' + (s0 + Math.random() * (s1 - s0)).toFixed(1) +
+        'px;--h:' + (0.42 + Math.random() * 0.86).toFixed(2) + ';--rot:' + Math.round(160 + Math.random() * 520) +
+        'deg;--sway:' + sway + 'px"></i>';
     }
     return out;
   }
