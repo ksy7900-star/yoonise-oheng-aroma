@@ -31,8 +31,8 @@
 
      → 다른 생년월일이나 다른 성별의 사주로 코드를 넣으면 그 자리에서 잠기고
        "이 코드는 1979년 10월 25일 · 여성 사주 전용" 안내가 뜬다. (1결제 2인 사용 차단)
-     → 나영 님 전용 발급기: 저장소 안 비공개 경로(README §37) — 일반 달력 화면에는 링크를 두지 않는다.
-     ★ 아래 CODE_SALT·서명 함수는 발급기(issuer-7910/index.html)와 반드시 똑같이 맞춰야 한다. */
+     → 나영 님 전용 발급기: 2026-11-21 공개 저장소에서 내려 이 컴퓨터에만 있는 파일(work/yoonise-code-issuer.html)로 옮겼다.
+     ★ 아래 CODE_SALT·서명 함수는 그 발급기와 반드시 똑같이 맞춰야 한다(발급기를 고치면 여기도 같이). */
   var CODE_SALT = 'yoonise-2027-timing-9f3a';
   var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
   var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary' };
@@ -1750,7 +1750,9 @@
       var open = isOpenDay(iso);
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
       var pastDay = iso < state.todayISO;
-      var clickable = badges.length ? true : (diaryAllowed() ? open : (!open && !pastDay));
+      var trialLocked = FREE_TRIAL_ENABLED && !state.unlocked;   // 체험 중에는 잔잔한 날·지난 날도 눌러 안내를 받는다 (2026-11-21 QA M3)
+      var clickable = badges.length ? true
+        : (trialLocked ? true : (diaryAllowed() ? open : (!open && !pastDay)));
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
@@ -1780,7 +1782,6 @@
       if (clickable) {
         html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
           (iso === state.sel ? ' aria-current="date"' : '') +
-          (open ? '' : ' tabindex="-1"') +
           ' aria-label="' + esc(label) + '">' + cellInner + '</button>';
       } else {
         // 날짜만 보이는 정적인 칸 — 키보드 포커스도 받지 않는다
@@ -1923,14 +1924,21 @@
     var info = infoFor(iso);
     if (!info || !modalEl) return;
     var hasBadges = !!(info.badges && info.badges.length);
-    // 기운 태그가 없는 잔잔한 날은 원래 팝업을 열지 않는다.
-    // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 연다.
-    if (!hasBadges && !diaryAllowed()) return;
     var lock = FREE_TRIAL_ENABLED && !inFree(iso);
+    /* 체험 중 지난 날 — '지난 날'이라고 알려 주고 여는 방법을 보여 준다 (2026-11-21 QA M3) */
+    var pastLock = lock && iso < state.todayISO;
+    // 기운 태그가 없는 잔잔한 날은 원래 팝업을 열지 않는다.
+    // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
+    // 잠긴 날(지난 날·체험 범위 밖)은 누르면 여는 방법을 알려 준다.
+    if (!hasBadges && !diaryAllowed() && !lock) {
+      if (FREE_TRIAL_ENABLED && !state.unlocked) toast('이 날은 딱지가 붙지 않은 잔잔한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
+      return;
+    }
     lastFocus = document.activeElement;
     state.sel = iso;
     renderCalendar();                       // 날짜 칸 선택 표시
-    modalBody.innerHTML = lock ? lockModalHTML(info) : (hasBadges ? briefModalHTML(info) : plainModalHTML(info));
+    modalBody.innerHTML = pastLock ? pastDayModalHTML(info)
+      : (lock ? lockModalHTML(info) : (hasBadges ? briefModalHTML(info) : plainModalHTML(info)));
     modalDialog.classList.toggle('modal__dialog--lock', lock);
     modalEl.hidden = false;
     document.body.classList.add('is-modal-open');
@@ -2033,6 +2041,36 @@
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
+  /** 잠금 카드·지난 날 안내에 같이 쓰는 상품 3개 버튼 */
+  function lockShopButtonsHTML() {
+    return '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
+      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span></button>' +
+      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">' +
+      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 올인원 · 19,900원</span></button>' +
+      '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
+      '<span class="shop-btn__no">3</span><span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span></button>';
+  }
+
+  /** 무료 체험 중 '지난 날'을 눌렀을 때 — 왜 안 열리는지와 여는 방법 (2026-11-21 QA M3) */
+  function pastDayModalHTML(info) {
+    var fe = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
+    var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
+    var markHtml = marks.map(function (m) {
+      return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
+    }).join('');
+    return '<p class="modal__eyebrow">FREE TRIAL · 지난 날</p>' +
+      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
+      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일' +
+      (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
+      '<p class="lock__title">🕘 지난 날이에요</p>' +
+      '<p class="lock__sub">무료 체험은 오늘부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
+      '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.</p>' +
+      (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
+      '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
+      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
+      '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
+  }
+
   function lockModalHTML(info) {
     var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
     var markHtml = marks.map(function (m) {
@@ -2045,22 +2083,83 @@
       (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
       (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
         (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
-      '<p class="lock__title">🔒 3일 무료 체험 이후<br>2027년 1~12월 전체 열기</p>' +
+      '<p class="lock__title">🔒 3일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>' +
       '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>내 생년월일·성별 전용 코드</b>를 카톡으로 보내 드려요</p>' +
-      '<p class="lock__early">사전 신청 시 12월 한 달 무료!</p>' +
+      '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
-      '지금 사전 신청하면 2026년 12월 한 달을 먼저 열어 드리고, 2027년 1~12월 365일을 이어서 볼 수 있어요.</p>' +
+      '입장 코드를 넣으면 이 사주로 지난 날까지 전부 열려요.</p>' +
       '<div class="lock__actions">' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span></button>' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">' +
-      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 올인원 · 19,900원</span></button>' +
-      '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
-      '<span class="shop-btn__no">3</span><span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span></button>' +
+      lockShopButtonsHTML() +
       '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
       '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
+  }
+
+  /* ── 결제가 끝난 고객의 CTA (2026-11-21 QA M2) ──────────────────────────
+     이미 열려 있는 등급의 상품은 '적용 중'으로 바꿔 같은 상품을 또 팔지 않는다.
+     더 높은 등급만 차액 업그레이드로 안내한다. 무료 체험 상태에서는 원래 문구 그대로. */
+  var TIER_PRICE_NUM = { pass: 14900, allinone: 19900, diary: 24900 };
+  /* 업그레이드 금액 — 앱 안에서 이미 안내하던 1년 패스 → 올인원 7,900원 그대로.
+     성찰 에디션은 정해진 차액이 없어 카톡으로 안내한다 (diaryShopHTML 과 같은 기준). */
+  var TIER_UP_PRICE = { 'pass>allinone': 7900 };
+  var OWNED_DESC = {
+    pass: '이미 갖고 있는 상품이에요 — 다시 결제하실 필요 없어요',
+    allinone: '1년 패스 전부 + 매일 일진 부적 + 액운 태우기 무제한',
+    diary: '1년 패스 전부 + 매일 부적 + 태우기 무제한 + 성찰 다이어리'
+  };
+  var UPGRADE_GAIN = {
+    allinone: '매일 일진 부적 · 액운 태우기 무제한까지',
+    diary: '365일 1줄 성찰 다이어리 · 내 기록 저장까지'
+  };
+  function wonNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
+  function upPrice(from, to) { return TIER_UP_PRICE[from + '>' + to] || 0; }
+
+  /** 맨 아래 카드(1년 패스 · 올인원 · 성찰)를 지금 적용된 티어에 맞춰 바꿔 그린다 */
+  function renderCtaSteps() {
+    var box = $('#ctaSteps');
+    if (!box) return;
+    var tier = state.unlocked && TIER_NAME[state.tier] ? state.tier : '';
+    var rank = tier ? (TIER_RANK[tier] || 0) : 0;
+    $$('.shop-btn[data-shop]', box).forEach(function (b) {
+      var kind = b.getAttribute('data-shop');
+      if (!TIER_NAME[kind]) return;                    // 긴급 개운템·원포인트 리딩은 그대로 둔다
+      var no = b.querySelector('.shop-btn__no');
+      var label = b.querySelector('.shop-btn__label');
+      var desc = b.querySelector('.shop-btn__desc');
+      if (!b.getAttribute('data-cta-base')) {          // 처음 문구를 기억해 두었다가 해제하면 그대로 되돌린다
+        b.setAttribute('data-cta-base', '1');
+        b.setAttribute('data-cta-no', no ? no.textContent : '');
+        b.setAttribute('data-cta-label', label ? label.innerHTML : '');
+        b.setAttribute('data-cta-desc', desc ? desc.textContent : '');
+      }
+      var k = TIER_RANK[kind] || 0;
+      var owned = !!rank && k <= rank;
+      var up = !!rank && k > rank;
+      b.classList.toggle('shop-btn--owned', owned);
+      b.classList.toggle('shop-btn--up', up);
+      if (owned) {
+        b.setAttribute('aria-disabled', 'true');
+        if (no) no.textContent = '✓';
+        if (label) label.innerHTML = '✅ ' + esc(TIER_NAME[tier]) + ' 적용 중';
+        if (desc) desc.textContent = OWNED_DESC[kind] || '';
+        b.setAttribute('aria-label', TIER_NAME[tier] + ' 적용 중 — 다시 결제하지 않아도 돼요');
+      } else if (up) {
+        var fee = upPrice(tier, kind);
+        b.removeAttribute('aria-disabled');
+        if (no) no.textContent = '↑';
+        if (label) label.innerHTML = '⬆️ ' + esc(TIER_NAME[kind]) + ' 업그레이드' + (fee ? ' <b>' + wonNum(fee) + '</b>' : '');
+        if (desc) desc.textContent = (fee ? '차액 ' + wonNum(fee) + '만 더 내면 돼요' : '차액은 카톡으로 안내드려요') +
+          ' · ' + (UPGRADE_GAIN[kind] || '');
+        b.setAttribute('aria-label', TIER_NAME[kind] + ' 업그레이드' + (fee ? ' — 차액 ' + wonNum(fee) : ' — 차액은 카톡으로 안내'));
+      } else {
+        b.removeAttribute('aria-disabled');
+        b.removeAttribute('aria-label');
+        if (no) no.textContent = b.getAttribute('data-cta-no') || '';
+        if (label) label.innerHTML = b.getAttribute('data-cta-label') || '';
+        if (desc) desc.textContent = b.getAttribute('data-cta-desc') || '';
+      }
+    });
   }
 
   /* ── 앱 안 구입 팝업 (1년 패스 · 올인원 패키지 · 긴급 개운템) ──────
@@ -2509,13 +2608,13 @@
     return '<p class="shop__trial">먼저 <b>오늘부터 3일</b>을 무료로 써 보세요. 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
   }
   function passShopHTML() {
-    return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 사전 신청 시 12월 한 달 무료</p>' +
+    return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
       '<h2 class="shop__title" id="shopTitle">🎟️ 1년 패스</h2>' +
       trialShopNote() +
-      '<p class="shop__sub">생년월일과 성별을 넣으면 <b>2027년 1월 1일부터 12월 31일까지 365일</b>이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
+      '<p class="shop__sub">생년월일과 성별을 넣으면 <b>2026년 11월부터 2027년 12월까지 14개월</b>(2027년 1~12월 전체 포함)이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>2027 내 사주 타이밍 맵</b><span>1월 1일부터 12월 31일까지, 하루씩 전부</span></li>' +
-      '<li><b>1년 수호 부적</b><span>2027년 내내 나를 받쳐 주는 부적 (사전 신청 시 12월 한 달 먼저)</span></li>' +
+      '<li><b>2026~2027 내 사주 타이밍 맵</b><span>2026년 11월부터 2027년 12월까지, 하루씩 전부</span></li>' +
+      '<li><b>1년 수호 부적</b><span>2026년 11월부터 2027년 12월까지 내내 나를 받쳐 주는 부적</span></li>' +
       '<li><b>액운 태우기 5회 무료</b><span>적고 · 구기고 · 태워 보내기, 다섯 장</span></li>' +
       '</ul>' +
       priceHTML('2027 1년 패스', PASS_PRICE) +
@@ -3540,15 +3639,87 @@
     if (kind === 'bowlStop') { stopBowl(); return; }
   }
 
-  function openShop(kind) {
-    if (!shopEl) return;
-    if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
-    shopLastFocus = document.activeElement;
-    shopBody.innerHTML = kind === 'burn' ? burnShopHTML()
+  /* ── 결제가 끝난 고객에게 또 결제창을 띄우지 않는다 (2026-11-21 QA M2) ── */
+  function ownedShopHTML(tier) {
+    var rank = TIER_RANK[tier] || 0;
+    var ups = ['allinone', 'diary'].filter(function (k) { return (TIER_RANK[k] || 0) > rank; });
+    return '<p class="modal__eyebrow">ALREADY OPEN · 결제 완료</p>' +
+      '<h2 class="shop__title" id="shopTitle">✅ ' + esc(TIER_NAME[tier]) + ' 적용 중</h2>' +
+      '<p class="shop__sub">이미 <b>' + esc(TIER_NAME[tier]) + '</b> 코드로 이 사주가 열려 있어요. 같은 상품을 다시 결제하실 필요는 없어요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>지금 열려 있는 것</b><span>' + esc(OWNED_DESC[tier] || '') + '</span></li>' +
+      '<li><b>기간</b><span>2026년 11월부터 2027년 12월까지 14개월</span></li>' +
+      '</ul>' +
+      (ups.length
+        ? '<p class="shop__note">더 위 구성으로 올라가실 때는 차액만 내시면 돼요.</p>' +
+          ups.map(function (k) {
+            return '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="' + k + '">' +
+              '<span class="shop-btn__no">↑</span>' +
+              '<span class="shop-btn__text"><span class="shop-btn__label">⬆️ ' + esc(TIER_NAME[k]) +
+              ' 업그레이드' + (upPrice(tier, k) ? ' <b>' + wonNum(upPrice(tier, k)) + '</b>' : '') + '</span>' +
+              '<span class="shop-btn__desc">' + esc(UPGRADE_GAIN[k] || '') + '</span></span></button>';
+          }).join('')
+        : '') +
+      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-shop-close>닫기</button>';
+  }
+
+  /** ↔ 상위 티어 — 이미 낸 금액은 두고 차액만 안내한다 */
+  function upgradeShopHTML(from, to) {
+    var fee = upPrice(from, to);
+    return '<p class="modal__eyebrow">UPGRADE · 차액만 결제</p>' +
+      '<h2 class="shop__title" id="shopTitle">⬆️ ' + esc(TIER_NAME[to]) + ' 업그레이드</h2>' +
+      '<p class="shop__sub">지금 쓰고 계신 상품은 <b>' + esc(TIER_NAME[from]) + '</b>이에요. 이미 내신 금액은 그대로 두고 ' +
+      (fee ? '<b>차액 ' + wonNum(fee) + '</b>만' : '차액만') + ' 더 내시면 ' + esc(TIER_NAME[to]) + ' 코드로 바꿔 드려요.</p>' +
+      '<ul class="shop__list">' +
+      '<li><b>' + esc(TIER_NAME[to]) + '에 더해지는 것</b><span>' + esc(UPGRADE_GAIN[to] || '') + '</span></li>' +
+      '<li><b>지금 쓰는 사주 그대로</b><span>생년월일·성별은 바꾸지 않고 그대로 올려 드려요</span></li>' +
+      '</ul>' +
+      '<div class="shop__save"><b>' + esc(TIER_NAME[from]) + ' → ' + esc(TIER_NAME[to]) +
+      (fee ? ' · ' + wonNum(fee) : '') + '</b><span>' +
+      (fee ? '이미 내신 금액은 그대로 인정되고, 차액만 더 내시면 돼요'
+        : '이미 내신 금액만큼 빼고 차액은 카톡으로 정확히 안내해 드려요') + '</span></div>' +
+      '<button type="button" class="btn btn--primary burn__upgrade" data-tier-upgrade="' + to + '">💬 카톡으로 ' +
+      (fee ? wonNum(fee) + ' ' : '') + '업그레이드 신청</button>' +
+      '<p class="shop__note">누르면 신청 내용이 복사되고 카카오톡 채널이 열려요. 입금을 확인한 뒤 ' + esc(TIER_NAME[to]) + ' 코드를 보내 드려요.</p>' +
+      '<button type="button" class="btn modal__done-btn" data-shop-close>닫기</button>';
+  }
+
+  /** 차액 업그레이드 신청 — 신청 내용을 복사하고 카톡 채널로 (1년 패스 → 올인원 · 성찰) */
+  function goTierUpgrade(to) {
+    var from = state.unlocked && TIER_NAME[state.tier] ? state.tier : '';
+    if (!from || !TIER_NAME[to] || (TIER_RANK[to] || 0) <= (TIER_RANK[from] || 0)) return;
+    var fee = upPrice(from, to);
+    var parts = ['[윤이세 2027 캘린더 신청] ' + TIER_NAME[to] + ' 업그레이드 (' + TIER_NAME[from] + ' → ' +
+      TIER_NAME[to] + ') ' + (fee ? '추가 ' + wonNum(fee) : '차액 안내 요청')];
+    var b = birthLine();
+    if (b) parts.push(b);
+    copyText(parts.join(' / '), function (copied) {
+      toast(copied === true
+        ? '✅ 업그레이드 신청 내용을 복사했어요 — 카톡에 붙여 보내 주세요'
+        : '카톡 채널로 이동해요 — ' + TIER_NAME[to] + ' 업그레이드' + (fee ? '(' + wonNum(fee) + ')' : '') + '라고 알려 주세요');
+    });
+    vibrate(18);
+    openNoRef(KAKAO);
+  }
+
+  /** 구입 팝업 내용 — 이미 갖고 있는 상품이면 '적용 중', 더 높은 상품이면 차액 업그레이드 */
+  function shopHTMLFor(kind) {
+    if (TIER_NAME[kind] && state.unlocked && TIER_NAME[state.tier]) {
+      var own = TIER_RANK[state.tier] || 0, want = TIER_RANK[kind] || 0;
+      return want <= own ? ownedShopHTML(state.tier) : upgradeShopHTML(state.tier, kind);
+    }
+    return kind === 'burn' ? burnShopHTML()
       : (kind === 'care' ? careShopHTML()
         : (kind === 'consult' ? consultShopHTML()
           : (kind === 'diary' ? diaryShopHTML()
             : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML()))));
+  }
+
+  function openShop(kind) {
+    if (!shopEl) return;
+    if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
+    shopLastFocus = document.activeElement;
+    shopBody.innerHTML = shopHTMLFor(kind);
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -4445,6 +4616,7 @@
     }
     if (reset) reset.hidden = !state.unlocked;
     if (msg && state.unlocked && !msg.textContent) msg.textContent = '이 기기에서는 이미 열려 있어요.';
+    renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
     document.body.setAttribute('data-trial', trialMode ? 'on' : 'off');
   }
   function openLockPanel() {
@@ -4706,6 +4878,8 @@
         if (pick) { e.preventDefault(); setCareItem(pick.getAttribute('data-careitem')); return; }
         var up = e.target.closest ? e.target.closest('[data-burn-upgrade]') : null;
         if (up) { e.preventDefault(); goBurnUpgrade(); return; }
+        var tu = e.target.closest ? e.target.closest('[data-tier-upgrade]') : null;
+        if (tu) { e.preventDefault(); goTierUpgrade(tu.getAttribute('data-tier-upgrade')); return; }
         var bo = e.target.closest ? e.target.closest('[data-burn-open]') : null;
         if (bo) { e.preventDefault(); closeShop(); setTimeout(openBurnModal, 210); return; }
         var c = e.target.closest ? e.target.closest('[data-care]') : null;
@@ -4828,7 +5002,8 @@
       var b = e.target.closest('.day[data-iso]');
       if (!b) return;
       var iso = b.dataset.iso;
-      if (!isOpenDay(iso)) return;
+      /* 무료 체험 중에는 잠긴 날도 누르면 안내가 나오도록 그대로 넘긴다 (2026-11-21 QA M3) */
+      if (!isOpenDay(iso) && !(FREE_TRIAL_ENABLED && !state.unlocked)) return;
       openDayModal(iso);
     });
 

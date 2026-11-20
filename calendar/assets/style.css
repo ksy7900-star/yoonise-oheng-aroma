@@ -1515,6 +1515,15 @@ body.is-modal-open { overflow: hidden; }
   font-size: 10.5px; font-weight: 400; line-height: 1.55;
   letter-spacing: -0.01em; opacity: .72;
 }
+/* 결제가 끝난 상품은 '적용 중'으로 낮추고, 업그레이드만 앞세운다 (2026-11-21 QA M2) */
+.shop-btn--owned { opacity: .58; cursor: default; }
+.btn--cream.shop-btn--owned { background: rgba(242, 237, 227, .12); color: #EFE8DB; border-color: rgba(242, 237, 227, .28); }
+.btn--cream.shop-btn--owned .shop-btn__no { background: rgba(242, 237, 227, .26); }
+.shop-btn--owned .shop-btn__no { background: rgba(242, 237, 227, .32); }
+.shop-btn--owned .shop-btn__label { font-weight: 600; }
+.shop-btn--up .shop-btn__no { background: rgba(199, 154, 78, .3); color: #F6E1BC; }
+.shop-btn--up .shop-btn__label b { color: #F0D9A8; }
+.btn--cream.shop-btn--up .shop-btn__label b { color: #9E4A2E; }
 .cta__consult {
   margin-top: 14px; padding-top: 13px; font-size: 10.5px; line-height: 1.6;
   color: rgba(242, 237, 227, .58); border-top: 1px solid rgba(242, 237, 227, .12);
