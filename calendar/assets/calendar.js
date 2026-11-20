@@ -20,17 +20,17 @@
   var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 오늘 포함 3일(D+0·D+1·D+2)
 
   /* ── 개인 전용 입장 코드 (1결제 = 1사주) ─────────────────────────────────
-     결제한 손님의 생년월일(양력) + 성별 + 상품 등급에 비밀 salt 서명을 묶은 코드입니다.
+     결제한 손님의 사주(양력 생년월일 + 성별)에 비밀 salt 서명을 묶은 코드입니다.
+     기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
 
-       YS-P-791025F-K7QM3
-         YS       윤이세 타이밍 캘린더
+       D21744
          P/A/D    상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션
-         791025   손님 생년월일(양력)의 뒤 두 자리 해 + 월 + 일
-         F/M      성별
-         K7QM3    서명 5자 — 아래 CODE_SALT 를 모르면 만들 수 없다
+         21744    서명 5자리 — 달력에 들어 있는 사주(양력 YYMMDD) + 성별 + 아래 CODE_SALT 로 계산
+                  → 숫자만이라 코드에 생년월일·성별이 드러나지 않는다
 
-     → 다른 생년월일이나 다른 성별의 사주로 코드를 넣으면 그 자리에서 잠기고
-       "이 코드는 1979년 10월 25일 · 여성 사주 전용" 안내가 뜬다. (1결제 2인 사용 차단)
+     → 코드를 넣을 때 지금 사주로 서명을 다시 계산해 맞춰 보고, 맞으면 그 사주 전용으로 연다.
+       다른 생년월일·성별로 넣으면 숫자가 맞지 않아 열리지 않는다. (1결제 2인 사용 차단)
+     → 예전 18자리 코드(YS-P-791025F-K7QM3)도 그대로 받아 준다(호환).
      → 나영 님 전용 발급기: 2026-11-21 공개 저장소에서 내려 이 컴퓨터에만 있는 파일(work/yoonise-code-issuer.html)로 옮겼다.
      ★ 아래 CODE_SALT·서명 함수는 그 발급기와 반드시 똑같이 맞춰야 한다(발급기를 고치면 여기도 같이). */
   var CODE_SALT = 'yoonise-2027-timing-9f3a';
@@ -207,6 +207,7 @@
     tier: '',             // '' | 'pass'(1년 패스) | 'allinone'(올인원 패키지) | 'diary'(성찰 에디션)
     code: null,           // 지금 이 기기에 넣어 둔 코드 { code, tier, ymd, gender }
     mismatch: null,       // 코드 주인과 지금 사주가 다를 때 { code, id } — 이때는 잠금 상태
+    hintOff: false,       // 첫 부적 말풍선 힌트를 이 화면에서 접었는지 (한 번 누르거나 부적을 붙이면 끝)
     filter: 'all',        // all | bad | good — 달력의 '조심할 날만 / 좋은 날만' 보기
     yearDigest: null,     // 2027 한 해 요약(조심할 달·좋은 달). 사주가 바뀌면 다시 계산
     mDigest: {}           // 달별 주의 날·좋은 날 목록 캐시
@@ -659,7 +660,7 @@
     }
     return h >>> 0;
   }
-  /** 서명 5자 — 상품 등급 · 생년월일(YYMMDD) · 성별 + 비밀 SALT */
+  /** 서명 5자 — 상품 등급 · 생년월일(YYMMDD) · 성별 + 비밀 SALT (예전 18자리 코드용) */
   function codeSign(letter, ymd, gender) {
     var base = CODE_SALT + '|' + letter + '|' + ymd + '|' + gender;
     var h1 = fnv1a(base), h2 = fnv1a(base + '#2');
@@ -671,20 +672,64 @@
     }
     return out;
   }
+  /** 32비트 마무리 섞기 — 숫자 5자리 서명이 고르게 퍼지도록 */
+  function mix32(h) {
+    h = h >>> 0;
+    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+  /** 6자리 간단 코드의 숫자 5자리 — 10000~99999 (앞자리 0 이 나오지 않는다) */
+  function codeDigits(letter, ymd, gender) {
+    var base = CODE_SALT + '|6|' + letter + '|' + ymd + '|' + gender;
+    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#6d')) % 90000);
+  }
   function formatCode(letter, ymd, gender, sign) {
     return 'YS-' + letter + '-' + ymd + gender + '-' + sign;
   }
-  /** 코드 문자열 → { code, tier, letter, ymd, gender } · 형식과 서명이 맞지 않으면 null */
-  function parseCode(v) {
+  /** 코드 문자열 → { status, ... } · status 로 무엇이 잘못됐는지 구분한다
+     ok        서명이 맞고 지금 사주와도 맞음 → 열 수 있다
+     empty     아무것도 안 넣음
+     format    6자리도 예전 18자리도 아닌 모양
+     bad       예전 18자리 모양이지만 서명이 틀림
+     noid      달력에 사주가 아직 없어 비교할 수 없음
+     mismatch  6자리 코드인데 지금 사주로 계산한 숫자와 다름 (다른 사주이거나 잘못 옮긴 코드) */
+  function parseCode(v, id) {
     var n = normCode(v);
-    var m = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
-    if (!m) return null;
-    var sign = codeSign(m[1], m[2], m[3]);
-    if (sign !== m[4]) return null;
+    if (!n) return { status: 'empty' };
+    var legacy = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
+    if (legacy) {
+      if (codeSign(legacy[1], legacy[2], legacy[3]) !== legacy[4]) return { status: 'bad' };
+      return {
+        status: 'ok', legacy: true,
+        code: formatCode(legacy[1], legacy[2], legacy[3], legacy[4]),
+        tier: CODE_TIER_OF_LETTER[legacy[1]], letter: legacy[1],
+        ymd: legacy[2], gender: legacy[3]
+      };
+    }
+    var simple = /^([PAD])(\d{5})$/.exec(n);
+    if (!simple) return { status: 'format' };
+    var letter = simple[1];
+    if (!id) return { status: 'noid', letter: letter };
+    if (codeDigits(letter, id.ymd, id.gender) !== simple[2]) {
+      return { status: 'mismatch', letter: letter, id: id };
+    }
     return {
-      code: formatCode(m[1], m[2], m[3], m[4]), tier: CODE_TIER_OF_LETTER[m[1]],
-      letter: m[1], ymd: m[2], gender: m[3]
+      status: 'ok', legacy: false,
+      code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
+      ymd: id.ymd, gender: id.gender
     };
+  }
+  /** 코드가 맞지 않을 때 — 무엇이 문제인지에 맞춰 한 줄로 알려 준다 */
+  function codeErrorText(p) {
+    if (p.status === 'noid') return '먼저 내 사주(생년월일·성별)를 넣어 주세요. 코드는 그 사주에서만 열려요.';
+    if (p.status === 'mismatch') {
+      return '코드가 지금 사주(' + (p.id ? p.id.label : '') + ')와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
+    }
+    if (p.status === 'format') return '코드 모양이 달라요 — P·A·D 한 글자 + 숫자 5자리, 또는 예전 18자리 코드를 넣어 주세요.';
+    if (p.status === 'empty') return '카톡으로 받은 입장 코드를 넣어 주세요. (예: A73914)';
+    return '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.';
   }
   function pad2(v) { var n = Number(v) || 0; return (n < 10 ? '0' : '') + n; }
   /** 지금 넣어 둔 사주를 코드와 맞춰 볼 열쇠 — 양력 생년월일(YYMMDD) + 성별 */
@@ -1700,6 +1745,53 @@
       (state.res.input.timeKnown ? ' 글자 사이의 관계는 각 글자의 대표 기운으로 봤어요.' : ' 시간을 몰라 시주는 비워 두었습니다.');
   }
 
+  /* ── 달력 바로 위 3단계 사용법 · 첫 부적 말풍선 힌트 (2026-11-21) ────────
+     · 3단계 바는 index.html 에 늘 떠 있고(.calguide),
+     · 말풍선은 부적을 아직 한 번도 붙이지 않은 사람에게만 이번 달 '오늘 칸'
+       (오늘이 부적 없는 잔잔한 날이면 가장 가까운 부적 있는 날) 위에 뜬다.
+       부적을 하나라도 붙이거나 그 칸을 누르면 사라진다. */
+  function stampCount() {
+    var bag = state.stamps[sigOf()];
+    if (!bag) return 0;
+    var n = 0;
+    for (var k in bag) if (Object.prototype.hasOwnProperty.call(bag, k)) n++;
+    return n;
+  }
+  /** 이 날이 눌리는 칸인가 — 예전 renderCalendar 안의 판단을 그대로 함수로 뺐다 */
+  function dayClickable(iso, info) {
+    var badges = (info && info.badges) || [];
+    var open = isOpenDay(iso);
+    var pastDay = iso < state.todayISO;
+    var trialLocked = FREE_TRIAL_ENABLED && !state.unlocked;
+    return badges.length ? true
+      : (trialLocked ? true : (diaryAllowed() ? open : (!open && !pastDay)));
+  }
+  /** 말풍선을 띄울 날 — 이번 달 안에서만. 없으면 '' */
+  function hintIsoFor(v, dim) {
+    if (state.hintOff || !state.res) return '';
+    if (stampCount()) return '';                       // 부적을 한 번이라도 붙였으면 안내 끝
+    var t = T.parseISO(state.todayISO);
+    if (t.y !== v.y || t.m !== v.m) return '';         // 지금 보고 있는 달에 오늘이 있을 때만
+    var best = '', bestDist = 99;
+    for (var d = 1; d <= dim; d++) {
+      var iso = T.isoOf(v.y, v.m, d);
+      var info = infoFor(iso);
+      if (!info || !(info.badges || []).length) continue;   // 부적이 나오는 날에만
+      if (!dayClickable(iso, info)) continue;
+      var dist = Math.abs(d - t.d);
+      if (dist < bestDist) { bestDist = dist; best = iso; }
+    }
+    return best;
+  }
+  /** 말풍선 — 칸 가장자리에서 잘리지 않게 좌우/아래로 뒤집어 단다 */
+  function hintHTML(dow, row) {
+    var cls = 'day__hint';
+    if (row === 0) cls += ' day__hint--down';
+    if (dow <= 1) cls += ' day__hint--l';
+    else if (dow >= 5) cls += ' day__hint--r';
+    return '<span class="' + cls + '" aria-hidden="true">눌러서 부적 붙이기 <b>👆</b></span>';
+  }
+
   function renderCalendar() {
     var v = state.view;
     $('#calYear').textContent = v.y;
@@ -1712,6 +1804,7 @@
     for (var i = 0; i < first; i++) html += '<span aria-hidden="true"></span>';
 
     var stat = { red: 0, gold: 0, blue: 0, gray: 0 };
+    var hintIso = hintIsoFor(v, dim);
     for (var d = 1; d <= dim; d++) {
       var iso = T.isoOf(v.y, v.m, d);
       var info = infoFor(iso);
@@ -1749,10 +1842,8 @@
 
       var open = isOpenDay(iso);
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
-      var pastDay = iso < state.todayISO;
-      var trialLocked = FREE_TRIAL_ENABLED && !state.unlocked;   // 체험 중에는 잔잔한 날·지난 날도 눌러 안내를 받는다 (2026-11-21 QA M3)
-      var clickable = badges.length ? true
-        : (trialLocked ? true : (diaryAllowed() ? open : (!open && !pastDay)));
+      // 체험 중에는 잔잔한 날·지난 날도 눌러 안내를 받는다 (2026-11-21 QA M3)
+      var clickable = dayClickable(iso, info);
       var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = stampOf(iso);
@@ -1778,6 +1869,13 @@
         '</span>' +
         '<span class="day__badges">' + badgeHtml + '</span>' +
         (noted ? diaryDotHTML() : '');
+
+      /* 첫 부적 말풍선 — 이 칸 위로 '눌러서 부적 붙이기 👆' */
+      if (hintIso && iso === hintIso) {
+        cls.push('day--hint');
+        cellInner += hintHTML(info.dow, Math.floor((first + d - 1) / 7));
+        label += ', 눌러서 부적 붙이기';
+      }
 
       if (clickable) {
         html += '<button type="button" class="' + cls.join(' ') + '" data-iso="' + iso + '"' +
@@ -4657,16 +4755,17 @@
   function tryUnlock() {
     var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
     var v = inp ? inp.value : '';
-    var p = parseCode(v);
-    if (!p) {
-      if (msg) { msg.textContent = '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.'; msg.classList.remove('is-ok'); }
+    var id = currentIdentity();
+    /* 6자리 코드는 코드에 사주가 적혀 있지 않아, 지금 달력의 사주로 숫자를 다시 계산해 맞춰 본다 */
+    var p = parseCode(v, id);
+    if (p.status !== 'ok') {
+      if (msg) { msg.textContent = codeErrorText(p); msg.classList.remove('is-ok'); }
       if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
       vibrate([40, 30, 60]);
       if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
       return;
     }
-    var id = currentIdentity();
-    /* 남의 생년월일·성별 사주에 코드를 넣는 경우 — 열지 않고 그대로 잠가 둔다 (1결제 2인 사용 차단) */
+    /* 예전 18자리 코드 — 코드에 적힌 생년월일·성별이 지금 사주와 다르면 열지 않고 그대로 잠가 둔다 */
     if (!id || id.ymd !== p.ymd || id.gender !== p.gender) {
       cannotUseCode(p);
       return;
@@ -5002,6 +5101,8 @@
       var b = e.target.closest('.day[data-iso]');
       if (!b) return;
       var iso = b.dataset.iso;
+      /* 첫 부적 말풍선이 붙은 칸이면 — 눌렀으니 힌트는 접는다 */
+      if (b.classList.contains('day--hint')) state.hintOff = true;
       /* 무료 체험 중에는 잠긴 날도 누르면 안내가 나오도록 그대로 넘긴다 (2026-11-21 QA M3) */
       if (!isOpenDay(iso) && !(FREE_TRIAL_ENABLED && !state.unlocked)) return;
       openDayModal(iso);

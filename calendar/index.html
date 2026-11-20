@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261121a">
+<link rel="stylesheet" href="assets/style.css?v=20261121b">
 </head>
 <body>
 
@@ -175,6 +175,15 @@
         <button type="button" class="calfilter__btn" data-filter="good" aria-pressed="false">🍀 좋은 날</button>
       </div>
 
+      <!-- 3단계 사용법 — 달력 바로 위, 한 줄로 1초에 읽히게 (2026-11-21) -->
+      <div class="calguide" role="note" aria-label="캘린더 쓰는 법 세 단계">
+        <span class="calguide__st"><span class="calguide__n">①</span>색깔 칸 누르기</span>
+        <span class="calguide__ar" aria-hidden="true">→</span>
+        <span class="calguide__st"><span class="calguide__n">②</span>부적 <b>3번</b> 톡톡톡</span>
+        <span class="calguide__ar" aria-hidden="true">→</span>
+        <span class="calguide__st"><span class="calguide__n">③</span>달력에 <em>착!</em> 붙이기</span>
+      </div>
+
       <div class="cal__dow" aria-hidden="true">
         <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
       </div>
@@ -190,10 +199,11 @@
       <!-- 입장 코드 — 카톡으로 받은 '내 전용' 코드를 넣으면 그 사주에 한해 2027년 전체가 열린다 -->
       <div class="lockpanel" id="lockPanel" hidden>
         <label class="lockpanel__label" for="lockCode">카톡으로 받은 내 전용 코드를 넣어 주세요</label>
+        <p class="lockpanel__hint">6자리면 충분해요 — <b>P · A · D</b> 한 글자 + 숫자 5자리 (예: A73914)</p>
         <p class="lockpanel__tier" id="lockTier" hidden></p>
         <div class="lockpanel__row">
           <input class="lockpanel__input" id="lockCode" type="text" inputmode="text" autocomplete="off"
-                 autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="YS-P-791025F-XXXXX">
+                 autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="예: A73914">
           <button type="button" class="lockpanel__go" id="lockGo">열기</button>
         </div>
         <p class="lockpanel__msg" id="lockMsg" role="status" aria-live="polite"></p>
@@ -391,10 +401,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261121a"></script>
-<script src="assets/manse.js?v=20261121a"></script>
-<script src="assets/timing.js?v=20261121a"></script>
-<script src="assets/chars.js?v=20261121a"></script>
-<script src="assets/calendar.js?v=20261121a"></script>
+<script src="vendor/lunar.js?v=20261121b"></script>
+<script src="assets/manse.js?v=20261121b"></script>
+<script src="assets/timing.js?v=20261121b"></script>
+<script src="assets/chars.js?v=20261121b"></script>
+<script src="assets/calendar.js?v=20261121b"></script>
 </body>
 </html>
