@@ -810,6 +810,15 @@
     var box = modalBody ? modalBody.querySelector('[data-diary-body]') : null;
     if (!info || !box) return;
     box.innerHTML = diaryBodyHTML(info, draft);
+    // 위쪽 점프 버튼 문구도 함께 맞춘다 — 남긴 날은 '고치기', 아직 안 쓴 날은 '쓰기'
+    var jb = modalBody.querySelector('[data-diary-jump]');
+    if (jb) {
+      var txt = jb.querySelector('.diaryjump__txt');
+      var editing = typeof draft === 'string';
+      var label = (!!diaryOf(iso) && !editing) ? '오늘 1줄 성찰 고치기' : '오늘 1줄 성찰 쓰기';
+      if (txt) txt.textContent = label;
+      jb.setAttribute('aria-label', label + ' — 입력칸으로 이동');
+    }
     var ta = box.querySelector('#diaryText');
     if (ta) { try { ta.focus({ preventScroll: true }); } catch (e) { ta.focus(); } }
   }
@@ -929,6 +938,7 @@
       '<p class="dbook__sub">' + (keys.length
         ? '<b>' + keys.length + '일</b>의 한 줄이 쌓였어요. 날짜를 누르면 그날 팝업이 열려요.'
         : '아직 남긴 기록이 없어요.') + '</p>' +
+      '<button type="button" class="dbook__today" data-dbook-today>+ 오늘 성찰 바로 쓰기</button>' +
       (keys.length
         ? '<div class="dbook__acts">' +
           '<button type="button" class="dbook__act" data-diary-copy>전체 복사</button>' +
@@ -1808,12 +1818,51 @@
       '<p class="modal__sub">' + esc(fmtKoDate(info.iso)) + ' · 음력 ' + esc(info.lunarText) + '</p>';
   }
 
+  /** 날짜 팝업 안 상단 점프 버튼 — 모바일에서 성찰 입력칸이 화면 밖으로 밀려"어떻게 작성하니" 하던 문제
+     부적 패 바로 위, 첫 화면 안에 두어 누르면 성찰 카드로 내려가며 입력칸에 커서가 간다. */
+  function diaryJumpHTML(info) {
+    if (!diaryAllowed()) return '';
+    var saved = !!diaryOf(info.iso);
+    return '<button type="button" class="diaryjump" data-diary-jump ' +
+      'aria-label="' + (saved ? '오늘 1줄 성찰 고치기 — 입력칸으로 이동' : '오늘 1줄 성찰 쓰기 — 입력칸으로 이동') + '">' +
+      '<span class="diaryjump__ico" aria-hidden="true">✍️</span>' +
+      '<span class="diaryjump__txt">' + (saved ? '오늘 1줄 성찰 고치기' : '오늘 1줄 성찰 쓰기') + '</span>' +
+      '<span class="diaryjump__arw" aria-hidden="true">↓</span>' +
+      '</button>';
+  }
+
+  /** 점프 — 성찰 카드로 부드럽게 내려가 바로 쓸 수 있게 (이미 남긴 날은 고치기 상태로) */
+  function jumpToDiary() {
+    if (!modalBody) return;
+    var wrap = modalBody.querySelector('[data-diary]');
+    if (!wrap) return;
+    var editBtn = wrap.querySelector('[data-diary-edit]');
+    if (editBtn) {                              // 이미 남긴 날 — 고치기 화면으로
+      var iso = wrap.getAttribute('data-diary');
+      var rec = iso ? diaryOf(iso) : null;
+      if (rec) paintDiary(iso, rec.text || '');
+      wrap = modalBody.querySelector('[data-diary]');
+    }
+    var ta = wrap ? wrap.querySelector('#diaryText') : null;
+    if (wrap) {
+      try { wrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { try { wrap.scrollIntoView(); } catch (e2) {} }
+      wrap.classList.remove('is-jump');
+      void wrap.offsetWidth;
+      wrap.classList.add('is-jump');
+      setTimeout(function () { if (wrap) wrap.classList.remove('is-jump'); }, 1500);
+    }
+    if (ta) { try { ta.focus({ preventScroll: true }); } catch (e) { try { ta.focus(); } catch (e2) {} } }
+    sfxTap(1);
+  }
+
   function briefModalHTML(info) {
     var today = info.iso === state.todayISO;
     // 부적 팝업은 캐릭터·이름표·톡톡톡·대사·스티커 완료 안내 → 그 아래 ✨ 오늘의 1줄 성찰 → 닫기 순서
     // (예전 맨 아래 '+ 이 날의 사주 풀이 보기' 접이식 풀이는 뺐다 — 2026-11-20)
+    // ✍️ 오늘 1줄 성찰 쓰기 점프 버튼은 부적 패 위 — 모바일 첫 화면에 보이게 (2026-11-20 #8519)
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
+      diaryJumpHTML(info) +
       ritualHTML(info) +
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
@@ -4060,6 +4109,15 @@
           return;
         }
         if (e.target.closest('[data-diary-dl]')) { downloadDiary(); return; }
+        if (e.target.closest('[data-dbook-today]')) {
+          // 기록 보기에서 바로 오늘 성찰칸으로 — 보기 팝업을 닫고 오늘 날짜 팝업을 연 뒤 성찰 카드로 내려간다
+          closeDiaryBook();
+          setTimeout(function () {
+            openDayModal(state.todayISO);
+            setTimeout(jumpToDiary, 420);
+          }, 200);
+          return;
+        }
         var day = e.target.closest('[data-dbook-day]');
         if (day) {
           var iso = day.getAttribute('data-dbook-day');
@@ -4092,6 +4150,7 @@
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
       if (tap) { onRitualTap(tap, e); return; }
       if (!e.target.closest) return;
+      if (e.target.closest('[data-diary-jump]')) { e.preventDefault(); jumpToDiary(); return; }
       if (e.target.closest('[data-diary-save]')) { e.preventDefault(); saveDiaryFromModal(); return; }
       var editBtn = e.target.closest('[data-diary-edit]');
       if (editBtn) {
