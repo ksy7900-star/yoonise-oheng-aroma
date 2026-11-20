@@ -2311,6 +2311,17 @@
     payNote('페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
       '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
   }
+  /* 카드 버튼이 진짜 링크(<a target="_blank">)라 새 창을 여는 건 팝업차단 대상이 아니다(#8847).
+     그런데 target=_blank 를 무시하거나 링크 이동마저 막는 인앱 브라우저도 있다.
+     그래서 0.9초 뒤에도 이 화면이 그대로 보이고(새 창이 안 열렸고) 초점도 여기 있으면
+     현재 창을 결제 페이지로 넘긴다 — 어떤 환경에서든 결제창은 뜨게. */
+  function payLinkGuard(url) {
+    setTimeout(function () {
+      try {
+        if (document.visibilityState === 'visible' && document.hasFocus()) window.location.href = url;
+      } catch (e) { }
+    }, 900);
+  }
 
   function handlePay(kind, item) {
     if (kind === 'card' || kind === 'bank') payChoice[String(item)] = kind;   // 카톡 확인 항목을 이 방법으로
@@ -4467,6 +4478,7 @@
           if (pay.getAttribute('data-pay-link')) {
             payChoice[String(pay.getAttribute('data-item'))] = 'card';
             cardNote(pay.getAttribute('href'));
+            payLinkGuard(pay.getAttribute('href'));
             return;
           }
           e.preventDefault(); handlePay(pay.getAttribute('data-pay'), pay.getAttribute('data-item')); return;
