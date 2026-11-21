@@ -2560,6 +2560,83 @@
      item: 'pass' | 'allinone' | 'care-one' | 'care-set' | 'consult'
      위쪽 '결제 설정' 값이 비어 있으면 카카오톡 채널로 안내하고,
      값이 채워지면 그 자리에서 페이앱 결제창 이동 / 계좌번호 복사가 동작합니다. */
+  /* ── 페이앱 JS 직행 결제 (2026-11-21) ──────────────────────────────────
+     페이앱 '상품 링크'(www.payapp.kr/L/…)를 그냥 열면 **연락처를 받는 화면**이 먼저 나옵니다.
+     payapp-lite.js 로 상점명·상품명·금액·받는 번호를 실어 보내면 그 화면을 건너뛰고
+     바로 결제수단(카드·간편결제) 선택 화면으로 들어갑니다 — /apply/ 와 같은 방식입니다.
+       · payapp-lite.js 가 안 실렸거나(차단·오프라인) 실패하면 지금까지처럼 링크로 엽니다.
+       · 받는 번호(recvphone)는 **숫자만** 넘겨야 합니다('010-…' 는 페이앱이 거부).
+       · 적은 번호는 이 화면(메모리)에만 두고 저장소에 남기지 않습니다. */
+  var PAYAPP = { userid: 'yoonise', shopname: '윤이세사주' };
+  /* 결제창에 찍히는 상품명 — 기존 결제 링크(z4otyE·z4otzE·z4ovHA·z4ovI1)와 같은 이름으로 맞춘다.
+     차액 업그레이드(7,900원)는 링크가 없어도 JS 로 금액을 실어 보낼 수 있다. */
+  var PAYINFO = {
+    'pass': { name: '2027년 1년 타이밍패스', price: 14900 },
+    'allinone': { name: '2027 올인원패키지', price: 19900 },
+    'diary': { name: '성찰에디션', price: 24900 },
+    'consult': { name: '원포인트 고민해결', price: 49000 },
+    'up-allinone': { name: '2027 올인원 업그레이드', price: 7900 }
+  };
+  function payInfoOf(item) {
+    var it = String(item || '');
+    var m = /^up-(allinone|diary)$/.exec(it);
+    if (m) {                                  // 업그레이드 금액은 위 티어 차액표에서 가져온다
+      var from = state.unlocked && TIER_NAME[state.tier] ? state.tier : 'pass';
+      var fee = upPrice(from, m[1]);
+      if (PAYINFO[it]) return fee ? { name: PAYINFO[it].name, price: fee } : null;
+      return null;
+    }
+    return PAYINFO[it] || null;
+  }
+  /* '010-1234-5678' · '01012345678' · '010 1234 5678' → '01012345678' (휴대폰만) */
+  function mobileOf(v) {
+    var m = String(v || '').replace(/[^0-9]/g, '').match(/^01([016789])([0-9]{3,4})([0-9]{4})$/);
+    return m ? '01' + m[1] + m[2] + m[3] : '';
+  }
+  /* 결제 팝업에 적어 둔 번호 — 팝업을 다시 그려도(티어 전환) 그대로 남긴다 */
+  var payPhone = '';
+  function payappGo(item, phone) {
+    if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
+    var info = payInfoOf(item);
+    if (!info || !info.price || !phone) return false;
+    PayApp.setTarget('_self');            /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
+    PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
+    PayApp.setParam({
+      goodname: info.name,
+      price: String(info.price),
+      recvphone: phone,                   /* 숫자만 — 코드를 받으실 번호 */
+      redirectpay: '1',                   /* 연락처 입력 화면 없이 결제수단 선택으로 직행 */
+      smsuse: 'n',                        /* 결제요청 문자는 보내지 않는다 */
+      charset: 'utf-8',
+      var1: String(item)                  /* 결제내역에서 상품 구분용 */
+    });
+    PayApp.payrequest();
+    return true;
+  }
+  /* 번호 입력칸 — 결제 버튼 바로 위 한 칸. 이 번호로 페이앱이 결제를 받고, 코드도 이 번호로 간다. */
+  function phoneFieldHTML(item) {
+    return '<label class="payphone" for="payPhone-' + esc(item) + '">' +
+      '<span class="payphone__lb"><b>📱 입장 코드 받으실 휴대폰 번호</b>' +
+      '<span>적으면 결제창이 한 단계 줄어요</span></span>' +
+      '<input class="payphone__inp" id="payPhone-' + esc(item) + '" type="tel" inputmode="numeric"' +
+      ' autocomplete="tel" maxlength="13" placeholder="010-1234-5678"' +
+      ' value="' + esc(payPhone) + '" data-pay-phone="' + esc(item) + '">' +
+      '<span class="payphone__hint">결제 확인과 코드 발송에만 써요 · 이 화면에 저장하지 않아요</span>' +
+      '</label>';
+  }
+  function payPhoneVal() {
+    var inp = shopBody ? shopBody.querySelector('[data-pay-phone]') : null;
+    return inp ? inp.value : payPhone;
+  }
+  function payPhoneFocus() {
+    var inp = shopBody ? shopBody.querySelector('[data-pay-phone]') : null;
+    if (!inp) return;
+    try { inp.focus({ preventScroll: false }); } catch (e) { try { inp.focus(); } catch (e2) { } }
+    inp.classList.remove('is-shake');
+    void inp.offsetWidth;
+    inp.classList.add('is-shake');
+  }
+
   function cardUrlOf(item) {
     var map = {
       'pass': PAYAPP_PASS_URL,
@@ -2587,19 +2664,23 @@
     opts = opts || {};
     var withCard = opts.card !== false;
     var cardUrl = cardUrlOf(item);
-    var card = !!cardUrl;
+    var payInfo = payInfoOf(item);
+    var card = !!(cardUrl || payInfo);
     var bank = bankReady();
     var bankSub = opts.bankSub || (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내');
     var cardInner = '<span class="pay__ico" aria-hidden="true">💳</span>' +
       '<span class="pay__label"><b>카드결제 (페이앱)</b>' +
       '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>';
-    /* 카드결제 링크가 있으면 버튼을 **진짜 링크**로 만든다(#8847) —
+    /* 카드결제 — 페이앱 결제 링크가 있는 상품은 **진짜 링크**로 만든다(#8847).
        인앱 브라우저는 스크립트가 여는 새 창(window.open)을 팝업으로 막지만,
-       사용자가 누르는 <a target="_blank"> 이동은 막지 않는다. */
-    var cardBtn = card
+       사용자가 누르는 <a target="_blank"> 이동은 막지 않는다.
+       (번호를 적었으면 클릭 순간 JS 직행으로 가로챈다 — 아래 shopEl click 핸들러)
+       링크 없이 금액만 있는 차액 업그레이드는 버튼으로 그린다. */
+    var cardBtn = cardUrl
       ? '<a class="pay__btn pay__btn--card" href="' + esc(cardUrl) + '" target="_blank" rel="noopener" data-pay="card" data-item="' + esc(item) + '" data-pay-link="1">' + cardInner + '</a>'
       : '<button type="button" class="pay__btn pay__btn--card" data-pay="card" data-item="' + esc(item) + '">' + cardInner + '</button>';
-    return '<div class="pay' + (withCard ? '' : ' pay--single') + '" role="group" aria-label="결제 방법">' +
+    return (withCard && card ? phoneFieldHTML(item) : '') +
+      '<div class="pay' + (withCard ? '' : ' pay--single') + '" role="group" aria-label="결제 방법">' +
       (withCard ? cardBtn : '') +
       '<button type="button" class="pay__btn pay__btn--bank" data-pay="bank" data-item="' + esc(item) + '">' +
       '<span class="pay__ico" aria-hidden="true">🏦</span>' +
@@ -2702,6 +2783,10 @@
     if (it === 'allinone') return '2027 올인원 ' + ALLINONE_PRICE;
     if (it === 'diary') return '2027 성찰 에디션 ' + DIARY_PRICE;
     if (it === 'consult') return '윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE;
+    if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) {
+      var upinfo = payInfoOf(it);
+      return '2027 ' + TIER_NAME[it.slice(3)] + ' 업그레이드' + (upinfo ? ' ' + wonNum(upinfo.price) : '');
+    }
     var m = /^care-(card|objet|bowl|set)$/.exec(it);
     if (m) return '긴급 개운템 — ' + careItemLabel(m[1]);
     return it;
@@ -2926,10 +3011,17 @@
     cb(legacyCopy(text));
   }
 
-  /* 결제창을 연 니 발에 남기는 안내 — 안 보이면 직접 누를 수 있는 링크까지 */
-  function cardNote(url) {
-    payNote('페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다. 결제창에 넣은 연락처로 결제를 확인해요. ' +
-      '<a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>');
+  /* 결제창을 연 니 발에 남기는 안내 — 안 보이면 직접 누를 수 있는 링크까지
+     opts.direct: 번호를 적어 JS 로 바로 넘어간 경우 · opts.phone: 번호를 받았는지 */
+  function cardNote(url, opts) {
+    opts = opts || {};
+    payNote((opts.direct
+      ? '페이앱 결제창으로 바로 넘어가요 — 결제를 마치면 이 화면으로 돌아오세요.'
+      : '페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다.') +
+      (opts.phone
+        ? ' 결제 확인과 코드 발송은 적어 주신 번호로 해요.'
+        : ' 휴대폰 번호를 적으면 결제수단 선택 화면으로 바로 들어가요.') +
+      (url ? ' <a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>' : ''));
   }
   /* 카드 버튼이 진짜 링크(<a target="_blank">)라 새 창을 여는 건 팝업차단 대상이 아니다(#8847).
      그런데 target=_blank 를 무시하거나 링크 이동마저 막는 인앱 브라우저도 있다.
@@ -2947,9 +3039,19 @@
     if (kind === 'card' || kind === 'bank') payChoice[String(item)] = kind;   // 카톡 확인 항목을 이 방법으로
     if (kind === 'card') {
       var url = cardUrlOf(item);
+      var phone = mobileOf(payPhoneVal());
+      if (phone) {
+        var went = false;
+        try { went = payappGo(item, phone); } catch (err) { went = false; }
+        if (went) { cardNote(url, { direct: true, phone: true }); return; }    // 이 창이 결제창으로 넘어간다
+      }
       if (url) {
-        cardNote(url);
+        cardNote(url, { phone: !!phone });
         openPayApp(url);
+      } else if (payInfoOf(item)) {
+        /* 링크 없이 금액만 있는 상품(7,900원 차액 업그레이드) — 번호가 없으면 JS 도 못 쓰니 번호를 받는다 */
+        payNote('휴대폰 번호를 적으면 결제창이 바로 열려요 — 결제 확인과 코드 발송에 쓰는 번호예요.');
+        payPhoneFocus();
       } else {
         payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
           kakaoLinkHTML('카카오톡 채널 열기 →'));
@@ -3218,8 +3320,11 @@
     return it ? it.name + ' ' + it.price : '';
   }
   function itemLabel(item) {
-    if (String(item || '') === 'consult') return '윤이세 1:1 원포인트 리딩';
-    var m = /^care-(card|objet|bowl|set)$/.exec(String(item || ''));
+    var it = String(item || '');
+    if (it === 'consult') return '윤이세 1:1 원포인트 리딩';
+    if (TIER_NAME[it]) return '2027 ' + TIER_NAME[it];
+    if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) return '2027 ' + TIER_NAME[it.slice(3)] + ' 업그레이드';
+    var m = /^care-(card|objet|bowl|set)$/.exec(it);
     return m ? careItemLabel(m[1]) : '';
   }
 
@@ -4057,9 +4162,15 @@
       (fee ? ' · ' + wonNum(fee) : '') + '</b><span>' +
       (fee ? '이미 내신 금액은 그대로 인정되고, 차액만 더 내시면 돼요'
         : '이미 내신 금액만큼 빼고 차액은 카톡으로 정확히 안내해 드려요') + '</span></div>' +
-      '<button type="button" class="btn btn--primary burn__upgrade" data-tier-upgrade="' + to + '">💬 카톡으로 ' +
-      (fee ? wonNum(fee) + ' ' : '') + '업그레이드 신청</button>' +
-      '<p class="shop__note">누르면 신청 내용이 복사되고 카카오톡 채널이 열려요. 입금을 확인한 뒤 ' + esc(TIER_NAME[to]) + ' 코드를 보내 드려요.</p>' +
+      (fee
+        /* 차액이 정해진 업그레이드(1년 패스 → 올인원 7,900원)는 카톡 신청만 있으면
+           손님이 한 번 더 기다려야 해서, 카드결제도 그 자리에서 바로 되게 붙였다(2026-11-21). */
+        ? priceHTML(TIER_NAME[to] + ' 업그레이드', wonNum(fee)) +
+          payActionsHTML('up-' + to) +
+          kakaoOrderHTML('up-' + to, '💬 결제 완료 · 카톡으로 ' + esc(TIER_NAME[to]) + ' 코드 받기') +
+          '<p class="shop__note">카드로 결제하셨으면 노란 버튼으로 카톡에 알려 주세요. 차액을 확인한 뒤 ' + esc(TIER_NAME[to]) + ' 코드를 보내 드려요.</p>'
+        : '<button type="button" class="btn btn--primary burn__upgrade" data-tier-upgrade="' + to + '">💬 카톡으로 업그레이드 신청</button>' +
+          '<p class="shop__note">누르면 신청 내용이 복사되고 카카오톡 채널이 열려요. 입금을 확인한 뒤 ' + esc(TIER_NAME[to]) + ' 코드를 보내 드려요.</p>') +
       '<button type="button" class="btn modal__done-btn" data-shop-close>닫기</button>';
   }
 
@@ -4932,9 +5043,11 @@
       '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>매일 한 번씩, 날마다</b> 계속 태울 수 있어요. 1년 달력 전체에 매일 1회 액운 태우기까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
       (pass
         ? '<div class="shop__save"><b>이미 1년 패스(14,900원)를 이용 중이세요</b>' +
-          '<span>카톡으로 추가 업그레이드(' + BURN_UPGRADE_PRICE + ')를 신청하시면 올인원 코드로 바로 바꿔 드려요</span></div>' +
-          '<button type="button" class="btn btn--primary burn__upgrade" data-burn-upgrade="1">💬 카톡으로 ' + BURN_UPGRADE_PRICE + ' 업그레이드 신청</button>' +
-          '<p class="shop__note">누르면 신청 내용이 복사되고 카카오톡 채널이 열려요. 확인 후 올인원 입장 코드를 보내 드려요.</p>'
+          '<span>차액 ' + BURN_UPGRADE_PRICE + '만 더 내면 올인원 코드로 바로 바꿔 드려요</span></div>' +
+          priceHTML('올인원 업그레이드', BURN_UPGRADE_PRICE) +
+          payActionsHTML('up-allinone') +
+          kakaoOrderHTML('up-allinone', '💬 결제 완료 · 카톡으로 올인원 코드 받기') +
+          '<p class="shop__note">카드로 결제하셨으면 노란 버튼으로 카톡에 알려 주세요. 차액을 확인한 뒤 올인원 입장 코드를 보내 드려요.</p>'
         : '<ul class="shop__list">' +
           '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
           '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
@@ -5558,8 +5671,20 @@
           /* 카드 버튼이 진짜 링크면(#8847) 기본 이동을 막지 않는다 — 브라우저가 직접 새 장을 열어
              인앱 브라우저의 팝업차단을 피한다. 스크립트로 여는 길은 링크가 없을 때만 남는다. */
           if (pay.getAttribute('data-pay-link')) {
-            payChoice[String(pay.getAttribute('data-item'))] = 'card';
-            cardNote(pay.getAttribute('href'));
+            var pitem = pay.getAttribute('data-item');
+            payChoice[String(pitem)] = 'card';
+            /* 번호를 적었으면 링크 이동을 가로채 페이앱 JS 로 직행 — 연락처 화면을 건너뛴다 */
+            var phone = mobileOf(payPhoneVal());
+            if (phone) {
+              var went = false;
+              try { went = payappGo(pitem, phone); } catch (err) { went = false; }
+              if (went) {
+                e.preventDefault();
+                cardNote(pay.getAttribute('href'), { direct: true, phone: true });
+                return;
+              }
+            }
+            cardNote(pay.getAttribute('href'), { phone: false });
             payLinkGuard(pay.getAttribute('href'));
             return;
           }
@@ -5578,6 +5703,8 @@
       });
       /* 신청 양식 입력 — 팝업을 다시 그려도 값이 남게 메모리에 담고, 안내 문구를 지진다 */
       shopEl.addEventListener('input', function (e) {
+        var ph = e.target.closest ? e.target.closest('[data-pay-phone]') : null;
+        if (ph) { payPhone = ph.value; return; }          // 결제용 번호 — 화면 메모리에만 둔다
         var inp = e.target.closest ? e.target.closest('[data-cf]') : null;
         if (!inp) return;
         var k = inp.getAttribute('data-cf');
