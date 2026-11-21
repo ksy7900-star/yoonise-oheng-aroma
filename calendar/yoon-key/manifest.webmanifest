@@ -1,0 +1,35 @@
+{
+  "id": "/yoonise-oheng-aroma/calendar/yoon-key/",
+  "name": "윤이세 코드발급기",
+  "short_name": "코드발급기",
+  "description": "윤이세 전용 입장 코드 발급기 — 바탕화면 아이콘 하나로 바로 여는 사장님 도구",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFBFD",
+  "theme_color": "#1E293B",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "icon-key-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-key-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-key-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

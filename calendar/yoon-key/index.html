@@ -8,14 +8,24 @@
 <meta name="robots" content="noindex, nofollow, noarchive, noimageindex, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#F6F2EA">
+<meta name="theme-color" content="#1E293B">
 <title>🔒 윤이세 전용 코드 발급기</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Cpath d='M22 29v-5a10 10 0 0 1 20 0v5' fill='none' stroke='%23C79A4E' stroke-width='3'/%3E%3Crect x='18' y='29' width='28' height='20' rx='4' fill='none' stroke='%23C79A4E' stroke-width='3'/%3E%3C/svg%3E">
+
+<!-- 홈 화면 앱(PWA) — 타이밍달력과 다른 앱으로 깔리도록 이름·아이콘·manifest 를 이 폴더 전용으로 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-key-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-key-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="코드발급기">
+<meta name="application-name" content="코드발급기">
 <style>
 :root{
-  --bg:#F6F2EA; --paper:#FFFFFF; --ink:#1D1C19; --ink-2:#48443D; --mute:#8F887B;
-  --hair:rgba(29,28,25,.10); --hair-soft:rgba(29,28,25,.055);
-  --gold:#AE8A50; --gold-deep:#6B5A2E; --gold-soft:#F1E9D9;
+  /* 1안 — 화이트 + 딥네이비(CYA #1E293B) · 포인트 골드 */
+  --bg:#FAFBFD; --paper:#FFFFFF; --ink:#0F172A; --ink-2:#475569; --mute:#64748B;
+  --hair:#E2E8F0; --hair-soft:#EEF2F7;
+  --gold:#B45309; --gold-deep:#92400E; --gold-soft:#FEF3C7;
   --sans:"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
   --serif:"Nanum Myeongjo","Noto Serif KR","AppleMyungjo","Batang",serif;
 }
@@ -32,18 +42,18 @@ body{
 .head__sub{margin:8px 0 0; font-size:11.5px; line-height:1.7; color:var(--mute)}
 .card{
   background:var(--paper); border-radius:22px; padding:18px 16px;
-  box-shadow:0 1px 2px rgba(29,28,25,.03), 0 16px 30px -26px rgba(29,28,25,.4);
+  box-shadow:0 1px 2px rgba(15,23,42,.03), 0 16px 30px -26px rgba(15,23,42,.4);
   border:1px solid var(--hair-soft); margin-bottom:14px;
 }
 .card__title{font-size:13px; font-weight:700; margin:0 0 12px; letter-spacing:-.02em}
 .lb{display:block; font-size:10.5px; font-weight:700; color:var(--ink-2); margin:14px 0 6px}
 .lb:first-of-type{margin-top:0}
-.seg{display:flex; gap:6px; background:#F3EEE4; border-radius:12px; padding:4px}
+.seg{display:flex; gap:6px; background:#F1F5F9; border-radius:12px; padding:4px}
 .seg button{
   flex:1; border:0; background:none; border-radius:9px; padding:9px 0;
   font-size:12px; font-weight:600; color:var(--mute); font-family:inherit;
 }
-.seg button.is-on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(29,28,25,.08)}
+.seg button.is-on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(15,23,42,.08)}
 .row{display:flex; gap:8px}
 select{
   flex:1; min-width:0; appearance:none; font-family:inherit; font-size:13px; font-weight:600;
@@ -55,32 +65,32 @@ select{
   flex:1; border:1px solid var(--hair); background:#fff; border-radius:12px;
   padding:11px 0; font-size:13px; font-weight:600; color:var(--mute); font-family:inherit;
 }
-.chip.is-on{border-color:rgba(174,138,80,.6); background:var(--gold-soft); color:var(--gold-deep)}
+.chip.is-on{border-color:rgba(180,83,9,.45); background:var(--gold-soft); color:var(--gold-deep)}
 .check{display:flex; align-items:center; gap:7px; margin-top:10px; font-size:11.5px; color:var(--ink-2)}
-.check input{width:16px; height:16px; accent-color:#AE8A50}
+.check input{width:16px; height:16px; accent-color:#B45309}
 .prods{display:flex; flex-direction:column; gap:8px}
 .prod{
   display:flex; align-items:center; gap:10px; border:1px solid var(--hair); border-radius:14px;
   padding:12px 13px; background:#fff; font-family:inherit; text-align:left;
 }
-.prod.is-on{border-color:rgba(174,138,80,.6); background:var(--gold-soft)}
+.prod.is-on{border-color:rgba(180,83,9,.45); background:var(--gold-soft)}
 .prod__l{font-size:13px; font-weight:700; color:var(--ink)}
 .prod__s{display:block; font-size:10.5px; color:var(--mute); margin-top:2px; font-weight:500}
 .prod__p{margin-left:auto; font-size:11px; font-weight:700; color:var(--gold-deep)}
 .go{
   width:100%; margin-top:16px; border:0; border-radius:14px; padding:15px 0;
-  background:#1D1C19; color:#F7F2E7; font-size:14px; font-weight:700; font-family:inherit;
+  background:#1E293B; color:#FFFFFF; font-size:14px; font-weight:700; font-family:inherit;
   letter-spacing:-.01em;
 }
 .go:active{transform:translateY(1px)}
-.err{margin:10px 0 0; font-size:11.5px; color:#A0503C; line-height:1.6}
+.err{margin:10px 0 0; font-size:11.5px; color:#BE123C; line-height:1.6}
 .out{margin-top:6px}
 .out__who{font-size:11px; color:var(--mute); margin:0 0 8px}
 .out__who b{color:var(--ink-2)}
 .code{
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   font-size:20px; font-weight:700; letter-spacing:.04em; color:var(--gold-deep);
-  background:var(--gold-soft); border:1px dashed rgba(174,138,80,.5); border-radius:14px;
+  background:var(--gold-soft); border:1px dashed rgba(180,83,9,.35); border-radius:14px;
   padding:16px 12px; text-align:center; word-break:break-all; line-height:1.4;
 }
 .out__meta{margin:9px 0 0; font-size:11px; color:var(--ink-2); line-height:1.65}
@@ -90,8 +100,8 @@ select{
   flex:1; border-radius:12px; padding:12px 0; font-size:12px; font-weight:700; font-family:inherit;
   border:1px solid var(--hair); background:#fff; color:var(--ink-2);
 }
-.btns button.primary{background:#1D1C19; border-color:#1D1C19; color:#F7F2E7}
-.msg{margin:10px 0 0; font-size:11px; color:#4E6B3A; text-align:center; min-height:14px}
+.btns button.primary{background:#1E293B; border-color:#1E293B; color:#FFFFFF}
+.msg{margin:10px 0 0; font-size:11px; color:#047857; text-align:center; min-height:14px}
 .list{margin:0; padding:0; list-style:none}
 .list li{
   display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--hair-soft);
@@ -111,7 +121,7 @@ select{
   font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; letter-spacing:.02em;
 }
 .check2 button{
-  border:0; border-radius:12px; padding:0 14px; background:#1D1C19; color:#F7F2E7;
+  border:0; border-radius:12px; padding:0 14px; background:#1E293B; color:#FFFFFF;
   font-size:12px; font-weight:700; font-family:inherit;
 }
 .foot{margin-top:22px; text-align:center; font-size:10px; color:var(--mute); line-height:1.7}
@@ -128,7 +138,7 @@ body.locked{overflow:hidden}
   width:56px; height:56px; margin:0 auto 16px; border-radius:50%;
   background:#fff; border:1px solid var(--hair);
   display:flex; align-items:center; justify-content:center; font-size:23px;
-  box-shadow:0 14px 26px -20px rgba(29,28,25,.6);
+  box-shadow:0 14px 26px -20px rgba(15,23,42,.45);
 }
 .gate__title{font-family:var(--serif); font-size:21px; line-height:1.45; margin:0; font-weight:600; letter-spacing:-.02em}
 .gate__sub{margin:9px 0 18px; font-size:11.5px; color:var(--mute); line-height:1.6}
@@ -137,15 +147,15 @@ body.locked{overflow:hidden}
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   font-size:24px; letter-spacing:.5em; text-indent:.5em; color:var(--ink);
   background:#fff; border:1px solid var(--hair); border-radius:16px;
-  box-shadow:0 10px 22px -20px rgba(29,28,25,.5);
+  box-shadow:0 10px 22px -20px rgba(15,23,42,.40);
   -webkit-appearance:none; appearance:none;
 }
-.gate__pin::placeholder{color:#D5CCBB; letter-spacing:.45em; text-indent:.45em; font-size:20px}
-.gate__pin:focus{outline:none; border-color:rgba(174,138,80,.8); box-shadow:0 0 0 3px rgba(174,138,80,.14)}
-.gate__err{margin:10px 0 0; font-size:11.5px; color:#A0503C; line-height:1.5; min-height:17px}
+.gate__pin::placeholder{color:#CBD5E1; letter-spacing:.45em; text-indent:.45em; font-size:20px}
+.gate__pin:focus{outline:none; border-color:rgba(180,83,9,.55); box-shadow:0 0 0 3px rgba(180,83,9,.12)}
+.gate__err{margin:10px 0 0; font-size:11.5px; color:#BE123C; line-height:1.5; min-height:17px}
 .gate__btn{
   width:100%; height:52px; margin-top:12px; border:0; border-radius:16px;
-  background:#1D1C19; color:#F7F2E7; font-family:inherit; font-size:14px; font-weight:700;
+  background:#1E293B; color:#FFFFFF; font-family:inherit; font-size:14px; font-weight:700;
   letter-spacing:-.01em;
 }
 .gate__btn:active{transform:translateY(1px)}
