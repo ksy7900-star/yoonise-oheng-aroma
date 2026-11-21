@@ -12,7 +12,7 @@
 <meta property="og:description" content="양식에 적고 결제한 뒤, 노란 버튼 한 번이면 카톡으로 접수 끝.">
 <meta property="og:locale" content="ko_KR">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<!-- 페이앱 JS 연동 — 휴대폰 번호를 실어 보내 연락처 입력 화면을 건너뛴다 (defer: 첫 화면을 막지 않게) -->
+<!-- 카드결제 JS 연동 — 휴대폰 번호를 실어 보내 연락처 입력 화면을 건너뛴다 (defer: 첫 화면을 막지 않게) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 <style>
 /* ==========================================================
@@ -492,7 +492,7 @@ a { color: inherit; }
   /* ── 입력값 되살리기 — '카드결제에 다녀온 그 순간' 하나뿐 ───────
      평상시에는 아무것도 저장하지 않는다. 새 링크로 열든, 새로고침을 하든,
      다른 상품 탭을 고르든 언제나 빈 초기 상태로 시작한다.
-     오직 💳 카드결제(페이앱) 버튼을 누른 순간에만, 결제창에 다녀와도
+     오직 💳 카드결제 버튼을 누른 순간에만, 결제창에 다녀와도
      적던 내용이 날아가지 않도록 같은 탭 안에서만 살아 있는
      sessionStorage 에 잠깐 적어 두고, 돌아와 한 번만 되살린 뒤 바로 지운다. */
   var STORE_KEY = 'yoonise.apply.v1';
@@ -915,9 +915,9 @@ a { color: inherit; }
   });
 
   /* ── 카드결제 ─────────────────────────────
-     ① '연락처 또는 입금자명'에 휴대폰 번호가 적혀 있으면 — 페이앱 JS 연동.
+     ① '연락처 또는 입금자명'에 휴대폰 번호가 적혀 있으면 — 카드결제 JS 연동.
         shopname·goodname·price·recvphone 을 실어 이 창을 결제창으로 넘기므로
-        페이앱의 '연락처 입력' 화면을 건너뛰고 결제수단 선택부터 시작한다.
+        카드결제의 '연락처 입력' 화면을 건너뛰고 결제수단 선택부터 시작한다.
      ② 번호가 없거나 JS 연동을 못 쓰면 — 지금까지의 결제 링크 그대로.
         새 탭이 안 열리는 인앱 브라우저에서는 0.9초 뒤 이 창을 결제창으로 넘긴다. */
   var PAYAPP = { userid: 'yoonise', shopname: '윤이세사주' };

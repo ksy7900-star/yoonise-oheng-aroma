@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261121x">
+<link rel="stylesheet" href="assets/style.css?v=20261121ab">
 </head>
 <body>
 
@@ -243,14 +243,18 @@
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
       </div>
 
-      <!-- 입장 코드 — 카톡으로 받은 '내 전용' 코드를 넣으면 그 사주에 한해 2027년 전체가 열린다 -->
+      <!-- 입장 코드 — 결제할 때 넣은 휴대폰 번호 + 카톡으로 받은 6자리를 넣으면 2027년 전체가 열린다 -->
       <div class="lockpanel" id="lockPanel" hidden>
-        <label class="lockpanel__label" for="lockCode">카톡으로 받은 내 전용 코드를 넣어 주세요</label>
-        <p class="lockpanel__hint">6자리면 충분해요 — <b>P · A · D</b> 한 글자 + 숫자 5자리 (예: A73914)</p>
+        <label class="lockpanel__label" for="lockPhone">결제하신 휴대폰 번호와 6자리 코드를 넣어 주세요</label>
+        <p class="lockpanel__hint"><b>P · A · D</b> 한 글자 + 숫자 5자리 (예: A73914) — 결제할 때 넣은 번호와 함께 넣으면 바로 열려요</p>
         <p class="lockpanel__tier" id="lockTier" hidden></p>
         <div class="lockpanel__row">
+          <input class="lockpanel__input" id="lockPhone" type="tel" inputmode="numeric" autocomplete="tel"
+                 maxlength="13" placeholder="휴대폰 번호 (예: 010-1234-5678)" aria-label="결제하신 휴대폰 번호">
+        </div>
+        <div class="lockpanel__row">
           <input class="lockpanel__input" id="lockCode" type="text" inputmode="text" autocomplete="off"
-                 autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="예: A73914">
+                 autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="예: A73914" aria-label="6자리 입장 코드">
           <button type="button" class="lockpanel__go" id="lockGo">열기</button>
         </div>
         <p class="lockpanel__msg" id="lockMsg" role="status" aria-live="polite"></p>
@@ -325,6 +329,13 @@
           <div class="year__chips" id="yearGoodChips"></div>
         </div>
         <p class="year__note">달력은 보시던 달 그대로 두었어요. 궁금한 달은 위 달력에서 넘겨 보세요.</p>
+
+        <!-- 🎁 친구 초대 혜택 — 결제 전 손님이 바로 초대 루프로 (2026-11-21) -->
+        <div class="invitecard invitecard--year" id="yearInvite" hidden>
+          <p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>
+          <p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>
+          <a class="invitecard__go" href="./member/">친구 초대·케미로 열기 →</a>
+        </div>
       </div>
     </details>
 
@@ -417,6 +428,7 @@
       <h2 class="welcome__title" id="welcomeTitle">내 인생 <span class="welcome__title-em">타이밍 캘린더</span></h2>
       <p class="welcome__intro">내 사주로 2027년 <b>조심할 날은 피해 가고</b>, <b>치고 나갈 날은 놓치지 않게</b> 막힌 운을 뚫어주는 맞춤 달력이에요.</p>
       <p class="welcome__hook">답답하고 일이 안 풀릴 때<br><b>🔥 막힌 기운 태워버리기</b> <span class="welcome__hook-free">(무료 체험)</span></p>
+      <p class="welcome__hook welcome__hook--diary">매일 한 줄이면 충분할 때<br><b>✨ 1줄 성찰 다이어리</b> <span class="welcome__hook-free">(3회 무료 체험)</span></p>
       <button type="button" class="guide__cta welcome__cta" id="welcomeGo" data-welcome-close>내 사주 입력하기</button>
       <p class="welcome__note">생년월일 한 번이면 시작 · 입력한 정보는 이 기기에만 저장돼요</p>
     </div>
@@ -477,6 +489,7 @@
         </li>
       </ol>
 
+      <p class="guide__free">✨ <b>1줄 성찰 다이어리 3회 무료 체험</b> — 부적·액운 태우기와 함께 먼저 써 보세요</p>
       <button type="button" class="guide__cta" id="guideGo" data-guide-close>바로 해보기</button>
     </div>
   </div>
@@ -549,15 +562,15 @@
   </div>
 </div>
 
-<!-- 페이앱 JS 결제 — 결제 버튼 위 '입장 코드 받으실 번호' 한 칸을 받아 연락처 입력 화면 없이 결제수단 선택으로 직행
-     (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 페이앱 링크로 엽니다) -->
+<!-- 카드결제 JS — 결제 버튼 위 '입장 코드 받으실 번호' 한 칸을 받아 연락처 입력 화면 없이 결제수단 선택으로 직행
+     (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261121x"></script>
-<script src="assets/manse.js?v=20261121x"></script>
-<script src="assets/timing.js?v=20261121x"></script>
-<script src="assets/chars.js?v=20261121x"></script>
-<script src="assets/calendar.js?v=20261121x"></script>
-<script src="assets/pwa.js?v=20261121x"></script>
+<script src="vendor/lunar.js?v=20261121ab"></script>
+<script src="assets/manse.js?v=20261121ab"></script>
+<script src="assets/timing.js?v=20261121ab"></script>
+<script src="assets/chars.js?v=20261121ab"></script>
+<script src="assets/calendar.js?v=20261121ab"></script>
+<script src="assets/pwa.js?v=20261121ab"></script>
 </body>
 </html>

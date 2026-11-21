@@ -60,19 +60,19 @@
     return '';
   }
 
-  /* ── 개인 전용 입장 코드 (1결제 = 1사주) ─────────────────────────────────
-     결제한 손님의 사주(양력 생년월일 + 성별)에 비밀 salt 서명을 묶은 코드입니다.
+  /* ── 개인 전용 입장 코드 (1결제 = 1번호, 2026-11-21부터) ──────────────────
+     결제한 손님의 **휴대폰 번호**(결제할 때 넣은 번호)에 비밀 salt 서명을 묶은 코드입니다.
      기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
 
        D21744
          P/A/D    상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션
-         21744    서명 5자리 — 달력에 들어 있는 사주(양력 YYMMDD) + 성별 + 아래 CODE_SALT 로 계산
-                  → 숫자만이라 코드에 생년월일·성별이 드러나지 않는다
+         21744    서명 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + 아래 CODE_SALT 로 계산
+                  → 사주를 넣지 않아도 되고, 사장님이 번호만 발급기에 넣으면 3초에 코드가 나온다
 
-     → 코드를 넣을 때 지금 사주로 서명을 다시 계산해 맞춰 보고, 맞으면 그 사주 전용으로 연다.
-       다른 생년월일·성별로 넣으면 숫자가 맞지 않아 열리지 않는다. (1결제 2인 사용 차단)
-     → 예전 18자리 코드(YS-P-791025F-K7QM3)도 그대로 받아 준다(호환).
-     → 나영 님 전용 발급기: 2026-11-21 공개 저장소에서 내려 이 컴퓨터에만 있는 파일(work/yoonise-code-issuer.html)로 옮겼다.
+     → 손님은 [휴대폰 번호 + 6자리 코드]를 함께 넣는다. 번호와 코드가 맞으면 바로 열린다.
+       번호가 다르면 숫자가 맞지 않아 열리지 않는다. (코드를 남에게 옮겨도 번호를 모르면 못 연다)
+     → 예전(사주 기반) 6자리 코드와 18자리 코드(YS-P-791025F-K7QM3)도 계속 열린다(호환).
+     → 나영 님 전용 발급기: calendar/yoon-key/ (비밀번호 4자리로 잠금).
      ★ 아래 CODE_SALT·서명 함수는 그 발급기와 반드시 똑같이 맞춰야 한다(발급기를 고치면 여기도 같이). */
   var CODE_SALT = 'yoonise-2027-timing-9f3a';
   var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
@@ -465,6 +465,7 @@
         $('#result').hidden = false;
         document.body.classList.add('is-result');   // 달력이 열리면 히어로는 얇은 브랜드 줄로 접힌다
         render();
+        payBackCheck();      // 결제하고 돌아온 기기라면 사주를 넣자마자 맨 위에 '카톡으로 코드 받기' 한 줄
         if (!codeOk && state.mismatch) {
           toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — ' +
             (trialOver() ? '무료 체험도 끝나 지금은 잠겨 있어요' : '지금 사주로는 ' + FREE_DAYS + '일 무료 체험만 열려요'));
@@ -723,6 +724,9 @@
       }
     }
 
+    var yInvite = $('#yearInvite');
+    if (yInvite) yInvite.hidden = !locked;
+
     $('#yearGoodChips').innerHTML = d.good.length
       ? d.good.map(function (m) { return chip(m, false, false); }).join('')
       : '<p class="year__none">좋은 달이 따로 없이 고르게 열려 있어요.</p>';
@@ -786,8 +790,14 @@
     h ^= h >>> 16;
     return h >>> 0;
   }
-  /** 6자리 간단 코드의 숫자 5자리 — 10000~99999 (앞자리 0 이 나오지 않는다) */
-  function codeDigits(letter, ymd, gender) {
+  /** 6자리 간단 코드의 숫자 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + SALT. 10000~99999 */
+  function codeDigits(letter, phone) {
+    var base = CODE_SALT + '|p|' + letter + '|' + phone;
+    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#pd')) % 90000);
+  }
+  /** 예전(2026-11-21 이전) 사주 기반 6자리의 숫자 5자리 — 테스트로 발급한 코드를 계속 열기 위한 호환 계산.
+      지금은 쓰지 않지만 지우면 그때 코드가 잠긴다. */
+  function codeDigitsSaju(letter, ymd, gender) {
     var base = CODE_SALT + '|6|' + letter + '|' + ymd + '|' + gender;
     return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#6d')) % 90000);
   }
@@ -795,13 +805,16 @@
     return 'YS-' + letter + '-' + ymd + gender + '-' + sign;
   }
   /** 코드 문자열 → { status, ... } · status 로 무엇이 잘못됐는지 구분한다
-     ok        서명이 맞고 지금 사주와도 맞음 → 열 수 있다
+     ok        번호(또는 예전 사주)와 코드가 맞음 → 열 수 있다
      empty     아무것도 안 넣음
      format    6자리도 예전 18자리도 아닌 모양
      bad       예전 18자리 모양이지만 서명이 틀림
-     noid      달력에 사주가 아직 없어 비교할 수 없음
-     mismatch  6자리 코드인데 지금 사주로 계산한 숫자와 다름 (다른 사주이거나 잘못 옮긴 코드) */
-  function parseCode(v, id) {
+     needphone 6자리 코드인데 휴대폰 번호를 안 넣음 (번호 + 코드가 한 쌍)
+     mismatch  6자리 코드인데 그 번호로 계산한 숫자와 다름 (다른 번호이거나 잘못 옮긴 코드)
+     ※ ctx = { phone, ymd, gender } — phone 은 결제하신 휴대폰 번호(숫자만),
+        ymd·gender 는 예전 사주 기반 코드를 계속 열기 위한 지금 사주 값 */
+  function parseCode(v, ctx) {
+    ctx = ctx || {};
     var n = normCode(v);
     if (!n) return { status: 'empty' };
     var legacy = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
@@ -817,21 +830,42 @@
     var simple = /^([PAD])(\d{5})$/.exec(n);
     if (!simple) return { status: 'format' };
     var letter = simple[1];
-    if (!id) return { status: 'noid', letter: letter };
-    if (codeDigits(letter, id.ymd, id.gender) !== simple[2]) {
-      return { status: 'mismatch', letter: letter, id: id };
+    var phone = ctx.phone || '';
+    if (phone) {
+      if (codeDigits(letter, phone) === simple[2]) {
+        return {
+          status: 'ok', legacy: false,
+          code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
+          phone: phone
+        };
+      }
+      /* 예전 사주 기반 6자리 — 그때 사주와 지금 사주가 같으면 계속 열어 준다 */
+      if (ctx.ymd && codeDigitsSaju(letter, ctx.ymd, ctx.gender) === simple[2]) {
+        return {
+          status: 'ok', legacy: false,
+          code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
+          ymd: ctx.ymd, gender: ctx.gender
+        };
+      }
+      return { status: 'mismatch', letter: letter, phone: phone };
     }
-    return {
-      status: 'ok', legacy: false,
-      code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
-      ymd: id.ymd, gender: id.gender
-    };
+    if (!ctx.ymd) return { status: 'needphone', letter: letter };
+    if (codeDigitsSaju(letter, ctx.ymd, ctx.gender) === simple[2]) {
+      return {
+        status: 'ok', legacy: false,
+        code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
+        ymd: ctx.ymd, gender: ctx.gender
+      };
+    }
+    return { status: 'mismatch', letter: letter };
   }
   /** 코드가 맞지 않을 때 — 무엇이 문제인지에 맞춰 한 줄로 알려 준다 */
   function codeErrorText(p) {
-    if (p.status === 'noid') return '먼저 내 사주(생년월일·성별)를 넣어 주세요. 코드는 그 사주에서만 열려요.';
+    if (p.status === 'needphone') return '결제하신 휴대폰 번호를 함께 넣어 주세요 — 번호와 6자리 코드가 맞아야 열려요.';
     if (p.status === 'mismatch') {
-      return '코드가 지금 사주(' + (p.id ? p.id.label : '') + ')와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
+      return p.phone
+        ? '번호와 코드가 맞지 않아요. 결제하실 때 넣은 번호와 카톡으로 받은 6자리를 다시 확인해 주세요.'
+        : '코드가 지금 사주(' + (p.id ? p.id.label : '') + ')와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
     }
     if (p.status === 'format') return '코드 모양이 달라요 — P·A·D 한 글자 + 숫자 5자리, 또는 예전 18자리 코드를 넣어 주세요.';
     if (p.status === 'empty') return '카톡으로 받은 입장 코드를 넣어 주세요. (예: A73914)';
@@ -850,26 +884,42 @@
       label: s.y + '.' + pad2(s.m) + '.' + pad2(s.d) + ' (' + (g === 'M' ? '남' : '여') + ')'
     };
   }
-  /** 코드 주인 표기 — '1979년 10월 25일 · 여성' */
+  /** 코드 주인 표기 — 번호 기반이면 '010-****-5678', 예전 사주 기반이면 '1979년 10월 25일 · 여성' */
   function codeOwnerLabel(code) {
+    if (code && code.phone) return maskPhone(code.phone);
     if (!code || !code.ymd) return '이 코드의 주인';
     var yy = Number(code.ymd.slice(0, 2)), mm = Number(code.ymd.slice(2, 4)), dd = Number(code.ymd.slice(4, 6));
     var thisYY = new Date().getFullYear() % 100;
     var year = yy <= thisYY ? 2000 + yy : 1900 + yy;
     return year + '년 ' + mm + '월 ' + dd + '일 · ' + (code.gender === 'M' ? '남성' : '여성');
   }
+  /** 이 코드로 무엇이 열렸는지 — '010-****-5678 번호' / '1979년 10월 25일 · 여성 사주' / '이 기기' */
+  function unlockTargetLabel(code) {
+    if (!code) return '이 기기';
+    if (code.phone) return maskPhone(code.phone) + ' 번호';
+    if (code.ymd) return codeOwnerLabel(code) + ' 사주';
+    return '이 기기';
+  }
+  /** '01012345678' → '010-****-5678' (화면·안내에 번호를 그대로 다 적지 않는다) */
+  function maskPhone(d) {
+    var f = fmtPhone(String(d || '').replace(/\D/g, ''));
+    return f.replace(/^(\d{3})-(\d{3,4})-(\d{4})$/, function (_, a, b, c) {
+      return a + '-' + new Array(b.length + 1).join('*') + '-' + c;
+    });
+  }
 
   /* ── 입장 코드 잠금 해제 ─────────────────────────────────────
-     결제 후 카톡으로 받은 '개인 전용 코드'를 넣으면 그 사주에 한해 2026-11 ~ 2027-12 전체가 열린다.
-     코드 주인(생년월일·성별)까지 함께 저장하고, 다른 사주로 바꾸면 다시 잠근다. */
+     결제 후 카톡으로 받은 6자리 코드 + 결제하신 휴대폰 번호를 넣으면 2026-11 ~ 2027-12 전체가 열린다.
+     지금은 번호 기반(2026-11-21~)이라 사주와 묶지 않고 이 기기에 저장한다.
+     예전에 저장된 사주 기반 코드(v2: ymd·gender)는 그 사주에만 계속 묶어 둔다. */
   function loadUnlock() {
     state.code = null; state.tier = ''; state.unlocked = false; state.mismatch = null;
     var raw = '', old = '';
     try { raw = localStorage.getItem(UNLOCK_KEY) || ''; old = localStorage.getItem(LEGACY_UNLOCK_KEY) || ''; } catch (e) { raw = ''; old = ''; }
     var o = null;
     try { o = raw ? JSON.parse(raw) : null; } catch (e) { o = null; }
-    if (o && TIER_NAME[o.tier] && (o.code || o.ymd)) {
-      state.code = { code: o.code || '', tier: o.tier, ymd: o.ymd || '', gender: o.gender || '' };
+    if (o && TIER_NAME[o.tier] && (o.code || o.ymd || o.phone)) {
+      state.code = { code: o.code || '', tier: o.tier, ymd: o.ymd || '', gender: o.gender || '', phone: o.phone || '' };
       state.tier = o.tier;
       state.unlocked = true;
       return;
@@ -882,16 +932,20 @@
       state.unlocked = true;
     }
   }
-  /** 코드 저장 — o 가 없으면 잠금. { code, tier, ymd, gender } */
+  /** 코드 저장 — o 가 없으면 잠금. { code, tier, phone, ymd, gender } */
   function saveUnlock(o) {
     var tier = o && TIER_NAME[o.tier] ? o.tier : '';
     state.tier = tier;
-    state.code = tier ? { code: o.code || '', tier: tier, ymd: o.ymd || '', gender: o.gender || '', legacy: !!o.legacy } : null;
+    state.code = tier ? {
+      code: o.code || '', tier: tier, phone: o.phone || '',
+      ymd: o.ymd || '', gender: o.gender || '', legacy: !!o.legacy
+    } : null;
     state.unlocked = !!tier;
     try {
       if (tier) {
         localStorage.setItem(UNLOCK_KEY, JSON.stringify({
-          v: 2, code: o.code || '', tier: tier, ymd: o.ymd || '', gender: o.gender || '',
+          v: 3, code: o.code || '', tier: tier, phone: o.phone || '',
+          ymd: o.ymd || '', gender: o.gender || '',
           at: new Date().toISOString()
         }));
       } else {
@@ -900,10 +954,13 @@
       if (tier) localStorage.removeItem(LEGACY_UNLOCK_KEY);
     } catch (e) {}
   }
-  /** 코드 주인과 지금 사주가 같은 사람인지 확인 — 다르면 곧바로 잠금으로 되돌린다. */
+  /** 코드가 지금 이 기기에서 살아 있는지 확인 —
+     번호 기반 코드는 이 기기에 그대로 열려 있고(사주와 무관),
+     예전 사주 기반 코드는 그 사주를 넣었을 때만 열린다. */
   function syncCodeBinding() {
     state.mismatch = null;
     if (!state.tier || !state.code) { state.unlocked = false; return false; }
+    if (state.code.phone) { state.unlocked = true; return true; }
     var id = currentIdentity();
     if (!state.code.ymd) {                     // 예전 고정 코드 — 지금 사주 1명에게 묶는다
       if (!id) { state.unlocked = false; return false; }
@@ -933,6 +990,10 @@
      · 정적 웹이라 브라우저 기록을 지우면 사라지므로 '📖 내 성찰 기록 보기'에서 .txt 백업을 둔다. */
   var DIARY_KEY = 'yoonise.timing.diary.v1';
   var DIARY_MAX = 120;
+  /* 무료 체험 손님도 1줄 성찰 다이어리를 **3회**까지 써 볼 수 있다 (2026-11-21 김나영 님 확정).
+     3회를 다 쓰면 성찰 에디션 안내로 바뀌고, 이미 쓴 기록은 계속 열어 볼 수 있다. */
+  var DIARY_TRY_KEY = 'yoonise.timing.diary.try.v1';
+  var DIARY_FREE_TRIES = 3;
   var DIARY_CATS = ['소통', '입단속', '결정', '머니', '리셋'];
   var DIARY_CAT_CLASS = { '소통': 'gold', '럭키': 'gold', '입단속': 'red', '결정': 'blue', '머니': 'blue', '리셋': 'gray' };
   var DIARY_Q = {
@@ -998,15 +1059,37 @@
     ]
   };
   var diary = { entries: {} };
+  var diaryTry = { used: 0 };     // 무료 체험으로 남긴 횟수 (성찰 에디션은 세지 않는다)
 
+  /** 성찰 에디션(또는 테스트 모드) — 다이어리를 제한 없이 쓴다 */
+  function diaryTierOpen() {
+    if (!FREE_TRIAL_ENABLED) return true;
+    return tierAtLeast('diary');
+  }
+  /** 3회 무료 체험 대상 — 코드 없이 무료 체험 중인 손님만 (1년 패스·올인원은 성찰 에디션에서) */
+  function diaryTryEligible() {
+    return FREE_TRIAL_ENABLED && !diaryTierOpen() && !state.unlocked;
+  }
+  /** 무료로 남은 성찰 횟수 — 유료면 의미 없음(3으로 표시) */
+  function diaryTryLeft() {
+    if (diaryTierOpen()) return DIARY_FREE_TRIES;
+    if (!diaryTryEligible()) return 0;
+    return Math.max(0, DIARY_FREE_TRIES - diaryTry.used);
+  }
+  /** 성찰 섹션을 열지 — 무료 3회가 남았거나, 이미 쓴 기록이 있으면(보기) 연다 */
   function diaryAllowed() {
-    if (!FREE_TRIAL_ENABLED) return true;        // 지금 모드 — 전부 열린 상태(테스트 포함)
-    return tierAtLeast('diary');                 // 무료 체험을 켜면 성찰 에디션부터
+    if (diaryTierOpen()) return true;
+    return diaryTryLeft() > 0 || diaryCount() > 0;
   }
   function loadDiary() {
-    var o = null;
+    var o = null, t = null;
     try { o = JSON.parse(localStorage.getItem(DIARY_KEY)); } catch (e) { o = null; }
+    try { t = JSON.parse(localStorage.getItem(DIARY_TRY_KEY)); } catch (e) { t = null; }
     diary.entries = (o && o.entries && typeof o.entries === 'object') ? o.entries : {};
+    diaryTry.used = (t && typeof t.used === 'number' && t.used >= 0) ? Math.min(DIARY_FREE_TRIES, t.used) : 0;
+  }
+  function saveDiaryTry() {
+    try { localStorage.setItem(DIARY_TRY_KEY, JSON.stringify({ v: 1, used: diaryTry.used })); } catch (e) {}
   }
   function saveDiary() {
     try { localStorage.setItem(DIARY_KEY, JSON.stringify({ v: 1, entries: diary.entries })); } catch (e) {}
@@ -1045,13 +1128,19 @@
     return '<span class="day__pen" aria-hidden="true"></span>';
   }
 
-  /** 날짜 팝업 안 성찰 섹션 — 부적 톡톡톡 완료 영역 아래 */
+  /** 날짜 팝업 안 성찰 섹션 — 부적 톡톡톡 완료 영역 아래
+      무료 손님: 3회까지 쓸 수 있고, 다 쓰면 성찰 에디션 안내로 바뀐다. */
   function diarySectionHTML(info) {
     if (!diaryAllowed()) {
+      var out = diaryTryEligible() && diaryTry.used >= DIARY_FREE_TRIES;
       return '<section class="diary diary--locked" aria-label="365일 1줄 성찰 다이어리">' +
         '<p class="diary__eyebrow">✨ 365일 1줄 성찰 다이어리</p>' +
-        '<p class="diary__q">매일 다른 질문 한 줄이, 1년이 쌓이면 내 기록이 돼요.</p>' +
-        '<button type="button" class="diary__unlock" data-shop="diary">✨ 성찰 에디션 24,900원에서 열기</button>' +
+        '<p class="diary__q">' + (out
+          ? '무료 <b>3회</b>를 다 썼어요. 매일 다른 질문 한 줄이 1년 쌓이면 내 기록이 돼요.'
+          : '매일 다른 질문 한 줄이, 1년이 쌓이면 내 기록이 돼요.') + '</p>' +
+        (out ? '<p class="diary__try-note">성찰 에디션에서 <b>365일 내내</b> 이어서 쓸 수 있어요 · 오늘까지 남긴 기록은 그대로 남아 있어요.</p>' : '') +
+        '<button type="button" class="diary__unlock" data-shop="diary">✨ 성찰 에디션 24,900원에서 ' +
+        (out ? '계속 쓰기' : '열기') + '</button>' +
         '</section>';
     }
     return '<section class="diary" data-diary="' + info.iso + '" aria-labelledby="diaryTitle">' +
@@ -1070,7 +1159,10 @@
     var cat = (rec && !editing) ? (rec.cat || ask.cat) : ask.cat;
     var q = (rec && !editing && rec.q) ? rec.q : ask.q;
     var plainDay = (rec && !editing) ? !!rec.plain : !hasBadge;
-    var head =
+    var tryStrip = !diaryTryEligible() ? '' :
+      '<p class="diary__try">✨ 1줄 성찰 다이어리 <b>3회 무료 체험</b> · 남은 <b>' + diaryTryLeft() + '회</b>' +
+      (diaryTryLeft() > 0 ? '' : ' — 성찰 에디션에서 계속 쓸 수 있어요') + '</p>';
+    var head = tryStrip +
       '<div class="diary__meta">' +
       (plainDay
         ? '<span class="badge badge--gray">잔잔한 날</span><span class="diary__tag">오늘의 결</span>'
@@ -1143,13 +1235,26 @@
     }
     if (text.length > DIARY_MAX) text = text.slice(0, DIARY_MAX);
     var ask = diaryAsk(iso, info);
+    var isNew = !diary.entries[iso];
+    /* 무료 체험 손님은 '새 기록'만 횟수를 센다 — 이미 쓴 날의 고치기는 세지 않는다 */
+    if (isNew && !diaryTierOpen() && diaryTryLeft() <= 0) {
+      toast('무료 3회를 다 썼어요 — 성찰 에디션에서 계속 쓸 수 있어요');
+      return;
+    }
     diary.entries[iso] = { cat: ask.cat, q: ask.q, text: text, plain: !((info.badges || []).length), at: new Date().toISOString() };
     saveDiary();
+    if (isNew && !diaryTierOpen()) { diaryTry.used = Math.min(DIARY_FREE_TRIES, diaryTry.used + 1); saveDiaryTry(); }
     paintDiary(iso);
     renderCalendar();
     sfxDone();
     vibrate(18);
-    toast('✍️ ' + fmtMD(iso) + ' 성찰 한 줄을 남겼어요 — 달력에 펜 점이 찍혔어요');
+    if (!diaryTierOpen() && diaryTryLeft() <= 0) {
+      toast('✍️ ' + fmtMD(iso) + ' 남겼어요 — 무료 3회를 다 썼어요. 기록은 그대로 남아 있어요');
+    } else if (!diaryTierOpen()) {
+      toast('✍️ ' + fmtMD(iso) + ' 남겼어요 · 무료 ' + diaryTryLeft() + '회 남았어요');
+    } else {
+      toast('✍️ ' + fmtMD(iso) + ' 성찰 한 줄을 남겼어요 — 달력에 펜 점이 찍혔어요');
+    }
   }
   function deleteDiaryFromModal() {
     var wrap = modalBody ? modalBody.querySelector('[data-diary]') : null;
@@ -2024,8 +2129,11 @@
     var open = isOpenDay(iso);
     var pastDay = iso < state.todayISO;
     var trialLocked = FREE_TRIAL_ENABLED && !state.unlocked;
-    return badges.length ? true
-      : (trialLocked ? true : (diaryAllowed() ? open : (!open && !pastDay)));
+    if (badges.length) return true;                 // 부적 팝업·톡톡톡
+    if (trialLocked) return true;                   // 잠긴 날은 여는 방법을 알려 준다
+    if (diaryAllowed()) return open;                // 성찰 다이어리는 열린 날만
+    /* 코드로 열린 기기 — 딱지 없는 평범한 날도 눌러 '잔잔한 날' 한 줄 안내를 받는다 (2026-11-21) */
+    return open ? true : !pastDay;
   }
   /** 말풍선을 띄울 날 — 이번 달 안에서만. 없으면 '' */
   function hintIsoFor(v, dim) {
@@ -2300,7 +2408,9 @@
     // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
     // 잠긴 날(지난 날·체험 범위 밖)은 누르면 여는 방법을 알려 준다.
     if (!hasBadges && !diaryAllowed() && !lock) {
-      if (FREE_TRIAL_ENABLED && !state.unlocked) toast('이 날은 딱지가 붙지 않은 잔잔한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
+      toast(state.unlocked || !FREE_TRIAL_ENABLED
+        ? '이 날은 특별히 피할 일 없이 잔잔하게 흘러가는 날이에요.'
+        : '이 날은 딱지가 붙지 않은 잔잔한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
       return;
     }
     lastFocus = document.activeElement;
@@ -2435,9 +2545,18 @@
       '</span></button>';
   }
 
-  /** 잠금 팝업 하단 — 결제 버튼 아래 한 줄, 부담 없는 친구 초대 링크 (2026-11-21) */
+  /** 🎁 친구 초대 혜택 카드 — 결제를 망설이는 손님을 바로 초대 루프로 (2026-11-21 김나영 님 확정)
+      사다리: 1명 액운 태우기 3회 + 전 상품 할인 쿠폰 · 3명 1개월 · 5명 2개월 · 10명 3개월 패스 */
+  function inviteCardHTML(cls) {
+    return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
+      '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
+      '<p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>' +
+      '<a class="invitecard__go" href="./member/">친구 초대·케미로 열기 →</a>' +
+      '</div>';
+  }
+  /** 잠금 팝업 하단 — 결제 버튼 아래, 부담 없는 친구 초대 링크 (2026-11-21) */
   function lockInviteHTML() {
-    return '<a class="lock__invite" href="./member/">🎁 친구 초대하고 무료로 열기 →</a>';
+    return inviteCardHTML('invitecard--lock');
   }
 
   /** 잠금 팝업 머리 — 스크롤이 생겨도 날짜가 상단 버튼 아래에서 잘리지 않게
@@ -2469,6 +2588,7 @@
           '일)이 끝났어요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.'
         : '무료 체험은 ' + ws.m + '월 ' + ws.d + '일부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
           '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
+      diaryTrialLine() +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
       lockInviteHTML() +
@@ -2476,6 +2596,14 @@
       '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
   }
 
+  /** 잠금·결제 팝업에 붙는 '성찰 다이어리 3회 무료 체험' 한 줄 (2026-11-21) */
+  function diaryTrialLine() {
+    if (!diaryTryEligible()) return '';
+    var left = diaryTryLeft();
+    return '<p class="lock__diary">✨ 1줄 성찰 다이어리도 ' + (left > 0
+      ? '<b>3회 무료 체험</b> 중 — ' + left + '회 남았어요'
+      : '<b>3회 무료 체험</b>을 다 썼어요 — 성찰 에디션에서 계속') + '</p>';
+  }
   function lockModalHTML(info) {
     var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
     var markHtml = marks.map(function (m) {
@@ -2489,7 +2617,8 @@
       (over
         ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>입장 코드를 넣으면 전체가 열려요</p>'
         : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>') +
-      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>내 생년월일·성별 전용 코드</b>를 카톡으로 보내 드려요</p>' +
+      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
+      diaryTrialLine() +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">' + (over
@@ -2598,7 +2727,7 @@
   var TIERSW = [
     { k: 'pass', ic: '🎟️', nm: '1년 패스', pr: PASS_PRICE, df: '달력·1년 부적·태우기 5회', tag: '' },
     { k: 'allinone', ic: '👑', nm: '올인원', pr: ALLINONE_PRICE, df: '매일 일진부적·매일 1회 태우기', tag: '인기' },
-    { k: 'diary', ic: '✨', nm: '성찰 에디션', pr: DIARY_PRICE, df: '365일 1줄 성찰 다이어리', tag: '추천' }
+    { k: 'diary', ic: '✨', nm: '성찰 에디션', pr: DIARY_PRICE, df: '365일 1줄 다이어리 · 지금 3회 무료', tag: '추천' }
   ];
   function tierswHTML(active) {
     return '<div class="tiersw" role="group" aria-label="2027 상품 세 가지 — 눌러서 비교하고 바꿔 보세요">' +
@@ -2614,7 +2743,7 @@
           '</button>';
       }).join('') +
       '</div>' +
-      '<p class="tiersw__hint">다른 구성을 누르면 그 자리에서 바로 바뀌어요</p>';
+      '<p class="tiersw__hint">다른 구성을 누르면 그 자리에서 바로 바뀌어요 · ✨ 1줄 성찰 다이어리는 <b>3회 무료 체험</b> 중</p>';
   }
 
   /* ── 결제 두 버튼 — 💳 카드결제 (페이앱) · 🏦 계좌이체 ────────────────────
@@ -2627,7 +2756,8 @@
      바로 결제수단(카드·간편결제) 선택 화면으로 들어갑니다 — /apply/ 와 같은 방식입니다.
        · payapp-lite.js 가 안 실렸거나(차단·오프라인) 실패하면 지금까지처럼 링크로 엽니다.
        · 받는 번호(recvphone)는 **숫자만** 넘겨야 합니다('010-…' 는 페이앱이 거부).
-       · 적은 번호는 이 화면(메모리)에만 두고 저장소에 남기지 않습니다. */
+       · returnurl 로 결제 직후 이 달력에 스스로 돌아옵니다(2026-11-21) — 뒤로가기를 누를 필요가 없다.
+       · 적은 번호는 코드 확인용으로 이 기기(localStorage)에만 남깁니다 — 서버로 보내지 않습니다. */
   var PAYAPP = { userid: 'yoonise', shopname: '윤이세사주' };
   /* 결제창에 찍히는 상품명 — 기존 결제 링크(z4otyE·z4otzE·z4ovHA·z4ovI1)와 같은 이름으로 맞춘다.
      차액 업그레이드(7,900원)는 링크가 없어도 JS 로 금액을 실어 보낼 수 있다. */
@@ -2665,6 +2795,20 @@
         3시간 동안 세션에 기억해 두고 돌아오면 결과 맨 위에 한 줄로 다시 내밉니다. (2026-11-21) */
   var PAYWAIT_KEY = 'yoonise.timing.paywait.v1';
   var PAYWAIT_MS = 3 * 60 * 60 * 1000;
+  /* 결제하며 적은 휴대폰 번호 — 결제창을 다녀와도 입장 코드 칸에 그대로 채워 두려고 이 기기에만 남긴다.
+     (이 번호 + 6자리 코드가 한 쌍이라, 번호를 다시 찾지 않아도 되게) */
+  var PHONE_KEY = 'yoonise.timing.phone.v1';
+  function rememberPhone(phone) {
+    var d = mobileOf(phone);
+    if (!d) return;
+    payPhone = d;
+    try { localStorage.setItem(PHONE_KEY, d); } catch (e) { }
+  }
+  function rememberedPhone() {
+    var d = '';
+    try { d = localStorage.getItem(PHONE_KEY) || ''; } catch (e) { d = ''; }
+    return mobileOf(d) || mobileOf(payPhone) || '';
+  }
   function payWaitSave(item, phone) {
     try { sessionStorage.setItem(PAYWAIT_KEY, JSON.stringify({ item: String(item), phone: String(phone || ''), t: Date.now() })); } catch (e) { }
   }
@@ -2682,17 +2826,33 @@
     var o = payWaitRead();
     if (!o) { bar.hidden = true; return; }
     payBackItem = o.item;
-    /* 결제창으로 넘어가기 전에 적어 둔 번호를 그대로 살려 — 카톡 접수 문구에 바로 채워진다 */
-    if (o.phone) { payPhone = o.phone; payChoice[String(o.item)] = 'card'; }
+    /* 결제창으로 넘어가기 전에 적어 둔 번호를 그대로 살려 — 카톡 접수 문구에 바로 채워지고,
+       입장 코드 칸에도 미리 들어간다 */
+    if (o.phone) { rememberPhone(o.phone); payChoice[String(o.item)] = 'card'; }
     var what = $('#payBackWhat');
     if (what) what.textContent = orderLabel(o.item) + ' · 결제를 마치셨다면 한 번만 눌러 주세요.';
     bar.hidden = false;
+  }
+  /* 페이앱이 결제 완료 후 returnurl 로 되돌려 보낸 경우(?paid=1) —
+     결제하러 간 상품을 주소에 실어 두었으니, 세션이 끊겼어도 복귀 배너를 띄운다.
+     띄운 뒤에는 주소에서 paid=1 을 지워(새로고침해도 다시 뜨지 않게) 깔끔한 달력 주소로 되돌린다. */
+  function payReturnCheck() {
+    var q = '';
+    try { q = String(location.search || ''); } catch (e) { return; }
+    if (!/[?&]paid=1(&|$)/.test(q)) return;
+    var m = /[?&]o=([A-Za-z0-9-]+)/.exec(q);
+    var item = m ? decodeURIComponent(m[1]) : '';
+    if (!payWaitRead() && item && (payInfoOf(item) || /^care-/.test(item))) payWaitSave(item, '');
+    try {
+      if (history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+    } catch (e) { }
   }
   function payappGo(item, phone) {
     if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
     var info = payInfoOf(item);
     if (!info || !info.price || !phone) return false;
     payWaitSave(item, phone);
+    rememberPhone(phone);
     PayApp.setTarget('_self');            /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
     PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
     PayApp.setParam({
@@ -2702,10 +2862,19 @@
       redirectpay: '1',                   /* 연락처 입력 화면 없이 결제수단 선택으로 직행 */
       smsuse: 'n',                        /* 결제요청 문자는 보내지 않는다 */
       charset: 'utf-8',
+      returnurl: payReturnUrl(item),      /* 결제 완료 후 이 달력으로 스스로 돌아온다 (뒤로가기 불필요) */
       var1: String(item)                  /* 결제내역에서 상품 구분용 */
     });
+    /* skip_cstpage 는 넣지 않는다 — GitHub Pages 가 POST 를 405 로 막아 흰 화면이 된다 */
     PayApp.payrequest();
     return true;
+  }
+  /** 페이앱 returnurl — 결제를 마치면 매출전표의 '확인'을 누를 때 이 달력으로 되돌아온다.
+     돌아온 주소(?paid=1)를 보면 결과 맨 위에 '카톡으로 입장 코드 받기' 배너를 바로 띄운다. */
+  function payReturnUrl(item) {
+    var base = '';
+    try { base = location.origin + location.pathname; } catch (e) { base = ''; }
+    return base + '?paid=1&o=' + encodeURIComponent(String(item || ''));
   }
   /* 번호 입력칸 — 결제 버튼 바로 위 한 칸. 이 번호로 페이앱이 결제를 받고, 코드도 이 번호로 간다. */
   function phoneFieldHTML(item) {
@@ -2715,7 +2884,7 @@
       '<input class="payphone__inp" id="payPhone-' + esc(item) + '" type="tel" inputmode="numeric"' +
       ' autocomplete="tel" maxlength="13" placeholder="010-1234-5678"' +
       ' value="' + esc(payPhone) + '" data-pay-phone="' + esc(item) + '">' +
-      '<span class="payphone__hint">결제 확인과 코드 발송에만 써요 · 이 화면에 저장하지 않아요</span>' +
+      '<span class="payphone__hint">결제 확인과 코드 발송에만 써요 · 이 기기에만 기억해요</span>' +
       '</label>';
   }
   function payPhoneVal() {
@@ -2763,7 +2932,7 @@
     var bank = bankReady();
     var bankSub = opts.bankSub || (bank ? esc(String(BANK_NAME).trim()) + ' · 계좌번호 복사' : '카카오톡으로 입금 계좌 안내');
     var cardInner = '<span class="pay__ico" aria-hidden="true">💳</span>' +
-      '<span class="pay__label"><b>카드결제 (페이앱)</b>' +
+      '<span class="pay__label"><b>카드결제</b>' +
       '<span>' + (card ? '카드·간편결제로 바로 결제' : '카카오톡으로 결제 링크 받기') + '</span></span>';
     /* 카드결제 — 페이앱 결제 링크가 있는 상품은 **진짜 링크**로 만든다(#8847).
        인앱 브라우저는 스크립트가 여는 새 창(window.open)을 팝업으로 막지만,
@@ -2898,23 +3067,35 @@
     }
     return s;
   }
+  /** 결제 확인용 한 줄 — 코드가 번호 기반(2026-11-21~)이면 그 번호, 예전 사주 기반이면 생년월일시·성별 */
+  function ownerMatchLine() {
+    if (state.code && state.code.phone) return '결제 확인 — 휴대폰 번호: ' + fmtPhone(state.code.phone);
+    return birthLine();
+  }
   /** 긴급 개운템은 계좌이체 전용(payActionsHTML card:false) — 확인 항목도 입금자명 하나 */
   function kakaoCareItem(item) { return /^care(-|$)/.test(String(item || '')); }
-  /** 결제 확인 항목 — 카드결제는 결제할 때 넣은 연락처, 계좌이체는 입금자명. 값은 고객이 뒤에 적는다. */
+  /** 결제 확인 항목 — 카드결제는 결제할 때 넣은 연락처, 계좌이체는 입금자명 + 코드 받을 번호.
+      2026-11-21부터 입장 코드는 **번호 + 상품**으로 나므로, 사장님이 이 번호 한 줄만 복사해 발급기에 넣으면 된다. */
   function payIdLine(item) {
     var it = String(item || '');
     var kind = kakaoCareItem(it) ? 'bank' : payChoice[it];
-    var ph = mobileOf(payPhoneVal());          /* 결제 팝업에서 적어 둔 번호 — 있으면 그대로 적어 보낸다 */
-    if (kind === 'card') return '결제 확인 — 카드결제 연락처' + (ph ? ': ' + fmtPhone(ph) : '(뒷자리만 적어도 돼요):');
-    if (kind === 'bank') return '결제 확인 — 계좌 입금자명:';
-    return '결제 확인 — 카드결제 연락처(또는 계좌 입금자명):';
+    var ph = mobileOf(payPhoneVal()) || rememberedPhone();   /* 결제 팝업에 적어 둔 번호 — 있으면 그대로 적어 보낸다 */
+    var lines = [];
+    if (kind === 'card') {
+      lines.push('결제 확인 — 카드결제 연락처: ' + (ph ? fmtPhone(ph) : ''));
+    } else if (kind === 'bank') {
+      lines.push('결제 확인 — 계좌 입금자명:');
+      lines.push('입장 코드 받을 번호: ' + (ph ? fmtPhone(ph) : ''));
+    } else {
+      lines.push('결제 확인 — 카드결제 연락처: ' + (ph ? fmtPhone(ph) : ''));
+      lines.push('(계좌이체는 입금자명 + 코드 받을 번호)');
+    }
+    return lines.join('\n');
   }
   function orderTextFor(item) {
     var parts = ['[윤이세 2027 캘린더 신청] ' + orderLabel(item)];
     parts.push(payIdLine(item));
-    var b = birthLine();
-    if (b) parts.push(b);
-    parts.push('→ 이 생년월일·성별 전용 코드로 보내 드려요.');
+    parts.push('→ 이 번호 + 6자리 코드로 보내 드려요.');
     return parts.join('\n');
   }
   /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
@@ -3111,8 +3292,8 @@
   function cardNote(url, opts) {
     opts = opts || {};
     payNote((opts.direct
-      ? '페이앱 결제창으로 바로 넘어가요 — 결제를 마치면 이 화면으로 돌아오세요.'
-      : '페이앱 결제창을 열었어요. 결제를 마치고 돌아오시면 됩니다.') +
+      ? '카드결제 창으로 바로 넘어가요 — 결제를 마치면 이 화면으로 스스로 돌아와요.'
+      : '카드결제 창을 열었어요. 결제를 마치고 이 화면으로 돌아오시면 됩니다.') +
       (opts.phone
         ? ' 결제 확인과 코드 발송은 적어 주신 번호로 해요.'
         : ' 휴대폰 번호를 적으면 결제수단 선택 화면으로 바로 들어가요.') +
@@ -3141,6 +3322,8 @@
         if (went) { cardNote(url, { direct: true, phone: true }); return; }    // 이 창이 결제창으로 넘어간다
       }
       if (url) {
+        /* 번호를 비워 둔 채 링크로 결제창을 열어도, 돌아왔을 때 복귀 배너가 뜨도록 상품을 기억해 둘다 */
+        payWaitSave(item, phone);
         cardNote(url, { phone: !!phone });
         openPayApp(url);
       } else if (payInfoOf(item)) {
@@ -3148,7 +3331,7 @@
         payNote('휴대폰 번호를 적으면 결제창이 바로 열려요 — 결제 확인과 코드 발송에 쓰는 번호예요.');
         payPhoneFocus();
       } else {
-        payNote('페이앱 카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
+        payNote('카드결제 링크 연결 준비 중 — 카카오톡으로 결제 링크를 바로 보내드려요.' +
           kakaoLinkHTML('카카오톡 채널 열기 →'));
         openKakao();
       }
@@ -3177,8 +3360,8 @@
   /** 무료 체험 중이면 결제 팝업 상단에 '먼저 3일 무료' 안내 한 줄 — 결제 전에 체험부터 */
   function trialShopNote() {
     if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
-    if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
-    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
+    if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
+    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
   }
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
@@ -3222,7 +3405,8 @@
       '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
       tierswHTML('diary') +
       trialShopNote() +
-      '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
+      '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.' +
+      (diaryTryEligible() ? '<br><b>지금은 3회 무료 체험 중</b> — 무료 ' + diaryTryLeft() + '회가 남았어요. 다 쓰면 이 상품에서 365일 내내 이어집니다.' : '') + '</p>' +
       '<ul class="shop__list">' +
       '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 매일 1회 액운 태우기</span></li>' +
       '<li><b>365일 1줄 성찰 다이어리</b><span>날마다 다른 맞춤 질문 하나, 부담 없는 한 줄</span></li>' +
@@ -4276,7 +4460,7 @@
     var fee = upPrice(from, to);
     var parts = ['[윤이세 2027 캘린더 신청] ' + TIER_NAME[to] + ' 업그레이드 (' + TIER_NAME[from] + ' → ' +
       TIER_NAME[to] + ') ' + (fee ? '추가 ' + wonNum(fee) : '차액 안내 요청')];
-    var b = birthLine();
+    var b = ownerMatchLine();
     if (b) parts.push(b);
     copyText(parts.join(' / '), function (copied) {
       toast(copied === true
@@ -4306,7 +4490,7 @@
   function switchShop(kind) {
     if (!shopBody || !TIER_NAME[kind] || kind === shopKind) return;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind);
+    shopBody.innerHTML = shopHTMLFor(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
     shopBody.scrollTop = 0;
     vibrate(12);
     sfxTap(1);
@@ -4319,7 +4503,7 @@
     if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind);
+    shopBody.innerHTML = shopHTMLFor(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -4468,80 +4652,22 @@
     return out;
   }
 
-  /* ⓿ 제단 위 금빛 촛불 — 0단계 준비 화면의 그림. 불꽃만 CSS로 은은하게 일렁인다 */
-  var CANDLE_SVG =
-    '<svg class="candle" viewBox="0 0 240 280" aria-hidden="true" focusable="false">' +
-      '<defs>' +
-        '<radialGradient id="cndHalo" cx="50%" cy="50%" r="50%">' +
-          '<stop offset="0%" stop-color="#FFE9AE" stop-opacity=".55"/>' +
-          '<stop offset="44%" stop-color="#FFBE5C" stop-opacity=".2"/>' +
-          '<stop offset="100%" stop-color="#FF9A2E" stop-opacity="0"/>' +
-        '</radialGradient>' +
-        '<radialGradient id="cndAltar" cx="50%" cy="38%" r="62%">' +
-          '<stop offset="0%" stop-color="#3A3128"/>' +
-          '<stop offset="58%" stop-color="#221C16"/>' +
-          '<stop offset="100%" stop-color="#120F0C"/>' +
-        '</radialGradient>' +
-        '<radialGradient id="cndPool" cx="50%" cy="50%" r="50%">' +
-          '<stop offset="0%" stop-color="#FFCF7A" stop-opacity=".5"/>' +
-          '<stop offset="55%" stop-color="#FFB04E" stop-opacity=".16"/>' +
-          '<stop offset="100%" stop-color="#FF9A2E" stop-opacity="0"/>' +
-        '</radialGradient>' +
-        '<linearGradient id="cndBody" x1="0" y1="0" x2="1" y2="0">' +
-          '<stop offset="0%" stop-color="#6B4B1C"/>' +
-          '<stop offset="16%" stop-color="#C79A4E"/>' +
-          '<stop offset="38%" stop-color="#FFE9B4"/>' +
-          '<stop offset="54%" stop-color="#FFF7DE"/>' +
-          '<stop offset="76%" stop-color="#D7AE63"/>' +
-          '<stop offset="100%" stop-color="#67481A"/>' +
-        '</linearGradient>' +
-        '<radialGradient id="cndTop" cx="46%" cy="36%" r="64%">' +
-          '<stop offset="0%" stop-color="#FFFBEE"/>' +
-          '<stop offset="62%" stop-color="#F2DCA8"/>' +
-          '<stop offset="100%" stop-color="#C9A059"/>' +
-        '</radialGradient>' +
-        '<linearGradient id="cndFlameOut" x1="0" y1="1" x2="0" y2="0">' +
-          '<stop offset="0%" stop-color="#FF8A1E" stop-opacity=".92"/>' +
-          '<stop offset="46%" stop-color="#FFC44F"/>' +
-          '<stop offset="100%" stop-color="#FFEBB0"/>' +
-        '</linearGradient>' +
-        '<linearGradient id="cndFlameIn" x1="0" y1="1" x2="0" y2="0">' +
-          '<stop offset="0%" stop-color="#FFD26B"/>' +
-          '<stop offset="100%" stop-color="#FFFDF2"/>' +
-        '</linearGradient>' +
-      '</defs>' +
-      /* 빛 번짐 */
-      '<circle class="candle__halo" cx="120" cy="98" r="78" fill="url(#cndHalo)"/>' +
-      /* 촛불 몸통 */
-      '<rect x="96" y="132" width="48" height="108" rx="7" fill="url(#cndBody)"/>' +
-      '<ellipse cx="120" cy="132" rx="24" ry="8" fill="url(#cndTop)"/>' +
-      '<ellipse cx="120" cy="132.6" rx="16.5" ry="5" fill="#FFEFC6" opacity=".9"/>' +
-      '<ellipse cx="120" cy="237" rx="26" ry="7" fill="#3A2A15" opacity=".5"/>' +
-      /* 심지 */
-      '<path d="M120 132v-12" stroke="#2A1A0C" stroke-width="3.4" stroke-linecap="round"/>' +
-      '<circle class="candle__ember" cx="120" cy="118" r="3.2" fill="#FF9E2E"/>' +
-      /* 불꽃 */
-      '<g class="candle__flame">' +
-        '<path d="M120 64c10.5 18 18 29.5 18 40.5a18 18 0 0 1-36 0c0-11 7.5-22.5 18-40.5z" fill="url(#cndFlameOut)"/>' +
-        '<path d="M120 85c6 10.5 10.5 17 10.5 23.5a10.5 10.5 0 0 1-21 0c0-6.5 4.5-13 10.5-23.5z" fill="url(#cndFlameIn)"/>' +
-        '<path d="M120 101c2.6 4.6 4.2 7.2 4.2 10a4.2 4.2 0 0 1-8.4 0c0-2.8 1.6-5.4 4.2-10z" fill="#FFFDF6"/>' +
-      '</g>' +
-      /* 꺼진 뒤 — 가느다란 연기 한 줄 */
-      '<g class="candle__smoke">' +
-        '<path d="M120 116c-9-13 9-21 0-34s7-18 0-27" fill="none" stroke="#D8C7A6" stroke-width="2.2" stroke-linecap="round"/>' +
-      '</g>' +
-      /* 돌 제단 */
-      '<ellipse cx="120" cy="246" rx="102" ry="19" fill="url(#cndAltar)"/>' +
-      '<path d="M18 246a102 19 0 0 0 204 0v8a102 19 0 0 1-204 0z" fill="#0D0B09"/>' +
-      '<ellipse cx="120" cy="242" rx="66" ry="12" fill="url(#cndPool)"/>' +
-      '<path d="M18 246a102 19 0 0 0 204 0" fill="none" stroke="#C79A4E" stroke-opacity=".22" stroke-width="1.2"/>' +
-    '</svg>';
+  /* ⓿ 어둑한 한옥 방의 은은한 호박빛 촛불 (2026-11-21)
+     딱딱한 도형 SVG 대신 생성한 사진을 깔고, 그 위에 CSS로 아주 천천히 숨 쉬는 빛을 얹는다.
+     '예쁘고 편안한 의식'이 되도록 — 불꽃을 깜빡이지 않고 온기만 은은하게 오르내린다. */
+  var CANDLE_HTML =
+    '<div class="candle" aria-hidden="true">' +
+      '<img class="candle__photo" src="assets/candle-warm.jpg?v=20261121ab" alt="" decoding="async">' +
+      '<span class="candle__glow"></span>' +
+      '<span class="candle__breath"></span>' +
+      '<span class="candle__smoke"></span>' +
+    '</div>';
 
   /* ⓿ 촛불 앞에서 숨 고르기 — 3·2·1 뒤에 '의식 시작하기'가 살아난다 */
   function burnPrepHTML() {
     return '<p class="modal__eyebrow">BEFORE THE RITUAL · 준비</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">하루에 단 한 번, 진심을 담아 비워내는 의식입니다.</h2>' +
-      '<div class="burn__altar" data-burn-altar>' + CANDLE_SVG + '</div>' +
+      '<div class="burn__altar" data-burn-altar>' + CANDLE_HTML + '</div>' +
       '<p class="burn__prep-sub">잠시 숨을 고른 뒤, 오늘 내려놓고 싶은 한 가지를 적어 주세요.</p>' +
       '<p class="burn__breath" data-burn-breath aria-live="polite">3…</p>' +
       '<button type="button" class="burn__go burn__go--start" data-burn="start" disabled>의식 시작하기</button>' +
@@ -4557,7 +4683,7 @@
                : '무료 5회를 모두 썼어요. 내일도 이어 가시려면 올인원을 살펴보세요.');
     return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
-      '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_SVG + '</div>' +
+      '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
       '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
       '<p class="burn__foot">하루에 단 한 번, 진심을 담아 비워내는 의식입니다. 적은 글은 어디에도 남지 않았어요.</p>' +
       (!un && l <= 0 ? '<button type="button" class="burn__go burn__go--start" data-burn="upgrade">올인원 살펴보기</button>' : '') +
@@ -5160,7 +5286,7 @@
   /** 1년 패스 사용자의 차액 업그레이드 — 신청 내용을 복사하고 카톡 채널로 */
   function goBurnUpgrade() {
     var parts = ['[윤이세 2027 캘린더 신청] 올인원 업그레이드 (1년 패스 → 올인원) 추가 ' + BURN_UPGRADE_PRICE];
-    var b = birthLine();
+    var b = ownerMatchLine();
     if (b) parts.push(b);
     copyText(parts.join(' / '), function (copied) {
       toast(copied === true
@@ -5450,18 +5576,26 @@
       }
     }
 
-    /* 🔒 전용 배지 — 코드로 열린 사주를 상단에 고정 표시하고, '수정' 버튼을 잠근다 (#9247) */
+    /* 🔒 전용 배지 — 코드로 열린 사주를 상단에 고정 표시하고, '수정' 버튼을 잠근다 (#9247)
+       · 예전 사주 기반 코드: 그 사주 1명에게 묶여 있어 사주를 바꿀 수 없다(수정 잠금).
+       · 지금의 번호 기반 코드: 이 기기에 열린 것이라 사주는 그대로 바꿔 쓸 수 있다. */
     var id = currentIdentity();
+    var sajuBound = !!(state.unlocked && state.code && !state.code.phone && state.code.ymd);
     var badge = $('#savedBarLock');
     if (badge) {
-      badge.hidden = !(state.unlocked && id);
-      badge.textContent = state.unlocked && id ? '🔒 ' + id.label + ' 전용 캘린더' : '';
+      var btxt = '';
+      if (state.unlocked) {
+        btxt = '🔒 ' + (sajuBound && id ? id.label
+          : (state.code && state.code.phone ? maskPhone(state.code.phone) + ' 번호' : '입장 코드')) + ' 전용';
+      }
+      badge.hidden = !btxt;
+      badge.textContent = btxt;
     }
     var ebtn = $('#editBtn');
     if (ebtn) {
-      ebtn.classList.toggle('is-locked', !!state.unlocked);
-      ebtn.textContent = state.unlocked ? '🔒 전용' : '수정';
-      ebtn.setAttribute('aria-label', state.unlocked
+      ebtn.classList.toggle('is-locked', sajuBound);
+      ebtn.textContent = sajuBound ? '🔒 전용' : '수정';
+      ebtn.setAttribute('aria-label', sajuBound
         ? '이 사주 전용으로 잠겨 있어 생년월일·성별을 바꿀 수 없어요'
         : '내 사주 수정');
     }
@@ -5477,9 +5611,12 @@
             ? ' 지금 넣으신 사주(<b>' + esc(state.mismatch.id.label) + '</b>)로는 열리지 않아 ' +
               (trialOver() ? '<b>지금은 잠겨 있어요</b>.' : '<b>' + FREE_DAYS + '일 무료 체험</b>으로 보여 드려요.')
             : ' 코드 주인의 사주를 넣어야 열려요.');
-      } else if (state.unlocked && id) {
+      } else if (state.unlocked) {
         bindNote.hidden = false;
-        bindNote.innerHTML = '🔒 <b>' + esc(id.label) + '</b> 사주 1명 전용으로 열렸어요. 생년월일·성별을 바꿔 다른 사주를 보는 건 열리지 않아요.';
+        bindNote.innerHTML = sajuBound && id
+          ? '🔒 <b>' + esc(id.label) + '</b> 사주 1명 전용으로 열렸어요. 생년월일·성별을 바꿔 다른 사주를 보는 건 열리지 않아요.'
+          : '🔒 <b>' + esc(state.code && state.code.phone ? maskPhone(state.code.phone) : '입장 코드') +
+            '</b> 번호로 확인된 입장 코드예요 — 이 기기에서 달력 전체가 열려 있어요.';
       } else {
         bindNote.hidden = true;
         bindNote.textContent = '';
@@ -5490,12 +5627,29 @@
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
     syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
   }
+  /** 숫자 → '010-1234-5678' — 입력칸에서 부드럽게 끊어 보여 준다 */
+  function phoneDisplay(v) {
+    var d = String(v || '').replace(/\D/g, '').slice(0, 11);
+    if (d.length < 4) return d;
+    if (d.length < 8) return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length < 11) return d.slice(0, 3) + '-' + d.slice(3, d.length - 4) + '-' + d.slice(-4);
+    return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
+  }
+  /** 🔑 입장 코드 칸의 번호 — 결제하며 적어 둔 번호(또는 지금 열린 코드의 번호)를 미리 채운다 */
+  function fillLockPhone() {
+    var inp = $('#lockPhone');
+    if (!inp) return;
+    var d = mobileOf(inp.value) || (state.code && state.code.phone) || rememberedPhone();
+    if (!d) return;
+    inp.value = phoneDisplay(d);
+  }
   function openLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
     if (!p) return;
     p.hidden = false;
     if (btn) btn.setAttribute('aria-expanded', 'true');
     syncLockUI();
+    fillLockPhone();       // 결제할 때 넣은 번호를 손님이 다시 찾지 않아도 되게
     try { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
     var inp = $('#lockCode');
     if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }
@@ -5506,7 +5660,8 @@
     p.hidden = true;
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }
-  /** 코드 주인과 다른 사주 — 열어 주지 않고 안내만 (지금 사주에 맞는 코드가 이미 있으면 그건 그대로 둔다) */
+  /** 코드 주인과 다른 사주 — 열어 주지 않고 안내만 (지금 사주에 맞는 코드가 이미 있으면 그건 그대로 둔다)
+     ※ 지금은 번호 기반 코드라 이 길로 오는 건 예전 사주 기반 코드뿐이다. */
   function cannotUseCode(code) {
     var stillOpen = syncCodeBinding();
     var id = currentIdentity();
@@ -5528,9 +5683,12 @@
   function tryUnlock() {
     var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
     var v = inp ? inp.value : '';
+    var phoneInp = $('#lockPhone');
+    var phone = mobileOf(phoneInp ? phoneInp.value : '');
     var id = currentIdentity();
-    /* 6자리 코드는 코드에 사주가 적혀 있지 않아, 지금 달력의 사주로 숫자를 다시 계산해 맞춰 본다 */
-    var p = parseCode(v, id);
+    /* 6자리 코드는 [결제하신 휴대폰 번호 + 상품] 서명 — 번호와 코드가 맞으면 바로 열린다.
+       (예전 사주 기반 6자리·18자리 코드도 계속 열린다) */
+    var p = parseCode(v, { phone: phone, ymd: id && id.ymd, gender: id && id.gender });
     if (p.status !== 'ok') {
       if (msg) { msg.textContent = codeErrorText(p); msg.classList.remove('is-ok'); }
       if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
@@ -5538,29 +5696,31 @@
       if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
       return;
     }
-    /* 예전 18자리 코드 — 코드에 적힌 생년월일·성별이 지금 사주와 다르면 열지 않고 그대로 잠가 둔다 */
-    if (!id || id.ymd !== p.ymd || id.gender !== p.gender) {
+    /* 예전 사주 기반 코드 — 코드에 적힌 생년월일·성별이 지금 사주와 다르면 열지 않고 그대로 잠가 둔다 */
+    if (!p.phone && p.ymd && (!id || id.ymd !== p.ymd || id.gender !== p.gender)) {
       cannotUseCode(p);
       return;
     }
-    saveUnlock({ code: p.code, tier: p.tier, ymd: p.ymd, gender: p.gender });
+    saveUnlock({ code: p.code, tier: p.tier, phone: p.phone || '', ymd: p.ymd || '', gender: p.gender || '' });
+    if (p.phone) rememberPhone(p.phone);
     state.mismatch = null;
+    var who = unlockTargetLabel(p);
     if (msg) {
       msg.textContent = p.tier === 'diary'
-        ? '🔓 성찰 에디션 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
+        ? '🔓 성찰 에디션 확인됐어요 — ' + who + '로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
         : (p.tier === 'allinone'
-          ? '🔓 올인원 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
-          : '🔓 1년 패스 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 2026년 11월부터 2027년 12월까지 열렸습니다.');
+          ? '🔓 올인원 확인됐어요 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
+          : '🔓 1년 패스 확인됐어요 — ' + who + '로 2026년 11월부터 2027년 12월까지 열렸습니다.');
       msg.classList.add('is-ok');
     }
     if (inp) inp.value = '';
     syncLockUI();
     render();
     toast(p.tier === 'diary'
-      ? '🔓 성찰 에디션 — 이 사주 전용으로 다이어리까지 열렸어요'
+      ? '🔓 성찰 에디션 — ' + who + '로 다이어리까지 열렸어요'
       : (p.tier === 'allinone'
-        ? '🔓 올인원 — 이 사주 전용으로 달력 전체 + 매일 1회 액운 태우기'
-        : '🔓 1년 패스 확인 — 이 사주 전용으로 전체 날짜가 열렸어요'));
+        ? '🔓 올인원 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기'
+        : '🔓 1년 패스 확인 — ' + who + '로 전체 날짜가 열렸어요'));
     sfxOpen();
   }
   function lockAgain() {
@@ -5642,6 +5802,23 @@
     var lockInput = $('#lockCode');
     if (lockInput) lockInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    });
+    /* 🔑 입장 코드 — 휴대폰 번호 + 6자리. 둘 다 차면 '열기'를 누르지 않아도 바로 열린다. */
+    var lockPhoneInput = $('#lockPhone');
+    if (lockPhoneInput) {
+      lockPhoneInput.addEventListener('input', function () {
+        var pos = lockPhoneInput.value.length;
+        var d = lockPhoneInput.value.replace(/\D/g, '').slice(0, 11);
+        lockPhoneInput.value = phoneDisplay(d);
+        if (pos <= lockPhoneInput.value.length) { try { lockPhoneInput.setSelectionRange(lockPhoneInput.value.length, lockPhoneInput.value.length); } catch (e) { } }
+        if (mobileOf(lockPhoneInput.value) && lockInput && /^[PAD]\d{5}$/i.test(normCode(lockInput.value))) tryUnlock();
+      });
+      lockPhoneInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+      });
+    }
+    if (lockInput) lockInput.addEventListener('input', function () {
+      if (mobileOf(lockPhoneInput ? lockPhoneInput.value : '') && /^[PAD]\d{5}$/i.test(normCode(lockInput.value))) tryUnlock();
     });
     var lockReset = $('#lockReset');
     if (lockReset) lockReset.addEventListener('click', function (e) { e.preventDefault(); lockAgain(); });
@@ -5782,6 +5959,7 @@
               }
             }
             cardNote(pay.getAttribute('href'), { phone: !!phone });
+            payWaitSave(pitem, phone);      /* 돌아왔을 때 '결제하고 돌아오셨나요?' 배너를 위해 */
             payLinkGuard(pay.getAttribute('href'));
             return;
           }
@@ -6011,7 +6189,9 @@
       maybeAutoWelcome(60);
     }
 
-    /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21) */
+    /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21)
+       페이앱이 returnurl 로 돌려보낸 경우(?paid=1)는 주소를 보고 먼저 표시해 둔다. */
+    payReturnCheck();
     var pb = $('#payBack');
     if (pb) {
       pb.addEventListener('click', function (e) {
