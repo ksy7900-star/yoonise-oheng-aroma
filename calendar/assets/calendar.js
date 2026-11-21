@@ -34,6 +34,7 @@
        refs  — 이 기기에 안내를 이미 띄운 초대 코드들(코드마다 1회만)
        fresh — 무료 체험을 이 초대로 오늘부터 다시 세운 날(기기당 1회) */
   var INVITE_NOTICE_KEY = 'yoonise.invite.notice.v1';
+  var inviteFromLink = false;   // 이번 주소에 ?ref= 가 직접 붙어 들어왔는가(안내·재설정은 이때만)
   var inviteRef = readInviteRef();
   var invited = !!inviteRef;
   var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 5일 · 그냥 들어오면 3일
@@ -46,6 +47,7 @@
     try { q = new URLSearchParams(location.search).get('ref') || ''; } catch (e) { q = ''; }
     q = String(q).trim().toUpperCase();
     if (validRef(q)) {                      // 이 화면에 ?ref= 로 들어옴 — member.js 칸에도 같이 적어 둔다
+      inviteFromLink = true;
       try {
         localStorage.setItem(REF_KEY, q);
         localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: q, at: new Date().toISOString() }));
@@ -656,7 +658,7 @@
   }
   /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 5일로 다시 세운다 (기기당 1회) */
   function applyInviteFreshStart() {
-    if (!invited || !FREE_TRIAL_ENABLED || state.unlocked || !state.res || !state.todayISO) return false;
+    if (!invited || !inviteFromLink || !FREE_TRIAL_ENABLED || state.unlocked || !state.res || !state.todayISO) return false;
     if (inviteNoticeSeen(inviteRef)) return false;      // 이미 이 코드로 들어온 적 있는 기기
     var rec = loadInviteNotice();
     if (rec.fresh) return false;                        // 초대 한 번으로 한 번만 새로 세운다
@@ -669,9 +671,9 @@
     saveInviteNotice(rec);
     return true;
   }
-  /** 이번 로드에서 띄울 안내 — 처음 닿은 코드일 때만 { ref, paid, fresh } */
+  /** 이번 로드에서 띄울 안내 — 이 주소로 처음 닿은 코드일 때만 { ref, paid, fresh } */
   function planInviteNotice(fresh) {
-    if (!invited || inviteNoticeSeen(inviteRef)) return null;
+    if (!invited || !inviteFromLink || inviteNoticeSeen(inviteRef)) return null;
     return { ref: inviteRef, paid: !!state.unlocked, fresh: !!fresh };
   }
   var inviteArrival = null, inviteNoticeTimer = 0, inviteNoticeTries = 0;
