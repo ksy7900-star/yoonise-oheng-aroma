@@ -5288,8 +5288,7 @@
           priceHTML('2027 올인원', ALLINONE_PRICE) +
           payActionsHTML('allinone') +
           kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기')) +
-      '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>' +
-      codeEntryHTML();
+      '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>';
   }
 
   /** 1년 패스 사용자의 차액 업그레이드 — 신청 내용을 복사하고 카톡 채널로 */
@@ -5708,6 +5707,15 @@
   function tryUnlock() {
     var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
     var v = inp ? inp.value : '';
+    /* 이미 열려 있는 기기에서 빈 칸으로 '열기'만 누른 경우 — 빈칸 오류가 아니라 상태를 알려 준다 */
+    if (!String(v || '').trim() && state.unlocked) {
+      if (msg) {
+        msg.innerHTML = '이 기기에서는 이미 <b>' + esc(TIER_NAME[state.tier] || '입장 코드') +
+          '</b> 코드가 열려 있어요 — 다른 상품 코드를 넣으면 그 상품으로 바뀝니다.';
+        msg.classList.add('is-ok');
+      }
+      return;
+    }
     var phoneInp = $('#lockPhone');
     var phone = mobileOf(phoneInp ? phoneInp.value : '');
     var id = currentIdentity();
@@ -5747,6 +5755,12 @@
         ? '🔓 올인원 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기'
         : '🔓 1년 패스 확인 — ' + who + '로 전체 날짜가 열렸어요'));
     sfxOpen();
+    /* 열렸으면 잠시 뒤 패널을 접어 달력이 드러나게 — 배지는 초록으로 남는다 */
+    setTimeout(function () {
+      if (!state.unlocked) return;
+      var nowPanel = $('#lockPanel');
+      if (nowPanel && !nowPanel.hidden) closeLockPanel();
+    }, 1500);
   }
   function lockAgain() {
     saveUnlock(null);
