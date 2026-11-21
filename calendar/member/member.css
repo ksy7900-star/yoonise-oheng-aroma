@@ -718,6 +718,10 @@ a { color: inherit; }
 .cm--good b { color: #047857; }
 .cm--warn { background: linear-gradient(180deg, #FFFFFF, #FFF5F6); border-color: rgba(190, 18, 60, .16); }
 .cm--warn b { color: #BE123C; }
+.cm em {
+  display: block; margin-top: 6px; font-style: normal;
+  font-size: 11.5px; line-height: 1.5; color: var(--ink-2); word-break: keep-all;
+}
 
 /* 부적 카드 (9:16 · Canvas 로 그린 그림) */
 .amulbox {

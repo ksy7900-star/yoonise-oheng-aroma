@@ -888,133 +888,428 @@
     });
   }
 
-  /* ① 한 줄 훅 — 일지 관계(붙는 힘)로 갈래를 잡고, 관계마다 말투를 완전히 다르게 */
-  var HOOK = {
-    friend: {
-      hap:    '서로 지갑 지켜주는 찐친 콤비',
-      chung:  '티격태격해도 결국 다시 붙는 콤비',
-      hyeong: '약속만 안 미루면 10년은 가는 콤비',
-      hae:    '말은 살짝 엇갈려도 밥은 잘 먹는 사이',
-      samhap: '같은 쪽을 보면 힘이 두 배 되는 콤비',
-      same:   '취향이 겹쳐서 노는 게 제일 재밌는 콤비',
-      plain:  '적당한 거리에서 오래 가는 편한 콤비'
-    },
-    love: {
-      hap:    '말 안 해도 눈빛으로 통하는 찰떡궁합',
-      chung:  '투닥거려도 결국 서로한테 붙는 자석 케미',
-      hyeong: '서운한 건 그날 말해야 오래 가는 사이',
-      hae:    '말이 살짝 어긋나도 손은 놓지 않는 사이',
-      samhap: '같은 곳을 보면 마음이 빨리 가까워지는 사이',
-      same:   '닮아서 편한데, 가끔 둘 다 답답한 사이',
-      plain:  '설레는 속도는 천천히, 오래 가는 사이'
+  /* ── 조합 해시 ─────────────────────────────────────
+     두 사람의 일간(10천간) · 일지(12지지) · 월지 · 부족/과다 오행 · 관계를 한 줄로 엮어
+     숫자 하나로 접는다. 같은 사주 쌍이면 늘 같은 문구, 다른 사주를 넣으면 다른 문구.
+     (2026-11-21 — 일지 관계 7갈래만으로는 사주가 달라도 결과가 겹쳐서 전면 확장) */
+  function fnv32(str) {
+    var h = 2166136261, i;
+    for (i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
     }
+    return h >>> 0;
+  }
+  function mix32(h) {
+    h ^= h >>> 16; h = Math.imul(h, 2246822507) >>> 0;
+    h ^= h >>> 13; h = Math.imul(h, 3266489909) >>> 0;
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+  function pickFrom(arr, seed, salt) {
+    if (typeof arr === 'string') return arr;
+    if (!arr || !arr.length) return '';
+    return arr[mix32(fnv32(seed + '#' + salt)) % arr.length];
+  }
+  function pairSeed(a, b, rel) {
+    var s = [rel];
+    [a, b].forEach(function (ch) {
+      var n = ch.natal;
+      s.push(n.dayGanIndex, n.dayZhiIndex, n.monthZhiIndex, n.yearZhiIndex,
+        n.timeZhiIndex == null ? 'x' : n.timeZhiIndex);
+      EL_ORDER.forEach(function (e) { s.push(ch.counts[e] || 0); });
+    });
+    s.push(zhiKeyOf(a, b), masterKeyOf(a, b));
+    return s.join('.');
+  }
+  function personSeed(ch, rel) {
+    var n = ch.natal, s = [rel];
+    s.push(n.dayGanIndex, n.dayZhiIndex, n.monthZhiIndex, n.yearZhiIndex,
+      n.timeZhiIndex == null ? 'x' : n.timeZhiIndex);
+    EL_ORDER.forEach(function (e) { s.push(ch.counts[e] || 0); });
+    return s.join('.');
+  }
+
+  /* ① 한 줄 훅 — 우정 24종 · 사랑 24종. 어느 쪽이 위도 아래도 아닌 문장만. */
+  var HOOK = {
+    friend: [
+      '같이 있으면 일이든 놀든 굴러가는 콤비',
+      '둘 다 삐끗해도 웃고 넘어가는 사이',
+      '말 안 해도 어디로 갈지 같이 아는 콤비',
+      '잘하는 판이 달라서 안 부딪히는 조합',
+      '같이 붙으면 멈춰 있던 일이 굴러가는 시너지',
+      '서로 다른 속도가 만나 빈틈이 채워지는 조합',
+      '한쪽이 흥분하면 다른 쪽이 웃어 주는 사이',
+      '취향은 다른데 결론은 늘 같은 사이',
+      '같이 다니면 왠지 일이 잘 풀리는 콤비',
+      '말이 안 통해도 결국 같은 방향을 보는 사이',
+      '둘이 모이면 셋 몫은 하는 콤비',
+      '돈 얘기까지 편하게 하는 사이',
+      '말버릇이 슬슬 옮아 가는 콤비',
+      '급한 쪽과 느긋한 쪽이 딱 맞물리는 조합',
+      '같은 농담에 같이 터지는 사이',
+      '한 명이 계획 세우면 한 명이 현실 챙기는 콤비',
+      '아무 말 안 해도 어색하지 않은 사이',
+      '부딪힌 만큼 정리도 잘 되는 콤비',
+      '이름만 불러도 뭐 할지 아는 사이',
+      '모이면 이야기가 끊이지 않는 콤비',
+      '같이 뭐든 벌이면 재밌어지는 사이',
+      '서로의 빈틈을 귀찮아하지 않는 콤비',
+      '험한 얘기도 웃으면서 하는 사이',
+      '오래 안 봐도 어제 본 것 같은 사이',
+      '한 명이 웃으면 분위기가 확 풀리는 콤비',
+      '서로의 말투를 슬며시 흉내 내는 사이',
+      '급할 때 서로의 이름부터 부르는 사이',
+      '같이 계획만 세워도 신나는 콤비',
+      '한 명이 늦으면 다른 한 명이 커피 시켜 두는 사이',
+      '오늘 뭐 먹을지만 정하면 나머진 잘 풀리는 콤비'
+    ],
+    love: [
+      '말 안 해도 눈빛으로 통하는 사이',
+      '투닥거려도 결국 서로에게 돌아오는 사이',
+      '서운한 건 그날 말해야 오래 가는 사이',
+      '같은 곳을 보면 마음이 빨리 가까워지는 사이',
+      '닮아서 편한데 가끔 둘 다 답답한 사이',
+      '설레는 속도는 천천히, 오래 가는 사이',
+      '한 명이 웃으면 다른 한 명도 따라 웃는 사이',
+      '연락이 뜸해도 마음은 그대로인 사이',
+      '같이 있으면 시간이 빨리 가는 사이',
+      '서로의 하루를 제일 먼저 궁금해하는 사이',
+      '다투고 나서 오히려 더 가까워지는 사이',
+      '각자 바쁜데도 결국 같은 방향인 사이',
+      '손잡으면 말이 필요 없어지는 사이',
+      '한 명이 삐지면 다른 한 명이 먼저 웃기는 사이',
+      '취향이 슬금슬금 섞여 가는 사이',
+      '같은 꿈을 다른 방식으로 꾸는 사이',
+      '편한데 설레는, 그 사이가 제일 오래 가는 사이',
+      '하루 끝에 문득 보고 싶어지는 사이',
+      '서로의 지도를 조금씩 바꿔 놓는 사이',
+      '오래 봐도 새로워 보이는 사이',
+      '말 한마디에 하루가 바뀌는 사이',
+      '둘이면 어디서든 데이트가 되는 사이',
+      '서로의 느린 부분을 기다려 주는 사이',
+      '같이 늙어도 재밌을 것 같은 사이',
+      '먼저 연락한 쪽이 지는 법이 없는 사이',
+      '서로의 버릇을 다 알고도 좋은 사이',
+      '같이 있으면 말이 조금 느려지는 사이',
+      '한 명이 졸면 다른 한 명이 이불 덮어 주는 사이',
+      '사소한 게 오래 기억에 남는 사이',
+      '다음 만날 날을 서로 먼저 묻는 사이'
+    ]
   };
 
-  /* 훅 아래 한 줄 — 두 사람 기운이 서로 어떻게 작용하는지를 말로만 */
-  var ROLE_LINE = {
+  /* ② 훅 아래 한 줄 — 두 기운이 어떻게 도는지. '받쳐 준다·맡아 주세요' 없이 대등하게. */
+  var ROLE = {
     friend: {
-      youFeedMe: '{bS} {aO} 받쳐 주는 조합이에요 — {aS} 급할 때 {bS} 브레이크를 잡아 줘요.',
-      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 나서면 {bT} 편해져요.',
-      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 한 박자만 늦추면 {bT} 훨씬 편해져요.',
-      youBeatMe: '{b}의 속도가 빠를 때 {aT} 지칠 수 있어요 — 속도만 미리 맞추면 오래 가요.',
-      same: '말이 빨리 통해요 — 대신 같이 흥분하면 둘 다 세지니까 한 명은 쉬어 줘야 해요.'
+      same: [
+        '같은 기운끼리라 텐션이 똑같아요 — 둘 다 흥분하면 브레이크가 없는 게 유일한 흠이에요.',
+        '비슷한 결이라 말이 빨라요 — 대신 같이 지칠 때는 둘 다 같이 늘어져요.',
+        '같은 쪽으로 힘이 쏠리는 조합이에요 — 그래서 쉬는 날도 같이 정해 두면 편해요.'
+      ],
+      iFeedYou: [
+        '기운이 자연스럽게 흘러가는 조합이에요 — 어느 쪽도 억지로 맞출 필요가 없어요.',
+        '한 사람의 기운이 다른 사람에게 순하게 이어져요 — 같이 있으면 둘 다 느슨해져요.',
+        '서로의 기운이 부드럽게 오가요 — 편하다고 일까지 늘어지진 않게만 하면 좋아요.'
+      ],
+      youFeedMe: [
+        '기운이 흐르는 방향이 조금 기울어요 — 그래서 컨디션이 엇갈리는 날이 있어요.',
+        '한쪽 기운이 다른 쪽으로 잘 넘어가요 — 받는 쪽은 고맙다고 말해 두면 좋아요.',
+        '기운이 이어지되 방향이 달라요 — 같은 날 기분이 반대로 갈 때가 있어요.'
+      ],
+      iBeatYou: [
+        '서로 누르는 힘이 조금씩 있어요 — 잘 맞으면 추진력, 안 맞으면 고집이 돼요.',
+        '둘 다 물러서지 않는 날이 있어요 — 그날은 이기는 것보다 끝내는 게 좋아요.',
+        '부딪히면 힘이 세지는 조합이에요 — 대신 한 번 정하면 둘 다 안 돌아서요.'
+      ],
+      youBeatMe: [
+        '서로 누르는 힘이 조금씩 있어요 — 잘 맞으면 추진력, 안 맞으면 고집이 돼요.',
+        '한쪽이 앞서려는 날이 있어요 — 그날은 다른 쪽도 한 발만 물러서면 풀려요.',
+        '기운이 부딪히는 자리가 있어요 — 그 자리만 피하면 나머지는 잘 맞아요.'
+      ]
     },
     love: {
-      youFeedMe: '{bS} {aO} 편안하게 해 주는 조합이에요 — 2027년엔 그 편안함이 오래 가요.',
-      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 표현해 주세요.',
-      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 반 박자만 늦추면 훨씬 부드러워져요.',
-      youBeatMe: '{b}의 속도에 {aT} 맞추다 지칠 수 있어요 — 가끔은 {a} 속도로 가도 돼요.',
-      same: '닮은 기운끼리라 편한데, 같이 뜨거워지면 둘 다 타요 — 한 명이 쉬는 게 필요해요.'
+      same: [
+        '같은 결이라 편하고, 같이 뜨거워지면 둘 다 타요 — 쉬는 날을 같이 정해 두세요.',
+        '닮은 기운끼리라 말이 빨라요 — 대신 서운함도 똑같이 커져요.',
+        '같은 온도라 같이 뜨겁고 같이 식어요 — 중간 온도를 같이 만들어 두면 좋아요.'
+      ],
+      iFeedYou: [
+        '기운이 순하게 이어져요 — 표현하는 쪽도, 받는 쪽도 부담이 없어요.',
+        '한 사람의 기운이 다른 사람에게 잘 닿아요 — 편안함이 이 조합의 무기예요.',
+        '서로의 기운이 부드럽게 오가요 — 그래서 다퉈도 금방 풀려요.'
+      ],
+      youFeedMe: [
+        '기운이 흐르는 방향이 조금 기울어요 — 받는 쪽은 고맙다고 자주 말해 주세요.',
+        '한쪽 기운이 다른 쪽을 편하게 해요 — 그 편안함을 당연하게 여기지 않기.',
+        '기운이 이어지되 방향이 달라요 — 같은 날 기분이 반대로 갈 때가 있어요.'
+      ],
+      iBeatYou: [
+        '서로 끌리면서도 부딪히는 조합이에요 — 세게 말할 때 한 톤만 낮추면 달라져요.',
+        '밀당이 저절로 생기는 사이예요 — 그만할 때를 둘이 정해 두면 편해요.',
+        '힘이 부딪히는 자리가 있어요 — 그 자리만 피하면 나머지는 잘 맞아요.'
+      ],
+      youBeatMe: [
+        '서로 끌리면서도 부딪히는 조합이에요 — 세게 말할 때 한 톤만 낮추면 달라져요.',
+        '한쪽이 앞서려는 날이 있어요 — 그날은 다른 쪽도 한 발만 물러서면 풀려요.',
+        '기운이 부딪히는 자리가 있어요 — 그 자리만 피하면 나머지는 잘 맞아요.'
+      ]
     }
   };
 
   var EL_TRAIT = { 목: '새로 시작하는 힘', 화: '먼저 표현하는 힘', 토: '챙기고 정리하는 힘', 금: '끊고 정리하는 힘', 수: '쉬고 비우는 힘' };
 
-  /* ② 보완할 점 — 두 번째 줄은 일지 관계에서 (막대 대신 사람 말로) */
-  var COMP_ZHI = {
+  /* ③ 각자 보완할 점 — 그 사람 자기 사주에서 얇은 기운 하나만 짚는다.
+     상대에게 넘기지 않고, 본인 몫으로만 말한다(2026-11-21 김나영 님 지시). */
+  var COMP_SELF = {
     friend: {
-      chung:  '부딪히면 크게 흔들려요 — 큰 결정은 하루 두고 보기.',
-      hyeong: '약속·서류에서 엉키기 쉬워요 — 말 대신 글로 남기기.',
-      hae:    '말이 엇갈리기 쉬워요 — 중요한 얘기는 얼굴 보고 하기.',
-      hap:    '붙는 힘이 좋은 대신, 같이 늘어지기 쉬워요 — 한 명은 계획을 챙기기.',
-      samhap: '같은 방향을 볼 때 힘이 커져요 — 목표는 하나만 정해 두기.',
-      same:   '둘 다 같은 기운이라 같이 세져요 — 한 명이 먼저 말리는 역할.',
-      plain:  '부딪히진 않아요 — 대신 먼저 손 내미는 쪽이 늘 한 명이에요.'
+      목: [
+        '새로 시작하는 힘이 얇아요 — 새 일은 한 번에 하나만 벌이기.',
+        '시작이 느린 편이에요 — 마음에 들면 그날 첫 발만 떼 두기.',
+        '새 판 여는 힘은 아껴야 해요 — 벌린 일 끝내고 다음 걸 시작하기.'
+      ],
+      화: [
+        '먼저 표현하는 힘이 약해요 — 좋으면 좋다고 먼저 말해 두기.',
+        '속으로 삭히는 편이에요 — 고마운 건 그날 한마디로 꺼내기.',
+        '드러내는 데 시간이 걸려요 — 문자 한 줄이라도 먼저 보내기.'
+      ],
+      토: [
+        '챙기고 정리하는 힘이 얇아요 — 약속은 그날 바로 달력에 넣기.',
+        '중간에 흐지부지되기 쉬워요 — 한 일은 눈에 보이게 적어 두기.',
+        '마무리가 느슨해요 — 시작할 때 끝나는 날부터 정하기.'
+      ],
+      금: [
+        '끊고 정리하는 힘이 약해요 — 안 맞는 건 한 번에 정리하기.',
+        '거절이 어려운 편이에요 — 안 되는 건 그 자리에서 짧게 말하기.',
+        '미뤄 두고 쌓기 쉬워요 — 서랍과 연락처는 한 달에 한 번 비우기.'
+      ],
+      수: [
+        '쉬고 비우는 힘이 얇아요 — 잠을 일로 깎지 않기.',
+        '혼자 비우는 시간이 부족해요 — 하루 20분은 아무것도 안 하기.',
+        '쉬는 걸 죄책감으로 느껴요 — 쉬는 날엔 일정 하나만 잡기.'
+      ]
     },
     love: {
-      chung:  '부딪히면 크게 흔들려요 — 큰 얘기는 하루 두고 하기.',
-      hyeong: '서운함이 쌓이기 쉬워요 — 그날그날 말해 두기.',
-      hae:    '말이 자꾸 어긋나요 — 문자보다 얼굴 보고 얘기하기.',
-      hap:    '붙는 힘이 좋은 대신, 서로의 시간을 뺏기 쉬워요 — 각자 시간 남겨 두기.',
-      samhap: '같이 보는 게 많아요 — 각자 취미 하나는 꼭 남겨 두기.',
-      same:   '닮아서 편한데 같이 늘어져요 — 한 명은 계획을 챙기기.',
-      plain:  '온도 차이가 있어요 — 급한 쪽이 한 번만 기다려 주기.'
+      목: [
+        '새로 시작하는 힘이 얇아요 — 새로 뭘 하자고 할 땐 작게 하나만.',
+        '마음을 여는 데 시간이 걸려요 — 좋으면 좋다고 먼저 말해 두기.',
+        '시작이 느린 편이에요 — 다음 만날 날은 그 자리에서 정하기.'
+      ],
+      화: [
+        '먼저 표현하는 힘이 약해요 — 보고 싶으면 보고 싶다고 먼저 말하기.',
+        '속으로 삭히는 편이에요 — 서운한 건 그날 안에 꺼내기.',
+        '티를 잘 안 내요 — 좋은 것도 한 번씩 말로 꺼내기.'
+      ],
+      토: [
+        '챙기고 정리하는 힘이 얇아요 — 약속은 그날 바로 달력에 넣기.',
+        '마음이 흐지부지되기 쉬워요 — 같이 하기로 한 건 날짜부터 정하기.',
+        '마무리가 느슨해요 — 애매한 말은 그 자리에서 확실하게.'
+      ],
+      금: [
+        '끊고 정리하는 힘이 약해요 — 안 맞는 건 오래 끌지 않기.',
+        '서운한 걸 참는 편이에요 — 참는 대신 그날 짧게 말하기.',
+        '정리보다 미루기가 편해요 — 마음속 숙제는 하나씩 비우기.'
+      ],
+      수: [
+        '쉬고 비우는 힘이 얇아요 — 연락을 못 할 만큼 몰리진 않게.',
+        '혼자 삭이는 시간이 필요해요 — 하루 20분은 아무것도 안 하기.',
+        '혼자 있는 시간을 못 챙겨요 — 각자 시간 한 칸은 꼭 남기기.'
+      ]
     }
   };
 
-  /* ②-2 보완할 점이 한 줄뿐일 때 채우는 두 번째 줄 — 기운이 서로 어떻게 도는지로 */
-  var COMP_EXTRA = {
+  /* ③-2 기운이 넘칠 때(한 오행 3개 이상) — 얇은 쪽 대신 이 줄이 나가기도 한다 */
+  var COMP_FULL = {
     friend: {
-      same: '둘 다 같은 기운이라, 한 명이 흐름을 끊어 줄 때 제일 편해져요.',
-      youFeedMe: '받기만 하지 않게, 가끔은 {aS} 먼저 챙겨 주세요.',
-      iFeedYou: '주는 쪽이 지치지 않게, {bS} 먼저 물어봐 주세요.',
-      iBeatYou: '말투만 한 단계 낮춰도 부딪히는 일이 확 줄어요.',
-      youBeatMe: '{aT} 속도를 지킬 여유를 하루에 한 번은 만들어 주세요.'
+      목: [
+        '새로 벌이는 힘이 넘쳐요 — 벌린 일 세고 나서 하나는 접기.',
+        '시작하는 힘이 세요 — 벌이기 전에 끝낼 날부터 정하기.'
+      ],
+      화: [
+        '표현이 센 편이에요 — 말이 빨라질 때 한 박자 쉬기.',
+        '기운이 앞서요 — 좋은 말도 한 번 더 다듬어서.'
+      ],
+      토: [
+        '챙기는 힘이 넘쳐요 — 남의 일까지 떠안지 않기.',
+        '정리에 힘이 쏠려요 — 남의 자리까지 정리하진 않기.'
+      ],
+      금: [
+        '정리하는 힘이 세요 — 선을 긋는 말은 한 번 더 부드럽게.',
+        '끊는 힘이 세요 — 관계도 한 번에 자르진 않기.'
+      ],
+      수: [
+        '생각이 깊게 고여요 — 혼자 결론 내리기 전에 물어보기.',
+        '속으로 오래 삭혀요 — 생각난 건 그날 한 줄로 꺼내기.'
+      ]
     },
     love: {
-      same: '둘 다 같은 기운이라, 한 명이 먼저 쉬어 주는 게 오래 가는 비결이에요.',
-      youFeedMe: '받는 것만 익숙해지지 않게, 가끔은 {aS} 먼저 표현해 주세요.',
-      iFeedYou: '주는 쪽이 지치지 않게, {bS} 먼저 안아 주세요.',
-      iBeatYou: '세게 말할 때 한 번만 부드럽게 바꿔도 느낌이 달라져요.',
-      youBeatMe: '{aT} 속도로 가는 날을 일주일에 하루는 만들어 주세요.'
+      목: [
+        '밀어붙이는 힘이 넘쳐요 — 상대 속도를 한 번 확인하기.',
+        '시작하는 힘이 세요 — 같이 가자고 하기 전에 한 번 묻기.'
+      ],
+      화: [
+        '감정이 앞서요 — 화가 나면 10분 뒤에 말하기.',
+        '표현이 뜨거워요 — 좋은 말도 세게 하면 부담이 돼요.'
+      ],
+      토: [
+        '챙김이 과해요 — 안 물어봤으면 살짝 두기.',
+        '정리벽이 세요 — 상대 시간표까지 정하진 않기.'
+      ],
+      금: [
+        '정리벽이 세요 — 상대 물건은 손대지 않기.',
+        '말이 칼 같아질 때가 있어요 — 한 박자 늦게 말하기.'
+      ],
+      수: [
+        '속으로 오래 곱씹어요 — 생각난 건 그날 한 줄로 말하기.',
+        '혼자 가라앉는 시간이 길어요 — 말없이 사라지진 않기.'
+      ]
     }
   };
 
-  /* ③ 꼭 챙겨줄 점 — 두 번째 줄은 일지 관계별 행동 팁 */
-  var CARE_ZHI = {
+  /* ④ 2027년 꼭 챙겨줄 점 — 두 번째 줄은 18가지 행동 팁 풀에서 조합 해시로 */
+  var CARE = {
+    friend: [
+      '돈 얘기·약속은 카톡으로 남겨 두기 — 말로만 하면 기억이 갈려요.',
+      '같이 하기로 한 건 3월 전에 첫발 떼기.',
+      '같은 목표 하나 정해서 같이 밀어 보기.',
+      '한 명이 흥분하면 다른 한 명은 10분 쉬기.',
+      '부딪힌 날은 그날 안에 한 번 웃고 끝내기.',
+      '중요한 말은 얼굴 보고, 문자로는 짧게.',
+      '연락은 짧아도 한 달에 한 번은 얼굴 보기.',
+      '생일은 서로 달력에 미리 넣어 두기.',
+      '같이 여행 가면 돈은 한 명이 내고 반씩 정산하기.',
+      '잘하는 일만 나눠 맡고, 서로 간섭은 줄이기.',
+      '힘들 때는 해결책보다 듣기부터.',
+      '약속을 미룰 땐 다음 날을 그 자리에서 정하기.',
+      '같이 산 물건은 이름 붙여 두기 — 나중에 안 싸우는 법.',
+      '한 명이 피곤해 보이면 일단 밥부터.',
+      '둘만 아는 얘기는 밖에서 하지 않기.',
+      '한 달에 한 번은 서로 근황 한 줄씩 보내기.',
+      '같이 일할 땐 역할을 종이에 한 번 적어 두기.',
+      '고마우면 그 자리에서 말하기 — 미루면 잊어요.'
+    ],
+    love: [
+      '서운한 건 그날 말하고, 다음 날로 넘기지 않기.',
+      '싸운 날은 그날 안에 손 잡고 끝내기.',
+      '연락은 짧아도 매일 — 말보다 안부 먼저.',
+      '같이 가고 싶은 곳 하나 정해 두기.',
+      '같은 목표(여행·저축) 하나 정해 두기.',
+      '같이 화날 땐 한 명이 먼저 10분 걷기.',
+      '중요한 얘기는 속도를 맞춰서, 한 번에 하나씩.',
+      '기념일은 서로 달력에 미리 넣어 두기.',
+      '고마운 건 그날 말로 꺼내기.',
+      '각자 시간 한 칸은 꼭 남겨 두기.',
+      '연락 답이 늦어도 이유를 먼저 묻지 않기.',
+      '가족·친구 얘기가 나오면 편부터 듣기.',
+      '같이 아끼는 물건은 서로 자리를 정해 두기.',
+      '다툰 날엔 잠들기 전에 한 줄이라도 보내기.',
+      '돈 얘기는 미루지 말고 초반에 한 번에.',
+      '기분이 상했으면 "나 지금"으로 시작하기.',
+      '둘이 정한 규칙은 만날 때 다시 확인하기.',
+      '좋았던 일은 적어 두기 — 나중에 꺼내 볼 수 있게.'
+    ]
+  };
+
+  /* 달 이야기 — 같은 달이라도 조합마다 문장이 달라지게 3가지씩 */
+  var MONTH_LINE = {
     friend: {
-      chung:  '부딪힌 날은 그날 안에 한 번 웃고 끝내기 — 미루면 커져요.',
-      hyeong: '돈 얘기·약속은 카톡으로 남겨 두기.',
-      hae:    '중요한 말은 얼굴 보고, 문자로는 짧게.',
-      hap:    '같이 하기로 한 건 3월 전에 첫발 떼기.',
-      samhap: '같은 목표 하나 정해서 같이 밀어 보기.',
-      same:   '한 명이 흥분하면 다른 한 명은 10분 쉬기.',
-      plain:  '방향만 먼저 맞추고, 속도는 각자.'
+      both: [
+        '{m}엔 둘 다 예민해요 — 큰 결정은 그달 말로 미루기.',
+        '{m}은 둘 다 신경이 곤두서요 — 약속은 가볍게, 결정은 다음 달로.',
+        '{m}엔 말이 세지기 쉬워요 — 그달은 먹는 걸로 푸세요.'
+      ],
+      one: [
+        '{m}엔 {n} 쪽이 예민해요 — 먼저 연락하고 결정은 천천히.',
+        '{m}은 {n}의 속도가 느려지는 달이에요 — 재촉하지 않기.',
+        '{m}엔 {nS} 예민해져요 — 그달엔 함께하는 약속을 가볍게.'
+      ],
+      good: [
+        '{m}에 같이 뭐 하나 시작해 보세요 — 그달이 제일 잘 붙어요.',
+        '{m}은 둘 다 힘이 붙는 달이에요 — 미뤄 둔 일을 그때 꺼내기.',
+        '{m}에 중요한 얘기를 꺼내면 잘 풀려요 — 그달을 기다려 보세요.'
+      ],
+      none: [
+        '올해는 둘 다 크게 흔들리는 달이 없어요 — 페이스만 맞춰 가요.',
+        '올해는 둘 다 무리하는 달이 없어요 — 지금 속도가 제일 좋아요.'
+      ]
     },
     love: {
-      chung:  '싸운 날은 그날 안에 손 잡고 끝내기.',
-      hyeong: '서운한 건 그날 말하고, 다음 날로 넘기지 않기.',
-      hae:    '연락은 짧아도 매일 — 말보다 안부 먼저.',
-      hap:    '같이 가고 싶은 곳 하나 정해 두기.',
-      samhap: '같은 목표(여행·저축) 하나 정해 두기.',
-      same:   '같이 화날 땐 한 명이 먼저 나가서 10분 걷기.',
-      plain:  '중요한 얘기는 속도를 맞춰서, 한 번에 하나씩.'
+      both: [
+        '{m}엔 둘 다 예민해요 — 큰 얘기는 그달 말로 미루기.',
+        '{m}은 서로 말이 날카로워지기 쉬워요 — 그달엔 만나는 날을 줄이기.',
+        '{m}엔 둘 다 지쳐요 — 그달은 안부만 주고받기.'
+      ],
+      one: [
+        '{m}엔 {n} 쪽이 예민해요 — 먼저 안아 주고 결정은 천천히.',
+        '{m}은 {n}의 마음이 가라앉는 달이에요 — 조급해하지 않기.',
+        '{m}엔 {nS} 서운해지기 쉬워요 — 그달엔 표현을 조금 더.'
+      ],
+      good: [
+        '{m}에 마음을 꺼내면 잘 닿아요 — 그달이 제일 잘 붙어요.',
+        '{m}은 둘 다 마음이 열리는 달이에요 — 미뤄 둔 약속을 그때.',
+        '{m}에 같이 멀리 다녀오면 오래 남아요.'
+      ],
+      none: [
+        '올해는 둘 다 크게 흔들리는 달이 없어요 — 지금 온도가 좋아요.',
+        '올해는 둘 다 무리하는 달이 없어요 — 천천히 가도 돼요.'
+      ]
+    }
+  };
+  var MONTH_TIP = {
+    friend: {
+      good: ['그달엔 미뤄 둔 약속을 꺼내 보세요.', '그달에 같이 시작한 일은 오래 갑니다.', '그달에 만나면 얘기가 잘 풀려요.'],
+      warn: ['그달엔 돈 얘기를 미루세요.', '그달엔 큰 약속을 잡지 않는 게 좋아요.', '그달엔 연락을 조금 자주.']
+    },
+    love: {
+      good: ['그달엔 같이 여행 계획을 세워 보세요.', '그달에 한 약속은 오래 갑니다.', '그달엔 사진을 많이 남겨 두세요.'],
+      warn: ['그달엔 서운한 얘기를 미루세요.', '그달엔 만나는 날짜를 미리 정해 두세요.', '그달엔 문자보다 전화.']
     }
   };
 
-  /* ④ 2027 부적 — 두 사람의 조합(일지 관계)마다 이름도, 금박 도안도 다르다.
-     같은 우정이라도 '지갑수호'가 나오는 콤비와 '텔레파시'가 나오는 콤비가 달라서
-     친구·연인을 바꿔 가며 모으는 재미가 생긴다. (2026-11-21 김나영 님 지시) */
+  /* ⑤ 2027 부적 — 금박 문양 14종 × 우정/사랑 = 28종.
+     조합 해시로 문양을 고르고, 같은 문양이라도 우정과 사랑의 이름·한 줄은 다르다. */
+  var ARTS = ['key', 'flame', 'ring', 'moonwave', 'money', 'butterfly', 'stars', 'lotus', 'compass', 'hourglass', 'crane', 'gourd', 'knot', 'lantern'];
   var AMUL = {
     friend: {
-      hap:    { name: '찐친 지갑수호 부적',     art: 'key',       line: '지갑은 각자, 밥은 같이' },
-      chung:  { name: '브레이크 없는 콤비 부적', art: 'flame',     line: '싸워도 밥은 같이 먹는다' },
-      hyeong: { name: '오해 제로 의리 부적',     art: 'knot',      line: '약속은 문자로, 우정은 길게' },
-      hae:    { name: '속마음 텔레파시 부적',     art: 'moonwave',  line: '말보다 밥 — 그래도 통한다' },
-      samhap: { name: '대박 합작 시너지 부적',   art: 'money',     line: '같은 쪽 보면 두 배로 벌어요' },
-      same:   { name: '취향저격 찰떡 부적',       art: 'butterfly', line: '취향 일치, 텐션 조절만' },
-      plain:  { name: '적당한 거리 수호 부적',     art: 'stars',     line: '적당한 거리가 오래 간다' }
+      key:       { name: '찐친 지갑수호 부적',     line: '지갑은 각자, 밥은 같이' },
+      flame:     { name: '브레이크 없는 콤비 부적', line: '싸워도 밥은 같이 먹는다' },
+      ring:      { name: '두 고리 의리 부적',       line: '한 번 엮이면 안 풀린다' },
+      moonwave:  { name: '속마음 텔레파시 부적',   line: '말보다 밥 — 그래도 통한다' },
+      money:     { name: '대박 합작 시너지 부적',   line: '같은 쪽 보면 두 배로 벌어요' },
+      butterfly: { name: '취향저격 찰떡 부적',     line: '취향 일치, 텐션 조절만' },
+      stars:     { name: '야식 동지 부적',         line: '밤 12시엔 같이 배고프다' },
+      lotus:     { name: '말 안 해도 편한 부적',   line: '같이 있어도 각자 편한 사이' },
+      compass:   { name: '길 잃어도 둘이면 부적',   line: '방향은 달라도 목적지는 같다' },
+      hourglass: { name: '오래 가는 우정 부적',     line: '급할수록 천천히, 우정은 길게' },
+      crane:     { name: '멀리 가도 다시 오는 부적', line: '연락 뜸해도 안 끊긴다' },
+      gourd:     { name: '복 불려 오는 콤비 부적',   line: '같이 다니면 복도 두 배' },
+      knot:      { name: '오해 제로 의리 부적',     line: '약속은 문자로, 우정은 길게' },
+      lantern:   { name: '밤길 같이 가는 부적',     line: '어두울 때 더 또렷한 사이' }
     },
     love: {
-      hap:    { name: '눈빛 통하는 자석 부적',   art: 'stars',     line: '말하지 않아도 통하는 사이' },
-      chung:  { name: '싸워도 5분 화해 부적',    art: 'flame',     line: '부딪혀도 결국 너에게' },
-      hyeong: { name: '밀당 종료 직진 부적',     art: 'key',       line: '서운하면 그날 말하기' },
-      hae:    { name: '말 엇갈려도 손잡기 부적', art: 'knot',      line: '손은 놓지 않기로 해' },
-      samhap: { name: '2027 꿀떨어짐 부적',      art: 'money',     line: '같은 곳을 보면 가까워진다' },
-      same:   { name: '평생 내 편 수호 부적',    art: 'butterfly', line: '닮아서 편하고, 닮아서 조심' },
-      plain:  { name: '천천히 오래 곁에 부적',   art: 'moonwave',  line: '천천히, 그러나 오래' }
+      key:       { name: '밀당 종료 직진 부적',   line: '서운하면 그날 말하기' },
+      flame:     { name: '싸워도 5분 화해 부적',    line: '부딪혀도 결국 너에게' },
+      ring:      { name: '쌍고리 인연 부적',      line: '고리처럼 다시 돌아온다' },
+      moonwave:  { name: '천천히 오래 곁에 부적',   line: '천천히, 그러나 오래' },
+      money:     { name: '2027 꿀떨어짐 부적',      line: '같은 곳을 보면 가까워진다' },
+      butterfly: { name: '평생 내 편 수호 부적',    line: '닮아서 편하고, 닮아서 조심' },
+      stars:     { name: '눈빛 통하는 자석 부적',   line: '말하지 않아도 통하는 사이' },
+      lotus:     { name: '마음 씻는 연꽃 부적',     line: '서운함은 물에 흘려보내기' },
+      compass:   { name: '첫눈에 방향 맞은 부적',   line: '어디로 가든 같이 가기' },
+      hourglass: { name: '타이밍 맞춤 부적',      line: '이제 그만 망설이기' },
+      crane:     { name: '오래 보는 눈 부적',      line: '같이 늙어도 재밌기' },
+      gourd:     { name: '액운 털어내는 부적',     line: '나쁜 기운은 둘이서 털기' },
+      knot:      { name: '엮인 인연 매듭 부적',    line: '한 번 엮이면 못 놓는다' },
+      lantern:   { name: '불 밝혀 두는 부적',      line: '누가 먼저 와도 불 켜 두기' }
     }
   };
+  /* 사주 쌍 → 부적 문양. 우정·사랑은 7칸씩 어긋나게 골라 같은 커플이라도 그림이 다르다. */
+  function amulOf(a, b, rel) {
+    var i = mix32(fnv32(pairSeed(a, b, rel) + '#amul')) % ARTS.length;
+    if (rel === 'love') i = (i + 7) % ARTS.length;
+    var art = ARTS[i];
+    var set = AMUL[rel] || AMUL.friend;
+    return { name: (set[art] || set.key).name, line: (set[art] || set.key).line, art: art };
+  }
 
   function zhiKeyOf(chA, chB) {
     var I = T._internal;
@@ -1107,12 +1402,16 @@
     return html;
   }
 
-  function compLine(rel, lean, rich, el) {
-    var trait = EL_TRAIT[el] || el;
-    if (rel === 'love') {
-      return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그 부분은 <b>' + esc(josaFull(rich, 'subj')) + '</b> 먼저 움직여 주세요.';
-    }
-    return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그건 <b>' + esc(josaFull(rich, 'subj')) + '</b> 맡아 주세요.';
+  /* 각자 보완할 점 — 그 사람 사주에서 얇은(가끔은 넘치는) 기운 하나만 */
+  function compElement(ch, wantFull) {
+    var counts = ch.counts || {}, low = null, high = null;
+    EL_ORDER.forEach(function (e) {
+      var c = counts[e] || 0;
+      if (!low || c < (counts[low] || 0)) low = e;
+      if (!high || c > (counts[high] || 0)) high = e;
+    });
+    if (wantFull && high && low && high !== low && (counts[high] || 0) >= 3) return { el: high, full: true };
+    return { el: low || '목', full: false };
   }
 
   function renderChemin(a, b) {
@@ -1123,49 +1422,57 @@
     var bName = String(b.p.name || '').trim() || R.peer;
     var info = pairInfo(a, b);
     var zk = info.zhiKey, mk = info.masterKey;
-    var mm = namesMap(aName, bName);
+    var seed = pairSeed(a, b, rel);
 
-    var hook = fill((HOOK[rel] || HOOK.friend)[zk] || (HOOK[rel] || HOOK.friend).plain, mm);
-    var role = fill((ROLE_LINE[rel] || ROLE_LINE.friend)[mk] || (ROLE_LINE[rel] || ROLE_LINE.friend).same, mm);
+    /* ① 훅 · 훅 아래 한 줄 — 조합 해시로 24가지 훅 중 하나 */
+    var hook = pickFrom(HOOK[rel] || HOOK.friend, seed, 'hook');
+    var roleSet = (ROLE[rel] || ROLE.friend)[mk] || (ROLE[rel] || ROLE.friend).same;
+    var role = pickFrom(roleSet, seed, 'role');
 
-    /* 서로 보완할 점 — 딱 2줄 */
-    var comps = [];
-    info.gaps.slice(0, 2).forEach(function (g) {
-      var lean = g.lean === 'me' ? aName : bName;
-      var rich = g.lean === 'me' ? bName : aName;
-      comps.push(compLine(rel, lean, rich, g.el));
+    /* ② 각자 보완할 점 — 이름 + 본인 기운 기준 한 줄씩 */
+    var comps = [a, b].map(function (ch, i) {
+      var nm = i === 0 ? aName : bName;
+      var ps = personSeed(ch, rel) + (i === 1 && aName === bName ? '#b' : '');
+      var c = compElement(ch, (fnv32(ps + '#full') % 3) === 0);
+      var table = c.full ? COMP_FULL : COMP_SELF;
+      var pool = (table[rel] || table.friend)[c.el] || [];
+      return '<b>' + esc(nm) + '</b> : ' + esc(pickFrom(pool, ps, c.full ? 'full' : 'self'));
     });
-    if (comps.length < 2) {
-      comps.push(fill((COMP_ZHI[rel] || COMP_ZHI.friend)[zk] || (COMP_ZHI[rel] || COMP_ZHI.friend).plain, mm));
-    }
-    if (comps.length < 2) {
-      comps.push(fill((COMP_EXTRA[rel] || COMP_EXTRA.friend)[mk] || (COMP_EXTRA[rel] || COMP_EXTRA.friend).same, mm));
-    }
-    comps = comps.slice(0, 2);
 
-    /* 2027년 꼭 챙겨줄 점 — 딱 2줄 */
+    /* ③ 2027년 꼭 챙겨줄 점 — 달 줄 하나 + 행동 팁 하나 */
     var bestMs = info.both.length ? info.both : info.near;
     var care = [];
+    var mPool, mVal = '', mName = '';
     if (info.warnBoth.length) {
-      care.push('<b>' + info.warnBoth[0] + '월</b>엔 둘 다 예민해요 — 그달엔 큰 결정 미루고 맛있는 거 먹기.');
+      mPool = (MONTH_LINE[rel] || MONTH_LINE.friend).both;
+      mVal = info.warnBoth[fnv32(seed + '#wb') % info.warnBoth.length];
     } else if (info.warnOne.length) {
-      var wo = info.warnOne[0];
-      var whoName = wo.who === 'me' ? aName : bName;
-      care.push('<b>' + wo.n + '월</b>엔 ' + esc(josaFull(whoName, 'subj')) + ' 예민해요 — 그달엔 먼저 연락하고 결정은 천천히.');
+      var wo = info.warnOne[fnv32(seed + '#wo') % info.warnOne.length];
+      mPool = (MONTH_LINE[rel] || MONTH_LINE.friend).one; mVal = wo.n;
+      mName = wo.who === 'me' ? aName : bName;
     } else if (bestMs.length) {
-      care.push('<b>' + bestMs[0] + '월</b>에 같이 뭐 하나 시작해 보세요 — 올해는 조심할 달이 없어요.');
+      mPool = (MONTH_LINE[rel] || MONTH_LINE.friend).good; mVal = bestMs[0];
     } else {
-      care.push('올해는 둘 다 크게 흔들리는 달이 없어요 — 페이스만 맞춰 가요.');
+      mPool = (MONTH_LINE[rel] || MONTH_LINE.friend).none;
     }
-    care.push(fill((CARE_ZHI[rel] || CARE_ZHI.friend)[zk] || (CARE_ZHI[rel] || CARE_ZHI.friend).plain, mm));
+    var mLine = pickFrom(mPool, seed, 'month' + mVal);
+    mLine = mLine.replace('{m}', '<b>' + mVal + '월</b>')
+      .replace('{nS}', esc(josaFull(mName, 'subj')))
+      .replace('{n}', esc(mName));
+    care.push(mLine);
+    care.push(esc(pickFrom(CARE[rel] || CARE.friend, seed, 'caretip')));
 
-    /* 딱 맞는 달 · 조심할 달 — 각 한 줄 */
+    /* ④ 딱 맞는 달 · 조심할 달 */
     var goodMs = bestMs.slice(0, 3);
     var warnMs = (info.warnBoth.length ? info.warnBoth : info.warnOne.map(function (x) { return x.n; })).slice(0, 2);
     var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '아직 없어요';
     var warnTx = warnMs.length ? warnMs.map(function (n) { return n + '월'; }).join(' · ') : '없어요';
+    var tipSet = MONTH_TIP[rel] || MONTH_TIP.friend;
+    var goodTip = goodMs.length ? pickFrom(tipSet.good, seed, 'gtip' + goodMs.join('-')) : '';
+    var warnTip = warnMs.length ? pickFrom(tipSet.warn, seed, 'wtip' + warnMs.join('-')) : '';
 
-    var amul = (AMUL[rel] || AMUL.friend)[zk] || (AMUL[rel] || AMUL.friend).plain;
+    /* ⑤ 부적 — 조합 해시로 14종 문양 중 하나 */
+    var amul = amulOf(a, b, rel);
 
     var html = '';
     html += '<div class="chemi__hd">'
@@ -1173,12 +1480,12 @@
       + '<span class="chemi__year">2027</span>'
       + '</div>';
     html += '<p class="chemi__names">' + esc(aName) + ' <i>·</i> ' + esc(bName) + '</p>';
-    html += '<h2 class="chemi__hook"><span class="chemi__yr">2027년엔</span>' + hook + '</h2>';
-    html += '<p class="chemi__role">' + role + '</p>';
+    html += '<h2 class="chemi__hook"><span class="chemi__yr">2027년엔</span>' + esc(hook) + '</h2>';
+    html += '<p class="chemi__role">' + esc(role) + '</p>';
     html += elBars(a, b, { mini: true, legend: false });
 
     html += '<div class="csect">'
-      + '<p class="csect__lb"><i aria-hidden="true">1</i>서로 보완할 점</p>'
+      + '<p class="csect__lb"><i aria-hidden="true">1</i>각자 보완할 점</p>'
       + '<ul class="csect__ul">' + comps.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>'
       + '</div>';
     html += '<div class="csect">'
@@ -1186,8 +1493,10 @@
       + '<ul class="csect__ul csect__ul--do">' + care.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>'
       + '</div>';
     html += '<div class="cmonths">'
-      + '<div class="cm cm--good"><span>' + (rel === 'love' ? '마음이 잘 통하는 달' : '둘이 딱 맞는 달') + '</span><b>' + esc(goodTx) + '</b></div>'
-      + '<div class="cm cm--warn"><span>' + (rel === 'love' ? '말 조심할 달' : '슬쩍 조심할 달') + '</span><b>' + esc(warnTx) + '</b></div>'
+      + '<div class="cm cm--good"><span>' + (rel === 'love' ? '마음이 잘 통하는 달' : '둘이 딱 맞는 달') + '</span><b>' + esc(goodTx) + '</b>'
+      + (goodTip ? '<em>' + esc(goodTip) + '</em>' : '') + '</div>'
+      + '<div class="cm cm--warn"><span>' + (rel === 'love' ? '말 조심할 달' : '슬쩍 조심할 달') + '</span><b>' + esc(warnTx) + '</b>'
+      + (warnTip ? '<em>' + esc(warnTip) + '</em>' : '') + '</div>'
       + '</div>';
 
     html += '<p class="sect-h">2027 정미년 · ' + esc(amul.name) + ' (' + R.hanja + ')</p>';
@@ -1452,7 +1761,7 @@
     ctx.fillStyle = goldGrad(ctx, 0, 300, 0, 380, P);
     spacedCenter(ctx, title, W / 2, 368, 4);
 
-    /* 5. 부적 문양 — 조합마다 다른 금박 일러스트(쌍별·달과 파도·열쇠·나비·금전수·매듭·쌍불꽃) */
+    /* 5. 부적 문양 — 조합마다 다른 금박 일러스트 14종(열쇠·불꽃·쌍고리·달과 파도·금전수·나비·별·연꽃·나침반·모래시계·쌍학·호리병·매듭·등롱) */
     drawEmblem(ctx, o.art, W / 2, 808, 452, P);
 
     /* 6. 이름 */
@@ -1664,24 +1973,33 @@
   }
 
   function emKnot(ctx, cx, cy, S) {
-    /* 금실 매듭 — 두 고리가 맞물린 문양 (의리 = 이어진 고리) */
-    var r = S * 0.255, off = S * 0.185;
-    ctx.lineWidth = Math.max(5, S * 0.032);
-    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r, 0, Math.PI * 2); ctx.stroke();
-    /* 맞물린 자리 — 작은 매듭 */
-    ctx.lineWidth = Math.max(4, S * 0.024);
-    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r * 0.42, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r * 0.42, 0, Math.PI * 2); ctx.stroke();
-    /* 아래로 늘어뜨린 술 두 가닥 */
-    for (var t = -1; t <= 1; t += 2) {
+    /* 금실 매듭 — 돌린 둥근 사각 두 겹에 네 귀 고리 (의리 = 단단히 묶인 매듭) */
+    var r = S * 0.30, rr = Math.sqrt(2) * r * 0.80;
+    ctx.lineWidth = Math.max(4, S * 0.022);
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (d) {
       ctx.beginPath();
-      ctx.moveTo(cx + t * S * 0.055, cy + S * 0.30);
-      ctx.quadraticCurveTo(cx + t * S * 0.13, cy + S * 0.46, cx + t * S * 0.10, cy + S * 0.58);
+      ctx.arc(cx + d[0] * rr, cy + d[1] * rr, r * 0.20, 0, Math.PI * 2);
       ctx.stroke();
-    }
-    diamond(ctx, cx - S * 0.60, cy - S * 0.40, S * 0.030); ctx.fill();
-    diamond(ctx, cx + S * 0.62, cy + S * 0.42, S * 0.030); ctx.fill();
+    });
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI / 4);
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    roundPath(ctx, -r * 0.80, -r * 0.80, r * 1.60, r * 1.60, r * 0.26);
+    ctx.stroke();
+    ctx.lineWidth = Math.max(3, S * 0.017);
+    roundPath(ctx, -r * 0.44, -r * 0.44, r * 0.88, r * 0.88, r * 0.16);
+    ctx.stroke();
+    ctx.restore();
+    /* 아래 술 세 가닥 */
+    ctx.lineWidth = Math.max(3, S * 0.018);
+    [-1, 0, 1].forEach(function (t) {
+      ctx.beginPath();
+      ctx.moveTo(cx + t * S * 0.05, cy + rr + r * 0.14);
+      ctx.quadraticCurveTo(cx + t * S * 0.07, cy + rr + r * 0.34, cx + t * S * 0.11, cy + rr + r * 0.48);
+      ctx.stroke();
+    });
+    diamond(ctx, cx + S * 0.52, cy - S * 0.44, S * 0.026); ctx.fill();
   }
 
   function emFlameShape(ctx, x, yBase, h, w) {
@@ -1705,6 +2023,223 @@
       ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
       ctx.fill();
     });
+  }
+
+  /* 쌍고리 — 두 개의 금고리가 맞물린 문양 (인연·의리) */
+  function emRing(ctx, cx, cy, S) {
+    var r = S * 0.265, off = S * 0.19;
+    ctx.lineWidth = Math.max(6, S * 0.044);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.06, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = Math.max(3, S * 0.018);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.06, r * 0.52, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r * 0.52, 0, Math.PI * 2); ctx.stroke();
+    diamond(ctx, cx - S * 0.02, cy + S * 0.03, S * 0.045); ctx.fill();
+    diamond(ctx, cx - S * 0.50, cy - S * 0.42, S * 0.030); ctx.fill();
+    diamond(ctx, cx + S * 0.52, cy + S * 0.46, S * 0.026); ctx.fill();
+  }
+
+  /* 연꽃 — 다섯 꽃잎이 위로 벌어진 문양 */
+  function emLotusPetal(ctx, x, y, h, w, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-w, -h * 0.30, -w * 0.84, -h * 0.80, 0, -h);
+    ctx.bezierCurveTo(w * 0.84, -h * 0.80, w, -h * 0.30, 0, 0);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+  function emLotus(ctx, cx, cy, S) {
+    var bx = cx, by = cy + S * 0.38;
+    ctx.lineWidth = Math.max(4, S * 0.026);
+    [[0, 0.78, 0.145], [-0.40, 0.68, 0.135], [0.40, 0.68, 0.135],
+     [-0.76, 0.56, 0.125], [0.76, 0.56, 0.125]].forEach(function (p) {
+      emLotusPetal(ctx, bx, by, S * p[1], S * p[2], p[0]);
+    });
+    /* 물결 바닥 */
+    ctx.lineWidth = Math.max(3, S * 0.020);
+    ctx.beginPath();
+    ctx.moveTo(cx - S * 0.44, cy + S * 0.50);
+    ctx.bezierCurveTo(cx - S * 0.20, cy + S * 0.42, cx + S * 0.20, cy + S * 0.58, cx + S * 0.44, cy + S * 0.48);
+    ctx.stroke();
+    diamond(ctx, cx + S * 0.46, cy - S * 0.30, S * 0.034); ctx.fill();
+    diamond(ctx, cx - S * 0.50, cy - S * 0.14, S * 0.024); ctx.fill();
+  }
+
+  /* 황금나침반 — 방향을 잡아 주는 문양 */
+  function emCompass(ctx, cx, cy, S) {
+    var r = S * 0.40;
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = Math.max(2, S * 0.012);
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.84, 0, Math.PI * 2); ctx.stroke();
+    for (var i = 0; i < 8; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 4;
+      var r1 = r * (i % 2 ? 0.70 : 0.76), r2 = r * 0.90;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+      ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+      ctx.stroke();
+    }
+    /* 바늘 — 북쪽은 채운 삼각, 남쪽은 선 */
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r * 0.62);
+    ctx.lineTo(cx - r * 0.15, cy + r * 0.04);
+    ctx.lineTo(cx + r * 0.15, cy + r * 0.04);
+    ctx.closePath(); ctx.fill();
+    ctx.lineWidth = Math.max(4, S * 0.022);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.60);
+    ctx.lineTo(cx - r * 0.15, cy + r * 0.04);
+    ctx.lineTo(cx + r * 0.15, cy + r * 0.04);
+    ctx.closePath(); ctx.stroke();
+    diamond(ctx, cx, cy + r * 0.04, S * 0.036); ctx.fill();
+    diamond(ctx, cx - S * 0.52, cy - S * 0.46, S * 0.026); ctx.fill();
+  }
+
+  /* 모래시계 — 시간·타이밍 문양 */
+  function emHourglass(ctx, cx, cy, S) {
+    var w = S * 0.26, h = S * 0.40, y0 = cy - h, y1 = cy + h;
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    ctx.beginPath(); ctx.moveTo(cx - w * 1.06, y0); ctx.lineTo(cx + w * 1.06, y0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - w * 1.06, y1); ctx.lineTo(cx + w * 1.06, y1); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.86, y0); ctx.lineTo(cx + w * 0.86, y0);
+    ctx.lineTo(cx, cy - S * 0.015); ctx.closePath(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.86, y1); ctx.lineTo(cx + w * 0.86, y1);
+    ctx.lineTo(cx, cy + S * 0.015); ctx.closePath(); ctx.stroke();
+    /* 모래 줄기 */
+    ctx.lineWidth = Math.max(2.4, S * 0.013);
+    ctx.beginPath(); ctx.moveTo(cx, cy - S * 0.015); ctx.lineTo(cx, cy + S * 0.075); ctx.stroke();
+    /* 아래로 쌓인 모래 */
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.60, y1 - S * 0.012);
+    ctx.lineTo(cx + w * 0.60, y1 - S * 0.012);
+    ctx.lineTo(cx, cy + S * 0.17);
+    ctx.closePath(); ctx.fill();
+    [[-0.30, -0.20], [0.34, -0.26], [0.16, 0.16], [-0.16, 0.30]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * 0.018, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  /* 쌍학 — 마주 보는 두 마리, 멀리 가도 다시 오는 새 */
+  function emCraneOne(ctx, cx, cy, s, dir) {
+    function X(v) { return cx + v * s * dir; }
+    ctx.lineWidth = Math.max(4, s * 0.055);
+    ctx.beginPath();
+    if (ctx.ellipse) ctx.ellipse(cx, cy, s * 0.19, s * 0.105, 0, 0, Math.PI * 2);
+    else ctx.arc(cx, cy, s * 0.14, 0, Math.PI * 2);
+    ctx.stroke();
+    /* 목 — S자로 세운 긴 목 */
+    ctx.beginPath();
+    ctx.moveTo(X(0.13), cy - s * 0.05);
+    ctx.bezierCurveTo(X(0.29), cy - s * 0.08, X(0.23), cy - s * 0.34, X(0.35), cy - s * 0.45);
+    ctx.stroke();
+    /* 머리 · 부리 */
+    ctx.beginPath(); ctx.arc(X(0.39), cy - s * 0.48, s * 0.045, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = Math.max(3, s * 0.032);
+    ctx.beginPath(); ctx.moveTo(X(0.43), cy - s * 0.485); ctx.lineTo(X(0.60), cy - s * 0.45); ctx.stroke();
+    /* 꼬리 깃 */
+    ctx.lineWidth = Math.max(3, s * 0.034);
+    ctx.beginPath(); ctx.moveTo(X(-0.17), cy - s * 0.04); ctx.lineTo(X(-0.42), cy - s * 0.14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(-0.18), cy + s * 0.01); ctx.lineTo(X(-0.45), cy + s * 0.01); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(-0.17), cy + s * 0.05); ctx.lineTo(X(-0.40), cy + s * 0.16); ctx.stroke();
+    /* 다리 */
+    ctx.lineWidth = Math.max(2.5, s * 0.026);
+    ctx.beginPath(); ctx.moveTo(X(0.01), cy + s * 0.09); ctx.lineTo(X(-0.01), cy + s * 0.34); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(0.09), cy + s * 0.09); ctx.lineTo(X(0.07), cy + s * 0.34); ctx.stroke();
+    /* 접은 날개 */
+    ctx.lineWidth = Math.max(4, s * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(X(-0.09), cy - s * 0.06);
+    ctx.bezierCurveTo(X(0.03), cy - s * 0.26, X(0.10), cy - s * 0.10, X(-0.01), cy + s * 0.03);
+    ctx.stroke();
+  }
+  function emCrane(ctx, cx, cy, S) {
+    emCraneOne(ctx, cx - S * 0.22, cy + S * 0.03, S * 0.46, 1);
+    emCraneOne(ctx, cx + S * 0.24, cy + S * 0.05, S * 0.40, -1);
+    /* 물가 */
+    ctx.lineWidth = Math.max(3, S * 0.018);
+    ctx.beginPath();
+    ctx.moveTo(cx - S * 0.46, cy + S * 0.21);
+    ctx.bezierCurveTo(cx - S * 0.30, cy + S * 0.17, cx - S * 0.12, cy + S * 0.25, cx - S * 0.02, cy + S * 0.21);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + S * 0.04, cy + S * 0.22);
+    ctx.bezierCurveTo(cx + S * 0.22, cy + S * 0.17, cx + S * 0.40, cy + S * 0.25, cx + S * 0.48, cy + S * 0.21);
+    ctx.stroke();
+    diamond(ctx, cx + S * 0.52, cy - S * 0.44, S * 0.026); ctx.fill();
+    diamond(ctx, cx - S * 0.54, cy - S * 0.30, S * 0.022); ctx.fill();
+  }
+
+  /* 호리병 — 좁은 목에 복을 담아 두는 병 */
+  function emGourd(ctx, cx, cy, S) {
+    var rb = S * 0.29, rt = S * 0.125;
+    var yb = cy + S * 0.20, yt = cy - S * 0.28;
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    ctx.beginPath(); ctx.arc(cx, yb, rb, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, yt, rt, 0, Math.PI * 2); ctx.stroke();
+    /* 좁은 목 */
+    ctx.lineWidth = Math.max(4, S * 0.024);
+    [-1, 1].forEach(function (d) {
+      ctx.beginPath();
+      ctx.moveTo(cx + d * rt * 0.94, yt + rt * 0.34);
+      ctx.bezierCurveTo(cx + d * rt * 0.92, yt + rt * 1.5,
+        cx + d * rb * 0.30, yb - rb * 1.02, cx + d * rb * 0.28, yb - rb * 0.96);
+      ctx.stroke();
+    });
+    /* 마개 */
+    ctx.lineWidth = Math.max(5, S * 0.028);
+    ctx.beginPath(); ctx.moveTo(cx - rt * 0.52, yt - rt * 1.02); ctx.lineTo(cx + rt * 0.52, yt - rt * 1.02); ctx.stroke();
+    /* 덩굴 · 잎 */
+    ctx.lineWidth = Math.max(3, S * 0.018);
+    ctx.beginPath();
+    ctx.moveTo(cx, yt - rt * 1.14);
+    ctx.bezierCurveTo(cx + S * 0.02, cy - S * 0.56, cx + S * 0.10, cy - S * 0.54, cx + S * 0.14, cy - S * 0.50);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + S * 0.13, cy - S * 0.51);
+    ctx.bezierCurveTo(cx + S * 0.30, cy - S * 0.58, cx + S * 0.36, cy - S * 0.44, cx + S * 0.22, cy - S * 0.40);
+    ctx.bezierCurveTo(cx + S * 0.17, cy - S * 0.44, cx + S * 0.14, cy - S * 0.47, cx + S * 0.13, cy - S * 0.51);
+    ctx.stroke();
+    /* 허리 매듭 */
+    ctx.lineWidth = Math.max(3, S * 0.018);
+    ctx.beginPath();
+    ctx.moveTo(cx - S * 0.14, cy - S * 0.03);
+    ctx.quadraticCurveTo(cx, cy + S * 0.02, cx + S * 0.14, cy - S * 0.03);
+    ctx.stroke();
+    diamond(ctx, cx + S * 0.40, cy + S * 0.28, S * 0.030); ctx.fill();
+    diamond(ctx, cx - S * 0.44, cy + S * 0.14, S * 0.022); ctx.fill();
+  }
+
+  /* 쌍등롱 — 밤길을 밝히는 초롱 두 개 */
+  function emLanternOne(ctx, cx, cy, w, h) {
+    ctx.lineWidth = Math.max(4, w * 0.16);
+    ctx.beginPath(); ctx.moveTo(cx, cy - h * 0.86); ctx.lineTo(cx, cy - h * 0.52); ctx.stroke();
+    roundPath(ctx, cx - w / 2, cy - h / 2, w, h, w * 0.34);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - w * 0.44, cy - h * 0.5); ctx.lineTo(cx + w * 0.44, cy - h * 0.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - w * 0.44, cy + h * 0.5); ctx.lineTo(cx + w * 0.44, cy + h * 0.5); ctx.stroke();
+    ctx.lineWidth = Math.max(2.2, w * 0.075);
+    [-0.24, 0, 0.24].forEach(function (dx) {
+      ctx.beginPath();
+      ctx.moveTo(cx + w * dx, cy - h * 0.40);
+      ctx.lineTo(cx + w * dx, cy + h * 0.40);
+      ctx.stroke();
+    });
+    ctx.beginPath(); ctx.moveTo(cx, cy + h * 0.52); ctx.lineTo(cx, cy + h * 0.74); ctx.stroke();
+  }
+  function emLantern(ctx, cx, cy, S) {
+    emLanternOne(ctx, cx - S * 0.22, cy - S * 0.04, S * 0.34, S * 0.46);
+    emLanternOne(ctx, cx + S * 0.26, cy + S * 0.16, S * 0.28, S * 0.38);
+    diamond(ctx, cx + S * 0.50, cy - S * 0.46, S * 0.026); ctx.fill();
+    diamond(ctx, cx - S * 0.46, cy + S * 0.50, S * 0.022); ctx.fill();
   }
 
   function drawEmblem(ctx, kind, cx, cy, S, P) {
@@ -1738,6 +2273,13 @@
     else if (kind === 'butterfly') emButterfly(ctx, cx, cy, S);
     else if (kind === 'money') emMoney(ctx, cx, cy, S);
     else if (kind === 'knot') emKnot(ctx, cx, cy, S);
+    else if (kind === 'ring') emRing(ctx, cx, cy, S);
+    else if (kind === 'lotus') emLotus(ctx, cx, cy, S);
+    else if (kind === 'compass') emCompass(ctx, cx, cy, S);
+    else if (kind === 'hourglass') emHourglass(ctx, cx, cy, S);
+    else if (kind === 'crane') emCrane(ctx, cx, cy, S);
+    else if (kind === 'gourd') emGourd(ctx, cx, cy, S);
+    else if (kind === 'lantern') emLantern(ctx, cx, cy, S);
     else emFlame(ctx, cx, cy, S);
 
     ctx.restore();
