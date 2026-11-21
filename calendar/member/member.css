@@ -241,6 +241,24 @@ a { color: inherit; }
   flex: 0 0 auto;
 }
 
+/* ── 카톡 채널 추가 (로그인 직후 · 2026-11-22) ───────── */
+.chadd {
+  display: flex; align-items: center; gap: 10px; margin-top: 14px;
+  padding: 12px 13px; border-radius: 14px;
+  background: #FEF3C7; border: 1px solid rgba(199, 154, 78, .5);
+  text-decoration: none; color: var(--ink);
+  transition: transform .16s ease;
+}
+.chadd:active { transform: translateY(1px); }
+.chadd__ic { flex: none; font-size: 18px; line-height: 1; }
+.chadd__b { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+.chadd__b b { font-size: 13px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.35; }
+.chadd__b span { font-size: 11px; color: #8A6A34; line-height: 1.4; }
+.chadd__go {
+  flex: none; font-size: 11px; font-weight: 700; color: #8A5A16;
+  white-space: nowrap;
+}
+
 /* ── 사다리 ───────────────────────────────────────── */
 .count {
   display: flex; align-items: baseline; gap: 6px; margin-top: 16px;

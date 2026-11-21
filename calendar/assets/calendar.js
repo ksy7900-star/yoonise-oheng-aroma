@@ -3235,6 +3235,39 @@
     if (m) return '긴급 개운템 — ' + careItemLabel(m[1]);
     return it;
   }
+
+  /* ── '코드 받기' 한 줄 문구 (2026-11-22) ───────────────────────────
+     고객이 방금 고른 상품만 담는다:
+       [3번 성찰 에디션 24,900원] 결제했어요! 휴대폰 번호: 010-
+     · 번호를 이미 적어 두었으면 그 번호까지 채워서 복사한다.
+     · 카톡에 붙여넣고 번호만 확인하면 사장님이 바로 코드를 발급할 수 있다.
+     · 계좌이체 개운템은 입금자명도 있어야 짝이 맞아 뒤에 한 칸 더 둔다. */
+  var ORDER_NO = { pass: '1번', allinone: '2번', diary: '3번', consult: '4번' };
+  function shortOrderLabel(item) {
+    var it = String(item || '');
+    if (it === 'pass') return '1번 1년 패스 ' + PASS_PRICE;
+    if (it === 'allinone') return '2번 올인원 ' + ALLINONE_PRICE;
+    if (it === 'diary') return '3번 성찰 에디션 ' + DIARY_PRICE;
+    if (it === 'consult') return '4번 원포인트 리딩 ' + CONSULT_PRICE;
+    if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) {
+      var to = it.slice(3), up = payInfoOf(it);
+      return (ORDER_NO[to] ? ORDER_NO[to] + ' ' : '') + TIER_NAME[to] + ' 업그레이드' + (up ? ' ' + wonNum(up.price) : '');
+    }
+    var m = /^care-(card|objet|bowl|set)$/.exec(it);
+    if (m) return '긴급 개운템 ' + careItemLabel(m[1]);
+    return orderLabel(it);
+  }
+  function codeOrderPhone() {
+    return mobileOf(payPhoneVal()) || rememberedPhone();
+  }
+  function codeOrderText(item) {
+    var it = String(item || '');
+    var ph = codeOrderPhone();
+    var tail = kakaoCareItem(it)
+      ? '휴대폰 번호: ' + (ph ? fmtPhone(ph) : '010-') + ' · 입금자명: '
+      : '휴대폰 번호: ' + (ph ? fmtPhone(ph) : '010-');
+    return '[' + shortOrderLabel(it) + '] 결제했어요! ' + tail;
+  }
   /** 내 생년월일시·성별 — 사주를 넣었을 때만. 시간을 모르면 날짜만. 코드는 이 값에 묶여 발급된다. */
   function birthLine() {
     var r = state.res;
@@ -3255,37 +3288,15 @@
   }
   /** 긴급 개운템은 계좌이체 전용(payActionsHTML card:false) — 확인 항목도 입금자명 하나 */
   function kakaoCareItem(item) { return /^care(-|$)/.test(String(item || '')); }
-  /** 결제 확인 항목 — 카드결제는 결제할 때 넣은 연락처, 계좌이체는 입금자명 + 코드 받을 번호.
-      2026-11-21부터 입장 코드는 **번호 + 상품**으로 나므로, 사장님이 이 번호 한 줄만 복사해 발급기에 넣으면 된다. */
-  function payIdLine(item) {
-    var it = String(item || '');
-    var kind = kakaoCareItem(it) ? 'bank' : payChoice[it];
-    var ph = mobileOf(payPhoneVal()) || rememberedPhone();   /* 결제 팝업에 적어 둔 번호 — 있으면 그대로 적어 보낸다 */
-    var lines = [];
-    if (kind === 'card') {
-      lines.push('결제 확인 — 카드결제 연락처: ' + (ph ? fmtPhone(ph) : ''));
-    } else if (kind === 'bank') {
-      lines.push('결제 확인 — 계좌 입금자명:');
-      lines.push('입장 코드 받을 번호: ' + (ph ? fmtPhone(ph) : ''));
-    } else {
-      lines.push('결제 확인 — 카드결제 연락처: ' + (ph ? fmtPhone(ph) : ''));
-      lines.push('(계좌이체는 입금자명 + 코드 받을 번호)');
-    }
-    return lines.join('\n');
-  }
-  function orderTextFor(item) {
-    var parts = ['[윤이세 2027 캘린더 신청] ' + orderLabel(item)];
-    parts.push(payIdLine(item));
-    parts.push('→ 이 번호 + 6자리 코드로 보내 드려요.');
-    return parts.join('\n');
-  }
+  /* 2026-11-22부터 '노란 카톡 버튼'은 신청 양식 대신 **상품명 + 휴대폰 번호 한 줄**만 복사한다
+     (codeOrderText) — 사장님이 번호 한 줄만 복사해 발급기에 넣으면 코드가 나가기 때문. */
   /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
-      부제는 버튼을 그릴 때 굳으므로(payChoice 는 누른 뒤에 정해진다) 두 방법을 함께 안내한다. */
+      부제는 버튼을 그릴 때 굳으므로 짧게 한 줄로 적는다. */
   function kakaoSubText(item) {
     if (String(item || '') === 'consult') return '누르면 신청 양식이 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝';
     return kakaoCareItem(item)
-      ? '누르면 신청 내용이 복사돼요 — 입금자명을 적어 보내 주세요'
-      : '누르면 신청 내용이 복사돼요 — 결제하신 연락처(계좌는 입금자명)를 적어 보내 주세요';
+      ? '누르면 상품명이 복사돼요 — 카톡에 붙여넣고 입금자명·번호만 적어 주세요'
+      : '누르면 상품명이 복사돼요 — 카톡에 붙여넣고 휴대폰 번호만 적어 주세요';
   }
   function kakaoOrderHTML(item, label) {
     return '<div class="kakaobar">' +
@@ -3426,12 +3437,17 @@
   function goKakaoOrder(item) {
     if (String(item) === 'care') item = 'care-' + (care && care.buy ? care.buy : 'set');
     if (String(item) === 'consult') { goConsultOrder(); return; }
-    var text = orderTextFor(item);
-    var who = kakaoCareItem(item) ? { what: '입금자명', josa: '을' } : { what: '연락처(입금자명)', josa: '를' };
+    var text = codeOrderText(item);
+    var hasPhone = !!codeOrderPhone();
+    var isCare = kakaoCareItem(item);
     copyText(text, function (copied) {
       toast(copied === true
-        ? '✅ 신청 내용을 복사했어요 — ' + who.what + '만 채워 보내 주세요'
-        : '카톡 채널로 이동해요 — 상품·' + who.what + who.josa + ' 함께 보내 주세요');
+        ? (hasPhone
+          ? (isCare
+            ? '✅ 상품명과 휴대폰 번호가 복사됐어요! 카톡에 붙여넣고 입금자명만 적어 주세요'
+            : '✅ 상품명과 휴대폰 번호가 복사됐어요! 카톡에 붙여넣고 보내 주세요')
+          : '✅ 상품명이 복사됐어요! 카톡에 붙여넣고 휴대폰 번호' + (isCare ? '·입금자명' : '') + '만 적어 주세요')
+        : '카톡으로 이동해요 — 상품명과 휴대폰 번호' + (isCare ? '·입금자명' : '') + '를 함께 적어 보내 주세요');
     });
     vibrate(18);
     // 카카오톡 채널 채팅방으로 이동 — referrer 없이(noreferrer) 새 창으로
@@ -3775,6 +3791,86 @@
   };
   var CARE_ITEM_ORDER = ['card', 'objet', 'bowl', 'set'];
 
+  /* ── 1회 무료 체험 기록 (2026-11-22) ──────────────────────────────
+     산가지·오브제·싱잉볼은 **각각 처음 1회**만 무료로 체험한다.
+     체험을 마치면 이 기기(localStorage)에 남기고, 그 뒤 다시 실행하려 하면
+     체험을 막은 뒤 팝업 아래 결제 영역(1종 2,900원 · 3종 5,900원)으로 데려간다.
+     · 이미 뽑아 둔 결과를 보는 것(오늘의 처방)은 그대로 둔다 — 막는 것은 '추가 실행'뿐.
+     · 기록은 기기별로 남는다(로그인·서버 없이 도는 앱이라 localStorage 하나로 충분). */
+  var CARE_TRIAL_KEY = 'yoonise.care.trial.v1';   /* ⚠️ 이름 주의 — 위쪽 TRIAL_KEY 는 '첫 방문일'(무료 3일)이라
+                                                     같은 var 이름을 쓰면 무료 체험 기록까지 덮어쓴다 (2026-11-22) */
+  var trialDone = { card: false, objet: false, bowl: false };
+  var trialLoaded = false;
+  function loadTrial() {
+    if (trialLoaded) return trialDone;
+    trialLoaded = true;
+    try {
+      var o = JSON.parse(localStorage.getItem(CARE_TRIAL_KEY) || 'null');
+      if (o && typeof o === 'object') {
+        trialDone.card = !!o.card;
+        trialDone.objet = !!o.objet;
+        trialDone.bowl = !!o.bowl;
+      }
+    } catch (e) {}
+    return trialDone;
+  }
+  function saveTrial() {
+    try {
+      localStorage.setItem(CARE_TRIAL_KEY, JSON.stringify({
+        card: !!trialDone.card, objet: !!trialDone.objet, bowl: !!trialDone.bowl, at: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function trialUsed(k) { return !!(loadTrial()[k]); }
+  function markTrial(k) {
+    loadTrial();
+    if (trialDone[k]) return false;
+    trialDone[k] = true;
+    saveTrial();
+    paintTrialChips();
+    return true;
+  }
+  function trialChipHTML(k) {
+    return trialUsed(k)
+      ? '<span class="care__trial is-done" data-trial-chip="' + k + '">1회 체험 완료</span>'
+      : '<span class="care__trial" data-trial-chip="' + k + '">무료 1회 체험</span>';
+  }
+  function paintTrialChips() {
+    if (!shopBody) return;
+    $$('[data-trial-chip]', shopBody).forEach(function (el) {
+      var done = trialUsed(el.getAttribute('data-trial-chip'));
+      el.classList.toggle('is-done', done);
+      el.textContent = done ? '1회 체험 완료' : '무료 1회 체험';
+    });
+  }
+  /* 1회 체험을 마친 항목을 또 실행하려 할 때 — 안내 + 결제 영역으로 부드럽게 */
+  var CARE_LOCK_TEXT = '1회 체험을 완료했어요 · 소장하고 매일 꺼내 쓰기';
+  function careLock(kind) {
+    var note = careEl('[data-care-lock]');
+    var it = CARE_ITEMS[kind];
+    if (note) {
+      note.innerHTML = '<b>' + CARE_LOCK_TEXT + '</b>' +
+        '<span>' + (it ? esc(it.name + ' ' + it.price) + ' · ' : '') + '3종 풀세트 ' + CARE_ITEMS.set.price + '</span>';
+      note.hidden = false;
+      note.classList.remove('is-show');
+      void note.offsetWidth;
+      note.classList.add('is-show');
+    }
+    toast(CARE_LOCK_TEXT);
+    vibrate([18, 40, 18]);
+    sfxTap(1);
+    var pay = careEl('[data-care-pay]');
+    if (pay) {
+      try { pay.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (e) { try { pay.scrollIntoView(); } catch (e2) {} }
+      pay.classList.remove('is-flash');
+      void pay.offsetWidth;
+      pay.classList.add('is-flash');
+      clearTimeout(careLock._t);
+      careLock._t = setTimeout(function () { if (pay) pay.classList.remove('is-flash'); }, 2600);
+    }
+  }
+
   function careItemLabel(v) {
     var it = CARE_ITEMS[v];
     return it ? it.name + ' ' + it.price : '';
@@ -3804,12 +3900,14 @@
   /* ① 대나무 산가지 6개 — 나란히 부채처럼 세워 두고 한 개만 뽑는다 */
   var STICK_SPREAD = 30;                            // 산가지 사이 간격(px)
   function bambooSticksHTML() {
+    var locked = trialUsed('card');
     var out = '';
     for (var i = 0; i < 6; i++) {
       var off = (i - 2.5) * STICK_SPREAD;            // 가운데 기준 ±85px
       var rot = -9 + i * 3.6;                        // −9° ~ +9° 부챗살
       var shift = -off;                              // 뽑히면 가운데로
       var cls = 'bamboo__stick';
+      if (locked) cls += ' is-locked';
       if (care.pick === i) cls += ' is-chosen';
       if (care.pick >= 0 && care.pick !== i) cls += ' is-away';
       out += '<button type="button" class="' + cls + '" data-care="stick" data-stick="' + i + '" ' +
@@ -3889,11 +3987,17 @@
     var el = careElement();
     var c = CARE[el] || CARE['화'];
     var thr = EL_THEME[el] || EL_THEME['화'];
+    loadTrial();
     var saved = loadCarePick(el);
     care.pick = saved ? saved.stick : -1;
     care.mi = saved ? saved.mi : -1;
     care.lastMi = saved ? saved.mi : -1;
     var picked = care.pick >= 0 && care.mi >= 0;
+    /* 1회 체험을 마친 항목 — 결과는 그대로 보여 주고, 새 실행만 잠근다 */
+    var lockedCard = trialUsed('card');
+    var lockedObjet = trialUsed('objet');
+    var lockedBowl = trialUsed('bowl');
+    if (lockedObjet) { care.charge = 0; care.lit = false; care.chargeStep = 0; }
     return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
       '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
       '<p class="care__place"><b>📍 추천 공간:</b> ' + esc(CARE_PLACE[el] || CARE_PLACE['화']) + '</p>' +
@@ -3906,9 +4010,9 @@
       '</button>' +
 
       /* ① 대나무 산가지 뽑기 */
-      '<section class="care care--bamboo">' +
+      '<section class="care care--bamboo' + (lockedCard ? ' is-locked' : '') + '">' +
       '<p class="care__no">01</p>' +
-      '<p class="care__title">오늘의 긴급 개운 처방</p>' +
+      '<div class="care__head"><p class="care__title">오늘의 긴급 개운 처방</p>' + trialChipHTML('card') + '</div>' +
       '<p class="care__desc">마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.</p>' +
       '<div class="bamboo' + (picked ? ' is-picked' : '') + '" data-bamboo>' +
       '<span class="bamboo__tray"></span>' +
@@ -3917,18 +4021,22 @@
       '</div>' +
       '<div class="bamboo__result' + (picked ? ' is-show' : '') + '" data-bamboo-result' + (picked ? '' : ' hidden') + '>' +
       (picked ? bambooResultHTML(el, care.pick, care.mi) : '') + '</div>' +
-      '<p class="care__hint" data-bamboo-hint>' + (picked
-        ? '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. '
-        : '여섯 개 중 마음이 끌리는 하나만 — 한 번에 하나씩 뽑아요.') +
+      '<p class="care__hint" data-bamboo-hint>' + (lockedCard
+        ? (picked
+          ? '뽑은 하나가 오늘의 처방이에요. 소장하면 내일도 새로 뽑을 수 있어요. '
+          : '무료 체험은 1회예요 — 소장하면 매일 새로 뽑을 수 있어요. ')
+        : (picked
+          ? '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. '
+          : '여섯 개 중 마음이 끌리는 하나만 — 한 번에 하나씩 뽑아요.')) +
       (picked ? '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>' : '') + '</p>' +
       '</section>' +
 
       /* ② 디지털 개운 오브제 — 손가락으로 문지르기 */
-      '<section class="care care--obj">' +
+      '<section class="care care--obj' + (lockedObjet ? ' is-locked' : '') + '">' +
       '<p class="care__no">02</p>' +
-      '<p class="care__title">내 디지털 개운 오브제</p>' +
+      '<div class="care__head"><p class="care__title">내 디지털 개운 오브제</p>' + trialChipHTML('objet') + '</div>' +
       '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + esc(c.josa) + ' 손가락으로 문질러 기운을 채워 보세요.</p>' +
-      '<div class="care-obj' + (care.lit ? ' is-awake' : '') + '" data-care="obj" role="button" tabindex="0" ' +
+      '<div class="care-obj' + (care.lit ? ' is-awake' : '') + (lockedObjet ? ' is-locked' : '') + '" data-care="obj" role="button" tabindex="0" ' +
       'style="--obj-glow:' + thr.color + '; --charge:' + care.charge + '" ' +
       'aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
       '<span class="care-obj__stage">' +
@@ -3942,16 +4050,18 @@
       '</span>' +
       '</div>' +
       '<span class="care-obj__bar"><i style="width:' + care.charge + '%" data-care-bar></i></span>' +
-      '<span class="care-obj__label" data-care-label>' + (care.lit
-        ? '✨ 기운 충전 100% 완료!'
-        : (care.charge < 1 ? '손가락으로 문지르면 기운이 차요 · 0%' : '문지르는 만큼 기운이 올라와요 · ' + Math.round(care.charge) + '%')) + '</span>' +
+      '<span class="care-obj__label" data-care-label>' + (lockedObjet
+        ? '1회 체험 완료 · 소장하면 매일 다시 채울 수 있어요'
+        : (care.lit
+          ? '✨ 기운 충전 100% 완료!'
+          : (care.charge < 1 ? '손가락으로 문지르면 기운이 차요 · 0%' : '문지르는 만큼 기운이 올라와요 · ' + Math.round(care.charge) + '%'))) + '</span>' +
       (care.lit ? '<button type="button" class="care__reset" data-care="objReset">처음부터 다시 채우기</button>' : '') +
       '</section>' +
 
       /* ③ 1분 오행 싱잉볼 */
-      '<section class="care care--bowl">' +
+      '<section class="care care--bowl' + (lockedBowl ? ' is-locked' : '') + '">' +
       '<p class="care__no">03</p>' +
-      '<p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' +
+      '<div class="care__head"><p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' + trialChipHTML('bowl') + '</div>' +
       '<p class="care__desc">코로 4초 · 멈춤 2초 · 입으로 6초, <b>12초 복식호흡</b>을 다섯 번 하는 동안 낮게 공명해요. 숨이 바뀔 때마다 다시 울려요.</p>' +
       '<div class="bowl' + (careBowl.on && !careBowl.paused ? ' is-on' : '') + '" data-bowl>' +
       '<button type="button" class="bowl__art" data-care="bowlTap" aria-label="싱잉볼 치기 — 1분 공명 시작">' +
@@ -3983,9 +4093,14 @@
       '<span data-bowl-golabel>' + (careBowl.on ? (careBowl.paused ? '이어서 듣기' : '일시정지') : '1분 시작') + '</span></button>' +
       '<button type="button" class="bowl__btn bowl__btn--stop" data-care="bowlStop" data-bowl-stop' + (careBowl.on ? '' : ' hidden') + '>그만</button>' +
       '</div>' +
-      '<p class="care__hint">진행 중에 싱잉볼을 터치해도 언제든 다시 <b>댕~</b> 울려요.</p>' +
+      '<p class="care__hint">' + (lockedBowl
+        ? '무료 체험은 1회예요 — 소장하면 매일 다시 들을 수 있어요.'
+        : '진행 중에 싱잉볼을 터치해도 언제든 다시 <b>댕~</b> 울려요.') + '</p>' +
       '</section>' +
 
+      /* 결제 영역 — 1회 체험을 마친 항목을 또 누르면 이 자리로 부드럽게 데려온다 */
+      '<div class="care__pay" data-care-pay>' +
+      '<p class="care__lock" data-care-lock role="status" aria-live="polite" hidden></p>' +
       priceHTML('긴급 개운템', CARE_PRICE) +
       '<div class="pay__pick pay__pick--4" role="group" aria-label="개운템 구성 선택">' +
       CARE_ITEM_ORDER.map(function (k) {
@@ -3997,12 +4112,13 @@
       '<p class="pay__guide">소액(1만 원 미만) 상품은 계좌이체 전용이에요 · <b>' + esc(String(BANK_NAME).trim()) + ' ' + esc(String(BANK_ACCOUNT).trim()) + '</b></p>' +
       payActionsHTML('care-' + care.buy, { card: false, bankSub: esc(careItemLabel(care.buy)) + ' · 계좌번호 복사' }) +
       kakaoOrderHTML('care', '💬 결제 완료 · 카톡으로 알려 주기') +
+      '</div>' +
       '<div class="shop__consult">' +
       '<b>🔎 윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE + '</b>' +
       '<span>캘린더·개운템으로도 계속 걸리는 딱 1가지, 질문 하나만 놓고 짚어 드려요.</span>' +
       '<button type="button" class="shop__consult-btn" data-shop="consult">원포인트 리딩 보기 →</button>' +
       '</div>' +
-      '<p class="shop__note">3종은 지금 여기서 그대로 체험할 수 있어요 — 결제 전에 먼저 눌러 보세요.</p>';
+      '<p class="shop__note">3종은 각각 <b>처음 1회 무료</b>로 체험할 수 있어요 — 다 쓰면 소장하고 매일 꺼내 쓰세요.</p>';
   }
 
   /* ── 긴급 개운템 동작 ───────────────────────────── */
@@ -4026,12 +4142,14 @@
 
   function pickBamboo(i) {
     if (care.pick === i && care.mi >= 0) { vibrate(12); return; }   // 같은 산가지 다시 누름 — 그대로
+    if (trialUsed('card')) { careLock('card'); return; }            // 1회 체험 완료 — 새로 뽑기만 잠금
     var el = careElement();
     var mi = drawMission(el, care.lastMi >= 0 ? care.lastMi : care.mi);
     care.pick = i;
     care.mi = mi;
     care.lastMi = mi;
     saveCarePick({ stick: i, mi: mi }, el);
+    markTrial('card');                                             // 첫 뽑기 = 무료 체험 1회
     var wrap = careEl('[data-bamboo]');
     if (wrap) wrap.classList.add('is-picked');
     $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
@@ -4043,7 +4161,9 @@
     sfxBambooDraw();
     var panel = careEl('[data-bamboo-result]');
     var hint = careEl('[data-bamboo-hint]');
-    if (hint) hint.innerHTML = '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. ' +
+    if (hint) hint.innerHTML = (trialUsed('card')
+      ? '뽑은 하나가 오늘의 처방이에요. 소장하면 내일도 새로 뽑을 수 있어요. '
+      : '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. ') +
       '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>';
     if (panel) panel.classList.remove('is-show');
     setTimeout(function () {
@@ -4057,6 +4177,7 @@
   }
 
   function resetBamboo() {
+    if (trialUsed('card')) { careLock('card'); return; }             // 다시 뽑기는 소장한 뒤에
     care.pick = -1;
     care.mi = -1;                      // lastMi 는 남겨 둔다 — 다시 뽑을 때 바로 앞 처방이 또 나오지 않게
     saveCarePick(null);
@@ -4136,6 +4257,7 @@
   function awakenObj() {
     care.charge = 100;
     care.lit = true;
+    markTrial('objet');                                            // 100% 충전 = 무료 체험 1회
     paintCharge();
     var obj = careEl('[data-care="obj"]'); if (!obj) return;
     obj.classList.remove('is-rub');
@@ -4183,6 +4305,7 @@
   }
 
   function resetObj() {
+    if (trialUsed('objet')) { careLock('objet'); return; }          // 처음부터 다시 채우기는 소장한 뒤에
     care.charge = 0; care.lit = false; care.chargeStep = 0; care.dustAcc = 0;
     var obj = careEl('[data-care="obj"]');
     if (obj) {
@@ -4212,6 +4335,7 @@
 
     function onDown(e) {
       if (care.lit) return;
+      if (trialUsed('objet')) { careLock('objet'); return; }        // 1회 체험 완료 — 다시 채우기 잠금
       rub.on = true; rub.id = e.pointerId;
       rub.x = e.clientX; rub.y = e.clientY; rub.moved = 0;
       obj.classList.add('is-rub');
@@ -4255,6 +4379,7 @@
       if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
       e.preventDefault();
       if (care.lit) return;
+      if (trialUsed('objet')) { careLock('objet'); return; }
       var r = stageBox();
       addCharge(12, r.width / 2, r.height / 2);
     });
@@ -4451,6 +4576,7 @@
 
   function bowlBegin(fromElapsed) {
     var from = fromElapsed || 0;
+    markTrial('bowl');                                            // 1분 시작 = 무료 체험 1회
     careBowl.on = true;
     careBowl.paused = false;
     careBowl.elapsed = from;
@@ -4536,6 +4662,7 @@
   }
 
   function bowlTap() {
+    if (!careBowl.on && trialUsed('bowl')) { careLock('bowl'); return; }   // 1회 체험 완료 — 다시 시작 잠금
     if (!careBowl.on) { bowlBegin(0); return; }
     if (careBowl.paused) { bowlBegin(careBowl.elapsed); return; }
     if (careBowl.ctx && careBowl.master) {
@@ -4546,7 +4673,10 @@
   }
 
   function bowlToggle() {
-    if (!careBowl.on) { bowlBegin(0); return; }
+    if (!careBowl.on) {
+      if (trialUsed('bowl')) { careLock('bowl'); return; }
+      bowlBegin(0); return;
+    }
     if (careBowl.paused) { bowlBegin(careBowl.elapsed); return; }
     bowlPause();
   }

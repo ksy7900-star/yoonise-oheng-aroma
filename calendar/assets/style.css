@@ -1827,6 +1827,46 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 
 /* ① 대나무 산가지 — 부채꼴 6개 중 '딱 1개'만 뽑는 의식 */
 .care__hint b { color: var(--ink-2); }
+
+/* ── 개운템 1회 무료 체험 (2026-11-22) ─────────────────────────────
+   제목 옆 작은 배지 + 1회를 다 쓴 항목을 또 누를 때 결제 영역으로 데려가는 안내 */
+.care__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.care__head .care__title { flex: 1 1 auto; min-width: 0; }
+.care__trial {
+  flex: none; padding: 3px 9px; border-radius: 999px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap;
+  color: #8A5A16; background: #FDF0D6; border: 1px solid rgba(199, 154, 78, .5);
+}
+.care__trial.is-done { color: #7C7A74; background: #EFEDE8; border-color: rgba(29, 28, 25, .14); }
+.care.is-locked .bamboo__stick:not(.is-chosen) { opacity: .8; }
+.care.is-locked .care-obj { filter: saturate(.72); }
+.care__lock {
+  margin: 0 0 2px; padding: 12px 14px; border-radius: 14px; text-align: center;
+  color: #7A4A16; background: #FFF4E4; border: 1px solid rgba(199, 154, 78, .55);
+  font-size: 11.5px; font-weight: 700; line-height: 1.55; letter-spacing: -0.01em;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity .3s ease, transform .3s ease;
+}
+.care__lock.is-show { opacity: 1; transform: none; }
+.care__lock span { display: block; margin-top: 3px; font-size: 10px; font-weight: 500; color: #96683A; }
+.care__pay { position: relative; }
+/* 320px대 작은 화면 — 상품명과 가격이 한 줄에 눌려 두 줄로 깨지지 않게 위아래로 나눈다 */
+@media (max-width: 340px) {
+  .care__pay .shop__price { flex-direction: column; align-items: flex-start; gap: 3px; padding: 11px 13px; }
+  .care__pay .shop__price span { font-size: 10px; }
+  .care__pay .shop__price b { font-size: 12.5px; }
+}
+.care__pay.is-flash {
+  border-radius: 18px;
+  animation: carePayPulse 1.25s ease-in-out 2;
+}
+@keyframes carePayPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(199, 154, 78, 0); background: transparent; }
+  45% { box-shadow: 0 0 0 3px rgba(199, 154, 78, .55); background: rgba(255, 246, 226, .85); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .care__pay.is-flash { animation: none; box-shadow: 0 0 0 2px rgba(199, 154, 78, .55); background: rgba(255, 246, 226, .85); }
+}
 .care__reset {
   display: inline; margin: 0 0 0 2px; padding: 0; background: none; border: 0;
   font-size: 9.5px; color: #9E4A2E; text-decoration: underline; text-underline-offset: 3px;
