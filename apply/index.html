@@ -228,6 +228,26 @@ a { color: inherit; }
 .pay__note { grid-column: 1 / -1; font-size: 9.5px; line-height: 1.6; color: var(--mute); text-align: center; }
 .pay__note a { color: #475569; text-decoration: underline; text-underline-offset: 2px; }
 
+/* ── 💳 결제하고 돌아온 손님 — 맨 위 한 줄 (2026-11-21) ── */
+.payback {
+  margin: 14px 0 0; padding: 12px 14px; border-radius: 16px;
+  background: #FEF3C7; border: 1px solid rgba(15, 23, 42, .22);
+}
+.payback__t { display: flex; flex-direction: column; gap: 3px; }
+.payback__t b { font-size: 12.5px; font-weight: 800; color: #1E293B; letter-spacing: -.02em; }
+.payback__t span { font-size: 10.5px; line-height: 1.55; color: #475569; }
+.payback__row { display: flex; gap: 6px; margin-top: 9px; }
+.payback__go {
+  flex: 1 1 auto; padding: 11px 12px; border-radius: 11px; border: 1px solid #1E293B;
+  background: #1E293B; color: #F8FAFC; font-family: inherit;
+  font-size: 11.5px; font-weight: 700; letter-spacing: -.02em;
+}
+.payback__x {
+  flex: 0 0 auto; padding: 11px 12px; border-radius: 11px; border: 1px solid rgba(15, 23, 42, .22);
+  background: #FFFFFF; color: #475569; font-family: inherit; font-size: 10.5px;
+}
+.payback__go:active, .payback__x:active { transform: translateY(1px); }
+
 .kakaobar { margin-top: 9px; }
 .kakaobar a {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -284,6 +304,15 @@ a { color: inherit; }
 <body>
 
 <main class="wrap">
+
+  <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '카톡으로 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
+  <div class="payback" id="payBack" hidden>
+    <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면 한 번만 눌러 주세요.</span></p>
+    <div class="payback__row">
+      <button type="button" class="payback__go" id="payBackGo">💬 카톡으로 접수하기</button>
+      <button type="button" class="payback__x" id="payBackX">아직 결제 전이에요</button>
+    </div>
+  </div>
 
   <header class="head">
     <p class="head__eyebrow">YOONISE · APPLY</p>
@@ -496,6 +525,37 @@ a { color: inherit; }
   }
   function storeClear() {
     try { sessionStorage.removeItem(STORE_KEY); } catch (e) { }
+  }
+
+  /* ── 💳 결제하고 돌아오셨나요? — 달력과 같은 복귀 줄 (2026-11-21) ───────
+     카드·간편결제 버튼을 누른 순간부터 3시간 동안 같은 탭에 표시를 남기고,
+     결제창에서 돌아오면 페이지 맨 위에 '카톡으로 접수하기' 한 줄을 다시 내민다.
+     결제를 확인해 주는 곳은 사람이므로, 여기서는 '접수하러 가는 길'만 이어 준다. */
+  var PAYWAIT_KEY = 'yoonise.apply.paywait.v1';
+  var PAYWAIT_MS = 3 * 60 * 60 * 1000;
+  function payWaitSave() {
+    try {
+      sessionStorage.setItem(PAYWAIT_KEY, JSON.stringify({ type: state.type, t: Date.now() }));
+    } catch (e) { }
+  }
+  function payWaitRead() {
+    var o = null;
+    try { o = JSON.parse(sessionStorage.getItem(PAYWAIT_KEY) || 'null'); } catch (e) { o = null; }
+    if (!o || !o.t || (Date.now() - o.t) > PAYWAIT_MS) return null;
+    return o;
+  }
+  function payWaitClear() { try { sessionStorage.removeItem(PAYWAIT_KEY); } catch (e) { } }
+  function payBackCheck() {
+    var bar = $('payBack');
+    if (!bar) return;
+    var o = payWaitRead();
+    if (!o) { bar.hidden = true; return; }
+    var p = PRODUCTS[o.type];
+    var what = $('payBackWhat');
+    if (what) {
+      what.textContent = (p ? p.name + ' ' + p.price + ' 결제를 마치셨다면, ' : '') + '한 번만 눌러 주세요.';
+    }
+    bar.hidden = false;
   }
   function setChips(attr, val) {
     Array.prototype.forEach.call(document.querySelectorAll('[' + attr + ']'), function (x) {
@@ -839,6 +899,8 @@ a { color: inherit; }
       if (copied) {
         $('copybox').hidden = true;
         storeClear();      /* 접수를 마쳤으니 되살릴 값도 남기지 않는다 */
+        payWaitClear();
+        $('payBack').hidden = true;
         toast('✅ 신청 내용을 복사했어요 — 카톡에 붙여넣고 보내 주세요');
         setTimeout(function () { goNoRef(KAKAO); }, 90);
       } else {
@@ -903,6 +965,7 @@ a { color: inherit; }
   var card = $('payCard');
   card.addEventListener('click', function (e) {
     storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
+    payWaitSave();       /* 돌아오면 페이지 맨 위에 '카톡으로 접수하기' 한 줄 */
 
     var phone = mobileOf($('fWho').value);
     if (phone) {
@@ -917,7 +980,7 @@ a { color: inherit; }
   });
 
   /* 결제창이 안 보여 '여기 누르기'로 나가는 경우도 같은 복귀용 저장 */
-  $('payFallback').addEventListener('click', function () { storeSave(); });
+  $('payFallback').addEventListener('click', function () { storeSave(); payWaitSave(); });
 
   /* ── 계좌이체: 원클릭 복사 ─────────────── */
   $('payBank').addEventListener('click', function () {
@@ -951,10 +1014,23 @@ a { color: inherit; }
   /* 열릴 때 — 결제 복귀(fromPay)면 그 값만 되살리고, 그 밖에는 무조건 빈 초기 상태 */
   if (!initForm()) resetForm();
 
+  /* 💳 결제하러 다녀온 손님 — 맨 위 복귀 줄 (2026-11-21) */
+  $('payBack').addEventListener('click', function (e) {
+    if (e.target.closest('#payBackGo')) {
+      payWaitClear();
+      $('payBack').hidden = true;
+      $('kakaoGo').click();     /* 기존 카톡 접수와 같은 길 — 내용 복사 + 카톡 이동 */
+      return;
+    }
+    if (e.target.closest('#payBackX')) { payWaitClear(); $('payBack').hidden = true; }
+  });
+  payBackCheck();
+
   /* 결제창에 다녀와 뒤로·앞으로로 돌아온 경우까지 같은 규칙으로 (bfcache 포함) */
   window.addEventListener('pageshow', function () {
-    if (payRestored) return;               /* 이미 결제 복귀 값이 올라와 있다 */
+    if (payRestored) { payBackCheck(); return; }   /* 이미 결제 복귀 값이 올라와 있다 */
     if (!initForm()) resetForm();          /* 브라우저가 폼 값을 스스로 되살렸어도 지운다 */
+    payBackCheck();                        /* 결제하러 다녀온 손님이면 맨 위 복귀 줄을 다시 보인다 */
   });
 })();
 </script>

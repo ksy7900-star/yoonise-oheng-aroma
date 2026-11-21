@@ -57,6 +57,7 @@
   var LIVE_BASE = 'https://ksy7900-star.github.io' + MEMBER_PATH;
   var REF_KEY = 'yoonise.member.ref.v1';
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
+  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 5일 무료·액운 +1회를 줄 때 본다
   var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var SAMHAP_EL = ['수', '목', '화', '금'];
@@ -1429,10 +1430,16 @@
       try {
         localStorage.setItem(REF_KEY, ref);
         if (from) localStorage.setItem(REF_FROM_KEY, from);
+        /* /calendar/ 도 이 손님을 '초대받은 손님'으로 볼 수 있게 따로 표시해 둔다.
+           로그인이 되면 REF_KEY 는 비워지지만 이 표시는 남는다(5일 체험 유지). */
+        localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: ref, at: new Date().toISOString() }));
       } catch (e) {}
     }
     state.refPending = pendingRef();
     state.refFrom = state.refPending ? (storedRefFrom() || from) : from;
+    /* 초대받은 손님이 달력으로 넘어가도 5일·액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
+    var toCal = $('#toCalendar');
+    if (toCal && state.refPending) toCal.href = '../?ref=' + encodeURIComponent(state.refPending);
 
     var che = q.get('chemi');
     if (che) {

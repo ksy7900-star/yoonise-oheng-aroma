@@ -18,7 +18,47 @@
      FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다(테스트용).
      → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
-  var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 첫 방문일 포함 3일(D+0·D+1·D+2)
+  var FREE_DAYS_BASE = 3;   // 그냥 들어온 손님 — 첫 방문일 포함 3일(D+0·D+1·D+2)
+  /* ── 친구 초대(?ref=) 보너스 ───────────────────────────────────────────────
+     /calendar/member/ 의 초대 링크(?ref=코드)로 들어온 손님은 '초대받은 손님'으로 보고
+     무료 체험을 3일 → 5일, 액운 태우기를 무료 5회 → 6회로 늘린다. (2026-11-21)
+     · 코드는 member.js 와 같은 칸(REF_KEY)에 적고, 로그인으로 그 칸이 비워져도
+       INVITED_KEY 가 남아 다음 방문에도 5일이 이어진다.
+     · ?ref= 없이 들어온 손님은 지금까지처럼 3일 그대로. */
+  var INVITE_DAYS_BONUS = 2;
+  var INVITE_BURN_BONUS = 1;
+  var REF_KEY = 'yoonise.member.ref.v1';    // member.js 가 ?ref= 를 적어 두는 칸 (같은 오리진)
+  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 { ref, at }
+  var inviteRef = readInviteRef();
+  var invited = !!inviteRef;
+  var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 5일 · 그냥 들어오면 3일
+
+  /** 초대 코드 모양인가 — member.js 와 같은 규칙(영문·숫자 4~12자) */
+  function validRef(v) { return /^[A-Z0-9]{4,12}$/.test(String(v || '').trim().toUpperCase()); }
+  /** 이 손님이 초대 링크로 왔는가 — 지금 주소의 ?ref= → 저장된 초대 표시 → member.js 의 대기 코드 순서 */
+  function readInviteRef() {
+    var q = '';
+    try { q = new URLSearchParams(location.search).get('ref') || ''; } catch (e) { q = ''; }
+    q = String(q).trim().toUpperCase();
+    if (validRef(q)) {                      // 이 화면에 ?ref= 로 들어옴 — member.js 칸에도 같이 적어 둔다
+      try {
+        localStorage.setItem(REF_KEY, q);
+        localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: q, at: new Date().toISOString() }));
+      } catch (e) { }
+      return q;
+    }
+    var saved = '';
+    try { saved = (JSON.parse(localStorage.getItem(INVITED_KEY) || 'null') || {}).ref || ''; } catch (e) { saved = ''; }
+    if (validRef(saved)) return String(saved).trim().toUpperCase();
+    var pend = '';
+    try { pend = localStorage.getItem(REF_KEY) || ''; } catch (e) { pend = ''; }
+    if (validRef(pend)) {
+      pend = String(pend).trim().toUpperCase();
+      try { localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: pend, at: new Date().toISOString() })); } catch (e) { }
+      return pend;
+    }
+    return '';
+  }
 
   /* ── 개인 전용 입장 코드 (1결제 = 1사주) ─────────────────────────────────
      결제한 손님의 사주(양력 생년월일 + 성별)에 비밀 salt 서명을 묶은 코드입니다.
@@ -540,6 +580,23 @@
     document.body.setAttribute('data-trial', mode);
     var strip = $('#calTrialOver');
     if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
+  }
+  /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '3일' 문구도 5일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
+  function syncInviteCopy() {
+    if (!invited) return;
+    var nodes = $$('.js-trial, .js-trial-over, .cal__trialover-t');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      if (el.innerHTML.indexOf(FREE_DAYS_BASE + '일') >= 0) {
+        el.innerHTML = el.innerHTML.split(FREE_DAYS_BASE + '일').join(FREE_DAYS + '일');
+      }
+    }
+    var wr = $('#welcomeInvite');
+    if (wr) {
+      wr.innerHTML = '🎁 친구 초대 링크로 오셨어요 · <b>' + FREE_DAYS + '일</b> 무료 + 액운 태우기 <b>' +
+        INVITE_BURN_BONUS + '회</b> 더';
+      wr.hidden = false;
+    }
   }
   /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
@@ -1338,7 +1395,9 @@
       /* 달력을 아직 열기 전 — 체험은 사주를 넣는 날부터 시작된다 */
       el.classList.remove('is-over');
       if (head) head.innerHTML = '🎁 사주를 넣는 날부터 <b>' + FREE_DAYS + '일 무료</b>';
-      if (sub) sub.textContent = '부담 없이 먼저 써 보고, 마음에 들면 코드로 열어요';
+      if (sub) sub.textContent = invited
+        ? '친구 초대 보너스 · 액운 태우기 ' + INVITE_BURN_BONUS + '회 더'
+        : '부담 없이 먼저 써 보고, 마음에 들면 코드로 열어요';
       return;
     }
     var w = trialWindow();
@@ -1351,7 +1410,9 @@
     el.classList.remove('is-over');
     if (head) head.innerHTML = '🎁 지금 <b>' + FREE_DAYS + '일 무료 체험</b> 중';
     if (!sub || !w) return;
-    sub.textContent = mdOf(w.start) + '~' + mdOf(w.end) + ' 무료 · 부담 없이 먼저 써 보세요';
+    sub.textContent = mdOf(w.start) + '~' + mdOf(w.end) + ' 무료 · ' + (invited
+      ? '액운 태우기 ' + INVITE_BURN_BONUS + '회 더'
+      : '부담 없이 먼저 써 보세요');
   }
   /** 팝업 부제 — 사주를 넣기 전에는 '넣는 칸으로 간다'를, 달력이 열린 뒤에는 사용법을 말한다 */
   function syncGuideCopy() {
@@ -4294,7 +4355,8 @@
      · 4단계: ⓿ 촛불 앞에서 숨 고르기 ① 한 줄 적기 ② 구기기·태우기(불꽃·진동·재)
               ③ 내 사주로 빈자리 채우기 */
   var BURN_KEY = 'yoonise.timing.burn.v1';
-  var BURN_FREE = 5;
+  var BURN_FREE_BASE = 5;
+  var BURN_FREE = BURN_FREE_BASE + (invited ? INVITE_BURN_BONUS : 0);   // 친구 초대 링크로 온 손님은 +1회
   var BURN_UPGRADE_PRICE = '7,900원';   // 1년 패스(14,900원) → 올인원(19,900원) 추가 금액
   var BURN_CHIPS = ['오늘 실수한 일', '답답한 연락', '지우고 싶은 걱정', '미뤄 둔 부탁'];
 
@@ -4360,8 +4422,8 @@
     var done = burnBurnedToday();
     if (burnUnlimited()) return burnTierName() + (done ? ' · 오늘 마침' : ' · 매일 1회');
     var l = burnLeft();
-    if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 5회 모두 사용';
-    return l > 0 ? '남은 무료 ' + l + '회' : '무료 5회를 다 썼어요';
+    if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
+    return l > 0 ? '남은 무료 ' + l + '회' : '무료 ' + BURN_FREE + '회를 다 썼어요';
   }
   /** 달력 위 카드의 오늘 상태 배지와 버튼 문구 */
   function renderBurnCard() {
@@ -4369,7 +4431,7 @@
     if (!el) return;
     var un = burnUnlimited(), done = burnBurnedToday(), out = !un && burnLeft() <= 0;
     el.textContent = done ? '오늘의 의식 마침'
-      : (un ? '매일 1회' : (out ? '무료 5회 모두 사용' : '남은 무료 ' + burnLeft() + '회'));
+      : (un ? '매일 1회' : (out ? '무료 ' + BURN_FREE + '회 모두 사용' : '남은 무료 ' + burnLeft() + '회'));
     el.classList.toggle('is-unlimited', un && !done);
     el.classList.toggle('is-out', out && !done);
     el.classList.toggle('is-done', done);
@@ -5515,6 +5577,7 @@
   function boot() {
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
     syncTrialState();
+    syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);

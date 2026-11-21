@@ -3541,6 +3541,15 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
   box-shadow: 0 8px 18px -12px rgba(15, 23, 42, .95), inset 0 1px 0 rgba(255, 255, 255, .9);
 }
 .welcome__trial b { color: #BE123C; font-weight: 800; }
+/* 🎁 친구 초대 링크로 온 손님 — 5일 + 액운 태우기 1회 더 (2026-11-21) */
+.welcome__invite {
+  display: block; width: -moz-fit-content; width: fit-content; max-width: 100%;
+  margin: 7px auto 0; padding: 5px 11px 6px;
+  border-radius: 999px;
+  background: #ECFDF5; border: 1px solid rgba(4, 120, 87, .45);
+  color: #065F46; font-size: 9.5px; font-weight: 700; letter-spacing: -.02em; line-height: 1.4;
+}
+.welcome__invite b { color: #047857; font-weight: 800; }
 .welcome__title {
   margin-top: 12px;
   font-family: var(--serif); font-size: 20px; font-weight: 500; line-height: 1.26;
