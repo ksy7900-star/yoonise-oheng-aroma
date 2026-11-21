@@ -22,6 +22,29 @@
   }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* 받침에 맞춰 조사를 고른다 — 이름에 '나'·'저'처럼 형태가 바뀌는 대명사도 있어서 따로 둔다 */
+  var PRONOUN = {
+    '나':   { subj: '내가', obj: '나를', top: '나는' },
+    '저':   { subj: '제가', obj: '저를', top: '저는' },
+    '너':   { subj: '네가', obj: '너를', top: '너는' },
+    '누구': { subj: '누가', obj: '누구를', top: '누구는' }
+  };
+  function hasBatchim(name) {
+    var c = String(name || '').trim().slice(-1);
+    if (!c) return false;
+    var code = c.charCodeAt(0);
+    if (code < 0xAC00 || code > 0xD7A3) return false;   // 한글이 아니면 받침 없는 쪽으로
+    return (code - 0xAC00) % 28 !== 0;
+  }
+  function josa(name, kind) {
+    var n = String(name || '').trim();
+    if (PRONOUN[n]) return PRONOUN[n][kind] || '';
+    var pair = kind === 'obj' ? ['을', '를']
+      : (kind === 'top' ? ['은', '는']
+      : (kind === 'copula' ? ['이에요', '예요'] : ['이', '가']));
+    return hasBatchim(n) ? pair[0] : pair[1];
+  }
+
   /* ── 고정값 ─────────────────────────────────────── */
   var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
   var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 비밀키 아님(공개 전제)
@@ -555,10 +578,10 @@
 
   function elRelationText(aEl, bEl, aName, bName) {
     if (aEl === bEl) return { key: 'same', text: '두 사람 다 ' + aEl + ' 기운 — 말이 빨리 통하는 대신, 같이 세지면 둘 다 과열돼요.' };
-    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + aName + '을 살려요(생) — 기댈 때 힘이 나는 쪽이 ' + aName + '이에요.' };
-    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + bName + '을 살려요(생) — ' + aName + '이 먼저 밀어 주는 사이예요.' };
-    if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + '이 ' + bName + '의 ' + bEl + '을 누르는 관계(극) — ' + aName + '의 말이 세게 들릴 수 있어요.' };
-    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + '이 ' + aName + '의 ' + aEl + '을 누르는 관계(극) — ' + bName + '의 속도에 ' + aName + '이 지칠 수 있어요.' };
+    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + aName + josa(aName, 'obj') + ' 살려요(생) — 기댈 때 힘이 나는 쪽은 ' + aName + josa(aName, 'copula') + '.' };
+    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + bName + josa(bName, 'obj') + ' 살려요(생) — ' + aName + josa(aName, 'subj') + ' 먼저 밀어 주는 사이예요.' };
+    if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + josa(aEl, 'subj') + ' ' + bName + '의 ' + bEl + josa(bEl, 'obj') + ' 누르는 관계(극) — ' + aName + '의 말이 세게 들릴 수 있어요.' };
+    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + josa(aEl, 'obj') + ' 누르는 관계(극) — ' + bName + '의 속도에 ' + aName + josa(aName, 'subj') + ' 지칠 수 있어요.' };
     return { key: 'plain', text: '서로 세게 당기지도 누르지도 않는 담백한 관계예요.' };
   }
 
@@ -699,9 +722,9 @@
 
     var compLines = comp.slice(0, 3).map(function (c) {
       if (c.who === 'you') {
-        return '<b>' + esc(bName) + '</b>의 ' + c.el + ' 기운이 ' + c.theirs + '개, <b>' + esc(aName) + '</b>에게는 ' + c.mine + '개 — ' + esc(bName) + '이 ' + esc(aName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
+        return '<b>' + esc(bName) + '</b>의 ' + c.el + ' 기운이 ' + c.theirs + '개, <b>' + esc(aName) + '</b>에게는 ' + c.mine + '개 — ' + esc(bName) + josa(bName, 'subj') + ' ' + esc(aName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
       }
-      return '<b>' + esc(aName) + '</b>의 ' + c.el + ' 기운이 ' + c.mine + '개, <b>' + esc(bName) + '</b>에게는 ' + c.theirs + '개 — ' + esc(aName) + '이 ' + esc(bName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
+      return '<b>' + esc(aName) + '</b>의 ' + c.el + ' 기운이 ' + c.mine + '개, <b>' + esc(bName) + '</b>에게는 ' + c.theirs + '개 — ' + esc(aName) + josa(aName, 'subj') + ' ' + esc(bName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
     });
 
     var html = '';
