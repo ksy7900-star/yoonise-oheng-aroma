@@ -792,27 +792,27 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   box-shadow: 0 22px 46px -26px rgba(6, 10, 18, .85), inset 0 1px 0 rgba(255, 240, 214, .07);
 }
 /* 오행별 신비 색감 — 배경·오라·금빛 (확대 팝업 배경도 같은 값을 쓴다) */
-.talis-banner--목, .talis-showcase--목 {
+.talis-banner.talis-banner--목, .talis-showcase.talis-showcase--목 {
   --tb-1: #0B261C; --tb-2: #050F0B;
   --tb-aura: rgba(96, 220, 168, .22); --tb-aura2: rgba(143, 196, 112, .14);
   --tb-gold: #C9DBB4; --tb-cream: #F2F6EA; --tb-sub: rgba(228, 240, 222, .58);
 }
-.talis-banner--화, .talis-showcase--화 {
+.talis-banner.talis-banner--화, .talis-showcase.talis-showcase--화 {
   --tb-1: #2A0F14; --tb-2: #130609;
   --tb-aura: rgba(222, 74, 58, .30); --tb-aura2: rgba(236, 172, 88, .16);
   --tb-gold: #EBC48C; --tb-cream: #FBF0E4; --tb-sub: rgba(250, 230, 212, .60);
 }
-.talis-banner--토, .talis-showcase--토 {
+.talis-banner.talis-banner--토, .talis-showcase.talis-showcase--토 {
   --tb-1: #231A0E; --tb-2: #100B06;
   --tb-aura: rgba(232, 168, 66, .26); --tb-aura2: rgba(212, 156, 70, .15);
   --tb-gold: #E8CE96; --tb-cream: #FAF1DE; --tb-sub: rgba(246, 232, 206, .58);
 }
-.talis-banner--금, .talis-showcase--금 {
+.talis-banner.talis-banner--금, .talis-showcase.talis-showcase--금 {
   --tb-1: #161920; --tb-2: #090B0F;
   --tb-aura: rgba(206, 222, 240, .19); --tb-aura2: rgba(150, 172, 198, .13);
   --tb-gold: #DCE5F0; --tb-cream: #F4F7FB; --tb-sub: rgba(226, 236, 246, .58);
 }
-.talis-banner--수, .talis-showcase--수 {
+.talis-banner.talis-banner--수, .talis-showcase.talis-showcase--수 {
   --tb-1: #0A1628; --tb-2: #040A14;
   --tb-aura: rgba(120, 198, 226, .22); --tb-aura2: rgba(110, 170, 210, .14);
   --tb-gold: #CFE3EE; --tb-cream: #EFF6FA; --tb-sub: rgba(220, 236, 246, .58);
