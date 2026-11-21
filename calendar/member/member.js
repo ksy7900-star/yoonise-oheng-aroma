@@ -636,6 +636,92 @@
     return out;
   }
 
+  /* ── 2027 정미년(丁未) 합작 — 丁火가 각자 일간에 어떤 십신으로 들어오는지로 짝의 쓰임을 본다
+   *   목 일간 → 식상 / 화 → 비겁 / 토 → 인성 / 금 → 관성 / 수 → 재성 (음양까지 보면 식신·상관 등으로 갈림)
+   *   未의 토 기운은 따로 세지 않고 천간 丁火만 기준으로 잡는다(화면 각주에 밝힌다).
+   */
+  var ROLE_ORDER = ['비겁', '식상', '재성', '관성', '인성'];
+  var TG_FAM = {
+    비견: '비겁', 겁재: '비겁', 식신: '식상', 상관: '식상',
+    편재: '재성', 정재: '재성', 편관: '관성', 정관: '관성', 편인: '인성', 정인: '인성'
+  };
+  var ROLE_MEAN = {
+    비겁: '추진력 · 경쟁 · 주도권',
+    식상: '표현 · 실행 · 새 판 열기',
+    재성: '재물 · 결과물 · 수금',
+    관성: '책임 · 자리 · 명예',
+    인성: '문서 · 자격 · 배움 · 안정'
+  };
+  var ROLE_FALLBACK = { 목: '식상', 화: '비겁', 토: '인성', 금: '관성', 수: '재성' };   // 丁火=화 기준
+
+  /* 짝마다 다른 합작 포인트 — t: 제목 한 줄 / a: 행동 조언 / s: 스토리 카드 한 줄 */
+  var JAK = [
+    { k: ['비겁', '비겁'], t: '둘 다 앞에 서려는 해 — 순서만 정하면 판이 커져요',
+      a: '丁火가 둘 다 비겁으로 들어와 기세는 좋은데, 누가 앞설지로 힘을 빼기 쉬워요. 같이 벌이되 결정하는 사람과 받치는 사람을 처음에 정해 두고, 정산은 꼭 한 사람만 맡으세요.',
+      s: '둘 다 앞장 — 순서 정하기' },
+    { k: ['비겁', '식상'], t: '한 사람이 열고, 한 사람이 알리는 조합',
+      a: '비겁 쪽이 먼저 몸으로 부딪혀 문을 열고, 식상 쪽이 그걸 말과 글로 퍼뜨리면 반응이 빨리 와요. 공동구매·장사·홍보처럼 하고 바로 보여 줘야 하는 일에 잘 붙습니다.',
+      s: '열고 알리는 조합' },
+    { k: ['비겁', '재성'], t: '벌리는 힘에 챙기는 힘 — 손에 남는 해',
+      a: '비겁 쪽이 밖에서 뛰고 재성 쪽이 돈과 일정을 챙기면 벌어도 새는 게 없어요. 둘 다 뛰기만 하면 매출은 보이는데 통장은 그대로예요.',
+      s: '뛰는 사람 + 챙기는 사람' },
+    { k: ['비겁', '관성'], t: '일은 벌어지는데 서류가 무거운 해',
+      a: '추진력(비겁)과 책임(관성)이 같이 들어와 하려는 일은 많은데 계약·신고·보고가 발목을 잡아요. 뛰는 쪽이 몸을 쓰고 책임 쪽이 서류를 잡으면 오히려 단단해집니다.',
+      s: '뛰는 사람 + 서류 잡는 사람' },
+    { k: ['비겁', '인성'], t: '나서는 사람 뒤에 받쳐 주는 사람',
+      a: '인성 쪽이 배움·자격·문서로 뒤를 받치고 비겁 쪽이 몸으로 부딪히면 실력이 눈에 보이는 모양으로 남아요. 새로 배우는 건 인성 쪽이 먼저 시작해 보세요.',
+      s: '배우는 사람 + 뛰는 사람' },
+    { k: ['식상', '식상'], t: '시작은 둘 다 잘해요 — 마감이 문제',
+      a: '丁火가 둘 다 식상으로 들어와 벌이는 재미는 최고인데 끝맺음이 약해져요. 새 일은 마음껏 벌이되 마감은 한 달에 하나로 못 박아 두면 결과가 남습니다.',
+      s: '벌이기 좋아요 — 마감은 하나씩' },
+    { k: ['식상', '재성'], t: '한 사람이 판을 열고, 다른 사람이 수금하는 조합',
+      a: '식상 쪽이 만들고 벌이고, 재성 쪽이 값을 매기고 회수하면 부업이 진짜 돈이 돼요. 공동 프로젝트·클래스·공구에 특히 잘 붙는 짝입니다.',
+      s: '여는 사람 + 수금하는 사람' },
+    { k: ['식상', '관성'], t: '아이디어를 직함과 실적으로 바꾸는 해',
+      a: '식상 쪽이 말과 콘텐츠를 만들고 관성 쪽이 그걸 보고·계약·자리로 묶으면 인정받는 속도가 빨라요. 벌이기만 하고 기록을 안 남기면 남는 게 없어요.',
+      s: '만드는 사람 + 자리 잡는 사람' },
+    { k: ['식상', '인성'], t: '배운 걸 바로 꺼내 쓰는 조합',
+      a: '인성 쪽이 자료와 자격을 모으고 식상 쪽이 말과 글로 풀면, 배운 게 강의·클래스·콘텐츠로 바로 돈이 돼요. 혼자면 준비만 하다 끝날 일이 같이 하면 결과로 나옵니다.',
+      s: '모으는 사람 + 푸는 사람' },
+    { k: ['재성', '재성'], t: '수입은 잘 잡히는데, 몫에서 서운해지기 쉬운 해',
+      a: '丁火가 둘 다 재성으로 들어와 돈 보는 눈은 좋아지는데, 나눌 때 서운함이 쌓여요. 시작 전에 몫을 글로 정해 두면 한 해 내내 편합니다.',
+      s: '수입은 좋아요 — 몫 먼저' },
+    { k: ['재성', '관성'], t: '숫자로 말해서 인정받는 해',
+      a: '재성 쪽이 결과를 만들고 관성 쪽이 그걸 자리와 이름으로 올리면 승진·선정·일감이 붙어요. 결과는 말이 아니라 숫자와 기록으로 정리해 두세요.',
+      s: '숫자 + 자리 — 인정받는 해' },
+    { k: ['재성', '인성'], t: '한쪽이 벌고, 한쪽이 지켜 주는 구조',
+      a: '재성 쪽이 새 수입을 열고 인성 쪽이 살림·계약·안전선을 지키면 흔들리지 않아요. 큰 지출과 보증은 인성 쪽이 마지막에 한 번 더 확인하는 걸로.',
+      s: '버는 사람 + 지키는 사람' },
+    { k: ['관성', '관성'], t: '책임이 두 겹 — 같이 지면 둘 다 눌려요',
+      a: '丁火가 둘 다 관성으로 들어와 일은 맡겨지는데 압박도 두 배예요. 같이 하되 결정은 한 명이 하고, 대신 서로의 쉬는 날은 꼭 비워 주세요.',
+      s: '책임은 둘, 결정은 하나' },
+    { k: ['관성', '인성'], t: '서두르기보다 계약·일정 정리하는 쪽이 든든한 해',
+      a: '관성 쪽은 책임이 무겁게 들어오고 인성 쪽은 문서·자격으로 그걸 받쳐 줘요. 급하게 밀기보다 계약서·일정·영수증을 정리하는 쪽이 결국 웃습니다.',
+      s: '서류 잡는 쪽이 든든' },
+    { k: ['인성', '인성'], t: '같이 배우고 같이 따는 해',
+      a: '丁火가 둘 다 인성으로 들어와 공부·자격·정리에 힘이 붙어요. 같은 강의나 자격증을 함께 준비하면 서로가 감시자가 돼서 끝까지 갈 확률이 확 올라갑니다.',
+      s: '같이 배우면 끝까지 가요' }
+  ];
+
+  function jeongmiRole(ch) {
+    var gi = (M.GAN || []).indexOf('丁');
+    var tg = (gi >= 0 && M.tenGodOf) ? M.tenGodOf(ch.natal.dayGanIndex, gi) : '';
+    var fam = TG_FAM[tg] || ROLE_FALLBACK[ch.natal.element] || '비겁';
+    return { tg: tg || (fam === '비겁' ? '비견' : fam), fam: fam };
+  }
+
+  function jakOf(chA, chB) {
+    var ra = jeongmiRole(chA), rb = jeongmiRole(chB);
+    var ka = ra.fam, kb = rb.fam;
+    var ia = ROLE_ORDER.indexOf(ka), ib = ROLE_ORDER.indexOf(kb);
+    var first = ia <= ib ? ka : kb, second = ia <= ib ? kb : ka;
+    var pick = null;
+    for (var i = 0; i < JAK.length; i++) {
+      if (JAK[i].k[0] === first && JAK[i].k[1] === second) { pick = JAK[i]; break; }
+    }
+    return { a: ra, b: rb, e: pick || JAK[0] };
+  }
+
   /* ── 케미: 결과 그리기 ──────────────────────────── */
   function birthText(ch) {
     var p = ch.p;
@@ -732,6 +818,31 @@
       + '</div>';
   }
 
+  /* 2027 정미년 합작 카드 — 두 사람의 십신 역할 → 같이 하면 좋은 것 */
+  function jakBlock(a, b, aName, bName) {
+    var j = jakOf(a, b);
+    var A = j.a, B = j.b;
+    function roleCell(name, r, isMe) {
+      return '<div class="jak__p' + (isMe ? ' is-me' : '') + '">'
+        + '<span class="jak__who">' + esc(name) + '</span>'
+        + '<span class="jak__role">' + esc(r.fam) + '<small>' + esc(r.tg) + '</small></span>'
+        + '<span class="jak__mean">' + esc(ROLE_MEAN[r.fam] || '') + '</span>'
+        + '</div>';
+    }
+    return '<div class="jak" id="jakCard">'
+      + '<div class="jak__hd"><span class="jak__seal">2027</span>'
+      + '<span class="jak__eyebrow">정미년(丁未)의 두 사람</span></div>'
+      + '<div class="jak__roles">'
+      + roleCell(aName, A, true)
+      + '<span class="jak__plus" aria-hidden="true">+</span>'
+      + roleCell(bName, B, false)
+      + '</div>'
+      + '<p class="jak__t">' + esc(j.e.t) + '</p>'
+      + '<p class="jak__a">' + esc(j.e.a) + '</p>'
+      + '<p class="jak__fine">丁火(정미년 천간)가 두 사람 일간에 각각 ' + esc(A.tg) + '·' + esc(B.tg) + '로 들어오는 해로 봤어요. 未의 토 기운은 따로 세지 않았습니다.</p>'
+      + '</div>';
+  }
+
   function renderChemin(a, b) {
     var box = $('#chemiResult');
     if (!box) return;
@@ -805,6 +916,10 @@
       + (needB ? '<span class="tag tag--sage">' + esc(bName) + '에게 필요한 기운 · ' + esc(needB) + '</span>' : '')
       + '</div>';
 
+    /* 2027 정미년 · 둘의 합작 (丁火 십신 기준) */
+    html += '<p class="sect-h">2027 정미년 · 둘의 합작</p>';
+    html += jakBlock(a, b, aName, bName);
+
     /* 12달 겹쳐 보기 */
     html += '<p class="sect-h">2027 · 12달 겹쳐 보기</p>';
     html += monthGrid(a, b, hotA, hotB, warnA, warnB);
@@ -862,6 +977,7 @@
         : aName + '의 ' + comp[0].el + ' 기운이 ' + bName + '의 빈자리를 채워요')
       : '서로 세게 누르지 않는 사이예요';
     var advice = pairAdvice(relMaster.key, relZhi.key);
+    var jak = jakOf(a, b);
     html += '<div class="story" id="storyCard">'
       + '<div class="story__top"><span class="story__eyebrow">2027 · CHEMI</span>'
       + '<span class="story__seal">丁未</span></div>'
@@ -876,6 +992,8 @@
       + '<span class="story__ms">' + esc(goodTx) + '</span></div>'
       + '<div class="story__row story__row--warn"><span class="story__lb">겹쳐서 조심할 달</span>'
       + '<span class="story__ms">' + (warnMs.length ? esc(warnMs.map(function (n) { return n + '월'; }).join(' · ')) : '없음') + '</span></div>'
+      + '<div class="story__row story__row--jak"><span class="story__lb">2027 같이 하면</span>'
+      + '<span class="story__ms story__ms--jak">' + esc(jak.e.s) + '</span></div>'
       + '<p class="story__line">' + esc(oneLine) + '</p>'
       + '<div class="story__advice"><span class="story__lb">두 사람이 지킬 한 가지</span>'
       + '<span class="story__advice-t">' + esc(advice) + '</span></div>'

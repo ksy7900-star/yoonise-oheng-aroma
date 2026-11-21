@@ -468,6 +468,62 @@ a { color: inherit; }
 .tag--sage { background: #EDF1EA; color: #5E6E5B; }
 .tag--line { background: transparent; border: 1px solid var(--hair); color: var(--mute); }
 
+/* 2027 정미년 · 둘의 합작 (丁火 십신 기준) */
+.jak {
+  margin-top: 12px; padding: 16px 15px 14px;
+  border-radius: 16px;
+  background:
+    radial-gradient(110% 80% at 100% 0%, rgba(174, 138, 80, .12), transparent 60%),
+    linear-gradient(180deg, #FFFDF7, #F8F1E3);
+  border: 1px solid rgba(174, 138, 80, .3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .72);
+}
+.jak__hd { display: flex; align-items: center; gap: 8px; }
+.jak__seal {
+  font-family: var(--serif); font-size: 10px; font-weight: 700; letter-spacing: .02em;
+  color: #FFFDF7; background: #A6432F; padding: 3px 7px; border-radius: 4px;
+}
+.jak__eyebrow {
+  font-size: 10px; font-weight: 800; letter-spacing: .1em;
+  color: var(--gold-deep);
+}
+.jak__roles { display: flex; align-items: stretch; gap: 6px; margin-top: 14px; }
+.jak__p {
+  flex: 1; min-width: 0; text-align: center;
+  padding: 11px 6px 10px; border-radius: 12px;
+  background: #FFFDF9; border: 1px solid var(--hair-soft);
+}
+.jak__p.is-me { background: #FFFCF3; border-color: rgba(174, 138, 80, .26); }
+.jak__who {
+  display: block; font-size: 10.5px; font-weight: 800; color: var(--mute);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.jak__role {
+  display: block; font-family: var(--serif); font-size: 19px; font-weight: 700;
+  color: var(--ink); line-height: 1.25; margin-top: 3px;
+}
+.jak__role small {
+  display: block; font-family: var(--sans); font-size: 9.5px; font-weight: 800;
+  letter-spacing: .04em; color: var(--gold-deep); margin-top: 2px;
+}
+.jak__mean {
+  display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.45;
+  color: var(--mute); word-break: keep-all;
+}
+.jak__plus { align-self: center; flex: 0 0 auto; font-size: 12px; color: var(--gold); }
+.jak__t {
+  margin-top: 15px; font-family: var(--serif); font-size: 17.5px; font-weight: 700;
+  line-height: 1.45; letter-spacing: -.01em; color: var(--ink); word-break: keep-all;
+}
+.jak__a {
+  margin-top: 8px; font-size: 13px; line-height: 1.72;
+  color: var(--ink-2); word-break: keep-all;
+}
+.jak__fine {
+  margin-top: 11px; padding-top: 9px; border-top: 1px dashed rgba(174, 138, 80, .24);
+  font-size: 10.5px; line-height: 1.55; color: var(--mute);
+}
+
 /* 12달 겹쳐 보기 */
 .mgrid { margin-top: 12px; }
 .mrow { display: flex; align-items: center; gap: 4px; margin-top: 5px; }
@@ -585,7 +641,7 @@ a { color: inherit; }
 }
 .story__pair {
   display: flex; align-items: center; justify-content: center; gap: 12px;
-  margin-top: 30px; text-align: center; position: relative;
+  margin-top: 18px; text-align: center; position: relative;
 }
 .story__nm {
   display: block; font-size: 13px; font-weight: 700; color: var(--ink-2);
@@ -593,14 +649,14 @@ a { color: inherit; }
   margin: 0 auto;
 }
 .story__gz {
-  display: block; font-family: var(--serif); font-size: 27px; font-weight: 700;
+  display: block; font-family: var(--serif); font-size: 24px; font-weight: 700;
   color: var(--ink); line-height: 1.3; margin-top: 3px;
 }
 .story__dot { color: var(--gold); font-size: 15px; padding-bottom: 6px; }
 .story__body {
-  margin-top: 22px; position: relative;
+  margin-top: 10px; position: relative;
   flex: 1; display: flex; flex-direction: column; justify-content: space-between;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 .story__wm {
   position: absolute; right: 6px; bottom: 62px;
@@ -610,12 +666,12 @@ a { color: inherit; }
 }
 .story__foot {
   position: relative;
-  margin-top: auto; padding-top: 12px;
+  margin-top: auto; padding-top: 9px;
   border-top: 1px dashed rgba(174, 138, 80, .22);
   font-size: 10px; line-height: 1.5; color: var(--mute); text-align: center;
 }
 .story__advice {
-  margin-top: 18px; padding-top: 14px;
+  margin-top: 10px; padding-top: 10px;
   border-top: 1px solid rgba(174, 138, 80, .22);
 }
 .story__advice-t {
@@ -623,14 +679,14 @@ a { color: inherit; }
   font-size: 12.5px; font-weight: 700; color: var(--ink-2); line-height: 1.5;
 }
 .story__line {
-  margin-top: 14px; text-align: center;
+  margin-top: 8px; text-align: center;
   font-size: 11px; line-height: 1.55; color: var(--mute);
 }
-.story .els { height: 42px; margin-top: 16px; }
+.story .els { height: 42px; margin-top: 10px; }
 .story .el__pair { height: 30px; gap: 3px; }
 .story .el__bar { width: 8px; }
 .story .el__lb { font-size: 8.5px; letter-spacing: .04em; }
-.story__row { margin-top: 18px; }
+.story__row { margin-top: 12px; }
 .story__lb {
   display: block; font-size: 9px; letter-spacing: .16em; font-weight: 800;
   text-transform: uppercase; color: var(--mute);
@@ -640,9 +696,14 @@ a { color: inherit; }
   color: var(--gold-deep); line-height: 1.35; margin-top: 3px;
 }
 .story__row--warn .story__ms { color: #A6432F; font-size: 19px; }
+.story__row--jak { margin-top: 10px; }
+.story__ms--jak {
+  font-family: var(--sans); font-size: 14.5px; font-weight: 800; letter-spacing: -.01em;
+  color: var(--ink-2); line-height: 1.4; word-break: keep-all;
+}
 .story__ms small { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--mute); margin-left: 4px; }
 .story__mark {
-  margin-top: auto; padding-top: 12px;
+  margin-top: auto; padding-top: 9px;
   border-top: 1px solid rgba(174, 138, 80, .26);
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   position: relative;
