@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>경북신문 40편 연재 · 유튜브 | 윤이세사주</title>
-<meta name="description" content="경북신문 『윤이세의 생활 사주명리』 1회부터 40회까지, 그리고 유튜브 대표 영상. 상담 자리에서 자주 나오던 질문부터 읽어 보세요.">
+<title>경북신문 연재 · 유튜브 | 윤이세사주</title>
+<meta name="description" content="경북신문 『윤이세의 생활 사주명리』 연재 칼럼과 유튜브 대표 영상. 상담 자리에서 자주 나오던 질문부터 읽어 보세요.">
 <meta name="theme-color" content="#FAFBFD">
 <meta name="format-detection" content="telephone=no">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="윤이세사주">
-<meta property="og:title" content="신문에 40번 쓴 이야기 · 윤이세의 생활 사주명리">
-<meta property="og:description" content="경북신문 40편 연재 전편과 유튜브 대표 영상 — 사주를 처음 보는 사람도 읽히는 글">
+<meta property="og:title" content="사주는 점이 아니라 내 삶의 지도 · 윤이세">
+<meta property="og:description" content="경북신문 『윤이세의 생활 사주명리』 연재 칼럼과 유튜브 대표 영상 — 사주를 처음 보는 사람도 읽히는 글">
 <meta property="og:url" content="https://ksy7900-star.github.io/yoonise-oheng-aroma/story/">
 <meta property="og:image" content="https://i.ytimg.com/vi/kZP7l8L7ljs/maxresdefault.jpg">
 <meta property="og:locale" content="ko_KR">
@@ -18,7 +18,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
 <style>
 /* ==========================================================
-   윤이세 — 신문 연재 40편 · 유튜브 (/story/)
+   윤이세 — 신문 연재 칼럼 · 유튜브 (/story/)
    1안 색감: 화이트 · 딥네이비(#1E293B) · 에메랄드/골드 (2026-11-21)
    ========================================================== */
 :root {
@@ -88,17 +88,6 @@ button { font-family: inherit; cursor: pointer; }
   box-shadow: var(--shadow); white-space: nowrap;
 }
 .badges li b { color: var(--emerald); font-weight: 800; }
-
-.facts {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-  margin-top: 20px; padding: 14px 4px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
-}
-.facts li { text-align: center; }
-.facts b {
-  display: block; font-family: var(--serif); font-size: 19px; line-height: 1.25;
-  font-weight: 600; letter-spacing: -.03em; color: var(--navy);
-}
-.facts span { display: block; margin-top: 3px; font-size: 9.5px; letter-spacing: -.01em; color: var(--mute); }
 
 .hintline {
   margin-top: 14px; font-size: 11px; line-height: 1.7; color: var(--mute);
@@ -184,9 +173,21 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 11px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap;
   transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
-.tab b { font-weight: 800; color: var(--mute); margin-left: 3px; font-size: 10px; }
 .tab.is-on { background: var(--navy); border-color: var(--navy); color: #FFFFFF; }
-.tab.is-on b { color: #FDE68A; }
+
+/* ── 최신 글 바로가기 ─────────────────────── */
+.jump { margin-top: 14px; }
+.jump a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 13px 12px 14px; border-radius: 14px; text-decoration: none;
+  background: linear-gradient(132deg, #ECFDF5 0%, #FFFFFF 68%);
+  border: 1px solid rgba(4, 120, 87, .26);
+  font-size: 12px; font-weight: 800; letter-spacing: -.025em; color: #065F46;
+  box-shadow: var(--shadow); transition: transform .16s ease;
+}
+.jump a:active { transform: scale(.99); }
+.jump a b { font-weight: 800; }
+.jump a em { font-style: normal; margin-left: auto; color: var(--gold); font-weight: 800; }
 
 .list { margin-top: 6px; }
 .grp + .grp { margin-top: 16px; }
@@ -323,20 +324,14 @@ button { font-family: inherit; cursor: pointer; }
   <header class="head">
     <p class="head__eyebrow">YOONISE · WRITING &amp; VOICE</p>
     <p class="head__by">사주명리학자 · 윤이세사주 대표 <b>윤이세</b></p>
-    <h1 class="head__title">신문에 40번 써도<br><em>답은 하나</em>였어요</h1>
-    <p class="head__sub">사주는 점(占)이 아니라, 내가 어디서 넘어지고 어디서 살아나는지 미리 아는 지도였습니다.<br>경북신문에 1월부터 거의 한 주에 한 편씩 — 어느새 <b>40편</b>이 됐어요.</p>
+    <h1 class="head__title">사주는 점이 아니라<br><em>내 삶의 지도</em>입니다</h1>
+    <p class="head__sub">어디서 넘어지고 어디서 살아나는지, 미리 손에 쥐고 가는 지도.<br>그 이야기를 경북신문 지면에 한 주에 한 편씩 이어서 쓰고 있어요.</p>
 
     <ul class="badges">
-      <li>경북신문 <b>40편</b> 연재</li>
-      <li>유튜브 <b>2.77천명</b></li>
+      <li>경북신문 <b>『생활 사주명리』</b> 연재 중</li>
+      <li>유튜브 <b>@yoonise_saju</b></li>
       <li>창암명리학회 수석 학술이사</li>
       <li>사회복지사 2급</li>
-    </ul>
-
-    <ul class="facts">
-      <li><b>40편</b><span>2026.1.17 – 11.20</span></li>
-      <li><b>2.77천</b><span>유튜브 구독자</span></li>
-      <li><b>4편</b><span>추천 영상</span></li>
     </ul>
 
     <p class="hintline"><i>↓</i><span>마음에 걸리는 것부터 하나만 눌러 보세요. 칼럼도 영상도 전부 원문으로 바로 열려요.</span></p>
@@ -351,7 +346,7 @@ button { font-family: inherit; cursor: pointer; }
     <div class="best">
       <a class="bcard bcard--lead" href="https://www.kbsm.net/news/view.php?idx=542608" target="_blank" rel="noopener noreferrer">
         <span class="bcard__no" aria-hidden="true">40</span>
-        <span class="bcard__tag">🔥 지금 연재 중 · 40회</span>
+        <span class="bcard__tag">🔥 최근 연재</span>
         <span class="bcard__title">세상과 나를 연결하는 온도-화(火) 기운이 없을 때</span>
         <span class="bcard__teaser">잘 챙겨주면서도 "고맙다" 한마디는 못 하는 사람. 마음이 없는 게 아니라 표현의 온도가 낮은 것뿐이에요.</span>
         <span class="bcard__go">경북신문에서 읽기 <span>→</span></span>
@@ -383,23 +378,29 @@ button { font-family: inherit; cursor: pointer; }
     </div>
   </section>
 
-  <!-- ───────── 02 · 전체 40편 ───────── -->
+  <!-- ───────── 02 · 전체 칼럼 ───────── -->
   <section class="sec" aria-labelledby="allTitle">
     <p class="sec__eyebrow">02 · 전체 칼럼</p>
     <h2 class="sec__title" id="allTitle">경북신문 『윤이세의 생활 사주명리』</h2>
-    <p class="sec__sub">2026년 1월 17일 1회부터 11월 20일 40회까지. <b>최신부터 1편까지</b>, 시즌별로 묶었어요.</p>
+    <p class="sec__sub">경북신문 연재 칼럼을 <b>최신순</b>으로 모았어요. 최근 것부터 시즌별로 묶어 두었으니, 궁금한 주제부터 골라 읽어 보세요.</p>
+
+    <div class="jump">
+      <a href="https://www.kbsm.net/news/search.php?mode=&amp;search_order=%EC%9C%A4%EC%9D%B4%EC%84%B8" target="_blank" rel="noopener noreferrer">
+        <span>🔎 경북신문 ‘윤이세’ 최신 글 전체 보기</span><em>↗</em>
+      </a>
+    </div>
 
     <nav class="tabs" id="tabs" role="tablist" aria-label="칼럼 시즌 선택">
-      <button type="button" class="tab is-on" role="tab" aria-selected="true" data-g="all">전체 <b>40</b></button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s4">비어 있는 오행 <b>4</b></button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s3">신살 시즌3 <b>12</b></button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s2">일기예보 <b>12</b></button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s1">생활 사주명리 <b>12</b></button>
+      <button type="button" class="tab is-on" role="tab" aria-selected="true" data-g="all">전체</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s4">비어 있는 오행</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s3">신살</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s2">일기예보</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-g="s1">생활 사주명리</button>
     </nav>
 
     <div class="list" id="list">
       <div class="grp" data-grp="s4">
-        <div class="grp__head"><span class="grp__k">비어 있는 오행</span><span class="grp__c">4편 · 지금 연재 중</span></div>
+        <div class="grp__head"><span class="grp__k">비어 있는 오행</span><span class="grp__c">4편 · 37~40회</span></div>
         <div class="rows">
           <a class="row" href="https://www.kbsm.net/news/view.php?idx=539702" target="_blank" rel="noopener noreferrer">
             <span class="row__n">37</span>
@@ -424,7 +425,7 @@ button { font-family: inherit; cursor: pointer; }
         </div>
       </div>
       <div class="grp" data-grp="s3">
-        <div class="grp__head"><span class="grp__k">신살 시즌3 — 살(殺)을 다스리는 법</span><span class="grp__c">12편 · 25회 시즌3부터</span></div>
+        <div class="grp__head"><span class="grp__k">신살 시즌3 — 살(殺)을 다스리는 법</span><span class="grp__c">12편 · 25~36회</span></div>
         <div class="rows">
           <a class="row" href="https://www.kbsm.net/news/view.php?idx=527816" target="_blank" rel="noopener noreferrer">
             <span class="row__n">25</span>
@@ -625,7 +626,7 @@ button { font-family: inherit; cursor: pointer; }
         <span>경북신문에서 '윤이세' 최신 연재 찾기</span><i>→</i>
       </a>
     </div>
-    <p class="foot-note">24회는 건너뛰었고, 25회는 7월 16일과 23일(시즌3)에 두 번 실렸어요. 그래서 1번부터 40번까지, 지면에 실린 건 40편입니다.</p>
+    <p class="foot-note">24회는 건너뛰었고, 25회는 7월 16일과 23일(시즌3)에 두 번 실렸어요. 그래서 회차 번호와 지면에 실린 편 수가 조금 달라요.</p>
   </section>
 
   <!-- ───────── 03 · 영상 ───────── -->
