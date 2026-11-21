@@ -1245,3 +1245,23 @@ python3 -m http.server 8000
 - 일반 크롬(안드로이드) 안내 팝업은 그대로(회귀 없음) · 콘솔 오류 0건
 - 320px: `dialog.scrollWidth == clientWidth == 300` (가로 넘침 없음), 제목 2줄로 자연 줄바꿈
 - 캡처: `work/qa-pwa-positive-2026-11-21.png`(라이브·네이버 인앱 390), `work/qa-pwa-positive-kakao-2026-11-21.png`, `work/qa-pwa-positive-ios-kakao-2026-11-21.png`, `work/qa-pwa-positive-copy-2026-11-21.png`(복사 토스트), `work/qa-pwa-positive-320-2026-11-21.png`
+
+## 67. 2026-11-21 — `/calendar/yoon-key/` 전용 홈 화면 앱 — 이름 `코드발급기` · 딥네이비 자물쇠 아이콘
+
+김나영 님 승인: 발급기(`/calendar/yoon-key/`)도 폰 바탕화면에 바로가기 앱으로 깔 때 **`타이밍달력`과 헷갈리지 않게** 전용 이름과 아이콘을 달아 달라. 달력 쪽 파일은 한 줄도 건드리지 않고 `yoon-key/` 폴더 안에서만 처리했습니다. 커밋 `e2cd50f`.
+
+- **아이콘 3종(`calendar/yoon-key/`)** — 딥네이비 `#1E293B` 바탕 + 금색 자물쇠(고리·몸통·열쇠 구멍). 달력 아이콘(크림 한지 + 먹 원 + 금박 초승달)과 색을 정반대로 잡아 48px에서도 구분됩니다.
+  - `icon-key-192.png` 192×192 · 18,832B / `icon-key-512.png` 512×512 · 116,193B / `icon-key-180.png` 180×180 · 16,899B (모두 RGB, 투명 없음)
+  - 생성 스크립트: `work/qa-key-2026-11-21/make-key-icons.py` (2048 원본 `icon-key-master-2048.png` — 저장소 밖, 4096 슈퍼샘플 → LANCZOS). 마스커블 안전영역(반지름 40%) 안에 자물쇠가 들어오도록 배치.
+- **manifest(`calendar/yoon-key/manifest.webmanifest`)** — `id`·`start_url`·`scope` 를 `/yoonise-oheng-aroma/calendar/yoon-key/` 로 잡아 **달력(`/calendar/`)과 앱 신원이 겹치지 않게** 했습니다. `name` `윤이세 코드발급기` · `short_name` `코드발급기` · `display standalone` · `orientation portrait` · `theme_color` `#1E293B` · `background_color` `#FAFBFD` · `categories productivity/business` · 아이콘 192(any)/512(any)/512(maskable).
+- **`<head>`(`calendar/yoon-key/index.html`)** — `link[rel=manifest]` · `link[rel=apple-touch-icon sizes=180x180]` · PNG `rel=icon` · `apple-mobile-web-app-capable` · `mobile-web-app-capable` · `apple-mobile-web-app-status-bar-style default` · `apple-mobile-web-app-title`·`application-name` `코드발급기`. `theme-color` 는 `#F6F2EA` → **`#1E293B`**.
+- **발급기 화면 1안 색감** — 사이트 전체 1안(화이트 + 딥네이비)에 맞춰 **인라인 CSS 변수와 하드코딩 색만** 교체(레이아웃·문구·계산·잠금 로직 무변경). `--bg #FAFBFD` · `--ink #0F172A` · `--ink-2 #475569` · `--mute #64748B` · `--hair #E2E8F0` · CTA `#1E293B`/`#FFF` · 포인트 골드 `#B45309`/`--gold-soft #FEF3C7` · 오류 `#BE123C` · 성공 `#047857`. 크림·황토 잔여 0.
+- **검증(2026-11-21 20:2x KST · 라이브 390×844 DPR2 Android UA · `…/calendar/yoon-key/`)** — 로컬 8851 동일 결과.
+  - 페이지 200 · 잠금 화면 노출(`#app` hidden 유지) · 콘솔 오류 0 · pageerror 0 · 실패/4xx·5xx 요청 0 · 가로 넘침 0px(잠금 화면·도구 화면 모두)
+  - `manifest.webmanifest` 200 `application/manifest+json` · `Page.getAppManifest` **errors []** · `Page.getInstallabilityErrors` **[]**(설치 불가 사유 0건, 서비스 워커 없이도 설치 가능) · CDP 해석 `scope` = `…/calendar/yoon-key/`
+  - 아이콘 3종 모두 200 `image/png`, 실제 디코딩 192²·512²·180² (서버 18,832/116,193/16,899B 그대로)
+  - 계산된 색 실측: body `rgb(250,251,253)` · 잠금 버튼·`코드 만들기` `rgb(30,41,59)` · 카드 `rgb(255,255,255)` · 제목 `rgb(15,23,42)`
+  - 회귀: `/calendar/?v=20261121x` 200 · 콘솔 오류 0 · `Page.getAppManifest` errors [] · `scope` = `…/calendar/` · 설치 판정 [] — **두 앱이 서로 다른 앱으로 인식**
+  - 캡처: `work/qa-key-2026-11-21/live-01-gate.png`(라이브 잠금 화면) · `live-02-tool.png`(도구 화면) · `compare-row-v4.png`(달력 아이콘 ↔ 코드발급기 아이콘) · `local-01-gate.png`·`local-02-tool.png`·`local-03-tool-bottom.png`(로컬)
+- **남은 확인(실기기)** — 안드로이드 크롬에서 실제로 뜨는 설치 창, 바탕화면에 `코드발급기` 이름·자물쇠 아이콘으로 **달력과 별개로 두 개** 깔리는지, 마스커블 원형 크롭 모양은 헤드리스에서 재현되지 않아 폰에서 확인이 필요합니다. 아이폰은 `홈 화면에 추가` → `코드발급기` 이름으로 추가됩니다.
+- **참고** — `/calendar/yoon-key/` 는 `/calendar/` 서비스 워커 범위 안에 들어가지만 그 SW는 network-first라 HTML은 늘 새로 받고, 한 번 열어 둔 뒤 오프라인이면 자기 캐시로 열립니다(잠금 화면은 그대로). 발급기 전용 SW는 만들지 않았습니다.
