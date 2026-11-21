@@ -3915,7 +3915,7 @@
         ① 대나무 뽑기 ② 개운 오브제 ③ 1분 싱잉볼 — 예전 이름 '행동 카드'는 남아 있던 오기라 지웠다. */
   var CARE_ITEMS = {
     card: { ico: '🎋', name: '대나무 뽑기', price: '2,900원' },
-    objet: { ico: '💎', name: '개운 오브제', price: '2,900원' },
+    objet: { ico: '🪷', name: '개운 오브제', price: '2,900원' },
     bowl: { ico: '🔔', name: '1분 싱잉볼', price: '2,900원' },
     set: { ico: '⚡', name: '3종 풀세트', price: '5,900원', rec: true }
   };
@@ -6028,6 +6028,50 @@
     });
   }
 
+  /* ── ⚡ 긴급 개운템 바로가기의 자리 (2026-11-22) ──────────────────
+     달력 바로 아래 첫 자리를 누가 차지하느냐는 결제 여부로 갈린다.
+       · 결제로 열린 기기 : #careJump 가 달력 바로 아래 첫 자리.
+         '성찰 에디션 적용됨' 박스(#lockBtn)와 010-****-7373 안내(#codeBindNote)는
+         cal__note 아래로 내려 '내 성찰 기록 보기' 바로 위에 둔다.
+       · 미결제·잠금     : 🔑 입장 코드 입력(#lockBtn)이 먼저 눈에 들어와야 하므로
+         #careJump 는 그 바로 아래("이 캘린더 보는 법" 위).
+     DOM 노드를 옮겨도 각 버튼에 걸린 클릭 리스너는 노드를 따라 그대로 살아 있다. */
+  function arrangeCareJump() {
+    var care = $('#careJump'), lockBtn = $('#lockBtn');
+    if (!care || !lockBtn) return;
+    var parent = care.parentNode;
+    if (!parent || lockBtn.parentNode !== parent) return;
+    var panel = $('#lockPanel'), tie = $('#codeBindNote');
+    var note = $('#calNote');
+
+    if (state.unlocked) {
+      /* 1) 바로가기를 달력 바로 아래로 — 모아보기 목록(#calFocus)이 열려 있으면 그 아래 */
+      var anchor = $('#calFocus');
+      if (!anchor || anchor.parentNode !== parent) anchor = $('#calGrid');
+      if (anchor && anchor.parentNode === parent && anchor.nextSibling !== care) {
+        parent.insertBefore(care, anchor.nextSibling);
+      }
+      /* 2) '적용됨' 박스·번호 안내는 cal__note 아래로 (내 성찰 기록 보기 위) */
+      if (note && note.parentNode === parent) {
+        var ref = note;
+        [lockBtn, panel, tie].forEach(function (el) {
+          if (!el || el.parentNode !== parent) return;
+          parent.insertBefore(el, ref.nextSibling);
+          ref = el;
+        });
+      }
+    } else {
+      /* 미결제 — 🔑 입장 코드 입력 맨 위, 그 바로 아래에 바로가기, 그 아래에 입력칸 */
+      parent.insertBefore(lockBtn, care);
+      var after = care;
+      [panel, tie].forEach(function (el) {
+        if (!el || el.parentNode !== parent) return;
+        parent.insertBefore(el, after.nextSibling);
+        after = el;
+      });
+    }
+  }
+
   /* ── 입장 코드 UI (달력 카드의 🔑 입장 코드 입력) ─────────────────
      코드가 맞으면 localStorage 에 저장 — 새로고침해도 그 기기에서는 계속 열린다. */
   function syncLockUI() {
@@ -6122,6 +6166,7 @@
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
     renderChemiBanner();   // 케미·초대 배너 문구도 결제자/미결제자로 갈린다 (2026-11-22)
     syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
+    arrangeCareJump();     // ⚡ 긴급 개운템 바로가기 자리 — 결제 전엔 코드 입력 바로 아래, 결제 후엔 달력 바로 아래 (2026-11-22)
   }
   /** 숫자 → '010-1234-5678' — 입력칸에서 부드럽게 끊어 보여 준다 */
   function phoneDisplay(v) {

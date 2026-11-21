@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261122i">
+<link rel="stylesheet" href="assets/style.css?v=20261122j">
 </head>
 <body>
 
@@ -265,6 +265,17 @@
         <span class="lockbar__chev" aria-hidden="true">⌄</span>
       </button>
 
+      <!-- ⚡ 긴급 개운템 바로가기 — 부적을 붙여도 유독 막히는 날 (2026-11-22 김나영 님 요청)
+           · 미결제·잠금 기기: 🔑 입장 코드 입력 바로 아래에 (코드가 먼저 눈에 들어와야 하니까)
+           · 결제로 열린 기기: 달력 바로 아래 첫 자리 — '적용됨' 박스·번호 안내는 cal__note 아래로 내려 간다
+             (자리 바꾸기는 calendar.js 의 arrangeCareJump 한 곳에서 한다)
+           누르면 #careCard 로 부드럽게 이동 + 그 자리 한 번 반짝 (data-jump · 달력 위 4칸 바로가기와 같은 동작, 소리 없음) -->
+      <button type="button" class="carejump" id="careJump" data-jump="care">
+        <span class="carejump__ic" aria-hidden="true">⚡</span>
+        <span class="carejump__txt">부적을 붙여도 유독 막히는 날 <span class="carejump__ar" aria-hidden="true">→</span> <b>긴급 개운템 열기</b></span>
+        <span class="carejump__go" aria-hidden="true">↓</span>
+      </button>
+
       <div class="cal__tools">
         <button type="button" class="soundbtn installbtn" id="installCal"><span aria-hidden="true">📲</span> 앱 설치</button>
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
@@ -334,14 +345,6 @@
       </details>
 
       <p class="cal__note" id="calNote">기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
-
-      <!-- ⚡ 달력 하단 — 부적을 붙여도 유독 막히는 날, 긴급 개운템으로 바로 (2026-11-22 김나영 님 요청)
-           누르면 #careCard 로 부드럽게 이동 + 그 자리 한 번 반짝 (data-jump · 달력 위 4칸 바로가기와 같은 동작, 소리 없음) -->
-      <button type="button" class="carejump" id="careJump" data-jump="care">
-        <span class="carejump__ic" aria-hidden="true">⚡</span>
-        <span class="carejump__txt">부적을 붙여도 유독 막히는 날 <span class="carejump__ar" aria-hidden="true">→</span> <b>긴급 개운템 열기</b></span>
-        <span class="carejump__go" aria-hidden="true">↓</span>
-      </button>
 
       <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
       <button type="button" class="diarybook" id="diaryBookBtn">
@@ -642,11 +645,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261122i"></script>
-<script src="assets/manse.js?v=20261122i"></script>
-<script src="assets/timing.js?v=20261122i"></script>
-<script src="assets/chars.js?v=20261122i"></script>
-<script src="assets/calendar.js?v=20261122i"></script>
-<script src="assets/pwa.js?v=20261122i"></script>
+<script src="vendor/lunar.js?v=20261122j"></script>
+<script src="assets/manse.js?v=20261122j"></script>
+<script src="assets/timing.js?v=20261122j"></script>
+<script src="assets/chars.js?v=20261122j"></script>
+<script src="assets/calendar.js?v=20261122j"></script>
+<script src="assets/pwa.js?v=20261122j"></script>
 </body>
 </html>
