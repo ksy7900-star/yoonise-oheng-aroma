@@ -200,7 +200,7 @@
   }
   function shareLine() {
     return '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 ' + FRIEND_GIFT + ' 준대.\n'
+      + '내 링크로 들어오면 ' + FRIEND_GIFT + ' 받고, 우리 둘 2027년 케미도 볼 수 있대.\n'
       + myLink();
   }
 
