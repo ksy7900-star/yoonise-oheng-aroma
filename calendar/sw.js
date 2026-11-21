@@ -1,9 +1,9 @@
 /* ==========================================================
-   윤이세 사주 달력 — Service Worker
+   타이밍달력 · 윤이세사주 — Service Worker
    network-first : 항상 최신을 먼저 받고, 끊기면 캐시로 연다.
    skipWaiting + clients.claim : 새 버전이 이전 버전에 막히지 않게.
    ========================================================== */
-var VERSION = '20261121k';
+var VERSION = '20261121l';
 var CACHE = 'yoonise-cal-' + VERSION;
 
 var SHELL = [
