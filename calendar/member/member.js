@@ -307,7 +307,7 @@
     var note = $('#dbNote');
     note.hidden = false;
     if (state.db === 'unavailable') {
-      note.textContent = '회원 DB가 아직 열리지 않아 초대 코드와 사다리 숫자는 준비 중이에요. 로그인과 계정 정보는 정상으로 확인됩니다.';
+      note.textContent = '회원 정보를 지금 불러오지 못했어요. 로그인과 계정 정보는 정상입니다 — 잠시 뒤 새로고침하면 초대 코드와 사다리 숫자가 채워집니다.';
     } else if (state.db === 'pending') {
       note.textContent = '프로필이 아직 만들어지지 않았어요. 잠시 뒤 새로고침하면 자동으로 채워집니다.';
     } else if (state.db === 'idle') {
@@ -331,7 +331,8 @@
     if (nx) {
       if (state.demo !== null) nx.innerHTML = '미리보기 숫자예요';
       else if (!state.user) nx.innerHTML = '로그인하면 내 숫자로 바뀌어요';
-      else if (state.db === 'unavailable' || state.db === 'pending') nx.innerHTML = '실적은 DB 준비 뒤 채워져요';
+      else if (state.db === 'unavailable') nx.innerHTML = '실적을 다시 확인하는 중이에요';
+      else if (state.db === 'pending') nx.innerHTML = '프로필이 만들어지면 채워져요';
       else if (!next) nx.innerHTML = '사다리 끝까지 왔어요';
       else nx.innerHTML = '다음 칸까지 <b>' + (next.n - cnt) + '명</b>';
     }
