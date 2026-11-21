@@ -29,6 +29,11 @@
   var INVITE_BURN_BONUS = 1;
   var REF_KEY = 'yoonise.member.ref.v1';    // member.js 가 ?ref= 를 적어 두는 칸 (같은 오리진)
   var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 { ref, at }
+  /* 기존 방문자(사주가 이미 저장된 기기)가 초대 링크로 들어온 순간의 안내 (2026-11-22)
+     { refs: { 코드: ISO }, fresh: 'YYYY-MM-DD' }
+       refs  — 이 기기에 안내를 이미 띄운 초대 코드들(코드마다 1회만)
+       fresh — 무료 체험을 이 초대로 오늘부터 다시 세운 날(기기당 1회) */
+  var INVITE_NOTICE_KEY = 'yoonise.invite.notice.v1';
   var inviteRef = readInviteRef();
   var invited = !!inviteRef;
   var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 5일 · 그냥 들어오면 3일
@@ -619,6 +624,100 @@
       wr.hidden = false;
     }
   }
+  /* ── 기존 방문자 + 친구 초대(?ref=) — 5일·액운 1회를 실제로 적용하고 한 번만 알린다 ─────
+     사주가 이미 저장된 기기는 웰컴 팝업 없이 달력이 바로 열려서, 초대 링크로 들어와도
+     혜택이 붙었는지 알 수 없었다. 그래서
+       ① 무료 체험이 이미 끝난 기기라면 이 초대를 받은 날부터 다시 5일을 세운다(기기당 1회).
+          → '5일 무료'라고 알려 놓고 실제로는 잠겨 있는 일이 없게.
+       ② 달력이 열리자마자 위에서 안내 한 줄(토스트형 배너)을 띄운다 — 그 코드로는 1회만. */
+  function loadInviteNotice() {
+    try {
+      var o = JSON.parse(localStorage.getItem(INVITE_NOTICE_KEY) || 'null');
+      if (o && typeof o === 'object') { o.refs = o.refs || {}; return o; }
+    } catch (e) { }
+    return { refs: {} };
+  }
+  function saveInviteNotice(o) {
+    try { localStorage.setItem(INVITE_NOTICE_KEY, JSON.stringify(o)); } catch (e) { }
+  }
+  /** 이 코드의 적용 안내를 이 기기에서 이미 띄웠는가 */
+  function inviteNoticeSeen(ref) {
+    if (!validRef(ref)) return true;
+    return !!loadInviteNotice().refs[String(ref).toUpperCase()];
+  }
+  /** 띄웠다고 적어 둔다 — 오래된 코드 기록은 30개까지만 남긴다 */
+  function markInviteNotice(ref) {
+    if (!validRef(ref)) return;
+    var o = loadInviteNotice();
+    o.refs[String(ref).toUpperCase()] = new Date().toISOString();
+    var keys = Object.keys(o.refs);
+    for (var i = 0; i < keys.length - 30; i++) delete o.refs[keys[i]];
+    saveInviteNotice(o);
+  }
+  /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 5일로 다시 세운다 (기기당 1회) */
+  function applyInviteFreshStart() {
+    if (!invited || !FREE_TRIAL_ENABLED || state.unlocked || !state.res || !state.todayISO) return false;
+    if (inviteNoticeSeen(inviteRef)) return false;      // 이미 이 코드로 들어온 적 있는 기기
+    var rec = loadInviteNotice();
+    if (rec.fresh) return false;                        // 초대 한 번으로 한 번만 새로 세운다
+    var start = trialStartISO();                        // 저장된 첫 방문일(없으면 오늘)
+    if (!start) return false;
+    if (T.addDays(start, FREE_DAYS - 1) >= state.todayISO) return false;   // 아직 5일 안이면 그대로
+    trialStartMemo = state.todayISO;
+    try { localStorage.setItem(TRIAL_KEY, state.todayISO); } catch (e) { }
+    rec.fresh = state.todayISO;
+    saveInviteNotice(rec);
+    return true;
+  }
+  /** 이번 로드에서 띄울 안내 — 처음 닿은 코드일 때만 { ref, paid, fresh } */
+  function planInviteNotice(fresh) {
+    if (!invited || inviteNoticeSeen(inviteRef)) return null;
+    return { ref: inviteRef, paid: !!state.unlocked, fresh: !!fresh };
+  }
+  var inviteArrival = null, inviteNoticeTimer = 0, inviteNoticeTries = 0;
+  /** 안내를 미룰 때 — 띄워 두 팝업(웰컴·사용법)이 떠 있으면 그 팝업 밑에 숨지 않게 닫힌 뒤로 */
+  function inviteNoticeBlocked() {
+    return anyModalOpen() || !!(guideEl && !guideEl.hidden) || !!(welcomeEl && !welcomeEl.hidden);
+  }
+  /** 달력이 열리자마자 위에서 내려오는 안내 — 팝업이 떠 있으면 닫힌 뒤에(최대 28초) */
+  function showInviteNotice(delay) {
+    if (!inviteArrival) return;
+    setTimeout(function () {
+      if (inviteNoticeBlocked()) {
+        if (inviteNoticeTries++ < 40) showInviteNotice(700);
+        return;
+      }
+      var el = $('#inviteNotice');
+      if (!el) return;
+      var t = $('#inviteNoticeT'), s = $('#inviteNoticeS');
+      if (inviteArrival.paid) {
+        if (t) t.innerHTML = '🎁 초대 코드가 연결됐어요';
+        if (s) s.textContent = '이미 전체 이용 중이라 5일 체험은 필요 없어요 · 달력은 그대로예요';
+      } else {
+        var w = trialWindow(), l = burnLeft();
+        if (t) t.innerHTML = '🎁 친구 초대로 <b>' + FREE_DAYS + '일 무료 체험</b> + 액운 태우기 <b>' +
+          INVITE_BURN_BONUS + '회</b>가 적용됐어요!';
+        if (s) s.textContent = (inviteArrival.fresh ? '오늘부터 ' : '') +
+          (w ? mdOf(w.start) + '~' + mdOf(w.end) + ' 무료' : '') +
+          (w ? ' · ' : '') + (l > 0 ? '액운 태우기 무료 ' + l + '회 남음' : '액운 태우기는 다 썼어요');
+      }
+      el.hidden = false;
+      void el.offsetWidth;
+      el.classList.add('is-on');
+      markInviteNotice(inviteArrival.ref);                // 이 코드로는 다시 띄우지 않는다
+      inviteArrival = null;
+      clearTimeout(inviteNoticeTimer);
+      inviteNoticeTimer = setTimeout(hideInviteNotice, 9000);
+    }, typeof delay === 'number' ? delay : 620);
+  }
+  function hideInviteNotice() {
+    var el = $('#inviteNotice');
+    if (!el || el.hidden) return;
+    clearTimeout(inviteNoticeTimer);
+    el.classList.remove('is-on');
+    setTimeout(function () { if (!el.classList.contains('is-on')) el.hidden = true; }, 300);
+  }
+
   /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
     if (state.unlocked) return iso >= RANGE_FROM && iso <= RANGE_TO;
@@ -6424,6 +6523,9 @@
         if (e.target.closest && e.target.closest('[data-welcome-close]')) { closeWelcome(); }
       });
     }
+    // 🎁 친구 초대 적용 안내 — ✕ 로 바로 닫는다 (소리 없이, 손가락도 한 번이면 되게)
+    var inviteX = $('#inviteNoticeX');
+    if (inviteX) inviteX.addEventListener('click', function (e) { e.preventDefault(); hideInviteNotice(); });
 
     // 📖 내 성찰 기록 보기 — 달력 아래 버튼
     var dbookBtn = $('#diaryBookBtn');
@@ -6757,6 +6859,7 @@
 
     var saved = loadInput();
     var openedFromSaved = false;
+    var openedFromInvite = false;   // 이 초대로 무료 체험을 오늘부터 다시 세웠는가
     if (saved) {
       applyInput(saved);
       try {
@@ -6773,6 +6876,7 @@
         state.res = M.compute(o);
         state.natal = T.natalOf(state.res);
         syncCodeBinding();     // 저장된 사주가 코드 주인과 같을 때만 계속 열린다
+        openedFromInvite = applyInviteFreshStart();   // 체험이 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 5일
         state.cache = {};
         state.yearDigest = null;
         state.mDigest = {};
@@ -6791,9 +6895,15 @@
     if (openedFromSaved) {
       markWelcomeSeen();
       maybeAutoGuide();
+      /* 기존 방문자가 초대 링크로 처음 들어왔을 때 — 5일·액운 1회 적용 안내 (2026-11-22) */
+      inviteArrival = planInviteNotice(openedFromInvite);
+      showInviteNotice(900);
     } else {
-      /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다 */
+      /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다.
+         초대 링크로 온 첫 접속은 웰컴 팝업의 보너스 줄이 안내를 맡으므로 따로 띄우지 않고,
+         이 코드는 '안내함'으로 적어 다음 재방문에 겹쳐 뜨지 않게 한다. */
       maybeAutoWelcome(60);
+      if (invited) markInviteNotice(inviteRef);
     }
 
     /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21)

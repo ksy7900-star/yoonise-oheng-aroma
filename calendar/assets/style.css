@@ -2640,6 +2640,40 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 }
 .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
+/* ── 친구 초대 적용 안내 ──────────────────────────────
+   사주가 이미 저장된 기존 방문자가 ?ref= 초대 링크로 처음 들어왔을 때
+   달력이 열리자마자 화면 위에서 내려오는 한 줄 (2026-11-22).
+   · 누르지 않아도 소리는 없다. ✕ 로 닫거나 9초 뒤 알아서 사라진다. */
+.invitenotice {
+  position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top, 0px));
+  z-index: 110; box-sizing: border-box; width: min(92vw, 380px);
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 11px 10px 11px 14px; border-radius: 16px;
+  background: linear-gradient(180deg, #FFFDF6 0%, #FEF3C7 100%);
+  border: 1px solid rgba(180, 83, 9, .26);
+  box-shadow: 0 18px 38px -22px rgba(15, 23, 42, .55);
+  opacity: 0; transform: translate(-50%, -14px); pointer-events: none;
+  transition: opacity .26s ease, transform .3s cubic-bezier(.2, 1.2, .4, 1);
+}
+.invitenotice[hidden] { display: none; }
+.invitenotice.is-on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.invitenotice__body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.invitenotice__t {
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.03em; color: #1E293B;
+  line-height: 1.45; word-break: keep-all;
+}
+.invitenotice__t b { color: #B45309; font-weight: 800; }
+.invitenotice__s {
+  font-size: 10.5px; font-weight: 600; letter-spacing: -.02em; color: #7C2D12;
+  line-height: 1.5; word-break: keep-all;
+}
+.invitenotice__x {
+  flex: 0 0 auto; appearance: none; border: 0; cursor: pointer;
+  width: 26px; height: 26px; padding: 0; border-radius: 999px;
+  background: rgba(15, 23, 42, .06); color: #475569;
+  font-size: 11px; line-height: 26px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ritual.is-done .talis-pad__sheet,
   .ritual.is-done .talis-pad__shine,
