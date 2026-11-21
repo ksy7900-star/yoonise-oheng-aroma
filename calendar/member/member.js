@@ -64,9 +64,9 @@
   var EL_MOTHER = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };  // 나를 생하는 오행
 
   // 최종 확정된 4단 (2026-11-21 김나영 님 확정) — 날짜 단위를 겹치지 않게 나눠서
-  // 1명은 기간이 아니라 '액운 태우기 + 할인권'으로, 3명부터 기간(총 1·2·3개월)으로 올라간다.
+  // 1명은 기간이 아니라 '액운 태우기 + 할인 쿠폰'으로, 3명부터 기간(총 1·2·3개월)으로 올라간다.
   var LADDER = [
-    { n: 1, title: '액운 태우기 3회 + 전 상품 할인권', sub: '1년·올인원 3천원, 성찰 에디션 5천원 할인' },
+    { n: 1, title: '액운 태우기 3회 + 전 상품 할인 쿠폰', sub: '1년·올인원 3천원, 성찰 에디션 5천원 할인' },
     { n: 3, title: '1개월 패스 무료', sub: '한 달 전체를 바로 열어요' },
     { n: 5, title: '2개월 패스 무료', sub: '두 달 전체를 열어 드려요' },
     { n: 10, title: '3개월 패스 무료', sub: '석 달을 통째로 열어 드려요' }
@@ -276,7 +276,7 @@
       + '</ul>'
       + '<button type="button" class="btn btn--navy" id="gateLoginBtn">'
       + '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span></button>'
-      + '<p class="gate__note">사주·생년월일은 이 기기 안에서만 계산해요.<br>로그인은 초대 코드와 사다리 보상을 위한 거예요.</p>'
+      + '<p class="gate__note">닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.<br>로그인은 초대 코드와 사다리 보상을 위한 거예요.</p>'
       + '</div>';
     box.hidden = false;
     var b = $('#gateLoginBtn');
@@ -393,7 +393,7 @@
     inn.hidden = !on;
     if (!on) {
       $('#authTitle').textContent = '카카오로 3초면 끝나요';
-      $('#authSub').textContent = '닉네임과 이메일만 받아요. 사주는 여전히 이 기기 안에서만 계산합니다.';
+      $('#authSub').textContent = '닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.';
       return;
     }
     var u = state.user, meta = u.user_metadata || {};
@@ -911,7 +911,7 @@
   };
   var ROLE_FALLBACK = { 목: '식상', 화: '비겁', 토: '인성', 금: '관성', 수: '재성' };   // 丁火=화 기준
 
-  /* 짝마다 다른 합작 포인트 — t: 제목 한 줄 / a: 행동 조언 / s: 스토리 카드 한 줄 */
+  /* 짝마다 다른 합작 포인트 — t: 제목 한 줄 / a: 행동 조언 / s: 인스타 카드 한 줄 */
   var JAK = [
     { k: ['비겁', '비겁'], t: '둘 다 앞에 서려는 해 — 순서만 정하면 판이 커져요',
       a: '丁火가 둘 다 비겁으로 들어와 기세는 좋은데, 누가 앞설지로 힘을 빼기 쉬워요. 같이 벌이되 결정하는 사람과 받치는 사람을 처음에 정해 두고, 정산은 꼭 한 사람만 맡으세요.',
@@ -1025,14 +1025,15 @@
       + '</div>';
   }
 
-  function elBars(chA, chB) {
+  function elBars(chA, chB, opt) {
+    opt = opt || {};
     var mx = 1;
     EL_ORDER.forEach(function (e) {
       mx = Math.max(mx, chA.counts[e] || 0, chB.counts[e] || 0);
     });
-    return '<div class="els">' + EL_ORDER.map(function (e) {
+    var html = '<div class="els">' + EL_ORDER.map(function (e) {
       var a = chA.counts[e] || 0, b = chB.counts[e] || 0;
-      return '<div class="el">'
+      return '<div class="el el--' + e + '">'
         + '<span class="el__pair">'
         + '<i class="el__bar el__bar--me" style="height:' + Math.max(4, Math.round(a / mx * 100)) + '%"></i>'
         + '<i class="el__bar el__bar--you" style="height:' + Math.max(4, Math.round(b / mx * 100)) + '%"></i>'
@@ -1040,6 +1041,13 @@
         + '<span class="el__lb">' + e + '</span>'
         + '</div>';
     }).join('') + '</div>';
+    /* 막대는 오행 색을 지키고 사람은 채움/빗금으로 나누므로, 읽는 법 한 줄을 붙인다 */
+    if (opt.legend) {
+      html += '<p class="els__lg">'
+        + '<i class="els__lg-i is-me" aria-hidden="true"></i>채운 막대 ' + esc(opt.legA || '나')
+        + '<i class="els__lg-i is-you" aria-hidden="true" style="margin-left:6px"></i>빗금 막대 ' + esc(opt.legB || '너') + '</p>';
+    }
+    return html;
   }
 
   function monthGrid(chA, chB, hotA, hotB, warnA, warnB) {
@@ -1150,13 +1158,13 @@
     html += '<div class="pair">'
       + '<div class="pair__c"><span class="pair__nm">' + esc(aName) + '</span>'
       + '<span class="pair__gz">' + esc(a.natal.gan) + ' ' + esc(a.natal.zhi) + '</span>'
-      + '<span class="pair__el">' + esc(a.natal.element) + ' · ' + birthText(a) + '</span></div>'
+      + '<span class="pair__el"><b class="elc--' + esc(a.natal.element) + '">' + esc(a.natal.element) + '</b> · ' + birthText(a) + '</span></div>'
       + '<div class="pair__mid">·</div>'
       + '<div class="pair__c"><span class="pair__nm">' + esc(bName) + '</span>'
       + '<span class="pair__gz">' + esc(b.natal.gan) + ' ' + esc(b.natal.zhi) + '</span>'
-      + '<span class="pair__el">' + esc(b.natal.element) + ' · ' + birthText(b) + '</span></div>'
+      + '<span class="pair__el"><b class="elc--' + esc(b.natal.element) + '">' + esc(b.natal.element) + '</b> · ' + birthText(b) + '</span></div>'
       + '</div>';
-    html += elBars(a, b);
+    html += elBars(a, b, { legend: true, legA: aName, legB: bName });
 
     /* 서로 채워 주는 기운 */
     html += '<p class="sect-h">오행 · 서로 채우는 것</p>';
@@ -1224,12 +1232,12 @@
       html += '<div class="empty">2027년에 크게 부딪히는 달은 없어요. 잔잔한 해입니다.</div>';
     }
 
-    /* 스토리 카드 — 캡처해서 올리는 9:16 카드 (브랜드 마크 포함) */
+    /* 인스타 카드 — 9:16, 피드·릴스 공용 (캡처해서 올리는 카드 · 브랜드 마크 포함) */
     var goodMs = both.length ? both.slice(0, 3) : near;
     var goodLb = both.length ? '같이 치고 나갈 달' : '무리 없이 갈 달';
     var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '—';
     var warnMs = (warnAll.length ? warnAll : oneOnly).slice(0, 3);
-    html += '<p class="sect-h">이 카드로 스토리에 올리면 돼요</p>';
+    html += '<p class="sect-h">이 카드로 피드·릴스에 올리면 돼요</p>';
     var oneLine = comp.length
       ? comp[0].el + ' 기운을 서로 보태며 균형을 잡아요'
       : '서로 세게 누르지 않는 사이예요';

@@ -225,6 +225,20 @@
   }
 
   if (goBtn) goBtn.addEventListener('click', onInstallClick);
+
+  /* ── 상시 `📲 앱 설치` (달력 하단 · 하단 픽셀) ─────────────────
+     배너를 닫았거나 설치 기록이 남아도, 이미 앱으로 열려 있어도 눌리게 둔다. */
+  function onPersistClick() {
+    if (isStandalone()) {
+      toast('지금은 홈 화면 앱으로 열려 있어요 — 아이콘을 누르면 바로 열립니다');
+      return;
+    }
+    onInstallClick();
+  }
+  ['installCal', 'installFoot'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', onPersistClick);
+  });
   if (hideBtn) {
     hideBtn.addEventListener('click', function (e) {
       e.stopPropagation();

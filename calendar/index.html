@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261121q">
+<link rel="stylesheet" href="assets/style.css?v=20261121r">
 </head>
 <body>
 
@@ -229,6 +229,7 @@
       <div class="calfocus" id="calFocus" hidden></div>
 
       <div class="cal__tools">
+        <button type="button" class="soundbtn installbtn" id="installCal"><span aria-hidden="true">📲</span> 앱 설치</button>
         <button type="button" class="soundbtn lockbtn" id="lockBtn" aria-expanded="false" aria-controls="lockPanel">🔑 입장 코드 입력</button>
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
       </div>
@@ -381,6 +382,14 @@
     </footer>
   </div>
 
+  <!-- 📲 앱 설치 — 설치 배너를 닫았거나 기록이 남아도 언제든 다시 (2026-11-21)
+       달력이 열린 뒤에는 달력 하단 `📲 앱 설치` 가 맡는다 -->
+  <div class="appshelf" id="appShelf">
+    <button type="button" class="appshelf__btn" id="installFoot">
+      <span aria-hidden="true">📲</span> 앱 설치
+    </button>
+  </div>
+
   <noscript><p class="card">이 페이지는 자바스크립트가 필요해요. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>
 </main>
 
@@ -530,11 +539,11 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261121q"></script>
-<script src="assets/manse.js?v=20261121q"></script>
-<script src="assets/timing.js?v=20261121q"></script>
-<script src="assets/chars.js?v=20261121q"></script>
-<script src="assets/calendar.js?v=20261121q"></script>
-<script src="assets/pwa.js?v=20261121q"></script>
+<script src="vendor/lunar.js?v=20261121r"></script>
+<script src="assets/manse.js?v=20261121r"></script>
+<script src="assets/timing.js?v=20261121r"></script>
+<script src="assets/chars.js?v=20261121r"></script>
+<script src="assets/calendar.js?v=20261121r"></script>
+<script src="assets/pwa.js?v=20261121r"></script>
 </body>
 </html>

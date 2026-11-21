@@ -533,18 +533,52 @@ a { color: inherit; }
   color: var(--ink); line-height: 1.25; margin-top: 2px;
 }
 .pair__el { font-size: 11px; color: var(--mute); }
+/* 오행 이름 글자색 = 정통 오방색 */
+.elc--목 { color: #15803D; font-weight: 700; }
+.elc--화 { color: #B91C1C; font-weight: 700; }
+.elc--토 { color: #A16207; font-weight: 700; }
+.elc--금 { color: #475569; font-weight: 700; }
+.elc--수 { color: #111827; font-weight: 700; }
 .pair__mid { font-size: 18px; color: var(--gold); padding-bottom: 16px; }
 
+/* 오행 막대 — 오행은 정통 오방색(목 초록 · 화 빨강 · 토 노랑 · 금 흰색 · 수 검정),
+   사람 구분은 색이 아니라 '채움(나) / 빗금(너)' 으로만 한다. */
 .els { display: flex; gap: 5px; align-items: flex-end; height: 58px; margin-top: 10px; }
 .el { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
 .el__pair { display: flex; gap: 2px; align-items: flex-end; justify-content: center; height: 44px; width: 100%; }
 .el__bar {
-  width: 9px; border-radius: 4px 4px 2px 2px; min-height: 3px;
-  background: linear-gradient(180deg, #1E293B, #0F172A);
+  width: 9px; border-radius: 4px 4px 2px 2px; min-height: 4px;
+  box-shadow: inset 0 0 0 1px var(--el-line);
 }
-.el__bar--me { background: linear-gradient(180deg, #1E293B, #0F172A); }
-.el__bar--you { background: linear-gradient(180deg, #94A3B8, #64748B); }
-.el__lb { font-size: 9.5px; color: var(--mute); }
+.el__bar--me { background: var(--elc); }
+.el__bar--you { background: repeating-linear-gradient(135deg, var(--elc) 0 2.5px, #FFFFFF 2.5px 5px); }
+
+/* 오행 토큰 — 이 블록만 고치면 막대·라벨이 같이 움직인다 */
+.el--목 { --elc: #16A34A; --el-line: #15803D; --el-ink: #15803D; }
+.el--화 { --elc: #EF4444; --el-line: #DC2626; --el-ink: #B91C1C; }
+.el--토 { --elc: #FACC15; --el-line: #CA8A04; --el-ink: #A16207; }
+.el--금 { --elc: #FFFFFF; --el-line: #94A3B8; --el-ink: #475569; }
+.el--수 { --elc: #111827; --el-line: #111827; --el-ink: #111827; }
+
+/* 금(흰색)은 바탕과 구분되도록 은회색 바탕 + 테두리로 형태를 잡는다 */
+.el--금 .el__bar--me { background: #E2E8F0; }
+.el--금 .el__bar--you { background: repeating-linear-gradient(135deg, #94A3B8 0 2.5px, #FFFFFF 2.5px 5px); }
+
+.el__lb { font-size: 9.5px; font-weight: 700; color: var(--el-ink, var(--mute)); }
+
+/* 막대 읽는 법 — 나 = 채운 막대 · 너 = 빗금 막대 */
+.els__lg {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  margin: 7px 0 0; font-size: 9.5px; line-height: 1.5; color: var(--mute);
+  letter-spacing: -0.01em;
+}
+.els__lg-i {
+  display: inline-block; width: 7px; height: 9px; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px #1E293B;
+}
+.els__lg-i.is-me { background: #1E293B; }
+.els__lg-i.is-you { background: repeating-linear-gradient(135deg, #1E293B 0 2px, #FFFFFF 2px 4px); }
+.els__lg-i + .els__lg-i { margin-left: 2px; }
 
 .sect-h {
   margin-top: 22px;
