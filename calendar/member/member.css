@@ -874,6 +874,32 @@ a { color: inherit; }
 .foot a { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── 좁은 화면 보정 ───────────────────────────────── */
+@media (max-width: 374px) {
+  /* 360px 급 — 스토리 카드(9:16)에 '2027 같이 하면' 줄이 들어가고도 브랜드 마크까지 남도록 */
+  .story__pair { margin-top: 12px; }
+  .story .els { margin-top: 6px; }
+  .story__row { margin-top: 10px; }
+  .story__advice { margin-top: 8px; }
+}
+@media (max-width: 340px) {
+  .story { padding: 14px 12px 10px; }
+  .story__pair { margin-top: 10px; }
+  .story__gz { font-size: 19px; }
+  .story .els { height: 34px; margin-top: 4px; }
+  .story .el__pair { height: 24px; }
+  .story__ms { font-size: 19px; }
+  .story__row { margin-top: 8px; }
+  .story__row--jak { margin-top: 7px; }
+  .story__row--warn .story__ms { font-size: 16px; }
+  .story__ms--jak { font-size: 12.5px; }
+  .story__line { font-size: 10.5px; margin-top: 6px; }
+  .story__advice { margin-top: 7px; padding-top: 8px; }
+  .story__advice-t { font-size: 11px; line-height: 1.42; }
+  .story__foot { font-size: 9.5px; padding-top: 7px; }
+  .story__mark { padding-top: 7px; }
+  .story__mark-t { font-size: 11px; }
+  .story__mark-h { font-size: 9.5px; }
+}
 @media (max-width: 360px) {
   .hero { padding: 40px 18px 16px; }
   .wrap { padding: 4px 12px 34px; }
