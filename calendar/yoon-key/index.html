@@ -1,0 +1,706 @@
+<!-- 윤이세(김나영) 님 전용 코드 발급기 — 비밀번호 잠금 · 검색 노출 금지 -->
+<!-- 발급기 본체는 work/yoonise-code-issuer.html 과 같은 계산(codeDigits)을 씁니다. calendar/assets/calendar.js 의 검증식과 반드시 같아야 합니다. -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, noimageindex, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F6F2EA">
+<title>🔒 윤이세 전용 코드 발급기</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Cpath d='M22 29v-5a10 10 0 0 1 20 0v5' fill='none' stroke='%23C79A4E' stroke-width='3'/%3E%3Crect x='18' y='29' width='28' height='20' rx='4' fill='none' stroke='%23C79A4E' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F6F2EA; --paper:#FFFFFF; --ink:#1D1C19; --ink-2:#48443D; --mute:#8F887B;
+  --hair:rgba(29,28,25,.10); --hair-soft:rgba(29,28,25,.055);
+  --gold:#AE8A50; --gold-deep:#6B5A2E; --gold-soft:#F1E9D9;
+  --sans:"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --serif:"Nanum Myeongjo","Noto Serif KR","AppleMyungjo","Batang",serif;
+}
+*{box-sizing:border-box} [hidden]{display:none !important}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.7; letter-spacing:-.012em; word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:430px; margin:0 auto; padding:22px 16px 60px}
+.head{padding:8px 2px 18px}
+.head__eyebrow{font-size:9.5px; letter-spacing:.22em; color:var(--gold); font-weight:700; margin:0 0 6px}
+.head__title{font-family:var(--serif); font-size:24px; line-height:1.35; margin:0; font-weight:600}
+.head__sub{margin:8px 0 0; font-size:11.5px; line-height:1.7; color:var(--mute)}
+.card{
+  background:var(--paper); border-radius:22px; padding:18px 16px;
+  box-shadow:0 1px 2px rgba(29,28,25,.03), 0 16px 30px -26px rgba(29,28,25,.4);
+  border:1px solid var(--hair-soft); margin-bottom:14px;
+}
+.card__title{font-size:13px; font-weight:700; margin:0 0 12px; letter-spacing:-.02em}
+.lb{display:block; font-size:10.5px; font-weight:700; color:var(--ink-2); margin:14px 0 6px}
+.lb:first-of-type{margin-top:0}
+.seg{display:flex; gap:6px; background:#F3EEE4; border-radius:12px; padding:4px}
+.seg button{
+  flex:1; border:0; background:none; border-radius:9px; padding:9px 0;
+  font-size:12px; font-weight:600; color:var(--mute); font-family:inherit;
+}
+.seg button.is-on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(29,28,25,.08)}
+.row{display:flex; gap:8px}
+select{
+  flex:1; min-width:0; appearance:none; font-family:inherit; font-size:13px; font-weight:600;
+  color:var(--ink); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%238F887B'/%3E%3C/svg%3E") no-repeat right 11px center;
+  border:1px solid var(--hair); border-radius:12px; padding:11px 26px 11px 12px;
+}
+.chips{display:flex; gap:8px}
+.chip{
+  flex:1; border:1px solid var(--hair); background:#fff; border-radius:12px;
+  padding:11px 0; font-size:13px; font-weight:600; color:var(--mute); font-family:inherit;
+}
+.chip.is-on{border-color:rgba(174,138,80,.6); background:var(--gold-soft); color:var(--gold-deep)}
+.check{display:flex; align-items:center; gap:7px; margin-top:10px; font-size:11.5px; color:var(--ink-2)}
+.check input{width:16px; height:16px; accent-color:#AE8A50}
+.prods{display:flex; flex-direction:column; gap:8px}
+.prod{
+  display:flex; align-items:center; gap:10px; border:1px solid var(--hair); border-radius:14px;
+  padding:12px 13px; background:#fff; font-family:inherit; text-align:left;
+}
+.prod.is-on{border-color:rgba(174,138,80,.6); background:var(--gold-soft)}
+.prod__l{font-size:13px; font-weight:700; color:var(--ink)}
+.prod__s{display:block; font-size:10.5px; color:var(--mute); margin-top:2px; font-weight:500}
+.prod__p{margin-left:auto; font-size:11px; font-weight:700; color:var(--gold-deep)}
+.go{
+  width:100%; margin-top:16px; border:0; border-radius:14px; padding:15px 0;
+  background:#1D1C19; color:#F7F2E7; font-size:14px; font-weight:700; font-family:inherit;
+  letter-spacing:-.01em;
+}
+.go:active{transform:translateY(1px)}
+.err{margin:10px 0 0; font-size:11.5px; color:#A0503C; line-height:1.6}
+.out{margin-top:6px}
+.out__who{font-size:11px; color:var(--mute); margin:0 0 8px}
+.out__who b{color:var(--ink-2)}
+.code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:20px; font-weight:700; letter-spacing:.04em; color:var(--gold-deep);
+  background:var(--gold-soft); border:1px dashed rgba(174,138,80,.5); border-radius:14px;
+  padding:16px 12px; text-align:center; word-break:break-all; line-height:1.4;
+}
+.out__meta{margin:9px 0 0; font-size:11px; color:var(--ink-2); line-height:1.65}
+.out__meta b{color:var(--gold-deep)}
+.btns{display:flex; gap:8px; margin-top:12px}
+.btns button{
+  flex:1; border-radius:12px; padding:12px 0; font-size:12px; font-weight:700; font-family:inherit;
+  border:1px solid var(--hair); background:#fff; color:var(--ink-2);
+}
+.btns button.primary{background:#1D1C19; border-color:#1D1C19; color:#F7F2E7}
+.msg{margin:10px 0 0; font-size:11px; color:#4E6B3A; text-align:center; min-height:14px}
+.list{margin:0; padding:0; list-style:none}
+.list li{
+  display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--hair-soft);
+  font-size:11px;
+}
+.list li:last-child{border-bottom:0}
+.list .l-code{font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; color:var(--gold-deep)}
+.list .l-who{color:var(--mute); flex:1; text-align:right}
+.list button{
+  border:1px solid var(--hair); background:#fff; border-radius:8px; padding:4px 8px;
+  font-size:10px; font-weight:700; color:var(--ink-2); font-family:inherit;
+}
+.note{margin:6px 2px 0; font-size:10.5px; line-height:1.7; color:var(--mute)}
+.check2{display:flex; gap:8px; margin-top:10px}
+.check2 input{
+  flex:1; min-width:0; border:1px solid var(--hair); border-radius:12px; padding:11px 12px;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; letter-spacing:.02em;
+}
+.check2 button{
+  border:0; border-radius:12px; padding:0 14px; background:#1D1C19; color:#F7F2E7;
+  font-size:12px; font-weight:700; font-family:inherit;
+}
+.foot{margin-top:22px; text-align:center; font-size:10px; color:var(--mute); line-height:1.7}
+
+/* ── 잠금 화면 (비밀번호) ───────────────────────────────────────────── */
+body.locked{overflow:hidden}
+.gate{
+  position:fixed; inset:0; z-index:50; background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px 18px calc(24px + env(safe-area-inset-bottom));
+}
+.gate__box{width:100%; max-width:330px; text-align:center}
+.gate__ico{
+  width:56px; height:56px; margin:0 auto 16px; border-radius:50%;
+  background:#fff; border:1px solid var(--hair);
+  display:flex; align-items:center; justify-content:center; font-size:23px;
+  box-shadow:0 14px 26px -20px rgba(29,28,25,.6);
+}
+.gate__title{font-family:var(--serif); font-size:21px; line-height:1.45; margin:0; font-weight:600; letter-spacing:-.02em}
+.gate__sub{margin:9px 0 18px; font-size:11.5px; color:var(--mute); line-height:1.6}
+.gate__pin{
+  width:100%; height:58px; padding:0 8px; text-align:center;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:24px; letter-spacing:.5em; text-indent:.5em; color:var(--ink);
+  background:#fff; border:1px solid var(--hair); border-radius:16px;
+  box-shadow:0 10px 22px -20px rgba(29,28,25,.5);
+  -webkit-appearance:none; appearance:none;
+}
+.gate__pin::placeholder{color:transparent}
+.gate__pin:focus{outline:none; border-color:rgba(174,138,80,.8); box-shadow:0 0 0 3px rgba(174,138,80,.14)}
+.gate__err{margin:10px 0 0; font-size:11.5px; color:#A0503C; line-height:1.5; min-height:17px}
+.gate__btn{
+  width:100%; height:52px; margin-top:12px; border:0; border-radius:16px;
+  background:#1D1C19; color:#F7F2E7; font-family:inherit; font-size:14px; font-weight:700;
+  letter-spacing:-.01em;
+}
+.gate__btn:active{transform:translateY(1px)}
+.gate__btn[disabled]{opacity:.5}
+.gate__foot{margin:18px 0 0; font-size:10px; color:var(--mute); line-height:1.7}
+.gate.is-shake{animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}60%{transform:translateX(6px)}}
+.head__bar{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 6px}
+.head__bar .head__eyebrow{margin:0}
+.lockbtn{
+  border:1px solid var(--hair); background:#fff; border-radius:999px; padding:5px 10px;
+  font-family:inherit; font-size:10px; font-weight:700; color:var(--ink-2); line-height:1.3;
+}
+
+</style>
+</head>
+<body class="locked">
+
+<div class="gate" id="gate">
+  <div class="gate__box">
+    <div class="gate__ico" aria-hidden="true">🔒</div>
+    <h1 class="gate__title">윤이세 전용<br>코드 발급기</h1>
+    <p class="gate__sub">비밀번호 4자리를 눌러 주세요</p>
+    <input id="pin" class="gate__pin" type="password" inputmode="numeric" pattern="[0-9]*"
+           maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false"
+           enterkeyhint="go" aria-label="비밀번호 4자리">
+    <p class="gate__err" id="gateErr" role="alert"></p>
+    <button type="button" class="gate__btn" id="gateBtn">열기</button>
+    <p class="gate__foot">나영 님만 쓰는 페이지예요.<br>비밀번호는 이 화면에서만 확인해요.</p>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+
+  <header class="head">
+    <div class="head__bar"><p class="head__eyebrow">YOONISE · PRIVATE</p><button type="button" class="lockbtn" id="lockNow" aria-label="잠그기">🔒 잠그기</button></div>
+    <h1 class="head__title">개인 전용 코드<br>발급기</h1>
+    <p class="head__sub">나영 님만 쓰는 페이지예요. 이 주소는 손님에게 보내지 말고, 만든 코드만 카톡으로 전해 주세요.<br>만들어지는 코드는 <b>6자리</b>(예: D21744) — 손님 사주(생년월일·성별)에서만 열립니다.</p>
+  </header>
+
+  <section class="card">
+    <h2 class="card__title">① 손님 정보</h2>
+
+    <span class="lb">달력</span>
+    <div class="seg" id="calSeg" role="group" aria-label="양력·음력">
+      <button type="button" class="is-on" data-cal="solar">양력</button>
+      <button type="button" data-cal="lunar">음력</button>
+    </div>
+    <label class="check" id="leapRow" hidden>
+      <input type="checkbox" id="leap">
+      <span>윤달(閏月)에 태어났어요</span>
+    </label>
+
+    <span class="lb">생년월일</span>
+    <div class="row">
+      <select id="year" aria-label="출생 연도"></select>
+      <select id="month" aria-label="출생 월"></select>
+      <select id="day" aria-label="출생 일"></select>
+    </div>
+
+    <span class="lb">성별</span>
+    <div class="chips" id="genderChips" role="group" aria-label="성별">
+      <button type="button" class="chip" data-gender="F">여성</button>
+      <button type="button" class="chip" data-gender="M">남성</button>
+    </div>
+
+    <span class="lb">상품</span>
+    <div class="prods" id="prods" role="group" aria-label="상품">
+      <button type="button" class="prod" data-tier="pass">
+        <span><span class="prod__l">🎟️ 1년 패스</span><span class="prod__s">달력 전체 + 1년 수호 부적</span></span>
+        <span class="prod__p">P</span>
+      </button>
+      <button type="button" class="prod" data-tier="allinone">
+        <span><span class="prod__l">👑 올인원</span><span class="prod__s">패스 + 매일 부적 + 액운 태우기 무제한</span></span>
+        <span class="prod__p">A</span>
+      </button>
+      <button type="button" class="prod" data-tier="diary">
+        <span><span class="prod__l">✨ 성찰 에디션</span><span class="prod__s">올인원 + 365일 1줄 성찰 다이어리</span></span>
+        <span class="prod__p">D</span>
+      </button>
+    </div>
+
+    <p class="err" id="err" role="alert" hidden></p>
+    <button type="button" class="go" id="makeBtn">코드 만들기</button>
+  </section>
+
+  <section class="card out" id="outCard" hidden>
+    <h2 class="card__title">② 완성된 코드</h2>
+    <p class="note" style="margin:0 0 8px">손님께는 <b>6자리</b>만 카톡으로 보내 주세요. 손님 사주(생년월일·성별)에서만 열립니다.</p>
+    <p class="out__who" id="outWho"></p>
+    <div class="code" id="outCode"></div>
+    <p class="out__meta" id="outMeta"></p>
+    <div class="btns">
+      <button type="button" class="primary" id="copyCode">코드 복사</button>
+      <button type="button" id="copyAll">안내 문구까지 복사</button>
+    </div>
+    <p class="msg" id="outMsg"></p>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">최근 발급 (이 기기에만 저장)</h2>
+    <ul class="list" id="hist"></ul>
+    <p class="note" id="histEmpty">아직 발급한 코드가 없어요.</p>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">받은 코드 확인</h2>
+    <p class="note" style="margin:0">6자리 코드는 위 <b>생년월일·성별</b>을 먼저 고른 뒤 확인해 주세요.</p>
+    <div class="check2">
+      <input id="checkCode" type="text" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="예: A73914 (또는 예전 18자리)">
+      <button type="button" id="checkBtn">확인</button>
+    </div>
+    <p class="out__meta" id="checkOut"></p>
+  </section>
+
+  <p class="foot">윤이세사주 · 나만 보는 발급기<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+</div>
+
+<script src="../vendor/lunar.js?v=20261121k"></script>
+<script src="../assets/manse.js?v=20261121k"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── 달력(assets/calendar.js)과 반드시 같은 값·같은 계산 ─────────────────
+     기본 코드는 6자리 — 등급 글자(P/A/D) + 숫자 5자리.  예) D21744
+     숫자는 손님의 양력 생년월일(YYMMDD) + 성별 + CODE_SALT 로 계산한다.
+     (2026-11-21 이전의 18자리 코드 YS-P-791025F-K7QM3 도 계속 열린다 — 호환용으로 계산기를 남겨 둔다.) */
+  var CODE_SALT = 'yoonise-2027-timing-9f3a';
+  var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary' };
+  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D' };
+  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
+
+  function fnv1a(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+  }
+  function codeSign(letter, ymd, gender) {
+    var base = CODE_SALT + '|' + letter + '|' + ymd + '|' + gender;
+    var h1 = fnv1a(base), h2 = fnv1a(base + '#2');
+    var n = h1 % 28629151;
+    var out = '';
+    for (var i = 0; i < 5; i++) {
+      out += CODE_ALPHA.charAt((n % 31 + ((h2 >>> (i * 3)) & 31)) % 31);
+      n = Math.floor(n / 31);
+    }
+    return out;
+  }
+  function mix32(h) {
+    h = h >>> 0;
+    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+  /** 6자리 간단 코드의 숫자 5자리 — 10000~99999 (앞자리 0 이 나오지 않는다) */
+  function codeDigits(letter, ymd, gender) {
+    var base = CODE_SALT + '|6|' + letter + '|' + ymd + '|' + gender;
+    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#6d')) % 90000);
+  }
+  /** 6자리 간단 코드 — 예) D21744 */
+  function makeCode(letter, ymd, gender) {
+    return letter + codeDigits(letter, ymd, gender);
+  }
+  function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
+  function pad2(v) { var n = Number(v) || 0; return (n < 10 ? '0' : '') + n; }
+  function ownerLabel(ymd, gender) {
+    var yy = Number(ymd.slice(0, 2)), mm = Number(ymd.slice(2, 4)), dd = Number(ymd.slice(4, 6));
+    var thisYY = new Date().getFullYear() % 100;
+    var year = yy <= thisYY ? 2000 + yy : 1900 + yy;
+    return year + '년 ' + mm + '월 ' + dd + '일 · ' + (gender === 'M' ? '남성' : '여성');
+  }
+
+  var $ = function (s) { return document.querySelector(s); };
+  var state = { cal: 'solar', gender: '', tier: 'diary', solar: null, lunar: null, code: null };
+
+  /* ── 생년월일 선택 ─────────────────────────────── */
+  function fillDays() {
+    var y = $('#year').value, m = $('#month').value, max = 31;
+    if (y && m) {
+      max = new Date(Number(y), Number(m), 0).getDate();
+      if (state.cal === 'lunar') max = 30;
+    }
+    var cur = $('#day').value, html = '<option value="">일</option>';
+    for (var d = 1; d <= max; d++) html += '<option value="' + d + '">' + d + '일</option>';
+    $('#day').innerHTML = html;
+    if (cur && Number(cur) <= max) $('#day').value = cur;
+  }
+  function init() {
+    var nowY = new Date().getFullYear(), html = '<option value="">년</option>';
+    for (var y = nowY; y >= 1940; y--) html += '<option value="' + y + '">' + y + '년</option>';
+    $('#year').innerHTML = html;
+    html = '<option value="">월</option>';
+    for (var m = 1; m <= 12; m++) html += '<option value="' + m + '">' + m + '월</option>';
+    $('#month').innerHTML = html;
+    fillDays();
+    $('#month').addEventListener('change', fillDays);
+
+    $('#calSeg').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-cal]'); if (!b) return;
+      state.cal = b.dataset.cal;
+      Array.prototype.forEach.call($('#calSeg').children, function (c) {
+        c.classList.toggle('is-on', c === b);
+      });
+      $('#leapRow').hidden = state.cal !== 'lunar';
+      fillDays();
+    });
+    $('#genderChips').addEventListener('click', function (e) {
+      var b = e.target.closest('.chip'); if (!b) return;
+      state.gender = b.dataset.gender;
+      Array.prototype.forEach.call($('#genderChips').children, function (c) {
+        c.classList.toggle('is-on', c === b);
+      });
+    });
+    $('#prods').addEventListener('click', function (e) {
+      var b = e.target.closest('.prod'); if (!b) return;
+      state.tier = b.dataset.tier;
+      Array.prototype.forEach.call($('#prods').children, function (c) {
+        c.classList.toggle('is-on', c === b);
+      });
+    });
+    Array.prototype.forEach.call($('#prods').children, function (c) {
+      c.classList.toggle('is-on', c.dataset.tier === state.tier);
+    });
+
+    $('#makeBtn').addEventListener('click', make);
+    $('#copyCode').addEventListener('click', function () { copy(state.code ? state.code.code : '', '코드를 복사했어요'); });
+    $('#copyAll').addEventListener('click', function () { copy(guideText(), '안내 문구까지 복사했어요'); });
+    $('#checkBtn').addEventListener('click', checkCode);
+    $('#checkCode').addEventListener('keydown', function (e) { if (e.key === 'Enter') checkCode(); });
+
+    renderHist();
+  }
+
+  /* ── 코드 만들기 ──────────────────────────────── */
+  function make() {
+    var err = $('#err');
+    err.hidden = true;
+    var y = Number($('#year').value), m = Number($('#month').value), d = Number($('#day').value);
+    if (!y || !m || !d) { err.hidden = false; err.textContent = '생년월일을 모두 골라 주세요.'; return; }
+    if (!state.gender) { err.hidden = false; err.textContent = '성별을 골라 주세요. 코드가 성별까지 묶여 있어요.'; return; }
+    if (!state.tier) { err.hidden = false; err.textContent = '상품을 골라 주세요.'; return; }
+
+    var res;
+    try {
+      res = window.Manse.compute({
+        gender: state.gender, calendar: state.cal, y: y, m: m, d: d, leap: $('#leap').checked,
+        timeKnown: false, region: 'seoul', trueSolar: false, dst: false, ziRule: '23'
+      });
+    } catch (e) {
+      err.hidden = false;
+      err.textContent = e && e.message ? e.message : '생년월일을 다시 확인해 주세요.';
+      return;
+    }
+    var s = res.solar;
+    var ymd = String(s.y).slice(-2) + pad2(s.m) + pad2(s.d);
+    var letter = CODE_LETTER_OF_TIER[state.tier];
+    state.solar = s;
+    state.lunar = res.lunar || null;
+    state.code = {
+      code: makeCode(letter, ymd, state.gender), tier: state.tier, ymd: ymd, gender: state.gender,
+      solar: s, lunar: state.lunar, calIn: state.cal, leapIn: $('#leap').checked
+    };
+
+    $('#outCard').hidden = false;
+    $('#outWho').innerHTML = '손님 사주 · <b>' + ownerLabel(ymd, state.gender) + '</b>';
+    $('#outCode').textContent = state.code.code;
+
+    var meta = '양력 ' + s.y + '.' + pad2(s.m) + '.' + pad2(s.d);
+    if (res.lunar) meta += ' (음력 ' + (res.lunar.leap ? '윤' : '') + res.lunar.m + '.' + res.lunar.d + ')';
+    meta += ' · ' + (state.gender === 'M' ? '남성' : '여성') + ' · ' + TIER_NAME[state.tier];
+    meta += '<br>이 코드는 <b>이 생년월일·성별 사주에서만</b> 열려요. 다른 사주를 넣으면 잠깁니다.';
+    if (state.cal === 'lunar') meta += '<br>음력으로 넣으셨어도 달력에는 양력 ' + s.y + '.' + pad2(s.m) + '.' + pad2(s.d) + ' 사주로 넣으면 열려요.';
+    $('#outMeta').innerHTML = meta;
+    $('#outMsg').textContent = '';
+    saveHist(state.code);
+    $('#outCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /* ── 카톡에 붙일 안내 문구 ─────────────────────── */
+  function guideText() {
+    var c = state.code;
+    if (!c) return '';
+    return [
+      '안녕하세요, 윤이세입니다.',
+      TIER_NAME[c.tier] + ' 결제 확인됐어요. 감사합니다!',
+      '',
+      '입장 코드: ' + c.code + '  (6자리)',
+      '→ ' + ownerLabel(c.ymd, c.gender) + ' 사주 전용 코드예요.',
+      '',
+      '1) 캘린더 열기: https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/',
+      '2) 생년월일·성별을 넣고 "내 타이밍 캘린더 열기"',
+      '3) 달력 아래 🔑 입장 코드 입력에 위 6자리를 넣고 [열기]',
+      '',
+      '코드는 그 생년월일·성별 사주에서만 열립니다. 다른 분 사주로는 열리지 않아요.',
+      '궁금한 점은 이 채팅으로 편하게 말씀해 주세요.'
+    ].join('\n');
+  }
+
+  function copy(text, okMsg) {
+    if (!text) return;
+    var done = function (ok) { $('#outMsg').textContent = ok ? okMsg : '복사가 막혀 있어요 — 길게 눌러 직접 복사해 주세요.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(text, done); });
+    } else {
+      fallback(text, done);
+    }
+  }
+  function fallback(text, done) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      done(!!ok);
+    } catch (e) { done(false); }
+  }
+
+  /* ── 최근 발급 목록 (이 브라우저에만) ───────────── */
+  var HIST_KEY = 'yoonise.issuer.hist.v1';
+  function loadHist() {
+    try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch (e) { return []; }
+  }
+  function saveHist(c) {
+    var list = loadHist();
+    list = list.filter(function (x) { return x.code !== c.code; });
+    list.unshift({ code: c.code, tier: c.tier, ymd: c.ymd, gender: c.gender, at: new Date().toISOString() });
+    list = list.slice(0, 12);
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(list)); } catch (e) {}
+    renderHist();
+  }
+  function renderHist() {
+    var list = loadHist(), ul = $('#hist');
+    $('#histEmpty').hidden = !!list.length;
+    ul.innerHTML = list.map(function (x) {
+      return '<li><span class="l-code">' + x.code + '</span>' +
+        '<span class="l-who">' + ownerLabel(x.ymd, x.gender) + ' · ' + TIER_NAME[x.tier] + '</span>' +
+        '<button type="button" data-copy="' + x.code + '">복사</button></li>';
+    }).join('');
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copy]');
+    if (!b) return;
+    copy(b.getAttribute('data-copy'), '코드를 복사했어요');
+  });
+
+  /* ── 받은 코드 확인 ──────────────────────────────
+     6자리 코드에는 사주가 적혀 있지 않아, 위에서 고른 생년월일·성별로 숫자를 다시 계산해 본다.
+     예전 18자리 코드는 코드 안에 사주가 들어 있어 그대로 확인된다. */
+  function checkCode() {
+    var out = $('#checkOut');
+    var n = normCode($('#checkCode').value);
+    if (!n) { out.innerHTML = '코드를 넣어 주세요. (예: A73914)'; return; }
+
+    var legacy = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
+    if (legacy) {
+      if (codeSign(legacy[1], legacy[2], legacy[3]) !== legacy[4]) {
+        out.innerHTML = '❌ 예전 18자리 코드의 서명이 맞지 않아요. 코드를 다시 확인해 주세요.';
+        return;
+      }
+      out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[legacy[1]]] + '</b> · ' + ownerLabel(legacy[2], legacy[3]) + ' 전용<br>' +
+        '예전 18자리 형식이지만 달력에서는 그대로 열려요. 손님 사주(생년월일·성별)가 이와 같아야 열립니다.';
+      return;
+    }
+
+    var simple = /^([PAD])(\d{5})$/.exec(n);
+    if (!simple) {
+      out.innerHTML = '❌ 6자리 코드(P·A·D 한 글자 + 숫자 5자리) 또는 예전 18자리 코드를 넣어 주세요.';
+      return;
+    }
+    var y = Number($('#year').value), m = Number($('#month').value), d = Number($('#day').value);
+    if (!y || !m || !d || !state.gender) {
+      out.innerHTML = 'ℹ️ 6자리 코드는 위에서 <b>생년월일·성별</b>을 먼저 골라야 확인할 수 있어요. (코드에 사주가 적혀 있지 않아서요)';
+      return;
+    }
+    var solar;
+    try {
+      var res = window.Manse.compute({
+        gender: state.gender, calendar: state.cal, y: y, m: m, d: d, leap: $('#leap').checked,
+        timeKnown: false, region: 'seoul', trueSolar: false, dst: false, ziRule: '23'
+      });
+      solar = res.solar;
+    } catch (e) {
+      out.innerHTML = '❌ 생년월일을 다시 확인해 주세요.';
+      return;
+    }
+    var ymd = String(solar.y).slice(-2) + pad2(solar.m) + pad2(solar.d);
+    if (codeDigits(simple[1], ymd, state.gender) !== simple[2]) {
+      out.innerHTML = '❌ 이 사주(' + ownerLabel(ymd, state.gender) + ')의 <b>' + TIER_NAME[CODE_TIER_OF_LETTER[simple[1]]] + '</b> 코드가 아니에요.';
+      return;
+    }
+    out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[simple[1]]] + '</b> · ' + ownerLabel(ymd, state.gender) + ' 전용<br>' +
+      '코드가 맞아요. 손님 사주(생년월일·성별)가 이와 같아야 달력에서 열립니다.';
+  }
+
+  init();
+})();
+</script>
+
+<script>
+(function () {
+  'use strict';
+  /* ── 비밀번호는 소스에 평문으로 두지 않는다 — SHA-256 해시로만 비교 ──
+     PIN_HASH = SHA-256('yoonise:key:v1|' + 비밀번호)
+     crypto.subtle 이 없는 곳(file:// 로 열 때 등)을 위해 같은 SHA-256 을 순수 JS 로도 계산한다. */
+  var PIN_PREFIX = 'yoonise:key:v1|';
+  var PIN_HASH = 'b7eaee75f69d8bedb809fa1796681cd65af08c453fb41106e806ff1b6656e003';
+  var PIN_LEN = 4;
+  var SKEY = 'yoonise.key.open.v1';
+
+  function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+  function sha256Words(bytes) {
+    var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+             0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+             0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+             0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+             0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+             0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+             0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+             0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var msg = [], i, t;
+    for (i = 0; i < bytes.length; i++) msg.push(bytes[i] & 255);
+    var bitLen = bytes.length * 8;
+    msg.push(0x80);
+    while (msg.length % 64 !== 56) msg.push(0);
+    var hi = Math.floor(bitLen / 4294967296) >>> 0, lo = bitLen >>> 0;
+    msg.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255);
+    msg.push((lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+    var w = new Array(64);
+    for (i = 0; i < msg.length; i += 64) {
+      for (t = 0; t < 16; t++) {
+        w[t] = (msg[i + t * 4] << 24) | (msg[i + t * 4 + 1] << 16) | (msg[i + t * 4 + 2] << 8) | msg[i + t * 4 + 3];
+      }
+      for (t = 16; t < 64; t++) {
+        var s0 = rotr(w[t - 15], 7) ^ rotr(w[t - 15], 18) ^ (w[t - 15] >>> 3);
+        var s1 = rotr(w[t - 2], 17) ^ rotr(w[t - 2], 19) ^ (w[t - 2] >>> 10);
+        w[t] = (w[t - 16] + s0 + w[t - 7] + s1) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (t = 0; t < 64; t++) {
+        var S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[t] + w[t]) | 0;
+        var S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+        var maj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + maj) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0;
+        d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    return H;
+  }
+  function toHex(words) {
+    var out = '';
+    for (var i = 0; i < words.length; i++) out += ('00000000' + (words[i] >>> 0).toString(16)).slice(-8);
+    return out;
+  }
+  function utf8Bytes(str) {
+    if (window.TextEncoder) return new TextEncoder().encode(str);
+    var out = [], i, c;
+    for (i = 0; i < str.length; i++) {
+      c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 63));
+      else out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    }
+    return new Uint8Array(out);
+  }
+  function sha256HexSync(str) { return toHex(sha256Words(utf8Bytes(str))); }
+  function sha256Hex(str) {
+    var bytes = utf8Bytes(str);
+    if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest) {
+      return window.crypto.subtle.digest('SHA-256', bytes).then(function (buf) {
+        return toHex(new Uint8Array(buf));
+      }, function () { return sha256HexSync(str); });
+    }
+    return Promise.resolve(sha256HexSync(str));
+  }
+
+  var gate = document.getElementById('gate');
+  var app = document.getElementById('app');
+  var inp = document.getElementById('pin');
+  var btn = document.getElementById('gateBtn');
+  var err = document.getElementById('gateErr');
+  var busy = false;
+
+  function openApp() {
+    gate.hidden = true;
+    document.body.classList.remove('locked');
+    app.hidden = false;
+    try { sessionStorage.setItem(SKEY, '1'); } catch (e) {}
+  }
+  function lockApp() {
+    try { sessionStorage.removeItem(SKEY); } catch (e) {}
+    app.hidden = true;
+    gate.hidden = false;
+    document.body.classList.add('locked');
+    inp.value = '';
+    err.textContent = '';
+    setTimeout(function () { try { inp.focus(); } catch (e) {} }, 60);
+  }
+  function fail() {
+    err.textContent = '비밀번호가 맞지 않아요';
+    gate.classList.remove('is-shake');
+    void gate.offsetWidth;
+    gate.classList.add('is-shake');
+    inp.value = '';
+    setTimeout(function () { try { inp.focus(); } catch (e) {} }, 30);
+  }
+  function submit() {
+    var v = (inp.value || '').replace(/\D/g, '');
+    if (v.length !== PIN_LEN || busy) return;
+    busy = true;
+    btn.disabled = true;
+    sha256Hex(PIN_PREFIX + v).then(function (h) {
+      busy = false;
+      btn.disabled = false;
+      if (h === PIN_HASH) openApp(); else fail();
+    }, function () {
+      busy = false;
+      btn.disabled = false;
+      fail();
+    });
+  }
+
+  inp.addEventListener('input', function () {
+    inp.value = inp.value.replace(/\D/g, '').slice(0, PIN_LEN);
+    err.textContent = '';
+    if (inp.value.length === PIN_LEN) submit();
+  });
+  inp.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); submit(); }
+  });
+  btn.addEventListener('click', submit);
+  var lockNow = document.getElementById('lockNow');
+  if (lockNow) lockNow.addEventListener('click', lockApp);
+
+  var already = false;
+  try { already = sessionStorage.getItem(SKEY) === '1'; } catch (e) {}
+  if (already) openApp();
+  else setTimeout(function () { try { inp.focus(); } catch (e) {} }, 150);
+
+  /* 확인용(콘솔 테스트) — 해시 계산기만 내보낸다. 비밀번호는 어디에도 없다. */
+  window.YoonKey = { sha256Hex: sha256Hex, sha256HexSync: sha256HexSync, pinHash: PIN_HASH };
+})();
+</script>
+
+</body>
+</html>
