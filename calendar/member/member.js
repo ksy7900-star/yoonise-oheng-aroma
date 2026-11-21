@@ -160,7 +160,7 @@
       if (!lib) {
         state.db = 'off';
         var hint = $('#loginHint');
-        if (hint) hint.textContent = '로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요. (케미 비교는 그대로 쓸 수 있어요.)';
+        if (hint) hint.textContent = '로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요. (케미 테스트는 그대로 쓸 수 있어요.)';
         var btn = $('#loginBtn');
         if (btn) { btn.classList.add('is-busy'); btn.disabled = true; }
         renderAuth(); renderLadder(); renderInvite();
