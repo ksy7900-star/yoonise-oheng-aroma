@@ -772,7 +772,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 
 /* ── 2027 1년 대표 수호 부적 — 부적 패(牌) 배너 ─────── */
 .talis-banner {
-  position: relative;
+  position: relative; overflow: hidden;
   display: flex; align-items: center; gap: 16px;
   margin-top: 14px; padding: 18px 16px 17px 15px;
   background:
@@ -1235,6 +1235,8 @@ body.is-modal-open { overflow: hidden; }
 }
 .talis-showcase__obj { position: relative; display: inline-block; }
 .talis-showcase .talis-plaque { font-size: 23px; position: relative; z-index: 1; }
+/* 확대 팝업에서는 부적이 크니 오라도 조금만 번지게 — 화면을 덮지 않게 (2026-11-22) */
+.talis-showcase .talis-plaque__aura { filter: blur(16px) saturate(1.3); opacity: .46; }
 .talis-showcase .talis-plaque__sheet { animation: talisBreathLg 6s ease-in-out infinite; }
 .talis-showcase__waves {
   position: absolute; left: 0; right: 0; top: 2.4em; bottom: 0;
@@ -4146,3 +4148,272 @@ body.is-result .installbar { margin-top: 12px; }
   font-size: 10.5px; line-height: 1.55; color: #0F766E;
   letter-spacing: -.01em; word-break: keep-all;
 }
+
+/* ==========================================================
+   2026-11-22 · 4대 개편 — 4칸 바로가기 · 긴급 개운템 카드 ·
+   케미·초대 배너 · 결제자 카드 압축 · 부적 에너지
+   ========================================================== */
+
+/* ── 🧭 4칸 바로가기 바 (스크롤해도 위에 붙어 있음) ─────────── */
+.quickbar {
+  position: sticky; top: 0; z-index: 60;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;
+  margin: 6px -6px 2px; padding: 6px;
+  background: rgba(250, 251, 253, .88);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid rgba(15, 23, 42, .07);
+}
+.quickbar__b {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 8px 2px 7px;
+  border: 1px solid rgba(15, 23, 42, .085); border-radius: 12px;
+  background: #FFFFFF;
+  font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: -.03em;
+  color: var(--ink-2); text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, background .18s ease, border-color .18s ease;
+}
+.quickbar__b:active { transform: scale(.96); background: #F8FAFC; }
+.quickbar__b[data-jump="burn"] { color: #9A3412; border-color: rgba(234, 88, 12, .22); background: #FFF7ED; }
+.quickbar__b[data-jump="care"] { color: #854D0E; border-color: rgba(180, 83, 9, .24); background: #FFFBEB; }
+a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background: #F5F3FF; }
+.quickbar__ic { font-size: 16px; line-height: 1.1; }
+.quickbar__t { white-space: nowrap; }
+@media (max-width: 360px) {
+  .quickbar__b { font-size: 9.5px; padding: 7px 1px 6px; }
+  .quickbar__ic { font-size: 14.5px; }
+}
+
+/* 바로가기로 이동한 자리를 한 번 반짝 — 내가 어디로 왔는지 알게 */
+#calGrid, #calFocus, #burnCard, #careCard { scroll-margin-top: 74px; }
+.is-jump-flash { animation: jumpFlash 1.15s ease-out; }
+@keyframes jumpFlash {
+  0% { box-shadow: 0 0 0 0 rgba(180, 83, 9, .38); }
+  40% { box-shadow: 0 0 0 4px rgba(180, 83, 9, .28); }
+  100% { box-shadow: 0 0 0 0 rgba(180, 83, 9, 0); }
+}
+
+/* ── ⚡ 긴급 개운템 카드 ──────────────────────────────── */
+.card--care {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(180, 83, 9, .10), transparent 62%),
+    #FFFDF8;
+  border: 1px solid rgba(180, 83, 9, .22);
+}
+.carecard__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.carecard__eyebrow {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  color: #B45309;
+}
+.carecard__price {
+  flex: none; text-align: right; font-size: 10px; font-weight: 700; line-height: 1.45;
+  color: #92400E;
+}
+.carecard__sub { margin-top: 8px; font-size: 12px; line-height: 1.8; color: var(--ink-2); }
+.carecard__items { display: flex; gap: 6px; margin-top: 12px; }
+.carecard__it {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 9px 2px 8px; border-radius: 12px;
+  background: rgba(255, 255, 255, .78); border: 1px solid rgba(180, 83, 9, .14);
+  font-size: 10px; font-weight: 600; letter-spacing: -.02em; color: var(--ink-2);
+  text-align: center; line-height: 1.25; word-break: keep-all;
+}
+.carecard__it b { font-size: 17px; line-height: 1; }
+.carecard__cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; margin-top: 12px; padding: 13px 16px;
+  border: 0; border-radius: 14px;
+  background: linear-gradient(135deg, #B45309, #92400E);
+  color: #FFF8EC; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: -.02em;
+  box-shadow: 0 10px 20px -12px rgba(146, 64, 14, .8);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, filter .18s ease;
+}
+.carecard__cta b { font-size: 12.5px; font-weight: 800; color: #FDE68A; }
+.carecard__cta:active { transform: translateY(1px); filter: brightness(.96); }
+
+/* ── ✨ 케미·초대 배너 ────────────────────────────────── */
+.chemibanner {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 14px; padding: 16px 16px 15px;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(124, 58, 237, .16), transparent 60%),
+    radial-gradient(90% 120% at 0% 100%, rgba(201, 162, 101, .18), transparent 62%),
+    #FBF8FF;
+  border: 1px solid rgba(124, 58, 237, .18);
+  box-shadow: var(--shadow);
+}
+.chemibanner__b { min-width: 0; flex: 1 1 auto; }
+.chemibanner__eyebrow {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; color: #7C3AED;
+}
+.chemibanner__t {
+  margin-top: 5px; font-family: var(--serif); font-size: 14.5px; line-height: 1.5;
+  letter-spacing: -.02em; color: var(--ink); text-wrap: balance;
+}
+.chemibanner__d { margin-top: 7px; font-size: 10px; line-height: 1.6; color: var(--ink-2); }
+.chemibanner__go {
+  flex: none; display: inline-flex; align-items: center; gap: 4px;
+  padding: 10px 13px; border-radius: 12px;
+  background: #7C3AED; color: #FFFFFF; text-decoration: none;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap;
+  box-shadow: 0 10px 18px -12px rgba(124, 58, 237, .9);
+}
+.chemibanner__go span { font-size: 12px; opacity: .85; }
+.chemibanner__go:active { transform: translateY(1px); }
+@media (max-width: 430px) {
+  .chemibanner { flex-direction: column; align-items: stretch; gap: 11px; text-align: left; padding: 15px 15px 14px; }
+  .chemibanner__t { font-size: 14px; }
+  .chemibanner__go { justify-content: center; padding: 11px 13px; font-size: 12px; }
+}
+
+/* ── 결제자용 CTA — 초대 할인 한 줄 카드 ──────────────── */
+.cta__paid {
+  margin-top: 12px; padding: 13px 14px 12px;
+  border-radius: 14px;
+  background: rgba(241, 245, 249, .09);
+  border: 1px dashed rgba(241, 245, 249, .28);
+}
+.cta__paid-t {
+  font-size: 12.5px; font-weight: 600; letter-spacing: -.02em; line-height: 1.5;
+  color: rgba(241, 245, 249, .84); word-break: keep-all;
+}
+.cta__paid-t span { font-size: 14px; margin-right: 3px; }
+.cta__paid-t b { font-weight: 800; color: #FDE68A; }
+.cta__paid-d {
+  margin-top: 5px; font-size: 10.5px; line-height: 1.6;
+  color: rgba(241, 245, 249, .62); letter-spacing: -.01em;
+}
+.cta__paid-go {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  margin-top: 10px; padding: 9px 14px; border-radius: 999px;
+  background: rgba(253, 230, 138, .16); border: 1px solid rgba(253, 230, 138, .38);
+  color: #FDE68A; text-decoration: none;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.02em;
+}
+.cta__paid-go:active { transform: translateY(1px); }
+/* 결제 후 4가지 카드 압축 — 숨긴 티어 카드를 만들지 않았다 */
+.cta__steps .shop-btn[hidden] { display: none; }
+.cta__steps.is-compact .shop-btn { padding: 12px 14px; }
+
+/* ── 🔮 대표 수호 부적 — 오행 오라 · 금박 홀로그램 · 기운 입자 ──────
+   --tp-halo(부족한 오행 색)는 .talis-plaque--목/화/토/금/수 가 정한다.
+   목 초록 · 화 주홍 · 토 황금 · 금 은백 · 수 파랑 */
+.talis-plaque__aura {
+  position: absolute; left: 50%; top: 2.4em;
+  width: 10.6em; height: 14.2em;
+  transform: translateX(-50%); pointer-events: none;
+  border-radius: 1em;
+  background: var(--tp-halo);
+  filter: blur(1.05em) saturate(1.35);
+  opacity: .5;
+  animation: talisAuraBreath 6.4s ease-in-out infinite;
+  z-index: 0;
+}
+.talis-plaque__aura::after {
+  content: ""; position: absolute; inset: .35em;
+  border-radius: .8em;
+  background: var(--tp-halo);
+  filter: blur(.35em) brightness(1.15);
+  opacity: .55;
+}
+@keyframes talisAuraBreath {
+  0%, 100% { opacity: .34; transform: translateX(-50%) scale(.97); }
+  50% { opacity: .78; transform: translateX(-50%) scale(1.04); }
+}
+.talis-plaque__holo {
+  position: absolute; inset: 2.4em 0 0; pointer-events: none; z-index: 3;
+  border-radius: .34em; overflow: hidden; mix-blend-mode: screen;
+}
+.talis-plaque__holo::before {
+  content: ""; position: absolute; inset: -30%;
+  background: linear-gradient(114deg,
+    transparent 40%, rgba(255, 246, 220, .10) 46%,
+    rgba(255, 250, 232, .44) 50%, rgba(255, 246, 220, .10) 54%, transparent 60%);
+  transform: translate(-120%, 0) rotate(0deg);
+  animation: talisHolo 9.5s cubic-bezier(.4, 0, .25, 1) infinite;
+}
+@keyframes talisHolo {
+  0%, 46% { transform: translate(-120%, 0); }
+  78%, 100% { transform: translate(120%, 0); }
+}
+/* 기운 입자 — 부적 아래에서 금가루가 천천히 피어오른다 */
+.talis-plaque__motes {
+  position: absolute; left: 0; right: 0; top: 2.4em; bottom: -.6em;
+  pointer-events: none; z-index: 4; overflow: visible;
+}
+.talis-plaque__motes i {
+  position: absolute; bottom: 6%;
+  width: .28em; height: .28em; border-radius: 50%;
+  background: radial-gradient(circle, #FFF3CE 0%, rgba(250, 229, 172, .85) 45%, rgba(250, 229, 172, 0) 72%);
+  opacity: 0;
+  animation: talisMote 7.2s linear infinite;
+}
+.talis-plaque__motes i:nth-child(1) { left: 14%; animation-delay: 0s; }
+.talis-plaque__motes i:nth-child(2) { left: 30%; width: .2em; height: .2em; animation-delay: 1.5s; }
+.talis-plaque__motes i:nth-child(3) { left: 46%; animation-delay: 3.1s; }
+.talis-plaque__motes i:nth-child(4) { left: 62%; width: .22em; height: .22em; animation-delay: 4.4s; }
+.talis-plaque__motes i:nth-child(5) { left: 78%; animation-delay: 5.6s; }
+.talis-plaque__motes i:nth-child(6) { left: 88%; width: .18em; height: .18em; animation-delay: 2.4s; }
+.talis-plaque__motes i:nth-child(7) { left: 22%; width: .17em; height: .17em; animation-delay: 6.3s; }
+@keyframes talisMote {
+  0% { opacity: 0; transform: translateY(0) scale(.7); }
+  18% { opacity: .85; }
+  70% { opacity: .55; }
+  100% { opacity: 0; transform: translateY(-11.5em) scale(1.05); }
+}
+/* 톡 눌렀을 때 — 오라가 한 번 크게 번쩍 퍼진다 */
+.talis-plaque.is-charged .talis-plaque__aura { animation: talisAuraBurst 1.15s cubic-bezier(.2, .8, .3, 1); }
+@keyframes talisAuraBurst {
+  0% { opacity: .5; transform: translateX(-50%) scale(1); }
+  28% { opacity: 1; transform: translateX(-50%) scale(1.14); }
+  100% { opacity: .5; transform: translateX(-50%) scale(1); }
+}
+.talis-plaque.is-charged .talis-plaque__sheet { animation: talisChargeUp 1.1s cubic-bezier(.2, 1, .3, 1); }
+@keyframes talisChargeUp {
+  0% { transform: scale(1); }
+  26% { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+.talis-plaque__burst {
+  position: absolute; left: 50%; top: 2.4em; width: 9em; height: 12.6em;
+  transform: translate(-50%, 0); pointer-events: none; z-index: 1;
+  border-radius: 50%; border: 1px solid var(--tp-halo); opacity: 0;
+}
+.talis-plaque.is-charged .talis-plaque__burst { animation: talisBurstRing 1.1s ease-out; }
+@keyframes talisBurstRing {
+  0% { opacity: .85; transform: translate(-50%, 0) scale(.86); }
+  100% { opacity: 0; transform: translate(-50%, 0) scale(2.05); }
+}
+/* 부적 아래에 뜨는 문구 */
+.talis-banner__reveal {
+  margin: 12px 0 0; text-align: center; text-wrap: balance;
+  font-family: var(--serif); font-size: 14px; line-height: 1.6; letter-spacing: -.02em;
+  color: #8E6B2C;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.talis-banner__reveal.is-on { opacity: 1; transform: translateY(0); }
+.talis-banner__tapnote {
+  display: block; margin-top: 8px; text-align: center;
+  font-size: 10px; color: var(--mute); letter-spacing: -.01em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .talis-plaque__aura, .talis-plaque__holo::before, .talis-plaque__motes i,
+  .talis-plaque__sheet, .talis-plaque__char { animation: none !important; }
+  .talis-plaque__motes { display: none; }
+}
+
+/* 확대 팝업 안에서 톡 눌렀을 때 뜨는 문구 */
+.talis-phrase {
+  margin: 12px auto 0; max-width: 300px; text-align: center; text-wrap: balance;
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.65; letter-spacing: -.02em;
+  color: #8E6B2C;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.talis-phrase.is-on { opacity: 1; transform: translateY(0); }

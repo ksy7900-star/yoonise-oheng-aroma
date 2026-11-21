@@ -72,6 +72,56 @@
     { n: 5, title: '2개월 패스 무료', sub: '두 달 전체를 열어 드려요' },
     { n: 10, title: '3개월 패스 무료', sub: '석 달을 통째로 열어 드려요' }
   ];
+
+  /* ── 결제자용 4단 (2026-11-22 김나영 님 확정) ─────────────────
+     이미 달력을 산 사람에겐 기간 보상이 의미가 없다 — 1:1 상담으로 넘긴다.
+     · 1명  1:1 상담 5,000원 할인권 (원포인트·종합사주)
+     · 3명  다음 단계 무료 업그레이드 (성찰 에디션 보유자는 상담 10,000원 할인권)
+     · 5명  원포인트 리딩 50% 할인권
+     · 10명 종합 사주 컨설팅 50% 할인권 */
+  var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };
+  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
+  var UNLOCK_KEY = 'yoonise.timing.unlock.v2';   // 달력(/calendar/)이 코드를 열 때 쓰는 그 키
+
+  function ladderFor(tier) {
+    if (!tier) return LADDER;
+    var third = tier === 'diary'
+      ? { n: 3, title: '1:1 상담 10,000원 할인권', sub: '원포인트·종합사주' }
+      : { n: 3, title: '다음 단계 무료 업그레이드', sub: tier === 'pass' ? '올인원으로 올려 드려요' : '성찰 에디션으로 올려 드려요' };
+    return [
+      { n: 1, title: '1:1 상담 5,000원 할인권', sub: '원포인트·종합사주' },
+      third,
+      { n: 5, title: '원포인트 리딩 50% 할인권', sub: '49,000원 → 24,500원' },
+      { n: 10, title: '종합 사주 컨설팅 50% 할인권', sub: '100,000원 → 50,000원' }
+    ];
+  }
+
+  /** 달력이 이 기기에서 연 상품 등급 — 코드가 실제로 열린 기록이 있을 때만 인정한다 */
+  function readLocalTier() {
+    try {
+      var raw = localStorage.getItem(UNLOCK_KEY) || '';
+      var o = raw ? JSON.parse(raw) : null;
+      if (!o || typeof o !== 'object') return '';
+      if (!o.code && !o.phone && !o.ymd) return '';        // 코드 없이 등급만 심어진 값은 믿지 않는다
+      return TIER_RANK[o.tier] ? o.tier : '';
+    } catch (e) { return ''; }
+  }
+
+  /** 회원 DB 의 등급을 이 기기 달력 기록에도 맞춰 둔다 — 코드·번호는 그대로 두고 등급만
+     (코드가 없는 빈 기록에는 심지 않는다 — 달력 잠금은 끝까지 6자리 코드가 판단한다) */
+  function syncUnlockTier(tier) {
+    if (!TIER_RANK[tier]) return;
+    try {
+      var raw = localStorage.getItem(UNLOCK_KEY) || '';
+      var o = raw ? JSON.parse(raw) : null;
+      if (!o || typeof o !== 'object') return;
+      if (!o.code && !o.phone && !o.ymd) return;
+      if (o.tier === tier) return;
+      o.tier = tier;
+      o.at = new Date().toISOString();
+      localStorage.setItem(UNLOCK_KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
   var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
   var HASHTAGS = '#타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
   var HASHTAG_LIST = ['#타이밍달력', '#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
@@ -86,6 +136,7 @@
     demo: null,            // 미리보기로 고른 숫자 (실제 값 아님)
     refPending: '',
     refFrom: '',
+    paidTier: '',           // '' | pass | allinone | diary — 결제자용 사다리 분기 (2026-11-22)
     me: { gender: '' }, you: { gender: '' },
     rel: 'friend',          // 'friend' 우정 · 'love' 사랑 (관계 칩)
     charts: null,          // { me:{...}, you:{...}, pair:{...} }
@@ -314,10 +365,24 @@
   function loadProfile() {
     if (!sb || !state.user) return;
     var uid = state.user.id;
-    sb.from('profiles')
-      .select('invite_code, nickname, avatar_url, tier, paid_until, burn_credits, referred_by')
-      .eq('id', uid).maybeSingle()
-      .then(function (r) {
+    var BASE = 'invite_code, nickname, avatar_url, tier, paid_until, burn_credits, referred_by';
+    /* paid_tier 컬럼(003 마이그레이션)이 아직 없을 수도 있다 —
+       컬럼을 넣어 보고, 없으면 예전 칸만으로 다시 읽어 화면이 깨지지 않게 한다. */
+    function run(withPaid) {
+      sb.from('profiles')
+        .select(withPaid ? BASE + ', paid_tier, paid_updated_at' : BASE)
+        .eq('id', uid).maybeSingle()
+        .then(function (r) {
+          if (withPaid && r.error && isMissingColumn(r.error)) { run(false); return; }
+          onProfile(r);
+        }, function (err) {
+          if (withPaid) { run(false); return; }
+          state.db = 'unavailable';
+          state.dbMsg = (err && err.message) || 'network';
+          renderAuth(); renderLadder(); renderInvite();
+        });
+    }
+    function onProfile(r) {
         if (r.error) {
           // 테이블이 아직 없을 때(PGRST205 / 42P01 / 404) — 화면은 그대로 두고 안내만
           state.db = 'unavailable';
@@ -329,15 +394,28 @@
           state.db = 'live';
           state.dbMsg = '';
           state.profile = r.data;
+          /* 회원 DB 의 결제 등급 → 이 화면의 사다리 분기 (2026-11-22)
+             다른 브라우저로 열어도 자기 등급에 맞는 사다리 딱 1개만 보이게. */
+          var pt = r.data.paid_tier;
+          if (TIER_RANK[pt]) {
+            state.paidTier = pt;
+            syncUnlockTier(pt);
+          } else if (!state.paidTier) {
+            state.paidTier = readLocalTier();
+          }
         }
         renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
         if (state.db === 'live') loadInviteCount();
         attachPendingRef();
-      }, function (err) {
-        state.db = 'unavailable';
-        state.dbMsg = (err && err.message) || 'network';
-        renderAuth(); renderLadder(); renderInvite();
-      });
+    }
+    run(true);
+  }
+
+  /** paid_tier 컬럼이 아직 없을 때 오는 오류인가 (42703 undefined_column / PGRST204) */
+  function isMissingColumn(err) {
+    var code = (err && err.code) || '';
+    var msg = (err && err.message) || '';
+    return code === '42703' || code === 'PGRST204' || /paid_tier|paid_updated_at/.test(msg);
   }
 
   function loadInviteCount() {
@@ -437,10 +515,11 @@
   }
   function renderLadder() {
     var cnt = effCount();
+    var LAD = ladderFor(state.paidTier);
     var nm = $('#cntNum'), nx = $('#cntNext');
     if (nm) nm.textContent = String(cnt);
     var next = null;
-    for (var i = 0; i < LADDER.length; i++) if (cnt < LADDER[i].n) { next = LADDER[i]; break; }
+    for (var i = 0; i < LAD.length; i++) if (cnt < LAD[i].n) { next = LAD[i]; break; }
     if (nx) {
       if (state.demo !== null) nx.innerHTML = '미리보기 숫자예요';
       else if (!state.user) nx.innerHTML = '로그인하면 내 숫자로 바뀌어요';
@@ -454,8 +533,9 @@
     if (fill) fill.style.width = Math.min(100, (cnt / 10) * 100) + '%';
 
     var marks = $('#railMarks');
-    if (marks && !marks.childElementCount) {
-      marks.innerHTML = LADDER.map(function (r) {
+    if (marks && marks.getAttribute('data-kind') !== (state.paidTier || 'free')) {
+      marks.setAttribute('data-kind', state.paidTier || 'free');
+      marks.innerHTML = LAD.map(function (r) {
         return '<span class="rail__mark" data-n="' + r.n + '" style="left:' + (r.n / 10 * 100) + '%">' + r.n + '</span>';
       }).join('');
     }
@@ -468,7 +548,7 @@
     var ul = $('#rungs');
     if (ul) {
       var targetN = next ? next.n : null;
-      ul.innerHTML = LADDER.map(function (r) {
+      ul.innerHTML = LAD.map(function (r) {
         var done = cnt >= r.n;
         var cls = 'rung' + (done ? ' is-done' : (r.n === targetN ? ' is-target' : ' is-locked'));
         var st = done ? '달성' : (r.n === targetN ? (r.n - cnt) + '명 남음' : '잠김');
@@ -479,6 +559,24 @@
           + '<span class="rung__state">' + esc(st) + '</span>'
           + '</li>';
       }).join('');
+    }
+
+    /* 지금 어느 사다리를 보고 있는지 한 줄로 — 두 사다리를 동시에 띄우지 않는다 (2026-11-22) */
+    var tn = $('#ladderTier');
+    if (tn) {
+      if (state.paidTier) {
+        tn.hidden = false;
+        tn.innerHTML = '🎟️ <b>' + esc(TIER_NAME[state.paidTier]) + '</b> 결제자용 사다리 — 기간 대신 1:1 상담 할인권으로 드려요';
+      } else {
+        tn.hidden = true;
+        tn.innerHTML = '';
+      }
+    }
+    var note = $('#ladderNote');
+    if (note) {
+      note.innerHTML = state.paidTier
+        ? '친구가 내 링크로 들어와 로그인하면, 그 숫자만큼 <b>1:1 상담 할인권</b>이 쌓여요. 쓸 때는 카톡으로 알려 주세요.'
+        : '이미 1년 패스를 쓰시는 분은 기간 대신 <b>원포인트 · 종합사주 1:1 상담 5,000원 할인 쿠폰</b>으로 드려요.';
     }
 
     var pv = $('#previewRow');
@@ -2509,6 +2607,7 @@
     renderRelChips();
     bindRelChips();
     prefillMe();
+    state.paidTier = readLocalTier();   // 달력에서 코드를 연 기기면 바로 결제자용 사다리로 (2026-11-22)
 
     var btn = $('#chemiBtn');
     if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); runChemin(); });

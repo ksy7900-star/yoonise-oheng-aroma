@@ -982,6 +982,79 @@
   /** 이 기기에 코드가 살아 있는가 — 코드 주인과 지금 사주가 같을 때만 '열림' */
   function tierAtLeast(t) { return !!state.unlocked && (TIER_RANK[state.tier] || 0) >= (TIER_RANK[t] || 99); }
 
+  /* ══ Supabase 등급 연동 (2026-11-22) ══════════════════════════════════
+     목적: 달력에서 코드를 열면 회원 DB(profiles.paid_tier)에도 그 상품을 적어 두어,
+           다른 브라우저로 /calendar/member/ 를 열어도 결제자용 사다리가 뜨게 한다.
+     원칙:
+       · 로그인한 적이 없는 손님(로컬에 세션 없음)은 스크립트도 받지 않고 조용히 넘어간다.
+       · 네트워크·권한·표가 없어 실패해도 화면은 localStorage 만으로 그대로 돌아간다.
+       · paid_tier 는 어디까지나 '표시용 등급'이다 — 달력 잠금 해제는 지금처럼 6자리 코드가 판단한다.
+         (RLS 가 본인 update 를 허용하므로, 이 값만으로 유료 기능을 열면 결제 우회가 된다) */
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 공개 전제 키
+  var sbLib = null, sbClient = null, sbLoading = false, sbWaiters = [];
+
+  /** 이 도메인에 Supabase 로그인 세션이 남아 있는가 (member 화면에서 카카오 로그인한 적) */
+  function hasSbSession() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (/^sb-.*-auth-token$/.test(k)) {
+          var v = localStorage.getItem(k) || '';
+          if (v && v.length > 20) return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  /** supabase-js 는 필요할 때만 한 번 받는다 (로그인한 손님만 — 본문 무게에 영향 없게) */
+  function loadSbLib(cb) {
+    if (sbLib) { cb(sbLib); return; }
+    sbWaiters.push(cb);
+    if (sbLoading) return;
+    sbLoading = true;
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.async = true;
+    s.onload = function () {
+      sbLib = window.supabase || null;
+      sbLoading = false;
+      var q = sbWaiters; sbWaiters = [];
+      q.forEach(function (f) { try { f(sbLib); } catch (e) {} });
+    };
+    s.onerror = function () {
+      sbLoading = false;
+      var q = sbWaiters; sbWaiters = [];
+      q.forEach(function (f) { try { f(null); } catch (e) {} });
+    };
+    document.head.appendChild(s);
+  }
+
+  /** 코드 해제 값을 회원 DB 에도 적어 둔다 — 실패하면 아무 일도 없다 */
+  function syncPaidTier(tier) {
+    if (!tier || !TIER_NAME[tier]) return;
+    if (!hasSbSession()) return;
+    loadSbLib(function (lib) {
+      if (!lib || !lib.createClient) return;
+      try {
+        if (!sbClient) {
+          sbClient = lib.createClient(SB_URL, SB_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+          });
+        }
+        sbClient.auth.getSession().then(function (r) {
+          var u = r && r.data && r.data.session && r.data.session.user;
+          if (!u) return;                 // 로그인 세션이 없으면 조용히
+          sbClient.from('profiles')
+            .update({ paid_tier: tier, paid_updated_at: new Date().toISOString() })
+            .eq('id', u.id)
+            .then(function () {}, function () {});
+        }, function () {});
+      } catch (e) {}
+    });
+  }
+
   /* ══ ✨ 365일 1줄 성찰 다이어리 ═══════════════════════════════════════
      · 날짜마다 다른 질문 — 5가지 기운(소통·입단속·결정·머니·리셋)별 10개, 모두 50개.
        기운 배지가 없는 잔잔한 날은 날짜 순서로 다섯 결을 돌아가며 물어본다(365일 모두 질문이 있다).
@@ -1691,10 +1764,19 @@
     var shortName = String(name).replace(/\s*부적$/, '').replace(/\s+/g, '·');
     var vfs = shortName.length > 6 ? '.63em' : '.7em';
     var tag = opt.tag ? 'button' : 'div';
+    var tapLabel = opt.action === 'talis-bless' ? ' — 오늘 기운 받기'
+      : (opt.action === 'talis-tap' ? ' — 톡 눌러 기운 받기' : ' 크게 보기');
     var attrs = opt.tag
-      ? ' type="button" data-' + (opt.action || 'talis-open') + ' aria-label="' + esc(name) + (opt.action === 'talis-bless' ? ' — 오늘 기운 받기' : ' 크게 보기') + '"'
+      ? ' type="button" data-' + (opt.action || 'talis-open') + ' aria-label="' + esc(name) + tapLabel + '"'
+      : '';
+    /* 2026-11-22 · 부적 에너지 — 부족한 오행 색 오라 · 금박 홀로그램 · 피어오르는 기운 입자 */
+    var fx = opt.fx
+      ? '<span class="talis-plaque__aura" aria-hidden="true"></span>' +
+        '<span class="talis-plaque__burst" aria-hidden="true"></span>' +
+        '<span class="talis-plaque__motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>'
       : '';
     return '<' + tag + ' class="talis-plaque talis-plaque--' + el + (opt.lg ? ' talis-plaque--lg' : '') + '"' + attrs + '>' +
+      fx +
       '<span class="talis-plaque__loop" aria-hidden="true">' + plaqueLoopArt() + '</span>' +
       '<span class="talis-plaque__sheet">' +
       plaqueSheetArt(el) +
@@ -1705,6 +1787,7 @@
       '<span class="talis-plaque__year" aria-hidden="true"><i>丁未</i></span>' +
       '<span class="talis-plaque__shine" aria-hidden="true"></span>' +
       '</span>' +
+      (opt.fx ? '<span class="talis-plaque__holo" aria-hidden="true"></span>' : '') +
       '</' + tag + '>';
   }
 
@@ -1724,13 +1807,38 @@
     var ticon = Chars ? Chars.icon(r.el, '') : '✨';
     state.repTalis = { el: r.el, name: tname, icon: ticon, who: who, why: why, ties: r.ties };
     box.innerHTML =
-      plaqueHTML(r.el, { tag: true, action: 'talis-open' }) +
+      plaqueHTML(r.el, { tag: true, action: 'talis-tap', fx: true }) +
       '<div class="talis-banner__body">' +
       '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
       '<p class="talis-banner__title">' + esc(who) + '의 2027 대표 수호 부적<br><b>' + ticon + ' ' + esc(tname) + '</b></p>' +
       '<p class="talis-banner__why">' + esc(shortWhy) + '</p>' +
       '<button type="button" class="talis-banner__more" data-talis-open>부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
+      '<span class="talis-banner__tapnote">부적을 톡 누르면 기운이 크게 퍼져요</span>' +
+      '<p class="talis-banner__reveal" id="talisReveal" role="status" aria-live="polite"></p>' +
       '</div>';
+  }
+
+  /* ── 부적 에너지 — 톡 누르면 오라가 크게 퍼지고 문구가 뜬다 (2026-11-22) ── */
+  var TALIS_PHRASE = '지금 이 순간, 흩어졌던 기운이 제자리를 찾습니다';
+
+  function talisCharge(plaque) {
+    if (!plaque) return;
+    plaque.classList.remove('is-charged');
+    void plaque.offsetWidth;
+    plaque.classList.add('is-charged');
+    setTimeout(function () { plaque.classList.remove('is-charged'); }, 1250);
+    sfxBless();                       /* 낮게 울리는 종 + 상승 차임 + 진동 */
+  }
+
+  /** 배너 부적 톡 — 오라 번쩍 + 아래 문구 */
+  function onTalisTap(btn) {
+    talisCharge(btn);
+    var rv = $('#talisReveal');
+    if (!rv) return;
+    rv.textContent = TALIS_PHRASE;
+    rv.classList.remove('is-on');
+    void rv.offsetWidth;
+    rv.classList.add('is-on');
   }
 
   /* ── 대표 부적 확대 모달 ───────────────────────────── */
@@ -1745,13 +1853,14 @@
       '<p class="modal__date" id="talisModalTitle">' + esc(d.who) + '의<br>2027 내 수호 부적</p>' +
       '<p class="modal__sub">한 해 내내 내 사주를 받쳐 주는 대표 부적이에요.</p>' +
       '<div class="talis-showcase"><div class="talis-showcase__obj">' +
-      plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true }) +
+      plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true, fx: true }) +
       '<span class="talis-showcase__waves" aria-hidden="true"><i></i><i></i></span>' +
       '</div></div>' +
       '<p class="talis-modal__name"><span aria-hidden="true">' + d.icon + '</span>' + esc(d.name) + '</p>' +
       '<p class="talis-modal__why">' + esc(d.why) + '</p>' +
       '<button type="button" class="btn talis-bless-btn" data-talis-bless>오늘 기운 받기</button>' +
-      '<p class="talis-bless__note" role="status" aria-live="polite">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
+      '<p class="talis-phrase" id="talisPhrase" role="status" aria-live="polite"></p>' +
+      '<p class="talis-bless__note">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-talis-close>닫기</button>';
     talisEl.hidden = false;
     document.body.classList.add('is-modal-open');
@@ -1778,19 +1887,28 @@
     }, 180);
   }
 
-  /** 오늘 기운 받기 — 빛 파동 + 진동 + 차임 */
-  function onTalisBless() {
+  /** 오늘 기운 받기 — 빛 파동 + 진동 + 차임 + 오라 번쩍 */
+  function onTalisBless(e) {
     if (!talisBody) return;
     var sc = talisBody.querySelector('.talis-showcase');
     var note = talisBody.querySelector('.talis-bless__note');
+    var phrase = talisBody.querySelector('.talis-phrase');
     if (!sc) return;
     sc.classList.remove('is-blessed');
     void sc.offsetWidth;
     sc.classList.add('is-blessed');
-    sfxBless();
-    if (note) {
-      note.classList.add('is-on');
-      note.innerHTML = '✨ 기운이 켜졌어요. 오늘 하루, 이 부적과 함께.';
+    var plaque = sc.querySelector('.talis-plaque');
+    if (plaque && !(e && e.closest && e.closest('.talis-plaque'))) talisCharge(plaque);
+    else sfxBless();
+    if (note) {                       // 문구가 뜨면 예전 안내 한 줄은 비켜 준다 (겹쳐 보이지 않게)
+      note.classList.remove('is-on');
+      note.textContent = '';
+    }
+    if (phrase) {
+      phrase.textContent = TALIS_PHRASE;
+      phrase.classList.remove('is-on');
+      void phrase.offsetWidth;
+      phrase.classList.add('is-on');
     }
   }
 
@@ -2653,7 +2771,12 @@
   function wonNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
   function upPrice(from, to) { return TIER_UP_PRICE[from + '>' + to] || 0; }
 
-  /** 맨 아래 카드(1년 패스 · 올인원 · 성찰)를 지금 적용된 티어에 맞춰 바꿔 그린다 */
+  /** 맨 아래 카드(1년 패스 · 올인원 · 성찰)를 지금 적용된 티어에 맞춰 바꿔 그린다
+      2026-11-22 개편 — 이미 산 등급과 그 아래 등급 카드는 **아예 숨긴다**.
+      (성찰 에디션 보유 시 '✅ 성찰 에디션 적용 중' 박스가 3칸 중복으로 뜨던 문제)
+      · 1년 패스 → 올인원 · 성찰 업그레이드 + ⚡ 개운템 + 상담 + 초대 할인
+      · 올인원 → 성찰 업그레이드 + ⚡ 개운템 + 상담 + 초대 할인
+      · 성찰 → 티어 카드 전부 숨김 + ⚡ 개운템 + 상담 + 초대 할인만 콤팩트하게 */
   function renderCtaSteps() {
     var box = $('#ctaSteps');
     if (!box) return;
@@ -2661,7 +2784,6 @@
     var rank = tier ? (TIER_RANK[tier] || 0) : 0;
     $$('.shop-btn[data-shop]', box).forEach(function (b) {
       var kind = b.getAttribute('data-shop');
-      if (!TIER_NAME[kind]) return;                    // 긴급 개운템·원포인트 리딩은 그대로 둔다
       var no = b.querySelector('.shop-btn__no');
       var label = b.querySelector('.shop-btn__label');
       var desc = b.querySelector('.shop-btn__desc');
@@ -2671,33 +2793,88 @@
         b.setAttribute('data-cta-label', label ? label.innerHTML : '');
         b.setAttribute('data-cta-desc', desc ? desc.textContent : '');
       }
-      var k = TIER_RANK[kind] || 0;
-      var owned = !!rank && k <= rank;
-      var up = !!rank && k > rank;
-      b.classList.toggle('shop-btn--owned', owned);
-      b.classList.toggle('shop-btn--up', up);
-      if (owned) {
-        b.setAttribute('aria-disabled', 'true');
-        if (no) no.textContent = '✓';
-        if (label) label.innerHTML = '✅ ' + esc(TIER_NAME[tier]) + ' 적용 중';
-        if (desc) desc.textContent = OWNED_DESC[kind] || '';
-        b.setAttribute('aria-label', TIER_NAME[tier] + ' 적용 중 — 다시 결제하지 않아도 돼요');
-      } else if (up) {
-        var fee = upPrice(tier, kind);
-        b.removeAttribute('aria-disabled');
-        if (no) no.textContent = '↑';
-        if (label) label.innerHTML = '⬆️ ' + esc(TIER_NAME[kind]) + ' 업그레이드' + (fee ? ' <b>' + wonNum(fee) + '</b>' : '');
-        if (desc) desc.textContent = (fee ? '차액 ' + wonNum(fee) + '만 더 내면 돼요' : '차액은 카톡으로 안내드려요') +
-          ' · ' + (UPGRADE_GAIN[kind] || '');
-        b.setAttribute('aria-label', TIER_NAME[kind] + ' 업그레이드' + (fee ? ' — 차액 ' + wonNum(fee) : ' — 차액은 카톡으로 안내'));
-      } else {
-        b.removeAttribute('aria-disabled');
-        b.removeAttribute('aria-label');
-        if (no) no.textContent = b.getAttribute('data-cta-no') || '';
-        if (label) label.innerHTML = b.getAttribute('data-cta-label') || '';
-        if (desc) desc.textContent = b.getAttribute('data-cta-desc') || '';
+      /* 먼저 처음 그대로 되돌린 뒤 다시 그린다 — 티어가 바뀌어도 기준이 흔들리지 않게 */
+      b.hidden = false;
+      b.classList.remove('shop-btn--owned', 'shop-btn--up');
+      b.removeAttribute('aria-disabled');
+      b.removeAttribute('aria-label');
+      if (no) no.textContent = b.getAttribute('data-cta-no') || '';
+      if (label) label.innerHTML = b.getAttribute('data-cta-label') || '';
+      if (desc) desc.textContent = b.getAttribute('data-cta-desc') || '';
+
+      if (!TIER_NAME[kind]) {                           // ⚡ 긴급 개운템 — 늘 그대로 남는다
+        if (no && rank) no.textContent = '⚡';            // 티어 카드가 하나도 없을 땐 번호 대신 ⚡
+        return;
       }
+      if (!rank) return;                               // 미결제·무료 체험 — 네 칸 그대로
+      var k = TIER_RANK[kind] || 0;
+      if (k <= rank) { b.hidden = true; return; }      // 이미 산 등급과 그 아래 등급은 숨긴다
+      var fee = upPrice(tier, kind);
+      b.classList.add('shop-btn--up');
+      if (no) no.textContent = '↑';
+      if (label) label.innerHTML = '⬆️ ' + esc(TIER_NAME[kind]) + ' 업그레이드' + (fee ? ' <b>' + wonNum(fee) + '</b>' : '');
+      if (desc) desc.textContent = (fee ? '차액 ' + wonNum(fee) + '만 더 내면 돼요' : '차액은 카톡으로 안내드려요') +
+        ' · ' + (UPGRADE_GAIN[kind] || '');
+      b.setAttribute('aria-label', TIER_NAME[kind] + ' 업그레이드' + (fee ? ' — 차액 ' + wonNum(fee) : ' — 차액은 카톡으로 안내'));
     });
+
+    /* 결제자 — 초대 할인 한 줄 · 제목도 '네 가지 방법'에서 다음 걸음으로 */
+    var paid = !!rank;
+    var paidBox = $('#ctaPaid'), paidD = $('#ctaPaidD');
+    if (paidBox) paidBox.hidden = !paid;
+    if (paid && paidD) paidD.textContent = LADDER_TEXT_PAID[tier] || LADDER_TEXT_FREE;
+    var title = $('#ctaTitle');
+    if (title) {
+      if (!title.getAttribute('data-base')) title.setAttribute('data-base', title.innerHTML);
+      title.innerHTML = paid ? '이미 다 열려 있어요<br>다음 한 걸음만' : title.getAttribute('data-base');
+    }
+    var consult = $('#ctaConsult');
+    if (consult) {
+      if (!consult.getAttribute('data-base')) consult.setAttribute('data-base', consult.innerHTML);
+      consult.innerHTML = paid
+        ? '더 깊이 보고 싶으면 <button type="button" class="cta__consult-btn" data-shop="consult">🔎 <b>1:1 상담</b> · 원포인트 49,000 · 종합 100,000 →</button>'
+        : consult.getAttribute('data-base');
+    }
+    box.classList.toggle('is-compact', paid);
+  }
+
+  /* ── 초대 사다리 문구 — 미결제 / 결제자 (2026‑11‑22 김나영 님 확정) ── */
+  var LADDER_TEXT_FREE = '1명 액운3회+할인 · 3명 1개월 · 5명 2개월 · 10명 3개월';
+  var LADDER_TEXT_PAID = {
+    pass: '1명 상담 5천원 · 3명 올인원 무료 · 5명 원포인트 반값 · 10명 종합 반값',
+    allinone: '1명 상담 5천원 · 3명 성찰 에디션 무료 · 5명 원포인트 반값 · 10명 종합 반값',
+    diary: '1명 상담 5천원 · 3명 상담 1만원 · 5명 원포인트 반값 · 10명 종합 반값'
+  };
+
+  /** ✨ 케미·초대 배너 — 결제자는 '기간' 대신 '상담 할인권'으로 안내 */
+  function renderChemiBanner() {
+    var tier = state.unlocked && TIER_NAME[state.tier] ? state.tier : '';
+    var t = $('#chemiBannerT'), d = $('#chemiBannerD');
+    if (t) {
+      t.innerHTML = tier
+        ? '✨ 친구·연인과 2027년 케미 보고,<br>친구 초대하면 <b>상담 할인권</b>이 와요'
+        : '✨ 친구·연인과 2027년 케미 보고,<br>친구 초대하면 한 칸씩 열려요';
+    }
+    if (d) d.textContent = tier ? (LADDER_TEXT_PAID[tier] || LADDER_TEXT_FREE) : LADDER_TEXT_FREE;
+  }
+
+  /* ── 🧭 4칸 바로가기 — 누르면 그 자리로 부드럽게 (2026‑11‑22) ── */
+  function jumpToSection(kind) {
+    var target = kind === 'burn' ? $('#burnCard')
+      : (kind === 'care' ? $('#careCard') : null);
+    if (!target && kind === 'cal') {
+      var grid = $('#calGrid');
+      target = (grid && grid.closest) ? (grid.closest('.card--cal') || grid) : grid;
+    }
+    if (!target) return;
+    var reduce = false;
+    try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+    try { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+    catch (e) { try { target.scrollIntoView(); } catch (e2) {} }
+    target.classList.remove('is-jump-flash');
+    void target.offsetWidth;
+    target.classList.add('is-jump-flash');
+    setTimeout(function () { target.classList.remove('is-jump-flash'); }, 1300);
   }
 
   /* ── 앱 안 구입 팝업 (1년 패스 · 올인원 패키지 · 긴급 개운템) ──────
@@ -5640,6 +5817,7 @@
     if (reset) reset.hidden = !state.unlocked;
     if (msg && state.unlocked && !msg.textContent) msg.textContent = '이 기기에서는 이미 열려 있어요.';
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
+    renderChemiBanner();   // 케미·초대 배너 문구도 결제자/미결제자로 갈린다 (2026-11-22)
     syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
   }
   /** 숫자 → '010-1234-5678' — 입력칸에서 부드럽게 끊어 보여 준다 */
@@ -5735,6 +5913,7 @@
       return;
     }
     saveUnlock({ code: p.code, tier: p.tier, phone: p.phone || '', ymd: p.ymd || '', gender: p.gender || '' });
+    syncPaidTier(p.tier);          // 로그인한 회원이면 DB 등급도 같이 (실패는 조용히 무시)
     if (p.phone) rememberPhone(p.phone);
     state.mismatch = null;
     var who = unlockTargetLabel(p);
@@ -5784,6 +5963,7 @@
     loadUnlock();
     loadDiary();
     syncLockUI();
+    if (state.unlocked) syncPaidTier(state.tier);   // 이미 열린 기기 — 로그인한 회원이면 등급만 맞춰 둔다 (조용히)
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
 
@@ -5919,12 +6099,23 @@
       });
     }
 
-    // 대표 부적 — 배너 부적 패 탭 → 크게 보기 모달 / 모달 안 부적·버튼 탭 → 오늘 기운 받기
+    // 🧭 4칸 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미·초대는 링크)
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
+      var jb = e.target.closest('[data-jump]');
+      if (!jb) return;
+      e.preventDefault();
+      jumpToSection(jb.getAttribute('data-jump'));
+    });
+
+    // 대표 부적 — 배너 부적 톡 → 오라 번쩍 + 문구 / 크게 보기 버튼·배너 빈곳 → 모달 / 모달 안 부적·버튼 → 오늘 기운 받기
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest) return;
+      var tapPlaque = e.target.closest('[data-talis-tap]');
+      if (tapPlaque) { e.preventDefault(); onTalisTap(tapPlaque); return; }
       if (e.target.closest('[data-talis-open]')) { e.preventDefault(); openTalisModal(); return; }
       if (e.target.closest('[data-talis-close]')) { e.preventDefault(); closeTalisModal(); return; }
-      if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(); }
+      if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(e); }
     });
 
     // 팝업 안: 부적 두드리기 / X·배경·닫기 버튼
