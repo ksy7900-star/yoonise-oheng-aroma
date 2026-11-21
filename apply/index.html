@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>상담 신청서 · 윤이세사주</title>
-<meta name="description" content="원포인트 리딩 49,000원 · 종합 사주 100,000원 · 개명·작명 200,000원 — 신청서 작성부터 결제까지 한 번에. 윤이세사주.">
+<meta name="description" content="원포인트 리딩 49,000원 · 시그니처 리딩 100,000원 · 개명·작명 200,000원 — 상품 고르고 결제한 뒤 신청서만 적으면 접수 끝. 윤이세사주.">
 <meta name="theme-color" content="#F7F3EB">
 <meta name="format-detection" content="telephone=no">
 <meta property="og:type" content="website">
 <meta property="og:title" content="상담 신청서 · 윤이세사주">
-<meta property="og:description" content="양식에 적고 결제한 뒤, 노란 버튼 한 번이면 카톡으로 접수 끝.">
+<meta property="og:description" content="상품 고르고 결제 → 신청서 적고 카톡 접수. 두 걸음이면 끝나요.">
 <meta property="og:locale" content="ko_KR">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
 <!-- 카드결제 JS 연동 — 휴대폰 번호를 실어 보내 연락처 입력 화면을 건너뛴다 (defer: 첫 화면을 막지 않게) -->
@@ -18,6 +18,7 @@
 /* ==========================================================
    윤이세 — 상담·작명 전용 신청서 (/apply/)
    1안 색감: 화이트 · 딥네이비(#1E293B) · 에메랄드/코랄 · 노란 카톡 (2026-11-21)
+   순서 개편 (2026-11-22): ① 상품 고르고 결제(위) → ② 신청서·카톡 접수(아래)
    ========================================================== */
 :root {
   --bg: #FAFBFD;
@@ -76,14 +77,44 @@ a { color: inherit; }
 }
 .head__sub b { font-weight: 700; color: #475569; }
 
+/* ── 두 걸음 안내 ────────────────────────── */
+.flow { display: flex; gap: 6px; margin-top: 13px; }
+.flow li {
+  flex: 1 1 0; display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border-radius: 12px;
+  background: var(--paper); border: 1px solid var(--hair-soft);
+  font-size: 10.5px; font-weight: 700; color: #475569; letter-spacing: -.02em;
+  box-shadow: var(--shadow);
+}
+.flow li i {
+  flex: none; display: grid; place-items: center; width: 16px; height: 16px;
+  border-radius: 50%; background: #1E293B; color: #FDE68A;
+  font-style: normal; font-size: 9px; font-weight: 800;
+}
+
+/* ── 단계 표시 ───────────────────────────── */
+.step { display: flex; align-items: center; gap: 8px; margin-top: 20px; }
+.step--sep {
+  margin-top: 26px; padding-top: 20px;
+  border-top: 1px dashed rgba(15, 23, 42, .18);
+}
+.step__tag {
+  flex: none; padding: 4px 8px 3px; border-radius: 999px;
+  background: #1E293B; color: #FDE68A;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .14em;
+}
+.step__t { font-size: 13.5px; font-weight: 800; color: var(--ink); letter-spacing: -.03em; }
+.step__t b { font-weight: 800; }
+.step__s { margin-left: 2px; font-size: 10.5px; font-weight: 500; color: var(--mute); letter-spacing: -.01em; }
+
 /* ── 상품 탭 ─────────────────────────────── */
 .tabs {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
-  margin-top: 20px;
+  margin-top: 9px;
 }
 .tab {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 12px 5px 11px; border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 11px 5px 10px; border-radius: 16px;
   background: var(--paper); border: 1px solid var(--hair-soft);
   color: var(--ink-2); text-align: center;
   box-shadow: var(--shadow);
@@ -92,16 +123,18 @@ a { color: inherit; }
 .tab__emoji { font-size: 17px; line-height: 1.2; }
 .tab__name { font-size: 11px; font-weight: 700; letter-spacing: -.03em; line-height: 1.42; white-space: nowrap; }
 .tab__price { font-size: 10px; font-weight: 600; color: var(--mute); letter-spacing: -.01em; }
+.tab__tag { font-size: 8.5px; font-weight: 600; color: #94A3B8; letter-spacing: -.01em; white-space: nowrap; }
 .tab.is-on {
   background: #1E293B; border-color: #1E293B; color: #FFFFFF;
   box-shadow: 0 12px 22px -14px rgba(15, 23, 42, .85);
 }
 .tab.is-on .tab__price { color: #FDE68A; }
+.tab.is-on .tab__tag { color: rgba(248, 250, 252, .70); }
 .tab:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* ── 상품 설명 ───────────────────────────── */
 .prod {
-  margin-top: 12px; padding: 16px 16px 15px; border-radius: 20px;
+  margin-top: 10px; padding: 15px 16px 14px; border-radius: 20px;
   background: var(--paper); border: 1px solid var(--hair-soft);
   box-shadow: var(--shadow);
 }
@@ -110,29 +143,23 @@ a { color: inherit; }
   text-transform: uppercase; color: #64748B;
 }
 .prod__title {
-  margin-top: 6px; font-family: var(--serif); font-size: 20px;
+  margin-top: 5px; font-family: var(--serif); font-size: 19px;
   line-height: 1.4; font-weight: 600; letter-spacing: -.03em;
 }
-.prod__desc { margin-top: 6px; font-size: 12px; line-height: 1.8; color: var(--ink-2); }
+.prod__desc { margin-top: 5px; font-size: 12px; line-height: 1.75; color: var(--ink-2); }
 .prod__desc b { color: var(--ink); }
-.prod__list { margin-top: 11px; display: flex; flex-direction: column; gap: 5px; }
+.prod__list { margin-top: 9px; display: flex; flex-direction: column; gap: 3px; }
 .prod__list li {
-  position: relative; padding-left: 13px; font-size: 11.5px; line-height: 1.65; color: var(--ink-2);
+  position: relative; padding-left: 13px; font-size: 11.5px; line-height: 1.6; color: var(--ink-2);
 }
 .prod__list li::before {
   content: ""; position: absolute; left: 2px; top: 7px;
   width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
 }
-.prod__price {
-  display: flex; align-items: baseline; gap: 6px; margin-top: 13px;
-  padding-top: 12px; border-top: 1px solid var(--hair);
-}
-.prod__price b { font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
-.prod__price span { font-size: 10.5px; color: var(--mute); }
 
 /* ── 신청 양식 ───────────────────────────── */
 .cform {
-  margin-top: 12px; padding: 15px 15px 14px; border-radius: 20px;
+  margin-top: 8px; padding: 15px 15px 14px; border-radius: 20px;
   background: var(--cream); border: 1px solid var(--hair-soft);
   box-shadow: var(--shadow);
 }
@@ -205,8 +232,34 @@ a { color: inherit; }
   background: #FFF1F2; border: 1px solid #FFF1F2;
 }
 
-/* ── 결제 ────────────────────────────────── */
-.pay { margin-top: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* ── 결제 (STEP 1 · 상품 바로 아래) ───────── */
+.pay {
+  margin-top: 10px; padding: 14px 14px 13px; border-radius: 20px;
+  background: var(--paper); border: 1px solid var(--hair-soft);
+  box-shadow: 0 10px 24px -20px rgba(15, 23, 42, .55);
+}
+.pay__amt { display: flex; align-items: baseline; justify-content: space-between; }
+.pay__amt span { font-size: 10.5px; font-weight: 700; color: var(--mute); letter-spacing: .02em; }
+.pay__amt b { font-family: var(--serif); font-size: 21px; font-weight: 600; letter-spacing: -.02em; }
+.pay__me { margin-top: 9px; }
+.pay__me__lb {
+  display: block; font-size: 10.5px; font-weight: 700; color: var(--ink-2);
+  letter-spacing: .01em; margin-bottom: 5px;
+}
+.pay__me__lb i { font-style: normal; font-weight: 400; color: var(--mute); }
+.pay__me__in {
+  width: 100%; padding: 11px 12px; border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, .14); background: #FFF;
+  font-family: inherit; font-size: 13px; color: var(--ink);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.pay__me__in::placeholder { color: #CBD5E1; font-size: 11.5px; }
+.pay__me__in:focus {
+  outline: none; border-color: rgba(15, 23, 42, .6);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, .12);
+}
+.pay__me__note { margin-top: 5px; font-size: 9.5px; line-height: 1.55; color: var(--mute); }
+.pay__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 11px; }
 .pay__btn {
   display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
   padding: 13px 14px; border-radius: 16px; border: 1px solid transparent;
@@ -225,7 +278,7 @@ a { color: inherit; }
   border-color: #CBD5E1;
 }
 .pay__btn--bank em { font-style: normal; font-size: 9.5px; font-weight: 700; color: #475569; }
-.pay__note { grid-column: 1 / -1; font-size: 9.5px; line-height: 1.6; color: var(--mute); text-align: center; }
+.pay__note { margin-top: 9px; font-size: 9.5px; line-height: 1.6; color: var(--mute); text-align: center; }
 .pay__note a { color: #475569; text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── 💳 결제하고 돌아온 손님 — 맨 위 한 줄 (2026-11-21) ── */
@@ -248,7 +301,7 @@ a { color: inherit; }
 }
 .payback__go:active, .payback__x:active { transform: translateY(1px); }
 
-.kakaobar { margin-top: 9px; }
+.kakaobar { margin-top: 12px; }
 .kakaobar a {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 15px 16px 14px; border-radius: 17px; text-decoration: none;
@@ -305,11 +358,11 @@ a { color: inherit; }
 
 <main class="wrap">
 
-  <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '카톡으로 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
+  <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '신청서 → 카톡 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
   <div class="payback" id="payBack" hidden>
-    <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면 한 번만 눌러 주세요.</span></p>
+    <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면, 아래 신청서에 사주 정보를 적고 카톡으로 접수해 주세요.</span></p>
     <div class="payback__row">
-      <button type="button" class="payback__go" id="payBackGo">💬 카톡으로 접수하기</button>
+      <button type="button" class="payback__go" id="payBackGo">📝 신청서 적고 접수하기</button>
       <button type="button" class="payback__x" id="payBackX">아직 결제 전이에요</button>
     </div>
   </div>
@@ -317,24 +370,38 @@ a { color: inherit; }
   <header class="head">
     <p class="head__eyebrow">YOONISE · APPLY</p>
     <h1 class="head__title">상담 <em>신청서</em></h1>
-    <p class="head__sub">받고 싶은 상담을 고르고, <b>양식에 적고 결제</b>한 뒤<br>맨 아래 노란 버튼을 누르면 카톡으로 접수돼요.</p>
+    <p class="head__sub">상품을 고르고 <b>바로 결제</b>한 뒤,<br>아래 신청서에 사주를 적어 카톡으로 보내면 접수 끝이에요.</p>
   </header>
+
+  <ol class="flow">
+    <li><i>1</i>상품 고르고 결제</li>
+    <li><i>2</i>신청서 · 카톡 접수</li>
+  </ol>
+
+  <!-- ── STEP 1 · 상품 선택 + 결제 (결제를 위로 올린다) ────────── -->
+  <div class="step">
+    <span class="step__tag">STEP 1</span>
+    <span class="step__t">상품 고르고 결제하기</span>
+  </div>
 
   <nav class="tabs" role="tablist" aria-label="상담 선택">
     <button type="button" class="tab" data-type="onepoint" role="tab" aria-selected="false">
       <span class="tab__emoji" aria-hidden="true">🔎</span>
       <span class="tab__name">원포인트 리딩</span>
       <span class="tab__price">49,000원</span>
+      <span class="tab__tag">고민 1가지</span>
     </button>
     <button type="button" class="tab" data-type="saju" role="tab" aria-selected="false">
       <span class="tab__emoji" aria-hidden="true">🌿</span>
-      <span class="tab__name">종합 사주</span>
+      <span class="tab__name">시그니처 리딩</span>
       <span class="tab__price">100,000원</span>
+      <span class="tab__tag">전체 흐름</span>
     </button>
     <button type="button" class="tab" data-type="naming" role="tab" aria-selected="false">
       <span class="tab__emoji" aria-hidden="true">✍️</span>
       <span class="tab__name">개명·작명</span>
       <span class="tab__price">200,000원</span>
+      <span class="tab__tag">평생 이름</span>
     </button>
   </nav>
 
@@ -343,11 +410,34 @@ a { color: inherit; }
     <h2 class="prod__title" id="prodTitle">🔎 원포인트 리딩</h2>
     <p class="prod__desc" id="prodDesc"></p>
     <ul class="prod__list" id="prodList"></ul>
-    <p class="prod__price"><b id="prodPrice">49,000원</b><span>결제 후 카톡 접수까지</span></p>
   </section>
 
+  <section class="pay" aria-label="결제">
+    <p class="pay__amt"><span>결제 금액</span><b id="payAmount">49,000원</b></p>
+    <div class="pay__me">
+      <label class="pay__me__lb" for="fPhone">결제 확인용 휴대폰 번호 <i>선택</i></label>
+      <input type="tel" class="pay__me__in" id="fPhone" placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel" maxlength="20">
+      <p class="pay__me__note">적으면 결제창에서 연락처 입력을 건너뛰고, 아래 신청서에도 그대로 채워 둬요.</p>
+    </div>
+    <div class="pay__grid">
+      <a class="pay__btn pay__btn--card" id="payCard" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener" data-pay-link>
+        <b>💳 카드 · 간편결제</b><span>휴대폰 번호를 적으면 바로 결제창으로</span>
+      </a>
+      <button type="button" class="pay__btn pay__btn--bank" id="payBank">
+        <b>🏦 계좌이체</b><span>SC제일은행 504-20-454146<br>김나영(엔와이트레이드)</span><em>눌러서 계좌번호 복사</em>
+      </button>
+    </div>
+    <p class="pay__note" id="payNote">결제를 마치면 아래 신청서를 채우고 노란 버튼을 눌러 주세요. 결제창이 안 보이면 <a id="payFallback" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener">여기 누르기 →</a></p>
+  </section>
+
+  <!-- ── STEP 2 · 상담 신청서 (결제 다음) ─────────────────────── -->
+  <div class="step step--sep">
+    <span class="step__tag">STEP 2</span>
+    <span class="step__t">신청서 적고 카톡 접수</span>
+  </div>
+
   <section class="cform" aria-labelledby="formHead">
-    <p class="cform__head" id="formHead">📝 신청 양식 <span id="formHint">칸을 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요</span></p>
+    <p class="cform__head" id="formHead">📝 상담 신청서 <span id="formHint">여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요</span></p>
 
     <label class="cform__row"><span class="cform__lb"><b id="noName">①</b> 성함</span>
       <input type="text" class="cform__input" id="fName" placeholder="예: 김나영" autocomplete="name" maxlength="30"></label>
@@ -387,19 +477,9 @@ a { color: inherit; }
     <p class="cform__msg" id="formMsg" role="alert" hidden></p>
   </section>
 
-  <section class="pay" aria-label="결제">
-    <a class="pay__btn pay__btn--card" id="payCard" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener" data-pay-link>
-      <b>💳 카드 · 간편결제 하기</b><span>휴대폰 번호를 적으면 바로 결제창으로</span>
-    </a>
-    <button type="button" class="pay__btn pay__btn--bank" id="payBank">
-      <b>🏦 계좌이체</b><span>SC제일은행 504-20-454146<br>김나영(엔와이트레이드)</span><em>눌러서 계좌번호 복사</em>
-    </button>
-    <p class="pay__note" id="payNote">결제를 마치면 아래 노란 버튼을 눌러 주세요. 결제창이 안 보이면 <a id="payFallback" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener">여기 누르기 →</a></p>
-  </section>
-
   <div class="kakaobar">
     <a id="kakaoGo" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">
-      <b>💬 결제 완료 · 카톡으로 접수하기</b>
+      <b>💬 신청서 완료 · 카톡으로 접수하기</b>
       <span>누르면 신청 내용이 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝</span>
     </a>
   </div>
@@ -411,6 +491,7 @@ a { color: inherit; }
 
   <ul class="guide">
     <li>결제 확인은 <b>카드결제면 결제할 때 넣은 휴대폰 번호</b>, <b>계좌이체면 입금자명</b>으로 대조해요.</li>
+    <li>결제 전에 신청서를 먼저 적어 두어도 괜찮아요 — 두 칸의 순서는 상관없어요.</li>
     <li>접수 순서대로 카톡에서 일정과 진행 방법을 안내해 드려요.</li>
     <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 저장되지 않아요.</li>
   </ul>
@@ -430,7 +511,8 @@ a { color: inherit; }
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   var BANK = '504-20-454146';
 
-  /* 상품 3종 — 탭을 고르면 아래 문구·금액·결제 링크·질문 칸 이름이 함께 바뀐다 */
+  /* 상품 3종 — 탭을 고르면 아래 문구·금액·결제 링크·질문 칸 이름이 함께 바뀐다
+     (2026-11-22: 대표 상담 상품명을 '시그니처 리딩'으로 통일) */
   var PRODUCTS = {
     onepoint: {
       key: 'onepoint',
@@ -452,15 +534,15 @@ a { color: inherit; }
     saju: {
       key: 'saju',
       emoji: '🌿',
-      name: '종합 사주',
+      name: '시그니처 리딩',
       price: '100,000원',
       priceNum: 100000,
-      payName: '종합사주',
-      eyebrow: 'FULL READING',
-      desc: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 상담이에요.',
+      payName: '시그니처 리딩',
+      eyebrow: 'SIGNATURE READING',
+      desc: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 대표 상담이에요.',
       list: ['타고난 기질과 강점', '재물 · 관계 · 일의 흐름', '대운·세운으로 보는 방향'],
       pay: 'https://www.payapp.kr/L/z4ovJ1',
-      order: '[윤이세 종합 사주 신청] 100,000원',
+      order: '[윤이세 시그니처 리딩 신청] 100,000원',
       qLabel: '중점 상담 분야',
       qHint: '· 지금 제일 궁금한 쪽',
       qPh: '예: 올해 이직과 돈 흐름이 궁금해요',
@@ -488,6 +570,7 @@ a { color: inherit; }
   var state = { type: 'onepoint', cal: 'solar', gender: '' };
   var $ = function (id) { return document.getElementById(id); };
   var shakeTimer = null;
+  var lastPhoneMirror = '';
 
   /* ── 입력값 되살리기 — '카드결제에 다녀온 그 순간' 하나뿐 ───────
      평상시에는 아무것도 저장하지 않는다. 새 링크로 열든, 새로고침을 하든,
@@ -503,6 +586,7 @@ a { color: inherit; }
       sessionStorage.setItem(STORE_KEY, JSON.stringify({
         fromPay: true,          /* 결제 다녀온 복귀용 — 이 표시가 있을 때만 되살린다 */
         type: state.type,
+        fPhone: $('fPhone').value,
         fName: $('fName').value,
         fHanja: $('fHanja').value,
         fBirth: $('fBirth').value,
@@ -529,7 +613,7 @@ a { color: inherit; }
 
   /* ── 💳 결제하고 돌아오셨나요? — 달력과 같은 복귀 줄 (2026-11-21) ───────
      카드·간편결제 버튼을 누른 순간부터 3시간 동안 같은 탭에 표시를 남기고,
-     결제창에서 돌아오면 페이지 맨 위에 '카톡으로 접수하기' 한 줄을 다시 내민다.
+     결제창에서 돌아오면 페이지 맨 위에 '신청서 적고 접수하기' 한 줄을 다시 내민다.
      결제를 확인해 주는 곳은 사람이므로, 여기서는 '접수하러 가는 길'만 이어 준다. */
   var PAYWAIT_KEY = 'yoonise.apply.paywait.v1';
   var PAYWAIT_MS = 3 * 60 * 60 * 1000;
@@ -553,7 +637,8 @@ a { color: inherit; }
     var p = PRODUCTS[o.type];
     var what = $('payBackWhat');
     if (what) {
-      what.textContent = (p ? p.name + ' ' + p.price + ' 결제를 마치셨다면, ' : '') + '한 번만 눌러 주세요.';
+      what.textContent = (p ? p.name + ' ' + p.price + ' 결제를 마치셨다면, ' : '') +
+        '아래 신청서에 사주 정보를 적고 카톡으로 접수해 주세요.';
     }
     bar.hidden = false;
   }
@@ -564,8 +649,18 @@ a { color: inherit; }
       x.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
+  /* 결제창에 적은 휴대폰 번호를 신청서 '연락처' 칸에도 그대로 — 두 번 적지 않게 */
+  function mirrorPhone() {
+    var v = $('fPhone').value.trim();
+    var w = $('fWho').value.trim();
+    if (!w || w === lastPhoneMirror) {
+      $('fWho').value = v;
+      lastPhoneMirror = v;
+    }
+  }
   function restoreForm(d) {
     if (!d) return;
+    if (typeof d.fPhone === 'string') { $('fPhone').value = d.fPhone; lastPhoneMirror = d.fPhone; }
     if (typeof d.fName === 'string') $('fName').value = d.fName;
     if (typeof d.fHanja === 'string') $('fHanja').value = d.fHanja;
     if (typeof d.fBirth === 'string') $('fBirth').value = d.fBirth;
@@ -585,7 +680,8 @@ a { color: inherit; }
     }
     if (d.fPrivacy) $('fPrivacy').checked = true;
   }
-  /* 모든 칸을 '처음 받았을 때' 그대로 — 양력 · 성별 미선택 · 빈 칸 · 동의 미체크 */
+  /* 모든 칸을 '처음 받았을 때' 그대로 — 양력 · 성별 미선택 · 빈 칸 · 동의 미체크
+     (결제 확인용 휴대폰 번호는 상품과 무관하므로 지우지 않고 신청서에 다시 채워 둔다) */
   function resetForm() {
     ['fName', 'fHanja', 'fBirth', 'fWho', 'fQ'].forEach(function (id) { $(id).value = ''; });
     $('fTimeUnknown').checked = false;
@@ -596,6 +692,8 @@ a { color: inherit; }
     state.gender = '';
     setChips('data-gender', '');      /* 아무것도 골라지지 않은 상태 */
     $('copybox').hidden = true;
+    lastPhoneMirror = '';
+    mirrorPhone();
     clearMsg();
   }
 
@@ -644,7 +742,7 @@ a { color: inherit; }
     $('prodTitle').textContent = p.emoji + ' ' + p.name;
     $('prodDesc').innerHTML = p.desc;
     $('prodList').innerHTML = p.list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-    $('prodPrice').textContent = p.price;
+    $('payAmount').textContent = p.price;
 
     /* 개명·작명에서만 '현재 사용하는 주민등록상 한자' 칸이 붙는다 */
     var naming = type === 'naming';
@@ -663,11 +761,11 @@ a { color: inherit; }
     $('qHint').textContent = p.qHint;
     $('fQ').placeholder = p.qPh;
 
-    $('formHint').textContent = (naming ? '일곱 칸' : '여섯 칸') + '을 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요';
+    $('formHint').textContent = (naming ? '일곱 칸' : '여섯 칸') + '을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요';
 
     $('payCard').href = p.pay;
     $('payFallback').href = p.pay;
-    $('payNote').firstChild.textContent = '결제를 마치면 아래 노란 버튼을 눌러 주세요. ';
+    $('payNote').firstChild.textContent = '결제를 마치면 아래 신청서를 채우고 노란 버튼을 눌러 주세요. ';
 
     clearMsg();
     if (push !== false) {
@@ -739,6 +837,25 @@ a { color: inherit; }
     $(id).addEventListener('input', clearMsg);
   });
   $('fPrivacy').addEventListener('change', clearMsg);
+
+  /* ── 결제 확인용 휴대폰 번호 (STEP 1) ───────
+     입력하면 신청서 '연락처' 칸에 그대로 채우고, 칸을 벗어날 때 010-1234-5678 모양으로 정리한다. */
+  function fmtPhone(v) {
+    var d = String(v || '').replace(/[^0-9]/g, '');
+    if (d.indexOf('010') !== 0 || d.length < 4) return String(v || '').trim();
+    d = d.slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 7) return d.slice(0, 3) + '-' + d.slice(3);
+    return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
+  }
+  $('fPhone').addEventListener('input', function () { mirrorPhone(); clearMsg(); });
+  $('fPhone').addEventListener('blur', function () {
+    var f = fmtPhone($('fPhone').value);
+    if (f !== $('fPhone').value) {
+      $('fPhone').value = f;
+      mirrorPhone();
+    }
+  });
 
   /* ── 확인 ─────────────────────────────── */
   function clearMsg() {
@@ -821,7 +938,7 @@ a { color: inherit; }
       return { el: $('fBirth'), msg: '생년월일을 1979-08-08 처럼 적어 주세요 (달력에 없는 날짜는 다시 확인이 필요해요).' };
     }
     if (!state.gender) return { el: document.querySelector('[data-gender]'), msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
-    if (!$('fWho').value.trim()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
+    if (!$('fWho').value.trim() && !$('fPhone').value.trim()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
     if (p.qRequired && !$('fQ').value.trim()) return { el: $('fQ'), msg: p.qLabel + '을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
     if (!$('fPrivacy').checked) return { el: $('fPrivacy'), msg: '개인정보 수집·이용에 동의해 주세요 — 상담 접수에 꼭 필요한 단계예요.' };
     return null;
@@ -830,12 +947,16 @@ a { color: inherit; }
   /* ── 카톡으로 보낼 신청 문구 ───────────── */
   function orderText() {
     var p = prod();
+    var who = $('fWho').value.trim() || $('fPhone').value.trim();
     var lines = [p.order, '성함: ' + $('fName').value.trim()];
     if (state.type === 'naming') lines.push('현재 사용하는 주민등록상 한자: ' + $('fHanja').value.trim());
     lines.push('생년월일시: ' + birthLine());
     lines.push('양력·음력·윤달: ' + calLabel(state.cal));
     lines.push('성별: ' + (state.gender === 'M' ? '남' : '여'));
-    lines.push('연락처(카드결제) 또는 입금자명(계좌이체): ' + $('fWho').value.trim());
+    lines.push('연락처(카드결제) 또는 입금자명(계좌이체): ' + who);
+    /* 결제창에 넣은 번호와 신청서 연락처가 다르면 둘 다 남겨 대조하기 쉽게 */
+    var ph = mobileOf($('fPhone').value);
+    if (ph && ph !== mobileOf(who)) lines.push('결제 휴대폰: ' + $('fPhone').value.trim());
     var q = $('fQ').value.trim();
     if (q) lines.push(p.qLabel + ': ' + q);
     return lines.join('\n');
@@ -915,7 +1036,7 @@ a { color: inherit; }
   });
 
   /* ── 카드결제 ─────────────────────────────
-     ① '연락처 또는 입금자명'에 휴대폰 번호가 적혀 있으면 — 카드결제 JS 연동.
+     ① '결제 확인용 휴대폰 번호'(STEP 1)에 번호가 적혀 있으면 — 카드결제 JS 연동.
         shopname·goodname·price·recvphone 을 실어 이 창을 결제창으로 넘기므로
         카드결제의 '연락처 입력' 화면을 건너뛰고 결제수단 선택부터 시작한다.
      ② 번호가 없거나 JS 연동을 못 쓰면 — 지금까지의 결제 링크 그대로.
@@ -925,7 +1046,13 @@ a { color: inherit; }
   /* '010-1234-5678' · '01012345678' · '김나영 010 1234 5678' → '01012345678' */
   function mobileOf(v) {
     var m = String(v || '').match(/(?:^|[^0-9])010[-\s.]?([0-9]{3,4})[-\s.]?([0-9]{4})(?![0-9])/);
-    return m ? '010' + m[1] + m[2] : '';
+    if (m) return '010' + m[1] + m[2];
+    var d = String(v || '').replace(/[^0-9]/g, '');
+    return /^010[0-9]{8}$/.test(d) ? d : '';
+  }
+  /* 결제창에 실을 번호 — STEP 1 칸이 먼저, 비어 있으면 신청서 연락처 칸 */
+  function payPhone() {
+    return mobileOf($('fPhone').value) || mobileOf($('fWho').value);
   }
 
   function payappGo(phone) {
@@ -965,9 +1092,9 @@ a { color: inherit; }
   var card = $('payCard');
   card.addEventListener('click', function (e) {
     storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
-    payWaitSave();       /* 돌아오면 페이지 맨 위에 '카톡으로 접수하기' 한 줄 */
+    payWaitSave();       /* 돌아오면 페이지 맨 위에 '신청서 적고 접수하기' 한 줄 */
 
-    var phone = mobileOf($('fWho').value);
+    var phone = payPhone();
     if (phone) {
       var went = false;
       try { went = payappGo(phone); } catch (err) { went = false; }
@@ -984,9 +1111,10 @@ a { color: inherit; }
 
   /* ── 계좌이체: 원클릭 복사 ─────────────── */
   $('payBank').addEventListener('click', function () {
+    var p = prod();
     copyText(BANK, function (copied) {
-      toast(copied ? '🏦 계좌번호를 복사했어요 — 이체 후 입금자명을 남겨 주세요'
-        : '🏦 SC제일은행 ' + BANK + ' (김나영 · 엔와이트레이드)');
+      toast(copied ? '🏦 계좌번호를 복사했어요 — ' + p.price + ' 이체 후 아래 신청서에 입금자명을 적어 주세요'
+        : '🏦 SC제일은행 ' + BANK + ' (김나영 · 엔와이트레이드) · ' + p.price);
     });
     try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { }
   });
@@ -1005,7 +1133,7 @@ a { color: inherit; }
   var start = String(qs.type || '').toLowerCase();
   if (!PRODUCTS[start]) {
     if (start === 'consult' || start === 'point' || start === 'one') start = 'onepoint';
-    else if (start === 'full' || start === 'jonghap' || start === 'jonghab') start = 'saju';
+    else if (start === 'full' || start === 'jonghap' || start === 'jonghab' || start === 'signature') start = 'saju';
     else if (start === 'name' || start === 'rename' || start === 'baby') start = 'naming';
   }
   /* 주소에 ?type= 이 있으면 그 탭, 없으면 맨 앞 탭(원포인트)부터 */
@@ -1019,7 +1147,7 @@ a { color: inherit; }
     if (e.target.closest('#payBackGo')) {
       payWaitClear();
       $('payBack').hidden = true;
-      $('kakaoGo').click();     /* 기존 카톡 접수와 같은 길 — 내용 복사 + 카톡 이동 */
+      $('kakaoGo').click();     /* 기존 카톡 접수와 같은 길 — 확인(빈 칸이면 신청서로 이동) + 복사 + 카톡 */
       return;
     }
     if (e.target.closest('#payBackX')) { payWaitClear(); $('payBack').hidden = true; }
