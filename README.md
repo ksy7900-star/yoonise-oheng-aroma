@@ -1285,4 +1285,4 @@ python3 -m http.server 8000
 - 카드는 `<canvas>` 로 그려 `<img>` 로 앉히고 → **길게 눌러 저장** + `이미지로 저장`(PNG 1080×1920 다운로드, 파일명 `2027-우정부적-이름-이름.png`) 둘 다 동작.
 
 ### 4. 캐시
-- `sw.js` VERSION `20261121x` → **`20261121z`**, `member/index.html` 의 `?v=`(css·lunar·manse·timing·member.js) 전부 동일.
+- `sw.js` VERSION `20261121x` → **`20261121aa`**, `member/index.html` 의 `?v=`(css·lunar·manse·timing·member.js) 전부 동일.

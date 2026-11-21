@@ -952,6 +952,24 @@
     }
   };
 
+  /* ②-2 보완할 점이 한 줄뿐일 때 채우는 두 번째 줄 — 기운이 서로 어떻게 도는지로 */
+  var COMP_EXTRA = {
+    friend: {
+      same: '둘 다 같은 기운이라, 한 명이 흐름을 끊어 줄 때 제일 편해져요.',
+      youFeedMe: '받기만 하지 않게, 가끔은 {aS} 먼저 챙겨 주세요.',
+      iFeedYou: '주는 쪽이 지치지 않게, {bS} 먼저 물어봐 주세요.',
+      iBeatYou: '말투만 한 단계 낮춰도 부딪히는 일이 확 줄어요.',
+      youBeatMe: '{aT} 속도를 지킬 여유를 하루에 한 번은 만들어 주세요.'
+    },
+    love: {
+      same: '둘 다 같은 기운이라, 한 명이 먼저 쉬어 주는 게 오래 가는 비결이에요.',
+      youFeedMe: '받는 것만 익숙해지지 않게, 가끔은 {aS} 먼저 표현해 주세요.',
+      iFeedYou: '주는 쪽이 지치지 않게, {bS} 먼저 안아 주세요.',
+      iBeatYou: '세게 말할 때 한 번만 부드럽게 바꿔도 느낌이 달라져요.',
+      youBeatMe: '{aT} 속도로 가는 날을 일주일에 하루는 만들어 주세요.'
+    }
+  };
+
   /* ③ 꼭 챙겨줄 점 — 두 번째 줄은 일지 관계별 행동 팁 */
   var CARE_ZHI = {
     friend: {
@@ -1119,6 +1137,9 @@
     });
     if (comps.length < 2) {
       comps.push(fill((COMP_ZHI[rel] || COMP_ZHI.friend)[zk] || (COMP_ZHI[rel] || COMP_ZHI.friend).plain, mm));
+    }
+    if (comps.length < 2) {
+      comps.push(fill((COMP_EXTRA[rel] || COMP_EXTRA.friend)[mk] || (COMP_EXTRA[rel] || COMP_EXTRA.friend).same, mm));
     }
     comps = comps.slice(0, 2);
 
