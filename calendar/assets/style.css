@@ -421,6 +421,25 @@ form { margin-top: 22px; }
 .calfilter__btn[data-filter="bad"].is-on { color: #9A4A3A; }
 .calfilter__btn[data-filter="good"].is-on { color: #7C5F1F; }
 
+/* 무료 3일을 다 쓴 기기 — 달력 바로 위 잠금 안내 한 줄 (누르면 코드 입력) */
+.cal__trialover {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 100%; margin: 12px 0 2px; padding: 9px 12px 10px;
+  appearance: none; border: 1px solid rgba(174, 138, 80, .42); border-radius: 13px;
+  background: linear-gradient(180deg, #FBF3E2 0%, #F3E6CC 100%);
+  text-align: center; cursor: pointer;
+}
+.cal__trialover[hidden] { display: none; }
+.cal__trialover-t {
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.03em; color: #6E5219; line-height: 1.35;
+}
+.cal__trialover-s {
+  font-size: 10px; font-weight: 600; letter-spacing: -.02em; color: #8A6B2C; line-height: 1.4;
+  word-break: keep-all;
+}
+.cal__trialover-s b { color: #9E4A2E; font-weight: 800; }
+.cal__trialover:active { transform: scale(.995); }
+
 /* 모아보기 중 — 해당 날만 또렷하게, 나머지는 물러나게 */
 .cal .day.day--dim { opacity: .3; }
 .cal .day.day--dim:hover { background-image: none; }
@@ -545,6 +564,13 @@ form { margin-top: 22px; }
    끄면 data-trial="off" — js-trial 문구 숨김 + 지난 날도 눌러 볼 수 있게 흐림 해제 */
 body[data-trial="off"] .js-trial { display: none !important; }
 body[data-trial="on"] .js-open { display: none !important; }
+/* 무료 3일을 다 쓴 기기(data-trial="over") — 첫 방문 안내 대신 종료 안내를 보인다 */
+body[data-trial="over"] .js-trial { display: none !important; }
+body[data-trial="over"] .js-open { display: none !important; }
+body[data-trial="on"] .js-trial-over, body[data-trial="off"] .js-trial-over { display: none !important; }
+/* 체험 종료 — 오늘 날짜까지 전부 잠겨 눌러도 결제 안내만 나온다. 달력을 한 톤 가라앉혀 잠금을 보인다 */
+body[data-trial="over"] .day--locked { opacity: .78; }
+body[data-trial="over"] .day--locked:hover { background-image: none; }
 body[data-trial="off"] .day--past { opacity: 1; }
 body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .day.is-today .day__num { box-shadow: inset 0 0 0 1px rgba(29, 28, 25, .4); }
@@ -3345,6 +3371,14 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
   color: #8A6B2C; line-height: 1.35;
   font-variant-numeric: tabular-nums;
 }
+/* 체험이 끝난 기기 — 금빛 배지 대신 차분한 회갈색으로 '끝났어요'를 알린다 */
+.guide__trial.is-over {
+  background: linear-gradient(180deg, #F4F1E9 0%, #E7E2D6 100%);
+  border-color: rgba(123, 114, 98, .45);
+  box-shadow: 0 6px 14px -12px rgba(70, 64, 52, .8), inset 0 1px 0 rgba(255, 255, 255, .85);
+}
+.guide__trial.is-over .guide__trial-h { color: #6B6354; }
+.guide__trial.is-over .guide__trial-s { color: #8A8272; }
 .guide__title {
   font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.24;
   letter-spacing: -.03em; color: #6B6354; margin-top: 8px;

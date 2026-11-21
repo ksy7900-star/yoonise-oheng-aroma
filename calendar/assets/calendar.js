@@ -12,12 +12,13 @@
   var RANGE_TO = '2027-12-31';   // 2027년 1~12월 1년 패스 — 달력은 2026-11 ~ 2027-12까지
   var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
   /* ── 무료 체험 잠금 스위치 (판매 세팅은 이 두 줄만 보면 됩니다) ──────────
-     FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). 오늘 포함 FREE_DAYS일(D+0 ~ D+(FREE_DAYS-1))만 열리고,
-        그 뒤 날짜는 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)로 바뀝니다.
+     FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). **첫 방문일(달력을 처음 연 날)부터 딱 FREE_DAYS일**만 열리고,
+        그 뒤로는 오늘 날짜까지 전부 잠겨 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)가 뜹니다.
+        (매일 '오늘~모레'로 굴러가면 결제 없이 계속 무료로 쓸 수 있어서 2026-11-21 첫 방문일 고정으로 바꿨습니다.)
      FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다(테스트용).
-     → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-open 로 자동 전환) */
+     → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
-  var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 오늘 포함 3일(D+0·D+1·D+2)
+  var FREE_DAYS = 3;   // FREE_TRIAL_ENABLED = true 일 때 무료 일수 — 첫 방문일 포함 3일(D+0·D+1·D+2)
 
   /* ── 개인 전용 입장 코드 (1결제 = 1사주) ─────────────────────────────────
      결제한 손님의 사주(양력 생년월일 + 성별)에 비밀 salt 서명을 묶은 코드입니다.
@@ -41,6 +42,8 @@
   var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };   // 위 티어가 아래 티어의 기능을 모두 포함한다
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
+  var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 3일은 이 날부터 고정
+  var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
@@ -423,7 +426,8 @@
         document.body.classList.add('is-result');   // 달력이 열리면 히어로는 얇은 브랜드 줄로 접힌다
         render();
         if (!codeOk && state.mismatch) {
-          toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — 지금 사주로는 3일 무료 체험만 열려요');
+          toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — ' +
+            (trialOver() ? '무료 체험도 끝나 지금은 잠겨 있어요' : '지금 사주로는 ' + FREE_DAYS + '일 무료 체험만 열려요'));
         }
         $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         maybeAutoGuide();     // 달력이 처음 열린 기기라면 사용법 팝업 한 번
@@ -497,16 +501,60 @@
     if (v > hi) v = hi;
     return { y: Math.floor(v / 12), m: (v % 12) + 1 };
   }
+  /* ── 무료 체험 기간 — '오늘~모레'로 굴러가지 않고 첫 방문일에 못 박는다 ──────────
+     달력이 처음 열린 날(첫 방문일)을 localStorage 에 남기고, 그 날부터 FREE_DAYS일만 무료.
+     4일째부터는 오늘 날짜까지 전부 잠겨서, 눌러도 부적 대신 결제 안내가 나온다. */
+  function trialStartISO() {
+    if (!FREE_TRIAL_ENABLED || state.unlocked || !state.todayISO || !state.res) return '';
+    if (trialStartMemo) return trialStartMemo;
+    var v = '';
+    try { v = localStorage.getItem(TRIAL_KEY) || ''; } catch (e) { v = ''; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      v = state.todayISO;                     // 달력을 처음 연 날 = 첫 방문일 (이미 있으면 그대로 둔다)
+      try { localStorage.setItem(TRIAL_KEY, v); } catch (e) {}
+    }
+    trialStartMemo = v;
+    return v;
+  }
+  /** 무료 구간 { start, end } — 기기 시계가 뒤로 가 첫 방문일이 미래로 보이면 오늘부터로 본다 */
+  function trialWindow() {
+    var start = trialStartISO();
+    if (!start) return null;
+    if (start > state.todayISO) start = state.todayISO;
+    return { start: start, end: T.addDays(start, FREE_DAYS - 1) };
+  }
+  /** 무료 3일을 다 썼는가 — 코드를 넣지 않은 채 4일째가 되면 참 */
+  function trialOver() {
+    if (!FREE_TRIAL_ENABLED || state.unlocked) return false;
+    var w = trialWindow();
+    return !!w && state.todayISO > w.end;
+  }
+  /** 'M/D' 짧은 표기 */
+  function mdOf(iso) {
+    var p = String(iso).split('-');
+    return parseInt(p[1], 10) + '/' + parseInt(p[2], 10);
+  }
+  /** index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over) 전환 */
+  function syncTrialState() {
+    var mode = (!FREE_TRIAL_ENABLED || state.unlocked) ? 'off' : (trialOver() ? 'over' : 'on');
+    document.body.setAttribute('data-trial', mode);
+    var strip = $('#calTrialOver');
+    if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
+  }
   /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
     if (state.unlocked) return iso >= RANGE_FROM && iso <= RANGE_TO;
     if (!FREE_TRIAL_ENABLED) return iso >= RANGE_FROM && iso <= RANGE_TO;
-    return iso >= state.todayISO && iso <= T.addDays(state.todayISO, FREE_DAYS - 1);
+    var w = trialWindow();
+    return !!w && iso >= w.start && iso <= w.end;
   }
-  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다) */
+  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다)
+      무료 3일을 다 쓴 뒤에는 오늘도 포함해 전부 잠긴다. */
   function isOpenDay(iso) {
     if (state.unlocked) return true;
-    return !FREE_TRIAL_ENABLED || iso >= state.todayISO;
+    if (!FREE_TRIAL_ENABLED) return true;
+    if (trialOver()) return false;
+    return iso >= state.todayISO;
   }
   function infoFor(iso) {
     if (!state.natal) return null;
@@ -1214,21 +1262,25 @@
     }, 180);
   }
   /** 사용법 팝업 맨 위 '3일 무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
-      날짜는 오늘~모레(FREE_DAYS=3)를 오늘 기준으로 계산해 넣는다. */
+      날짜는 첫 방문일~첫 방문일+2(FREE_DAYS=3)로 고정. 체험이 끝났으면 종료 안내로 바꾼다. */
   function syncGuideTrial() {
     var el = $('#guideTrial');
     if (!el) return;
     var on = FREE_TRIAL_ENABLED && !state.unlocked;
     el.hidden = !on;
     if (!on) return;
-    var sub = $('#guideTrialSub');
-    if (!sub || !state.todayISO || !T.addDays) return;
-    var endIso = T.addDays(state.todayISO, FREE_DAYS - 1);
-    var md = function (iso) {
-      var p = String(iso).split('-');
-      return parseInt(p[1], 10) + '/' + parseInt(p[2], 10);
-    };
-    sub.textContent = md(state.todayISO) + '~' + md(endIso) + ' 무료 · 부담 없이 먼저 써 보세요';
+    var head = $('#guideTrialH'), sub = $('#guideTrialSub');
+    var w = trialWindow();
+    if (trialOver()) {
+      el.classList.add('is-over');
+      if (head) head.innerHTML = '🎁 무료 ' + FREE_DAYS + '일 체험이 끝났어요';
+      if (sub) sub.textContent = '입장 코드를 넣으면 전체가 열려요 · 카톡으로 보내 드려요';
+      return;
+    }
+    el.classList.remove('is-over');
+    if (head) head.innerHTML = '🎁 지금 <b>' + FREE_DAYS + '일 무료 체험</b> 중';
+    if (!sub || !w) return;
+    sub.textContent = mdOf(w.start) + '~' + mdOf(w.end) + ' 무료 · 부담 없이 먼저 써 보세요';
   }
   /** 달력이 처음 열릴 때 한 번 — 이미 본 기기면 아무 것도 하지 않는다 */
   function maybeAutoGuide() {
@@ -1837,6 +1889,7 @@
   /** 말풍선을 띄울 날 — 이번 달 안에서만. 없으면 '' */
   function hintIsoFor(v, dim) {
     if (state.hintOff || !state.res) return '';
+    if (trialOver()) return '';                        // 체험이 끝나면 붙일 수 있는 날이 없다
     if (stampCount()) return '';                       // 부적을 한 번이라도 붙였으면 안내 끝
     var t = T.parseISO(state.todayISO);
     if (t.y !== v.y || t.m !== v.m) return '';         // 지금 보고 있는 달에 오늘이 있을 때만
@@ -1884,6 +1937,7 @@
       if (info.dow === 6) cls.push('day--sat');
       if (iso < state.todayISO) cls.push('day--past');
       else if (FREE_TRIAL_ENABLED && inFree(iso)) cls.push('day--free');
+      else if (FREE_TRIAL_ENABLED && !state.unlocked && trialOver()) cls.push('day--locked');   // 체험 종료 — 오늘도 잠금
       if (iso === state.todayISO) cls.push('is-today');
       if (iso === state.sel) cls.push('is-sel');
 
@@ -1977,10 +2031,17 @@
 
     renderSaeun(v, dim);
 
-    var freeEnd = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    var noteText = (!FREE_TRIAL_ENABLED || state.unlocked)
-      ? '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.'
-      : freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+    syncTrialState();                     // 첫 방문일 기록이 끝난 뒤 문구 상태(체험 중/종료)를 맞춘다
+    var tw = trialWindow();
+    var freeEnd = tw ? T.parseISO(tw.end) : null;
+    var noteText;
+    if (!FREE_TRIAL_ENABLED || state.unlocked) {
+      noteText = '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.';
+    } else if (trialOver() || !freeEnd) {
+      noteText = '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 입장 코드를 넣으면 2026년 11월부터 2027년 12월까지 전체가 열려요.';
+    } else {
+      noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
+    }
     $('#calNote').textContent = noteText;
 
     // 📖 내 성찰 기록 보기 버튼의 일수
@@ -2248,15 +2309,20 @@
 
   /** 무료 체험 중 '지난 날'을 눌렀을 때 — 왜 안 열리는지와 여는 방법 (2026-11-21 QA M3) */
   function pastDayModalHTML(info) {
-    var fe = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
+    var tw = trialWindow();
+    var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
+    var ws = tw ? T.parseISO(tw.start) : T.parseISO(state.todayISO);
     var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
     var markHtml = marks.map(function (m) {
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
-    return lockHeadHTML(info, 'FREE TRIAL · 지난 날') +
+    return lockHeadHTML(info, trialOver() ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · 지난 날') +
       '<p class="lock__title">🕘 지난 날이에요</p>' +
-      '<p class="lock__sub">무료 체험은 오늘부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
-      '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.</p>' +
+      '<p class="lock__sub">' + (trialOver()
+        ? '무료 ' + FREE_DAYS + '일 체험(' + ws.m + '월 ' + ws.d + '일~' + fe.m + '월 ' + fe.d +
+          '일)이 끝났어요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.'
+        : '무료 체험은 ' + ws.m + '월 ' + ws.d + '일부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
+          '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
@@ -2268,14 +2334,22 @@
     var markHtml = marks.map(function (m) {
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
-    var fe = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    return lockHeadHTML(info, 'FREE TRIAL · 3 DAYS') +
-      '<p class="lock__title">🔒 3일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>' +
+    var tw = trialWindow();
+    var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
+    var ws = tw ? T.parseISO(tw.start) : null;
+    var over = trialOver();
+    return lockHeadHTML(info, over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · 3 DAYS') +
+      (over
+        ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>입장 코드를 넣으면 전체가 열려요</p>'
+        : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>') +
       '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>내 생년월일·성별 전용 코드</b>를 카톡으로 보내 드려요</p>' +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
-      '<p class="lock__hint">이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
-      '입장 코드를 넣으면 이 사주로 지난 날까지 전부 열려요.</p>' +
+      '<p class="lock__hint">' + (over
+        ? '무료 체험은 ' + (ws ? ws.m + '월 ' + ws.d + '일~' : '') + fe.m + '월 ' + fe.d +
+          '일이었어요. 입장 코드를 넣으면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'
+        : '이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
+          '입장 코드를 넣으면 이 사주로 지난 날까지 전부 열려요.') + '</p>' +
       '<div class="lock__actions">' +
       lockShopButtonsHTML() +
       '</div>' +
@@ -2819,7 +2893,8 @@
   /** 무료 체험 중이면 결제 팝업 상단에 '먼저 3일 무료' 안내 한 줄 — 결제 전에 체험부터 */
   function trialShopNote() {
     if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
-    return '<p class="shop__trial">먼저 <b>오늘부터 3일</b>을 무료로 써 보세요. 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
+    if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
+    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 보신 생년월일·성별에 묶인 <b>전용 코드</b>를 카톡으로 보내 드려요.</p>';
   }
   function passShopHTML() {
     return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
@@ -4779,8 +4854,6 @@
      코드가 맞으면 localStorage 에 저장 — 새로고침해도 그 기기에서는 계속 열린다. */
   function syncLockUI() {
     var btn = $('#lockBtn'), msg = $('#lockMsg'), reset = $('#lockReset');
-    // 무료 체험 문구(js-trial)는 체험이 켜져 있고 아직 코드를 넣지 않았을 때만
-    var trialMode = !!(FREE_TRIAL_ENABLED && !state.unlocked);
     if (btn) {
       btn.textContent = !state.unlocked ? '🔑 입장 코드 입력'
         : (state.tier === 'diary' ? '🔓 성찰 에디션 적용됨'
@@ -4837,7 +4910,8 @@
         bindNote.innerHTML = (state.mismatch.code && state.mismatch.code.code ? '🔒 이 코드는 <b>' : '🔒 이 기기에 저장된 이용권은 <b>') +
           esc(codeOwnerLabel(state.mismatch.code)) + '</b> 사주 전용이에요.' +
           (state.mismatch.id
-            ? ' 지금 넣으신 사주(<b>' + esc(state.mismatch.id.label) + '</b>)로는 열리지 않아 <b>3일 무료 체험</b>으로 보여 드려요.'
+            ? ' 지금 넣으신 사주(<b>' + esc(state.mismatch.id.label) + '</b>)로는 열리지 않아 ' +
+              (trialOver() ? '<b>지금은 잠겨 있어요</b>.' : '<b>' + FREE_DAYS + '일 무료 체험</b>으로 보여 드려요.')
             : ' 코드 주인의 사주를 넣어야 열려요.');
       } else if (state.unlocked && id) {
         bindNote.hidden = false;
@@ -4850,7 +4924,7 @@
     if (reset) reset.hidden = !state.unlocked;
     if (msg && state.unlocked && !msg.textContent) msg.textContent = '이 기기에서는 이미 열려 있어요.';
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
-    document.body.setAttribute('data-trial', trialMode ? 'on' : 'off');
+    syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
   }
   function openLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
@@ -4876,7 +4950,7 @@
     if (msg) {
       msg.textContent = '이 코드는 ' + codeOwnerLabel(code) + ' 사주 전용이에요.' +
         (id ? ' 지금 넣으신 사주(' + id.label + ')로는 열리지 않아요.' : ' 코드 주인의 사주를 넣어야 열려요.') +
-        (stillOpen ? '' : ' 지금은 3일 무료 체험으로만 열려 있어요.');
+        (stillOpen ? '' : (trialOver() ? ' 무료 체험도 끝나 지금은 잠겨 있어요.' : ' 지금은 ' + FREE_DAYS + '일 무료 체험으로만 열려 있어요.'));
       msg.classList.remove('is-ok');
     }
     var panel = $('#lockPanel');
@@ -4937,8 +5011,8 @@
 
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
-    // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open)를 스위치에 맞춰 보인다
-    document.body.setAttribute('data-trial', FREE_TRIAL_ENABLED ? 'on' : 'off');
+    // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
+    syncTrialState();
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
@@ -4995,6 +5069,9 @@
     });
     var lockGo = $('#lockGo');
     if (lockGo) lockGo.addEventListener('click', function (e) { e.preventDefault(); tryUnlock(); });
+    // 달력 위 '무료 3일 체험이 끝났어요' 줄 — 누르면 코드 입력 패널을 바로 연다
+    var trialStrip = $('#calTrialOver');
+    if (trialStrip) trialStrip.addEventListener('click', function (e) { e.preventDefault(); openLockPanel(); });
     var lockInput = $('#lockCode');
     if (lockInput) lockInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
