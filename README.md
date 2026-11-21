@@ -745,7 +745,7 @@ python3 -m http.server 8000
   - `.../calendar/assets/og-timing-2027.png` → HTTP 200, `content-type: image/png`, 222,095 bytes, 실제 디코딩 800×400(원본과 sha256 일치).
   - 외부 OG 검사(opengraph.xyz) 결과: 제목 25자·설명 70자·이미지 정상 로드(217KB)·`twitter:card` 인식·`og:site_name` 인식 — Good 11건.
   - 남은 경고 2건은 참고용: ① 800×400은 페이스북·X가 선호하는 1.91:1(1200×630)과 달라 그쪽에선 위아래가 조금 잘릴 수 있음(카톡 2:1에는 정확) ② 이미지 안에 CTA 문구 없음.
-- **카톡 캐시** — 이미 보낸 링크의 말풍선은 그대로 남고, 같은 URL을 다시 붙일 때 예전 카드가 뜨면 [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에 URL을 넣고 `캐시 초기화`가 필요합니다(카카오 계정 로그인 필요 — 원격 브라우저에서는 로그인할 수 없어 사용자 손이 필요).
+- **카톡 캐시 초기화 완료(2026-11-21 11:20 KST)** — [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에 `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/`를 넣고 조회해 보니 **캐시에 구버전**(`og:title` `내 인생 타이밍 캘린더 · 윤이세`, `og:image`·`og:site_name` 없음)이 남아 있었습니다. `캐시 초기화` → `1개의 스크랩 정보가 삭제되었습니다.` → 같은 URL 재조회에서 `og:url`·`og:title`·`og:description`·`og:image`·`og:site_name` 모두 새 값으로 반환되고, **미리보기 카드에 800×400 이미지·새 제목·설명·도메인이 그대로 표시**되는 것까지 확인했습니다(캡처: `work/kakao-preview-real-2026-11-21.png`). 이미 채팅방에 보내 둔 말풍선은 보낸 시점 모습 그대로 남고, 앞으로 새로 붙이는 링크부터 새 카드가 뜹니다.
 - **가격 없는 OG 카드 대안(저장소 밖)** — `work/og-timing-2027-noprice.png`(같은 디자인 시스템, 800×400, 가격 3단 대신 `조심할 날은 피하고 / 막힌 운은 태워 비우기` 문구). 링크 미리보기에서 가격이 먼저 보이지 않게 하고 싶을 때 이 파일로 갈아끼우면 됩니다.
 - 미리보기 예상 모형(실제 카톡 캡처 아님): `work/kakao-og-preview-mock-2026-11-21.png`(현재 적용안) · `work/kakao-og-preview-mock-noprice-2026-11-21.png`(대안)
 - 남은 불일치: 페이지 본문 h1은 아직 `내 인생 타이밍 캘린더`입니다. 탭·공유 제목만 바꾼 상태이니, 히어로 제목까지 맞출지는 별도 판단이 필요합니다.
