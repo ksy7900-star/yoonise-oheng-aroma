@@ -140,7 +140,7 @@ body.locked{overflow:hidden}
   box-shadow:0 10px 22px -20px rgba(29,28,25,.5);
   -webkit-appearance:none; appearance:none;
 }
-.gate__pin::placeholder{color:transparent}
+.gate__pin::placeholder{color:#D5CCBB; letter-spacing:.45em; text-indent:.45em; font-size:20px}
 .gate__pin:focus{outline:none; border-color:rgba(174,138,80,.8); box-shadow:0 0 0 3px rgba(174,138,80,.14)}
 .gate__err{margin:10px 0 0; font-size:11.5px; color:#A0503C; line-height:1.5; min-height:17px}
 .gate__btn{
@@ -171,7 +171,7 @@ body.locked{overflow:hidden}
     <p class="gate__sub">비밀번호 4자리를 눌러 주세요</p>
     <input id="pin" class="gate__pin" type="password" inputmode="numeric" pattern="[0-9]*"
            maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false"
-           enterkeyhint="go" aria-label="비밀번호 4자리">
+           enterkeyhint="go" aria-label="비밀번호 4자리" placeholder="••••">
     <p class="gate__err" id="gateErr" role="alert"></p>
     <button type="button" class="gate__btn" id="gateBtn">열기</button>
     <p class="gate__foot">나영 님만 쓰는 페이지예요.<br>비밀번호는 이 화면에서만 확인해요.</p>
@@ -650,6 +650,7 @@ body.locked{overflow:hidden}
     gate.hidden = true;
     document.body.classList.remove('locked');
     app.hidden = false;
+    window.scrollTo(0, 0);
     try { sessionStorage.setItem(SKEY, '1'); } catch (e) {}
   }
   function lockApp() {
@@ -700,7 +701,6 @@ body.locked{overflow:hidden}
   var already = false;
   try { already = sessionStorage.getItem(SKEY) === '1'; } catch (e) {}
   if (already) openApp();
-  else setTimeout(function () { try { inp.focus(); } catch (e) {} }, 150);
 
   /* 확인용(콘솔 테스트) — 해시 계산기만 내보낸다. 비밀번호는 어디에도 없다. */
   window.YoonKey = { sha256Hex: sha256Hex, sha256HexSync: sha256HexSync, pinHash: PIN_HASH };
