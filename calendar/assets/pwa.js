@@ -113,18 +113,16 @@
   function contentFor(kind) {
     if (kind === 'inapp') {
       var where = isKakao() ? '카톡' : '네이버';
-      var toBrowser = isIOS() ? '사파리' : '크롬이나 삼성 인터넷';
-      var openStep = isIOS() ? '<b>다른 브라우저로 열기</b>(사파리)' : '<b>다른 브라우저로 열기</b>';
+      var toBrowser = isIOS() ? '사파리' : '크롬(또는 인터넷)';
       return '<p class="install__eyebrow">INSTALL</p>' +
-        '<h2 class="install__t" id="installTitle">여기선 설치가 안 돼요</h2>' +
-        '<p class="install__d"><b>' + where + ' 안에서는 홈 화면 설치가 막혀 있어요.</b><br>' +
-        '오른쪽 위(또는 아래) 메뉴에서 ' + openStep + '를 누른 뒤, ' + toBrowser + '에서 다시 열어 주세요.</p>' +
+        '<h2 class="install__t" id="installTitle">10초면 바탕화면에 앱으로 깔려요</h2>' +
+        '<p class="install__d"><b>' + where + '에서는 바로 설치 버튼이 숨겨져 있어요.</b><br>' +
+        (isIOS() ? '사파리' : '크롬이나 삼성 인터넷') + '에서 한 번만 열면 바로 깔립니다.</p>' +
         stepsHTML([
-          ['1', '오른쪽 위 <b>점 세 개</b> 또는 아래 메뉴를 눌러요'],
-          ['2', openStep + '를 골라요'],
-          ['3', '열린 페이지에서 <b>📲 홈 화면에 설치하기</b>를 다시 눌러요']
+          ['1', '아래 <b>📋 주소 복사하기</b>를 눌러요'],
+          ['2', toBrowser + ' 앱을 열어 주소창에 붙여넣어요'],
+          ['3', '열린 화면에서 <b>📲 앱 설치</b>를 누르면 끝!']
         ]) +
-        '<p class="install__hint">주소를 복사해 두면 ' + (isIOS() ? '사파리' : '브라우저') + ' 주소창에 붙여 넣기만 하면 돼요.</p>' +
         COPY_BTN;
     }
     if (kind === 'ios') {
