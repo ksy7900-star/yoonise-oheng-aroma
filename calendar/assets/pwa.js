@@ -183,8 +183,8 @@
     lastFocus = document.activeElement;
     modal.hidden = false;
     document.body.classList.add('is-modal-open');
-    var focusTarget = dialog.querySelector('.modal__close');
-    if (focusTarget) focusTarget.focus({ preventScroll: true });
+    /* 닫기(✕)에 초점을 주면 닫기 버튼에 테두리가 잡혀 '닫으세요'처럼 보인다 — 팝업 자체에 초점 */
+    try { dialog.focus({ preventScroll: true }); } catch (e) {}
     dialog.scrollTop = 0;
   }
 
