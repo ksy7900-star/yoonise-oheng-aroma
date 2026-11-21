@@ -1219,12 +1219,14 @@
     }, 180);
   }
 
-  /* ── 첫 방문 사용법 팝업 (2026-11-21c) ───────────────────────
-     사주를 넣어 달력이 처음 열릴 때 **딱 한 번** 자동으로 뜬다.
-     뜬 사실을 localStorage 에 남겨 재방문 때는 조용하고, 달력 위
-     `? 사용법` 버튼(.cal__help)으로는 언제든 다시 열 수 있다. */
+  /* ── 첫 방문 사용법 팝업 (2026-11-21i) ───────────────────────
+     사이트에 **처음 들어오자마자**(사주를 넣기 전) 딱 한 번 자동으로 뜬다.
+     닫으면(바로 해보기·✕·배경·Esc 어느 쪽이든) 그 사실을 localStorage 에 남기고
+     아래 사주 입력 폼으로 안내한다. 이후 달력이 열려도 다시 뜨지 않고,
+     달력 위 `? 사용법` 버튼(.cal__help)으로는 언제든 다시 열 수 있다. */
   var GUIDE_KEY = 'yoonise.timing.guide.v1';
   var guideEl = null, guideDialog = null, guideLastFocus = null, guideClosing = false;
+  var guideShown = false;   // 이번 페이지 로드에서 이미 띄웠는가 — 자동 오픈은 한 번만
 
   function guideSeen() {
     try { return localStorage.getItem(GUIDE_KEY) === '1'; } catch (e) { return true; }  // 저장이 막힌 환경에서는 자동 팝업을 띄우지 않는다
@@ -1232,6 +1234,8 @@
   function markGuideSeen() {
     try { localStorage.setItem(GUIDE_KEY, '1'); } catch (e) {}
   }
+  /** 사주를 넣기 전(입력 화면)인지 — 이때는 팝업을 닫으면 입력 폼으로 데려간다 */
+  function guideAtEntry() { return !state.res; }
   /** 열려 있는 팝업이 하나라도 있으면 body 스크롤 잠금을 유지한다 */
   function anyModalOpen() {
     var els = [modalEl, shopEl, dbookEl, talisEl, burnEl];
@@ -1240,6 +1244,7 @@
   }
   function openGuide(quiet) {
     if (!guideEl || !guideEl.hidden) return;
+    guideShown = true;
     syncGuideTrial();
     guideLastFocus = document.activeElement;
     guideEl.hidden = false;
@@ -1250,6 +1255,8 @@
   function closeGuide() {
     if (!guideEl || guideEl.hidden || guideClosing) return;
     guideClosing = true;
+    markGuideSeen();          // 닫는 방법과 상관없이 '한 번 봤다'로 기록 — 다음 방문부터는 조용히
+    var toForm = guideAtEntry();
     guideEl.classList.add('is-closing');
     setTimeout(function () {
       guideEl.classList.remove('is-closing');
@@ -1259,17 +1266,30 @@
       var target = guideLastFocus;
       if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
       guideLastFocus = null;
+      /* 첫 접속 팝업을 닫았으면 바로 사주 입력 칸으로 — 한 번 더 찾아 헤매지 않게 */
+      var fc = toForm ? $('#formCard') : null;
+      if (fc && !fc.hidden) {
+        try { fc.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { fc.scrollIntoView(); }
+      }
     }, 180);
   }
   /** 사용법 팝업 맨 위 '3일 무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
       날짜는 첫 방문일~첫 방문일+2(FREE_DAYS=3)로 고정. 체험이 끝났으면 종료 안내로 바꾼다. */
   function syncGuideTrial() {
+    syncGuideCopy();
     var el = $('#guideTrial');
     if (!el) return;
     var on = FREE_TRIAL_ENABLED && !state.unlocked;
     el.hidden = !on;
     if (!on) return;
     var head = $('#guideTrialH'), sub = $('#guideTrialSub');
+    if (guideAtEntry()) {
+      /* 달력을 아직 열기 전 — 체험은 사주를 넣는 날부터 시작된다 */
+      el.classList.remove('is-over');
+      if (head) head.innerHTML = '🎁 사주를 넣는 날부터 <b>' + FREE_DAYS + '일 무료</b>';
+      if (sub) sub.textContent = '부담 없이 먼저 써 보고, 마음에 들면 코드로 열어요';
+      return;
+    }
     var w = trialWindow();
     if (trialOver()) {
       el.classList.add('is-over');
@@ -1282,11 +1302,20 @@
     if (!sub || !w) return;
     sub.textContent = mdOf(w.start) + '~' + mdOf(w.end) + ' 무료 · 부담 없이 먼저 써 보세요';
   }
-  /** 달력이 처음 열릴 때 한 번 — 이미 본 기기면 아무 것도 하지 않는다 */
-  function maybeAutoGuide() {
-    if (guideSeen()) return;
-    markGuideSeen();          // 닫는 방법과 상관없이 '한 번 보여 줬다'로 기록
-    setTimeout(function () { openGuide(true); }, 520);   // 스크롤이 달력에 닿은 뒤에 뜨게
+  /** 팝업 부제 — 사주를 넣기 전에는 '넣는 칸으로 간다'를, 달력이 열린 뒤에는 사용법을 말한다 */
+  function syncGuideCopy() {
+    var sub = $('#guideSub');
+    if (!sub) return;
+    sub.textContent = guideAtEntry()
+      ? '생년월일만 넣으면 시작 — 내 사주 달력을 열어 드려요'
+      : '네 번만 따라 하면 오늘 바로 쓸 수 있어요';
+  }
+  /** 첫 방문 한 번 — 사주를 넣기 전이라도 페이지가 열리면 바로 띄운다.
+      이미 본 기기면 아무 것도 하지 않는다. delay 는 화면이 한 번 그려진 뒤 뜨게 하는 여유. */
+  function maybeAutoGuide(delay) {
+    if (guideShown || guideSeen()) return;
+    guideShown = true;
+    setTimeout(function () { openGuide(true); }, typeof delay === 'number' ? delay : 520);
   }
 
   /* ── 토스트 (복사 완료·입장 코드 안내) ───────────────────── */
@@ -5666,6 +5695,8 @@
         $('#formCard').hidden = false;
       }
     }
+    /* 첫 접속 — 사주를 넣기 전이라도 페이지가 열리면 사용법 팝업을 한 번 띄운다 */
+    maybeAutoGuide(saved ? 420 : 60);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
