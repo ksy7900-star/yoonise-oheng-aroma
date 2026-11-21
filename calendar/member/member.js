@@ -55,7 +55,9 @@
   var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
   var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 비밀키 아님(공개 전제)
   var MEMBER_PATH = '/yoonise-oheng-aroma/calendar/member/';
-  var LIVE_BASE = 'https://ksy7900-star.github.io' + MEMBER_PATH;
+  var LIVE_BASE = 'https://ksy7900-star.github.io' + MEMBER_PATH;      // 케미·사다리 화면 주소
+  var CALENDAR_PATH = '/yoonise-oheng-aroma/calendar/';
+  var CALENDAR_LIVE_BASE = 'https://ksy7900-star.github.io' + CALENDAR_PATH;   // 친구 초대 링크는 달력 메인으로 (2026-11-22)
   var REF_KEY = 'yoonise.member.ref.v1';
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
   var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 5일 무료·액운 +1회를 줄 때 본다
@@ -186,13 +188,15 @@
 
   /* ── 초대 코드·링크 ─────────────────────────────── */
   function myCode() { return (state.profile && state.profile.invite_code) || ''; }
+  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 5일 체험·액운 6회가 바로 열리고,
+     케미는 보내는 사람이 '케미 링크'로 따로 보낸다(chemiLink → /calendar/member/?chemi=...). 2026-11-22 */
   function myLink(withCode) {
     var code = myCode();
-    if (code && withCode !== false) return LIVE_BASE + '?ref=' + encodeURIComponent(code);
-    return LIVE_BASE;
+    if (code && withCode !== false) return CALENDAR_LIVE_BASE + '?ref=' + encodeURIComponent(code);
+    return CALENDAR_LIVE_BASE;
   }
   function myDisplayLink() {
-    return myCode() ? LIVE_BASE + '?ref=' + encodeURIComponent(myCode()) : LIVE_BASE + '?ref=내코드';
+    return myCode() ? CALENDAR_LIVE_BASE + '?ref=' + encodeURIComponent(myCode()) : CALENDAR_LIVE_BASE + '?ref=내코드';
   }
   function shareLine() {
     return '2027년 사주 달력 같이 보자 🌙\n'
@@ -2819,6 +2823,15 @@
     }
     state.refPending = pendingRef();
     state.refFrom = state.refPending ? (storedRefFrom() || from) : from;
+    /* 달력(/calendar/?ref=)에서 넘어온 코드 — 주소에 ?ref= 가 없어도 이미 저장돼 있으면 이어 쓴다.
+       달력이 '초대받은 손님'으로 보이게 하는 표시(INVITED_KEY)도 함께 남겨 둔다. */
+    if (state.refPending) {
+      var hadInvited = '';
+      try { hadInvited = localStorage.getItem(INVITED_KEY) || ''; } catch (e) { hadInvited = ''; }
+      if (!hadInvited) {
+        try { localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: state.refPending, at: new Date().toISOString() })); } catch (e) { }
+      }
+    }
     /* 초대받은 손님이 달력으로 넘어가도 5일·액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
     var toCal = $('#toCalendar');
     if (toCal && state.refPending) toCal.href = '../?ref=' + encodeURIComponent(state.refPending);

@@ -60,6 +60,25 @@
     return '';
   }
 
+  /* ── /calendar/ → /calendar/member/ 로 넘어갈 때 초대 코드 이어 주기 (2026-11-22)
+     친구 초대 링크는 이제 달력(/calendar/?ref=코드)으로 들어온다. 그 손님이 '친구 초대·케미'를
+     눌러 케미 화면으로 넘어가도 내 초대 코드가 그대로 따라가야 로그인 뒤 attach_referrer 로 이어진다. */
+  function memberHref() {
+    return './member/' + (inviteRef ? '?ref=' + encodeURIComponent(inviteRef) : '');
+  }
+  /** index.html 에 박혀 있는 './member/' 링크 전부에 대기 중인 초대 코드를 붙인다 */
+  function syncMemberLinks() {
+    if (!inviteRef) return;
+    var as = $$('a[href]');
+    for (var i = 0; i < as.length; i++) {
+      var a = as[i];
+      var h = a.getAttribute('href') || '';
+      if (h.indexOf('./member/') !== 0 && h.indexOf('/yoonise-oheng-aroma/calendar/member/') !== 0) continue;
+      if (h.indexOf('ref=') >= 0) continue;
+      a.setAttribute('href', h + (h.indexOf('?') >= 0 ? '&' : '?') + 'ref=' + encodeURIComponent(inviteRef));
+    }
+  }
+
   /* ── 개인 전용 입장 코드 (1결제 = 1번호, 2026-11-21부터) ──────────────────
      결제한 손님의 **휴대폰 번호**(결제할 때 넣은 번호)에 비밀 salt 서명을 묶은 코드입니다.
      기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
@@ -2730,7 +2749,7 @@
     return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
       '<p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>' +
-      '<a class="invitecard__go" href="./member/">친구 초대·케미로 열기 →</a>' +
+      '<a class="invitecard__go" href="' + memberHref() + '">친구 초대·케미로 열기 →</a>' +
       '</div>';
   }
   /** 잠금 팝업 하단 — 결제 버튼 아래, 부담 없는 친구 초대 링크 (2026-11-21) */
@@ -6304,6 +6323,7 @@
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
     syncTrialState();
     syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
+    syncMemberLinks();     // 초대 코드로 들어온 손님이 케미 화면으로 넘어갈 때 코드가 따라가게 (2026-11-22)
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
