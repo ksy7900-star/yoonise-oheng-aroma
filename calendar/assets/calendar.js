@@ -613,15 +613,15 @@
     var firstGood = d.good[0] ? d.good[0].m + '월' : '';
     $('#yearLead').innerHTML = locked
       ? (teaserCount
-        ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
+        ? '2027년에 가장 조심해야 할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
           d.good.length + '달</b>이 잡혔어요. 그중 <b class="y-bad">' + teaserCount + '달만</b> 먼저 열어 드렸어요.' +
           '<span class="year__lead-lock">🔒 나머지 ' + (d.warn.length + d.good.length - teaserCount) + '달은 1년 패스부터 확인</span>'
-        : '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
+        : '2027년에 가장 조심해야 할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
           d.good.length + '달</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>')
       : (firstWarn && firstGood
-        ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
+        ? '2027년에 가장 조심해야 할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
         : (firstWarn
-          ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>이에요.'
+          ? '2027년에 가장 조심해야 할 달은 <b class="y-bad">' + firstWarn + '</b>이에요.'
           : (firstGood
             ? '2027년에 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
             : '2027년은 어느 달도 유난히 치우치지 않고 고르게 열려 있어요.')));
