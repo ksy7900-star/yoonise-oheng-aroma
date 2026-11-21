@@ -1777,7 +1777,7 @@
     /* ① 훅 · 훅 아래 한 줄 — 조합 해시로 24가지 훅 중 하나 */
     var hook = pickFrom(HOOK[rel] || HOOK.friend, seed, 'hook');
     var roleSet = (ROLE[rel] || ROLE.friend)[mk] || (ROLE[rel] || ROLE.friend).same;
-    var role = pickFrom(roleSet, seed, 'role');
+    var role = pickFrom(roleSet, seed + '#' + domElement(b) + (b.counts[b.natal.element] || 0), 'role');
 
     /* ② 각자 보완할 점 — 상대가 바뀌면 문장이 바뀐다. 두 사주를 겹친 갈래로 한 줄씩 */
     var comps = [a, b].map(function (ch, i) {
