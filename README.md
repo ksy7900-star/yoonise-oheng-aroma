@@ -764,3 +764,32 @@ python3 -m http.server 8000
   - 캡처: `work/kakao-debugger-before-reset-2026-11-21.png` · `work/kakao-debugger-after-reset-card-2026-11-21.png` · `work/kakao-debugger-after-reset-ogtags-2026-11-21.png`
 - **주의** — 이미 보낸 말풍선은 보낸 시점 모습 그대로 남고, 새로 붙이는 링크부터 새 카드가 뜹니다. `?v=`가 붙은 URL은 별개 URL로 스크랩되므로 별도 초기화 없이 새 OG를 읽습니다.
 - 남은 불일치(§48과 동일): 페이지 본문 h1은 아직 `내 인생 타이밍 캘린더`입니다.
+
+## 50. 2026-11-21 — 캘린더를 홈 화면 앱(PWA)으로 — 전용 아이콘·manifest·서비스 워커·설치 버튼
+
+김나영 님 지시: `/calendar/`를 **홈 화면에 앱처럼 설치**할 수 있게 만들고, 앱 아이콘을 한지·먹색·금박 톤으로 새로 제작. 1회용 `yoon-key/` 발급기는 손대지 않았습니다.
+
+- **아이콘 3종(`calendar/assets/`)** — 2048px 원본을 그려 다운샘플. 크림 한지 바탕 + 먹 원판 + 금박 초승달 + 12시(時) 눈금 테두리.
+  - `icon-192.png` 192×192 · 20,833B / `icon-512.png` 512×512 · 71,522B / `apple-touch-icon.png` 180×180 · 19,098B (모두 RGB, 투명 없음)
+  - 생성 스크립트: `work/qa21k/make-icons.py` (원본 `work/qa21k/icon-master-2048.png` — 저장소 밖)
+- **manifest(`calendar/manifest.webmanifest`)** — `name` `윤이세 사주 달력` · `short_name` `사주달력` · `start_url`·`scope` `/yoonise-oheng-aroma/calendar/` · `display` `standalone` · `background_color`·`theme_color` `#F7F3EB` · `lang ko` · `orientation portrait` · 아이콘 192(any)/512(any)/512(maskable).
+- **`<head>`(`calendar/index.html`)** — `link[rel=manifest]` · `link[rel=apple-touch-icon sizes=180x180]` · `apple-mobile-web-app-capable` · `mobile-web-app-capable` · `apple-mobile-web-app-status-bar-style default` · `apple-mobile-web-app-title`·`application-name` `사주달력`. 기존 `theme-color #F7F3EB` 그대로.
+- **서비스 워커(`calendar/sw.js`, 85줄)** — `network-first`(항상 네트워크 먼저, 실패 시 캐시 → 내비게이션이면 캐시된 `index.html` → 그래도 없으면 503 안내문) · `install`에서 `skipWaiting()` · `activate`에서 옛 캐시 삭제 후 `clients.claim()` · `SKIP_WAITING` 메시지 처리 · 캐시 이름 `yoonise-cal-20261121k`(버전 바뀌면 자동 정리). 캐시는 same-origin GET만.
+- **설치 버튼(`calendar/assets/pwa.js`, 270줄 + `style.css`)** — 히어로 바로 아래 상단 바(먹색 카드 · 금박 제목) `📲 홈 화면에 앱으로 설치하기 / 주소 안 찾아도 돼요 · 아이콘만 누르면 열려요`, 닫기 ✕는 세션 동안만.
+  - `beforeinstallprompt`가 잡히면 누르는 즉시 **네이티브 설치 창**. 사용자가 스스로 닫으면 다음부터는 안내 팝업으로.
+  - 카톡·네이버 인앱: `여기선 설치가 안 돼요` → 1) 오른쪽 위 점 세 개 또는 아래 메뉴 2) **다른 브라우저로 열기** 3) 열린 페이지에서 다시 설치 + **주소 복사하기**(클립보드 실패 시 textarea 폴백, 토스트 안내).
+  - iOS 사파리: `사파리에선 이렇게 까는 법` → 하단 공유 `□↑` → `홈 화면에 추가` → `추가`.
+  - 크롬: `크롬에서 까는 법`(점 세 개 → 앱 설치/홈 화면에 추가) · 삼성 인터넷: `삼성 인터넷에서 까는 법`(가로줄 세 개 → 홈 화면에 추가).
+  - `display-mode: standalone`(또는 iOS `navigator.standalone`)이면 버튼을 **CSS·JS 두 겹으로 숨김**. `appinstalled`에서도 숨기고 안내 토스트.
+- **배포** — 자산 버전 전부 `?v=20261121k`(CSS 1 + 스크립트 6, `pwa.js` 추가). 커밋 `ec9456b`.
+- **라이브 검증(2026-11-21 11:46~11:52 KST, 390×844 모바일 에뮬레이션)** — `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?v=20261121k`
+  - ① 페이지 200 · `manifest.webmanifest` 200 `application/manifest+json` · 필드 7종 요청값 그대로 · `icon-192/512/apple-touch-icon` 모두 200 `image/png`이고 실제 디코딩이 192²·512²·180² · `sw.js` 200 `application/javascript`(network-first·skipWaiting·clients.claim 문자열 확인) · head의 CSS·스크립트 6종 모두 `?v=20261121k`.
+  - ② SW 등록 — `getRegistrations()` 1건, scope `.../calendar/`, state `activated`, `navigator.serviceWorker.controller` true. 오프라인 재방문(로컬 서버·오프라인 전환)에서도 히어로·입력 폼이 캐시로 렌더되고 pageerror 0.
+  - ③ 설치 버튼 — 폼 화면 상단(y=366)과 사주를 연 화면 상단(y=71) 모두 노출. 클릭 시 일반 크롬은 `크롬에서 까는 법`, 카톡 UA는 `여기선 설치가 안 돼요`+주소 복사 버튼, iOS UA는 `사파리에선 이렇게 까는 법`으로 분기. 주소 복사 토스트 문구 확인. standalone 에뮬레이션에서는 버튼 hidden = true.
+  - ④ 콘솔 오류 0 · pageerror 0 (크롬/카톡/iOS/결과 화면 4개 컨텍스트 모두).
+  - ⑤ Chrome 자체 판정 — CDP `Page.getAppManifest` errors `[]`, **`Page.getInstallabilityErrors` = `[]`(설치 불가 사유 0건)**.
+  - 스크린샷: `work/qa21k/live-01-installbar.png` · `live-02-chrome-guide.png` · `live-03-kakao-inapp.png` · `live-04-ios-safari.png` · `live-05-result-top.png` (로컬 검증본은 같은 폴더 `local-*.png`)
+- **남은 확인(실기기 필요)**
+  - 안드로이드 크롬에서 실제로 뜨는 **네이티브 설치 창**과 홈 화면 아이콘 모양(마스커블 크롭)은 헤드리스에서 재현되지 않아 실기기 확인이 남음. 코드 경로와 Chrome 설치 가능 판정(오류 0)까지만 검증됨.
+  - 아이폰 사파리 `홈 화면에 추가` → standalone 실행도 실기기 확인 필요.
+  - 이미 `?v=20261121j`를 연 기기는 다음 방문에서 network-first로 새 HTML을 받고, 서비스 워커는 `skipWaiting`으로 즉시 활성화됨(별도 캐시 초기화 불필요).
