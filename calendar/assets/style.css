@@ -4683,7 +4683,7 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   color: #FBF3E1; text-shadow: 0 1px 18px rgba(255, 214, 150, .28);
   opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px);
 }
-.talis-banner__reveal.is-on { animation: talisBreathIn 6s cubic-bezier(.22, .66, .32, 1) forwards; }
+.talis-banner__reveal.is-on { animation: talisBreathIn 6s cubic-bezier(.4, 0, .32, 1) forwards; }
 @keyframes talisBreathIn {
   0%   { opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px); }
   5%   { opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px); }
@@ -4708,7 +4708,7 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   color: #8E6B2C;
   opacity: 0; transform: translateY(4px); filter: blur(2.6px);
 }
-.talis-phrase.is-on { animation: talisPhraseIn 6s cubic-bezier(.22, .66, .32, 1) forwards; }
+.talis-phrase.is-on { animation: talisPhraseIn 6s cubic-bezier(.4, 0, .32, 1) forwards; }
 @keyframes talisPhraseIn {
   0%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
   5%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
