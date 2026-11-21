@@ -3614,6 +3614,25 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .guide__cta:active { transform: translateY(1px); }
 .guide__cta:focus-visible { outline: 2px solid #8E6B2C; outline-offset: 3px; }
 
+/* 짧은 화면(높이 720px 이하) — 사용법 팝업이 꽉 차 보이지 않게 한 단계 더 조입니다 (2026-11-21j) */
+@media (max-height: 720px) {
+  .modal--guide .modal__content, .modal--welcome .modal__content { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .guide__title { font-size: 18px; }
+  .guide__title-em { font-size: 26px; }
+  .guide__sub { margin-top: 5px; font-size: 10px; }
+  .guide__steps { margin-top: 10px; gap: 6px; }
+  .guide-step { padding: 9px 12px 10px 10px; }
+  .guide-step__d { font-size: 10.4px; line-height: 1.45; }
+  .guide-step__badges { margin-top: 5px; }
+  .guide__cta { margin-top: 10px; padding: 12px 14px 13px; font-size: 15.5px; }
+  .welcome__title { font-size: 18px; }
+  .welcome__title-em { font-size: 26px; }
+  .welcome__intro { margin-top: 9px; font-size: 11.8px; line-height: 1.55; }
+  .welcome__hook { margin-top: 8px; padding: 6px 10px 7px; }
+  .welcome__cta { margin-top: 10px; padding: 13px 14px 14px; }
+  .welcome__note { margin-top: 7px; }
+}
+
 /* ==========================================================
    v6 ① 잠금 날짜 팝업 — 상품 버튼 3개에 '무엇이 들어 있는지' 한 줄 +
          위쪽 날짜가 상단 🔊 소리 / ✕ 아래에서 잘리지 않게 (2026-11-21)
