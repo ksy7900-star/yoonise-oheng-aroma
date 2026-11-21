@@ -861,13 +861,13 @@
   }
   /** 코드가 맞지 않을 때 — 무엇이 문제인지에 맞춰 한 줄로 알려 준다 */
   function codeErrorText(p) {
-    if (p.status === 'needphone') return '결제하신 휴대폰 번호를 함께 넣어 주세요 — 번호와 6자리 코드가 맞아야 열려요.';
+    if (p.status === 'needphone') return '결제하신 휴대폰 번호도 함께 넣어 주세요 — 번호와 6자리 코드가 맞아야 열려요.';
     if (p.status === 'mismatch') {
       return p.phone
         ? '번호와 코드가 맞지 않아요. 결제하실 때 넣은 번호와 카톡으로 받은 6자리를 다시 확인해 주세요.'
         : '코드가 지금 사주(' + (p.id ? p.id.label : '') + ')와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
     }
-    if (p.status === 'format') return '코드 모양이 달라요 — P·A·D 한 글자 + 숫자 5자리, 또는 예전 18자리 코드를 넣어 주세요.';
+    if (p.status === 'format') return '6자리 코드를 넣어 주세요 — 카톡으로 받은 코드를 그대로 넣으면 돼요. (예: A73914)';
     if (p.status === 'empty') return '카톡으로 받은 입장 코드를 넣어 주세요. (예: A73914)';
     return '코드가 맞지 않아요. 카톡으로 받은 코드를 다시 확인해 주세요.';
   }
@@ -4486,11 +4486,19 @@
 
   /* 상품 팝업을 닫지 않고 1년 패스 ↔ 올인원 ↔ 성찰 에디션으로 갈아탄다.
      이미 가진 등급이면 shopHTMLFor() 가 '적용 중'·'차액 업그레이드'로 그린다. */
+  /* 어느 상품 팝업 맨 아래에나 — 코드를 이미 받은 사람이 결제창을 다시 거치지 않고
+     달력 아래 **그 하나의 입력창**을 바로 여는 줄 (2026-11-21) */
+  function codeEntryHTML() {
+    return '<button type="button" class="shop__code" data-lock-open>🔑 입장 코드가 있어요 · 바로 입력</button>';
+  }
+  function shopCodeLinkHTML(kind) {
+    return (TIER_NAME[kind] || kind === 'burn') ? codeEntryHTML() : '';
+  }
   var shopKind = '';
   function switchShop(kind) {
     if (!shopBody || !TIER_NAME[kind] || kind === shopKind) return;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.innerHTML = shopHTMLFor(kind) + shopCodeLinkHTML(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
     shopBody.scrollTop = 0;
     vibrate(12);
     sfxTap(1);
@@ -4503,7 +4511,7 @@
     if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.innerHTML = shopHTMLFor(kind) + shopCodeLinkHTML(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
     shopEl.hidden = false;
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
@@ -5280,7 +5288,8 @@
           priceHTML('2027 올인원', ALLINONE_PRICE) +
           payActionsHTML('allinone') +
           kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기')) +
-      '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>';
+      '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>' +
+      codeEntryHTML();
   }
 
   /** 1년 패스 사용자의 차액 업그레이드 — 신청 내용을 복사하고 카톡 채널로 */
@@ -5545,15 +5554,22 @@
   function syncLockUI() {
     var btn = $('#lockBtn'), msg = $('#lockMsg'), reset = $('#lockReset');
     if (btn) {
-      btn.textContent = !state.unlocked ? '🔑 입장 코드 입력'
-        : (state.tier === 'diary' ? '🔓 성찰 에디션 적용됨'
-          : (state.tier === 'allinone' ? '🔓 올인원 적용됨'
-            : (state.tier === 'pass' ? '🔓 1년 패스 적용됨' : '🔑 입장 코드 입력')));
+      /* 큰 버튼(2026-11-21) — 열려 있으면 금빛에서 차분한 초록으로, 문구는 두 줄(제목·설명)로 나뉜다 */
+      var tierLabel = TIER_NAME[state.tier] || '입장 코드';
+      var tEl = $('#lockBtnT'), sEl = $('#lockBtnS'), icEl = $('#lockBtnIc');
+      if (tEl) tEl.textContent = state.unlocked ? tierLabel + ' 적용됨' : '입장 코드 입력';
+      if (sEl) sEl.textContent = state.unlocked
+        ? '이 기기에서 달력 전체가 열려 있어요 · 눌러서 확인'
+        : '카톡으로 받은 6자리 코드로 열어요';
+      if (icEl) icEl.textContent = state.unlocked ? '🔓' : '🔑';
+      /* 이미 코드가 열려 있어도 — 다른 상품 코드를 넣으면 그 상품으로 바뀌는 걸 알려 준다 */
+      var swapEl = $('#lockSwap');
+      if (swapEl) swapEl.hidden = !state.unlocked;
       btn.classList.toggle('is-on', !!state.unlocked);
       btn.setAttribute('aria-pressed', state.unlocked ? 'true' : 'false');
       btn.setAttribute('aria-label', state.unlocked
-        ? (TIER_NAME[state.tier] || '입장 코드') + ' 적용됨 — 이 사주 전체 열림'
-        : '입장 코드 입력');
+        ? tierLabel + ' 적용됨 — 이 사주 전체 열림 (눌러서 확인·해제)'
+        : '입장 코드 입력 — 결제하신 번호와 카톡으로 받은 6자리 코드로 열기');
     }
     // 지금 이 기기에 적용된 티어를 패널 안에 그대로 보여 준다
     var tierEl = $('#lockTier');
@@ -5651,8 +5667,17 @@
     syncLockUI();
     fillLockPhone();       // 결제할 때 넣은 번호를 손님이 다시 찾지 않아도 되게
     try { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
-    var inp = $('#lockCode');
-    if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) { inp.focus(); } }
+    /* 열자마자 칸으로 — 번호가 비어 있으면 번호칸, 이미 채워져 있으면 코드칸 */
+    var ph = $('#lockPhone'), inp = $('#lockCode');
+    var target = (ph && !mobileOf(ph.value)) ? ph : inp;
+    if (!target) return;
+    var focusIt = function () {
+      if (document.activeElement === target) return;
+      try { target.focus({ preventScroll: true }); } catch (e) { try { target.focus(); } catch (e2) {} }
+    };
+    focusIt();
+    /* 팝업을 닫은 직후엔 브라우저가 포커스를 되돌리므로 한 번 더 — 손님이 이미 다른 칸을 만졌으면 그대로 둔다 */
+    setTimeout(focusIt, 240);
   }
   function closeLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
@@ -5914,7 +5939,14 @@
       var lc = e.target.closest('[data-lock-open]');
       if (lc) {
         e.preventDefault();
-        if (modalEl && !modalEl.hidden) { closeDayModal(); setTimeout(openLockPanel, 200); }
+        /* 어느 팝업에서 눌렀든 — 달력 아래 그 '하나의 입력창'으로 (2026-11-21)
+           날짜 팝업·상품 팝업·액운 태우기 팝업 어디서든 같은 곳으로 열린다. */
+        var closed = false;
+        if (modalEl && !modalEl.hidden) { closeDayModal(); closed = true; }
+        if (shopEl && !shopEl.hidden) { closeShop(); closed = true; }
+        if (burnEl && !burnEl.hidden) { closeBurnModal(); closed = true; }
+        if (talisEl && !talisEl.hidden) { closeTalisModal(); closed = true; }
+        if (closed) setTimeout(openLockPanel, 210);
         else openLockPanel();
         return;
       }
@@ -6203,6 +6235,8 @@
           return;
         }
         if (e.target.closest('#payBackX')) { payWaitClear(); pb.hidden = true; }
+        /* 🔑 코드 받았어요 · 바로 입력 — 배너는 그대로 두고 입력칸만 연다 */
+        if (e.target.closest('#payBackCode')) { openLockPanel(); }
       });
       payBackCheck();
     }

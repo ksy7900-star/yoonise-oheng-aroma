@@ -4044,3 +4044,102 @@ body.is-result .installbar { margin-top: 12px; }
 }
 .invitecard--shop { margin: 4px 2px 10px; }
 .invitecard--year { margin-top: 12px; }
+
+/* ==========================================================
+   🔑 입장 코드 — 한눈에 찾기 & 문구 간편화 (2026-11-21)
+   · 달력 바로 아래 큰 버튼 하나로 (칩 속에 숨어 못 찾던 문제)
+   · 입력칸은 '휴대폰 번호 / 6자리 코드' 두 칸만, 기술 설명은 걷어 냈다
+   ========================================================== */
+.lockbar {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; margin: 12px 0 0; padding: 12px 13px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1px solid rgba(180, 83, 9, .32);
+  font-family: inherit; text-align: left; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.lockbar:hover { background: linear-gradient(135deg, #FEF9E7 0%, #FDEBC0 100%); }
+.lockbar:active { transform: translateY(1px); }
+.lockbar:focus-visible { outline: 2px solid #92400E; outline-offset: 2px; }
+.lockbar__ic { flex: 0 0 auto; font-size: 19px; line-height: 1; }
+.lockbar__txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lockbar__t {
+  font-size: 14px; font-weight: 800; color: #92400E;
+  letter-spacing: -.025em; line-height: 1.25;
+}
+.lockbar__s {
+  font-size: 10.5px; font-weight: 600; line-height: 1.45; color: #A16207;
+  letter-spacing: -.01em; word-break: keep-all;
+}
+.lockbar__chev {
+  flex: 0 0 auto; font-size: 14px; font-weight: 700; color: #B45309;
+  transition: transform .2s ease;
+}
+.lockbar[aria-expanded="true"] .lockbar__chev { transform: rotate(180deg); }
+/* 열려 있는 기기 — 차분한 초록 (더 강조하지 않는다) */
+.lockbar.is-on {
+  background: #ECFDF5; border-color: rgba(4, 120, 87, .3);
+}
+.lockbar.is-on .lockbar__t { color: #047857; }
+.lockbar.is-on .lockbar__s { color: #0F766E; }
+.lockbar.is-on .lockbar__chev { color: #047857; }
+
+/* 입력 패널 — 제목 + 안내 한 줄 + 두 칸 */
+.lockpanel__title {
+  margin: 0; font-size: 13px; font-weight: 800; color: #1E293B;
+  letter-spacing: -.02em; line-height: 1.3;
+}
+.lockpanel__guide {
+  margin: 4px 0 0; font-size: 11px; line-height: 1.55; color: #475569;
+  letter-spacing: -.01em; word-break: keep-all;
+}
+.lockpanel__field { margin-top: 10px; }
+.lockpanel__cap {
+  display: block; font-size: 10.5px; font-weight: 700; color: #64748B;
+  letter-spacing: -.01em;
+}
+.lockpanel__field .lockpanel__input { display: block; width: 100%; margin-top: 5px; }
+.lockpanel__field .lockpanel__row { margin-top: 5px; }
+
+/* 💳 복귀 배너 안 — '코드 받았어요 · 바로 입력' */
+.payback__code {
+  display: block; width: 100%; margin-top: 6px; padding: 9px 12px;
+  border-radius: 10px;
+  background: #FFFBEB; border: 1px solid rgba(180, 83, 9, .28);
+  font-family: inherit; font-size: 11.5px; font-weight: 800;
+  letter-spacing: -.015em; color: #92400E; line-height: 1.3;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .18s ease, transform .14s ease;
+}
+.payback__code:hover { background: #FEF3C7; }
+.payback__code:active { transform: translateY(1px); }
+
+@media (max-width: 360px) {
+  .lockbar { padding: 11px 12px; gap: 8px; }
+  .lockbar__t { font-size: 13px; }
+  .lockbar__s { font-size: 10px; }
+}
+
+/* 코드를 이미 받은 사람 — 상품 팝업 맨 아래에서 결제를 다시 거치지 않고 입력창으로 */
+.shop__code {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; margin-top: 10px; padding: 11px 14px;
+  border-radius: 12px;
+  background: #FFFBEB; border: 1px dashed rgba(180, 83, 9, .38);
+  font-family: inherit; font-size: 11.5px; font-weight: 800;
+  letter-spacing: -.015em; color: #92400E; line-height: 1.3;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .18s ease, transform .14s ease;
+}
+.shop__code:hover { background: #FEF3C7; }
+.shop__code:active { transform: translateY(1px); }
+
+/* 입력 패널 — 이미 열려 있을 때 '다른 상품 코드로 바꿀 수 있다' 한 줄 */
+.lockpanel__swap {
+  margin: 7px 0 0; padding: 7px 10px; border-radius: 10px;
+  background: rgba(4, 120, 87, .07); border: 1px solid rgba(4, 120, 87, .16);
+  font-size: 10.5px; line-height: 1.55; color: #0F766E;
+  letter-spacing: -.01em; word-break: keep-all;
+}
