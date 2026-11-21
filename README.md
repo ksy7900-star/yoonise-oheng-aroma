@@ -793,3 +793,30 @@ python3 -m http.server 8000
   - 안드로이드 크롬에서 실제로 뜨는 **네이티브 설치 창**과 홈 화면 아이콘 모양(마스커블 크롭)은 헤드리스에서 재현되지 않아 실기기 확인이 남음. 코드 경로와 Chrome 설치 가능 판정(오류 0)까지만 검증됨.
   - 아이폰 사파리 `홈 화면에 추가` → standalone 실행도 실기기 확인 필요.
   - 이미 `?v=20261121j`를 연 기기는 다음 방문에서 network-first로 새 HTML을 받고, 서비스 워커는 `skipWaiting`으로 즉시 활성화됨(별도 캐시 초기화 불필요).
+
+## 51. 2026-11-21 — 회원 화면 `/calendar/member/` (카카오 로그인 · 4단 추천 사다리 · 2027 케미 비교 · 스토리 카드)
+
+라이브 `/calendar/index.html` · `assets/calendar.js` · `sw.js` 는 **한 줄도 건드리지 않고** 별도 경로에만 새 화면을 세웠습니다. 계산은 기존 `assets/timing.js` · `assets/manse.js` 를 그대로 불러 씁니다(새 계산식 없음).
+
+- **새 파일 3개** — `calendar/member/index.html`(12.5KB) · `member.css`(27KB) · `member.js`(49KB). 커밋 `7c2529c`.
+- **① 카카오 로그인** — `@supabase/supabase-js@2`(CDN, publishable key만) + `signInWithOAuth({provider:'kakao', redirectTo: .../calendar/member/})`.
+  - 실제 리다이렉트 확인: `accounts.kakao.com/login` → continue 의 `redirect_uri` = `https://fifynkkaeqcjlovesuop.supabase.co/auth/v1/callback`, `redirect_to` = `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/member/`, scope `account_email profile_image profile_nickname`.
+  - `?ref=XXXXXXXX` 는 `localStorage`(`yoonise.member.ref.v1` · `yoonise.member.reffrom.v1`)에 보관 → 로그인 뒤 `profiles` 조회 → `rpc('attach_referrer')` 로 추천인 연결 시도(함수가 아직 없으면 조용히 다음 방문에 재시도).
+  - `profiles` 가 없거나(PGRST205) 응답이 늦어도 로그인 정보(닉네임·메일·아바타)와 안내 문구가 정상 표시 — 테이블 미생성 상태에서 404/PGRST205 를 실제로 확인하고 방어 문구를 넣었습니다.
+- **② 4단 사다리** — 1명 `모자이크 1달 더 열기` / 3명 `1개월권 + 액운 태우기 3회` / 5명 `3개월 패스 무료` / 10명 `6개월 패스 무료`. 달성 칸은 금박 도장, 다음 칸은 점선 원 + `N명 남음`. 게이지는 1·3·5·10 눈금에 맞춰 비례 채움. `referrals` 를 `count: exact` 로 세어 실제 숫자 사용.
+  - 실적이 없을 때(로그아웃·DB 대기)는 **`미리보기` 칩(0·1·3·5·10명)** 으로 칸이 차는 모양만 볼 수 있게 하고, 화면에 `미리보기 — 실제 숫자가 아니에요` 라고 적었습니다.
+- **③ 초대 링크** — `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/member/?ref=<invite_code>` 원터치 복사 + 공유 문구 복사(모바일은 `navigator.share`). 친구 혜택 배지 `5일 체험 + 액운 태우기 1회`.
+- **④ 2027 케미** — 두 사람 생년월일·시각·성별을 각각 `Manse.compute` → `Timing.natalOf` → `Timing.yearDigest(2027)` 로 세워 비교. 두 사람 합계 계산 0.2~0.26초.
+  - 오행 보완(빈 오행을 상대가 채우는지)·일간 생극·일지 관계(육합/충/형/해/삼합/복음)를 `Timing._internal` 로 판정.
+  - 12달 겹쳐 보기(나/너/겹침 3줄 색격자) + `같이 치고 나가는 달` + `같이 조심할 달`(둘 다 / 한쪽만 구분). 조심할 달은 달력과 같은 기준인 `yearDigest.warnMonths`(TOP 3)를 씁니다.
+  - `?chemi=YYYYMMDDHHMM-G1` 링크로 상대 사주를 넘겨 바로 비교(받는 사람은 내 사주만 넣으면 됨). 보내는 링크에는 **보내는 사람 사주만** 담깁니다.
+- **⑤ 캡처용 카드 브랜드 마크** — 케미 결과 카드·스토리 카드·사다리 카드·스토리 이벤트 카드 하단에 `🌙 2027 타이밍 캘린더 · 윤이세사주 (@life.saju_yoonise)`. 9:16 스토리 카드(330×587)는 이름·일간·오행 막대·겹치는 달·지킬 한 가지·브랜드 마크를 담아 그대로 캡처해 올릴 수 있게 만들었습니다.
+- **⑥ 인스타 스토리 이벤트 안내** — 올리는 방법 3단계(캡처 → `@life.saju_yoonise` 태그 → 24시간 안에 카톡 채널 `윤이세사주`로 캡처 전송), 필수 조건 3가지(계정 태그 / 해시태그 `#윤이세사주 #2027타이밍캘린더 #사주달력` 원터치 복사 / 전체 공개 계정), 보상 `액운 태우기 1회 추가 또는 모자이크 1달 오픈` · **1인 1회 한정** · 중복 참여 기준 명시. 카톡 링크는 `rel="noopener noreferrer"`.
+- **배포** — `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/member/` (200, Pages 반영 약 45초).
+- **라이브 검증(2026-11-21 15:2x KST, 390×844 · DPR2 · 한국어 · 서울 TZ)**
+  - 로드 0.84초 · 콘솔 오류 **0** · `pageerror` 0 · 실패 요청 0 (초대 링크 진입 / 케미 링크 진입 두 컨텍스트).
+  - 사다리 렌더 898자 · 미리보기 3명 → 숫자 3, `미리보기 숫자예요` 표시 · 배너 `초대 링크로 들어오셨어요` · 케미 계산 0.22초 · 결과 카드 브랜드 마크 문자열 확인.
+  - 케미 링크 진입: 배너 `나영님이 보낸 초대 링크예요`, 상대 칸에 `1979-10-25 13:20 · 여성` 자동 입력, 라벨 `나영 님 사주`.
+  - 스크린샷: `work/qa-member-live-01-top.png` ~ `13-chemi-in-result.png` (로컬 검증본 `work/qa-member-ref-*.png` · `work/qa-member-chemi-*.png`).
+- **서버 쪽 남은 한 조각** — `work/supabase-migration-002-referral.sql`(대시보드 SQL Editor 실행 대기). 001의 가입 트리거는 `raw_user_meta_data->>'ref_code'` 를 읽는데 카카오 OAuth 로 `signInWithOAuth` 에는 그 값을 실어 보낼 수 없어, **로그인 뒤 `attach_referrer(p_code)` RPC 로 붙이는 경로**가 필요합니다. 이 파일에는 `attach_referrer` · `grant_referral_rewards`(referral_rules 의 `UNLOCK_1M`/`PASS_1M_BURN3`/`PASS_3M`/`PASS_6M` 지급, `PASS_1M_BURN3` 는 액운 3회 추가) · `profiles.bonus_trial_days` 컬럼이 들어 있습니다. 실행 전에는 사다리 숫자가 계속 0으로 보입니다.
+- **남은 확인** — ⓐ 실제 카카오 계정으로 로그인한 뒤의 화면(초대 코드 표시·내 숫자)은 실기기 확인 필요. ⓑ 친구 혜택 `5일 체험`은 DB `bonus_trial_days` 에만 쌓이고 라이브 달력의 무료 체험(첫 방문 3일, localStorage)은 아직 이 값을 읽지 않습니다 — 달력 쪽을 손댈 때 연결해야 합니다. ⓒ `/calendar/member/` 는 `<meta name="robots" content="noindex">` 로 검색 노출을 막아 뒀습니다(정식 오픈 때 제거).
