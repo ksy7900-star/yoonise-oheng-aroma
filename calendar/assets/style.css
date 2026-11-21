@@ -569,7 +569,7 @@ body[data-trial="over"] .js-trial { display: none !important; }
 body[data-trial="over"] .js-open { display: none !important; }
 body[data-trial="on"] .js-trial-over, body[data-trial="off"] .js-trial-over { display: none !important; }
 /* 체험 종료 — 오늘 날짜까지 전부 잠겨 눌러도 결제 안내만 나온다. 달력을 한 톤 가라앉혀 잠금을 보인다 */
-body[data-trial="over"] .day--locked { opacity: .78; }
+body[data-trial="over"] .day--locked { opacity: .88; }
 body[data-trial="over"] .day--locked:hover { background-image: none; }
 body[data-trial="off"] .day--past { opacity: 1; }
 body[data-trial="off"] .day--past .day__badges { visibility: visible; }
