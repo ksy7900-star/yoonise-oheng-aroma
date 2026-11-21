@@ -770,50 +770,125 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   font-size: 11px; color: var(--mute); text-decoration: underline; text-underline-offset: 3px;
 }
 
-/* ── 2027 1년 대표 수호 부적 — 부적 패(牌) 배너 ─────── */
+/* ── 2027 1년 대표 수호 부적 — 대문 히어로 ────────────────
+   2026-11-22 개편 · 부적이 배너 정가운데 크게 서고, 글은 위아래로만.
+   오행마다 깊은 먹빛 배경과 오라가 다르다:
+   목 = 숲녹 먹빛 + 옥빛 / 화 = 단청 적갈 + 주홍·금빛 / 토 = 황토 먹 + 호박빛
+   금 = 흑요석 차콜 + 백금빛 / 수 = 심해 먹남색 + 달빛 청옥 */
 .talis-banner {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: 16px;
-  margin-top: 14px; padding: 18px 16px 17px 15px;
+  --tb-1: #2A0F14; --tb-2: #130609;
+  --tb-aura: rgba(214, 72, 58, .30);
+  --tb-aura2: rgba(232, 168, 84, .15);
+  --tb-gold: #EBC48C; --tb-cream: #F7F1E4; --tb-sub: rgba(245, 236, 220, .60);
+  position: relative; overflow: hidden; isolation: isolate;
+  margin-top: 14px; padding: 20px 18px 20px;
+  text-align: center;
   background:
-    radial-gradient(76% 66% at 16% 46%, rgba(201, 162, 101, .16), transparent 70%),
-    radial-gradient(120% 140% at 0% 0%, rgba(174, 138, 80, .10), transparent 58%),
-    radial-gradient(90% 130% at 100% 6%, rgba(140, 156, 136, .08), transparent 62%),
-    var(--paper);
-  border: 1px solid rgba(174, 138, 80, .26);
+    radial-gradient(74% 46% at 50% 32%, var(--tb-aura), transparent 74%),
+    radial-gradient(126% 78% at 50% 112%, var(--tb-aura2), transparent 64%),
+    linear-gradient(174deg, var(--tb-1) 0%, var(--tb-2) 82%);
+  border: 1px solid rgba(226, 196, 140, .24);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: 0 22px 46px -26px rgba(6, 10, 18, .85), inset 0 1px 0 rgba(255, 240, 214, .07);
 }
-.talis-banner__body { min-width: 0; flex: 1 1 auto; }
+/* 오행별 신비 색감 — 배경·오라·금빛 (확대 팝업 배경도 같은 값을 쓴다) */
+.talis-banner--목, .talis-showcase--목 {
+  --tb-1: #0B261C; --tb-2: #050F0B;
+  --tb-aura: rgba(96, 220, 168, .22); --tb-aura2: rgba(143, 196, 112, .14);
+  --tb-gold: #C9DBB4; --tb-cream: #F2F6EA; --tb-sub: rgba(228, 240, 222, .58);
+}
+.talis-banner--화, .talis-showcase--화 {
+  --tb-1: #2A0F14; --tb-2: #130609;
+  --tb-aura: rgba(222, 74, 58, .30); --tb-aura2: rgba(236, 172, 88, .16);
+  --tb-gold: #EBC48C; --tb-cream: #FBF0E4; --tb-sub: rgba(250, 230, 212, .60);
+}
+.talis-banner--토, .talis-showcase--토 {
+  --tb-1: #231A0E; --tb-2: #100B06;
+  --tb-aura: rgba(232, 168, 66, .26); --tb-aura2: rgba(212, 156, 70, .15);
+  --tb-gold: #E8CE96; --tb-cream: #FAF1DE; --tb-sub: rgba(246, 232, 206, .58);
+}
+.talis-banner--금, .talis-showcase--금 {
+  --tb-1: #161920; --tb-2: #090B0F;
+  --tb-aura: rgba(206, 222, 240, .19); --tb-aura2: rgba(150, 172, 198, .13);
+  --tb-gold: #DCE5F0; --tb-cream: #F4F7FB; --tb-sub: rgba(226, 236, 246, .58);
+}
+.talis-banner--수, .talis-showcase--수 {
+  --tb-1: #0A1628; --tb-2: #040A14;
+  --tb-aura: rgba(120, 198, 226, .22); --tb-aura2: rgba(110, 170, 210, .14);
+  --tb-gold: #CFE3EE; --tb-cream: #EFF6FA; --tb-sub: rgba(220, 236, 246, .58);
+}
+/* 별가루 — 배경에 아주 옅게 깔리는 신비한 입자 */
+.talis-banner::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 246, 224, .55) .5px, transparent 1.1px),
+    radial-gradient(circle, rgba(255, 246, 224, .32) .5px, transparent 1.1px),
+    radial-gradient(circle, rgba(255, 246, 224, .22) .6px, transparent 1.2px);
+  background-size: 47px 53px, 67px 73px, 91px 87px;
+  background-position: 5px 9px, 23px 31px, 11px 59px;
+  opacity: .55;
+  -webkit-mask-image: radial-gradient(80% 68% at 50% 48%, #000 38%, transparent 100%);
+  mask-image: radial-gradient(80% 68% at 50% 48%, #000 38%, transparent 100%);
+}
+.talis-banner > * { position: relative; z-index: 1; }
+
+/* 히어로 — 제목 · 부적 한가운데 · 이름 · 힌트 (세로 한 줄) */
+.talis-hero { display: flex; flex-direction: column; align-items: center; }
 .talis-banner__eyebrow {
-  font-size: 8.5px; font-weight: 600; letter-spacing: .17em;
-  text-transform: uppercase; color: #9A8256;
+  font-size: 7.6px; font-weight: 600; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--tb-gold); opacity: .62;
 }
 .talis-banner__title {
-  font-family: var(--serif); font-size: 16px; line-height: 1.48;
-  margin-top: 5px; letter-spacing: -0.02em;
-  text-wrap: balance;
+  font-family: var(--serif); font-size: 15px; line-height: 1.42;
+  margin-top: 7px; letter-spacing: -.01em; color: var(--tb-cream);
+  text-wrap: balance; text-shadow: 0 1px 14px rgba(0, 0, 0, .55);
 }
-.talis-banner__title b {
-  display: inline-block; margin-top: 3px;
-  color: #8E6B2C; font-weight: 700; font-size: 17px;
+.talis-banner__stage {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  margin: 2px 0 0; padding: 2px 0 0;
 }
-.talis-banner__why { font-size: 10.5px; color: var(--ink-2); line-height: 1.7; margin-top: 7px; }
+.talis-banner__halo {
+  position: absolute; left: 50%; top: 52%;
+  width: 17em; height: 17em; transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, var(--tb-aura) 0%, transparent 68%);
+  filter: blur(4px);
+  animation: talisHaloBreath 7.4s ease-in-out infinite;
+}
+@keyframes talisHaloBreath {
+  0%, 100% { opacity: .65; transform: translate(-50%, -50%) scale(.96); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+}
+.talis-banner__stage .talis-plaque { font-size: 19px; z-index: 2; }
+.talis-banner__name {
+  margin-top: 10px; font-family: var(--serif);
+  font-size: 14px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3;
+  color: var(--tb-gold); text-wrap: balance;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .5);
+}
+.talis-banner__name span { font-size: 12.5px; margin-right: 2px; }
+.talis-banner__hint {
+  margin-top: 6px; font-size: 10.5px; letter-spacing: -.01em;
+  color: var(--tb-sub);
+}
 .talis-banner__more {
-  display: inline-flex; align-items: center; gap: 4px;
-  margin-top: 10px; padding: 5px 12px;
-  border-radius: 999px; border: 1px solid rgba(174, 138, 80, .32);
-  background: rgba(246, 242, 234, .78);
-  font-size: 10px; font-weight: 600; letter-spacing: -0.01em; color: #8A6B2C;
-  transition: background .2s ease, border-color .2s ease;
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 12px; padding: 6px 14px;
+  border-radius: 999px; border: 1px solid rgba(226, 196, 140, .32);
+  background: rgba(255, 246, 224, .07);
+  font-family: inherit; font-size: 10.5px; font-weight: 600; letter-spacing: -.01em;
+  color: var(--tb-gold);
+  opacity: 0; transition: opacity .6s ease, background .2s ease, border-color .2s ease;
 }
+.talis-banner__more.is-on { opacity: 1; }
+.talis-banner__more[hidden] { display: none; }
 .talis-banner__more span { font-size: 11px; opacity: .8; }
-.talis-banner__more:active { background: rgba(238, 230, 214, .9); }
+.talis-banner__more:active { background: rgba(255, 246, 224, .15); }
 
 /* ── 부적 패(牌) — 금색 매듭 고리 · 금박 이중 테두리 ·
       구름문/별자리/태극 워터마크 · 오행 인장 · 주홍 낙관 ──── */
 .talis-plaque {
-  --tp-a: #3C2119; --tp-b: #1F100C; --tp-gold: #CE9F62; --tp-halo: #F0845C;
+  --tp-a: #3A1418; --tp-b: #1A0709; --tp-gold: #CE9F62; --tp-halo: #F0845C;
   position: relative; display: block; flex: none;
   width: 9em; font-size: 10px;
   margin: 0; padding: 2.4em 0 0; border: 0; background: none;
@@ -822,11 +897,11 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   filter: drop-shadow(0 16px 22px rgba(38, 28, 18, .22));
   transition: transform .38s cubic-bezier(.2, .9, .3, 1), filter .38s ease;
 }
-.talis-plaque--목 { --tp-a: #26341F; --tp-b: #121911; --tp-gold: #C9A968; --tp-halo: #8FC470; }
-.talis-plaque--화 { --tp-a: #3C2119; --tp-b: #1F100C; --tp-gold: #CE9F62; --tp-halo: #F0845C; }
-.talis-plaque--토 { --tp-a: #362A19; --tp-b: #1D1710; --tp-gold: #D5B06C; --tp-halo: #E2B45E; }
-.talis-plaque--금 { --tp-a: #282C2F; --tp-b: #141718; --tp-gold: #CFC7B4; --tp-halo: #B9C9D6; }
-.talis-plaque--수 { --tp-a: #1C2735; --tp-b: #0F1721; --tp-gold: #C3C8C8; --tp-halo: #6FC0DA; }
+.talis-plaque--목 { --tp-a: #143026; --tp-b: #08180F; --tp-gold: #C9A968; --tp-halo: #8FD9B4; }
+.talis-plaque--화 { --tp-a: #3A1418; --tp-b: #1A0709; --tp-gold: #CE9F62; --tp-halo: #F0845C; }
+.talis-plaque--토 { --tp-a: #35270F; --tp-b: #171006; --tp-gold: #D5B06C; --tp-halo: #E2B45E; }
+.talis-plaque--금 { --tp-a: #232830; --tp-b: #0D1015; --tp-gold: #D2C8A8; --tp-halo: #C3D2E0; }
+.talis-plaque--수 { --tp-a: #122438; --tp-b: #060E1B; --tp-gold: #C3C8C8; --tp-halo: #6FC0DA; }
 button.talis-plaque { cursor: pointer; }
 button.talis-plaque:active { transform: scale(.972); }
 .talis-plaque:focus-visible { outline: none; }
@@ -870,6 +945,14 @@ button.talis-plaque:active { transform: scale(.972); }
   filter: drop-shadow(0 .45em .9em rgba(0, 0, 0, .45));
   animation: talisFloat 6.6s ease-in-out infinite;
 }
+/* 캐릭터 뒤 신비한 빛무리 — 오행 오라 색으로 은은하게 (2026-11-22) */
+.talis-plaque__char::before {
+  content: ""; position: absolute; left: 50%; top: 54%; z-index: -1;
+  width: 7.4em; height: 7.4em; transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tp-halo) 0%, rgba(255, 246, 220, .10) 46%, transparent 70%);
+  opacity: .34; filter: blur(.55em);
+}
 .talis-plaque__char .ch { width: 100%; height: 100%; }
 
 .talis-plaque__vname {
@@ -902,6 +985,20 @@ button.talis-plaque:active { transform: scale(.972); }
   font-style: normal; font-size: .42em; letter-spacing: .14em;
   color: rgba(240, 224, 190, .62);
 }
+/* 기운 표기(주문) — 부적 아래쪽 가운데, 50종마다 다른 네 자 */
+.talis-plaque__mantra {
+  position: absolute; left: 50%; bottom: 2.35em;
+  transform: translateX(-50%);
+  padding: .14em .5em;
+  border-top: .06em solid rgba(240, 222, 180, .18);
+  border-bottom: .06em solid rgba(240, 222, 180, .18);
+  white-space: nowrap;
+}
+.talis-plaque__mantra i {
+  font-style: normal; font-size: .44em; letter-spacing: .2em;
+  color: rgba(246, 234, 208, .58);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
 
 .talis-plaque__shine {
   position: absolute; inset: -12%; pointer-events: none;
@@ -925,21 +1022,11 @@ button.talis-plaque:active { transform: scale(.972); }
   50% { transform: translateX(calc(-50% - .6em)) translateY(-.28em); }
 }
 
+/* (이전 가로 배치용 430px 보정은 히어로 개편으로 삭제 — 부적 크기만 조정) */
 @media (max-width: 430px) {
-  .talis-banner {
-    flex-direction: column; align-items: center; gap: 14px;
-    padding: 18px 16px 20px; text-align: center;
-    background:
-      radial-gradient(120% 62% at 50% 20%, rgba(201, 162, 101, .16), transparent 72%),
-      radial-gradient(120% 140% at 0% 0%, rgba(174, 138, 80, .08), transparent 58%),
-      var(--paper);
-  }
-  .talis-plaque { font-size: 10.8px; }
-  .talis-banner__body { width: 100%; }
-  .talis-banner__eyebrow { letter-spacing: .16em; }
-  .talis-banner__title { font-size: 15px; margin-top: 6px; }
-  .talis-banner__title b { font-size: 17.5px; }
-  .talis-banner__why { max-width: 268px; margin: 8px auto 0; }
+  .talis-banner { padding: 18px 16px 18px; }
+  .talis-banner__stage .talis-plaque { font-size: 18px; }
+  .talis-banner__title { font-size: 14.5px; }
 }
 
 /* ── 톡·톡·톡 리추얼 — 노프레임(배경·테두리 없이 캐릭터만 공중에) ── */
@@ -1089,10 +1176,10 @@ button.talis-plaque:active { transform: scale(.972); }
   .day__num { width: 23px; height: 23px; font-size: 11.5px; }
   .day__badge { font-size: 9px; padding: 3px 4px; }
   .natal__tile { width: 36px; height: 36px; font-size: 19px; }
-  .talis-banner { gap: 12px; padding: 13px 13px 13px 12px; }
-  .talis-plaque { font-size: 9.2px; }
-  .talis-banner__title { font-size: 15px; }
-  .talis-banner__title b { font-size: 16px; }
+  .talis-banner { padding: 16px 13px 17px; }
+  .talis-banner__stage .talis-plaque { font-size: 16.5px; }
+  .talis-banner__title { font-size: 13.5px; }
+  .talis-banner__name { font-size: 12.5px; }
   .ritual__tap { width: 134px; height: 134px; }
 }
 @media (min-width: 420px) {
@@ -1230,11 +1317,21 @@ body.is-modal-open { overflow: hidden; }
 .modal__dialog--talis { max-width: 388px; }
 .modal--talis .modal__content { padding-top: 26px; }
 .talis-showcase {
+  --tb-1: #2A0F14; --tb-2: #130609;
+  --tb-aura: rgba(214, 72, 58, .28); --tb-aura2: rgba(232, 168, 84, .14);
+  --tb-gold: #EBC48C;
   position: relative; display: flex; justify-content: center;
-  margin: 16px 0 0; padding: 4px 0 2px;
+  margin: 12px 0 0; padding: 12px 0 10px;
+  border-radius: 20px; overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(74% 52% at 50% 34%, var(--tb-aura), transparent 74%),
+    radial-gradient(120% 70% at 50% 112%, var(--tb-aura2), transparent 64%),
+    linear-gradient(174deg, var(--tb-1) 0%, var(--tb-2) 84%);
+  border: 1px solid rgba(226, 196, 140, .20);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 214, .06);
 }
 .talis-showcase__obj { position: relative; display: inline-block; }
-.talis-showcase .talis-plaque { font-size: 23px; position: relative; z-index: 1; }
+.talis-showcase .talis-plaque { font-size: 21px; position: relative; z-index: 1; }
 /* 확대 팝업에서는 부적이 크니 오라도 조금만 번지게 — 화면을 덮지 않게 (2026-11-22) */
 .talis-showcase .talis-plaque__aura { filter: blur(16px) saturate(1.3); opacity: .46; }
 .talis-showcase .talis-plaque__sheet { animation: talisBreathLg 6s ease-in-out infinite; }
@@ -1278,23 +1375,34 @@ body.is-modal-open { overflow: hidden; }
 }
 
 .talis-modal__name {
-  margin-top: 18px; text-align: center;
+  margin-top: 14px; text-align: center;
   font-family: var(--serif); font-size: 21px; font-weight: 700; line-height: 1.3;
   letter-spacing: -0.03em; color: #2A2620;
 }
 .talis-modal__name span { font-size: .9em; margin-right: 5px; }
+/* 부적 안에 새긴 한자와 기운 표기 — 50종마다 다르다 */
+.talis-modal__mantra {
+  margin-top: 7px; text-align: center;
+  font-size: 10.5px; letter-spacing: .12em; color: #9A8256;
+}
+.talis-modal__mantra b { font-weight: 700; color: #7A5F2A; letter-spacing: .2em; }
 .talis-modal__why {
   margin: 9px auto 0; max-width: 300px; text-align: center;
   font-size: 11.5px; line-height: 1.8; color: var(--ink-2);
 }
+.talis-modal__why small {
+  display: block; margin-top: 6px;
+  font-size: 10.5px; line-height: 1.7; color: var(--mute);
+}
 .talis-bless-btn {
-  display: block; width: 100%; margin-top: 18px;
+  display: block; width: 100%; margin-top: 15px;
   background: linear-gradient(180deg, #B45309 0%, #B45309 100%);
   color: #FFFBEB; border: 0;
   box-shadow: 0 12px 22px -14px rgba(117, 86, 36, .9), inset 0 1px 0 rgba(255, 255, 255, .28);
   letter-spacing: -0.01em;
 }
 .talis-bless-btn:active { transform: scale(.99); }
+.modal__dialog--talis .modal__done-btn { margin-top: 14px; }
 .talis-bless__note {
   margin-top: 9px; text-align: center;
   font-size: 10.5px; line-height: 1.6; color: var(--mute);
@@ -3442,19 +3550,13 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
   .yearfold__sum { padding: 16px; }
   .yearfold__body { padding: 0 16px 16px; }
 
-  /* 2027 대표 부적 — 모바일에서도 컴팩트한 가로 한 줄 */
-  .talis-banner {
-    flex-direction: row; align-items: center; text-align: left;
-    gap: 13px; padding: 13px 14px 13px 12px;
-  }
-  .talis-banner__body { width: auto; }
-  .talis-plaque { font-size: 8.4px; }
-  .talis-banner__eyebrow { font-size: 7.6px; letter-spacing: .13em; }
-  .talis-banner__title { font-size: 13.5px; line-height: 1.42; margin-top: 4px; }
-  .talis-banner__title b { font-size: 15px; margin-top: 2px; }
-  .talis-banner__why { max-width: none; margin: 6px 0 0; font-size: 9.5px; line-height: 1.6; }
-  .talis-banner__more { margin-top: 7px; padding: 4px 10px; font-size: 9px; }
-  .talis-banner__more span { font-size: 10px; }
+  /* 2027 대표 부적 — 대문 히어로 (2026-11-22 개편: 좌우 배치 → 정가운데 세로) */
+  .talis-banner { padding: 20px 15px 19px; }
+  .talis-banner__stage .talis-plaque { font-size: 19px; }
+  .talis-banner__eyebrow { font-size: 7.2px; letter-spacing: .22em; }
+  .talis-banner__title { font-size: 15px; margin-top: 6px; }
+  .talis-banner__name { font-size: 14px; }
+  .talis-banner__hint { font-size: 10.5px; }
 
   /* 내 사주 요약 — 여백은 남기고 군더더기만 덜어 낸다 */
   .card--natal { padding: 18px 15px 14px; }
@@ -4295,6 +4397,7 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   margin-top: 5px; font-family: var(--serif); font-size: 14.5px; line-height: 1.5;
   letter-spacing: -.02em; color: var(--ink); text-wrap: balance;
 }
+.chemibanner__t b { font-weight: 800; color: #6D28D9; }
 .chemibanner__d { margin-top: 7px; font-size: 10px; line-height: 1.6; color: var(--ink-2); }
 .chemibanner__go {
   flex: none; display: inline-flex; align-items: center; gap: 4px;
@@ -4429,19 +4532,15 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   0% { opacity: .85; transform: translate(-50%, 0) scale(.86); }
   100% { opacity: 0; transform: translate(-50%, 0) scale(2.05); }
 }
-/* 부적 아래에 뜨는 문구 */
+/* 부적 아래에 우아하게 떠오르는 문구 */
 .talis-banner__reveal {
-  margin: 12px 0 0; text-align: center; text-wrap: balance;
-  font-family: var(--serif); font-size: 14px; line-height: 1.6; letter-spacing: -.02em;
-  color: #8E6B2C;
-  opacity: 0; transform: translateY(4px);
-  transition: opacity .5s ease, transform .5s ease;
+  margin: 13px 0 0; text-align: center; text-wrap: balance;
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.62; letter-spacing: -.01em;
+  color: #FBF3E1; text-shadow: 0 1px 18px rgba(255, 214, 150, .28);
+  opacity: 0; transform: translateY(7px); filter: blur(3px);
+  transition: opacity .95s ease, transform .95s cubic-bezier(.2, .8, .3, 1), filter .95s ease;
 }
-.talis-banner__reveal.is-on { opacity: 1; transform: translateY(0); }
-.talis-banner__tapnote {
-  display: block; margin-top: 8px; text-align: center;
-  font-size: 10px; color: var(--mute); letter-spacing: -.01em;
-}
+.talis-banner__reveal.is-on { opacity: 1; transform: none; filter: none; }
 @media (prefers-reduced-motion: reduce) {
   .talis-plaque__aura, .talis-plaque__holo::before, .talis-plaque__motes i,
   .talis-plaque__sheet, .talis-plaque__char { animation: none !important; }

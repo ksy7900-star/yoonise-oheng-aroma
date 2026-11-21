@@ -1631,6 +1631,7 @@
   function repElement() {
     var counts = (state.res && state.res.counts) || {};
     var me = state.res && state.res.dayMaster ? state.res.dayMaster.element : '토';
+    var gan = state.res && state.res.dayMaster ? state.res.dayMaster.gan : '甲';
     var min = Infinity;
     EL_ORDER.forEach(function (e) { var c = counts[e] || 0; if (c < min) min = c; });
     if (min === Infinity) min = 0;
@@ -1640,7 +1641,14 @@
     for (var i = 0; i < pref.length; i++) {
       if (ties.indexOf(pref[i]) >= 0) { pick = pref[i]; break; }
     }
-    return { el: pick, count: min, ties: ties.length };
+    return { el: pick, count: min, ties: ties.length, gan: gan };
+  }
+
+  /** 그 사람만의 대표 부적 — 일간(천간) × 부족한 오행 = 50종 */
+  function repType(el, gan) {
+    var g = gan || (state.res && state.res.dayMaster ? state.res.dayMaster.gan : '甲');
+    if (Chars && Chars.rep) return Chars.rep(g, el);
+    return null;
   }
 
   /* ── 부적 패(牌) 아트 ──────────────────────────────────
@@ -1649,11 +1657,11 @@
      글자 크기는 .talis-plaque 의 font-size 하나로 비례해 커진다(배너 ↔ 확대 모달). */
   var EL_GLYPH = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
   var EL_PAPER = {
-    목: { a: '#26341F', b: '#121911', gold: '#C9A968', halo: '#8FC470' },
-    화: { a: '#3C2119', b: '#1F100C', gold: '#CE9F62', halo: '#F0845C' },
-    토: { a: '#362A19', b: '#1D1710', gold: '#D5B06C', halo: '#E2B45E' },
-    금: { a: '#282C2F', b: '#141718', gold: '#D2C8A8', halo: '#B9C9D6' },
-    수: { a: '#1C2735', b: '#0F1721', gold: '#CDBE93', halo: '#6FC0DA' }
+    목: { a: '#143026', b: '#08180F', gold: '#C9A968', halo: '#8FD9B4' },
+    화: { a: '#3A1418', b: '#1A0709', gold: '#CE9F62', halo: '#F0845C' },
+    토: { a: '#35270F', b: '#171006', gold: '#D5B06C', halo: '#E2B45E' },
+    금: { a: '#232830', b: '#0D1015', gold: '#D2C8A8', halo: '#C3D2E0' },
+    수: { a: '#122438', b: '#060E1B', gold: '#CDBE93', halo: '#6FC0DA' }
   };
   var pseq = 0;
 
@@ -1757,12 +1765,17 @@
       '</svg>';
   }
 
-  /** 부적 패 전체 — 고리 + 패 + 글자/인장 오버레이 */
+  /** 부적 패 전체 — 고리 + 패 + 글자/인장 오버레이
+      opt.type: 50종 대표 부적(Chars.rep) — 세로 새김·기운 표기가 이 타입을 따른다 */
   function plaqueHTML(el, opt) {
     opt = opt || {};
-    var name = Chars ? Chars.name(el, '', '') : (TALIS[el] ? TALIS[el].label : '수호 부적');
-    var shortName = String(name).replace(/\s*부적$/, '').replace(/\s+/g, '·');
-    var vfs = shortName.length > 6 ? '.63em' : '.7em';
+    var type = opt.type || repType(el);
+    var name = type ? type.n : (Chars ? Chars.name(el, '', '') : (TALIS[el] ? TALIS[el].label : '수호 부적'));
+    /* 세로 새김 — 50종은 한자 4자(부적답게), 날짜 부적 이름은 한글 그대로 */
+    var inscription = type ? type.h : String(name).replace(/\s*부적$/, '').replace(/\s+/g, '·');
+    var vfs = type ? '.82em' : (inscription.length > 6 ? '.63em' : '.7em');
+    var vls = type ? '.1em' : '.08em';
+    var sealTxt = type ? ('補' + (EL_GLYPH[el] || '木')) : '';
     var tag = opt.tag ? 'button' : 'div';
     var tapLabel = opt.action === 'talis-bless' ? ' — 오늘 기운 받기'
       : (opt.action === 'talis-tap' ? ' — 톡 눌러 기운 받기' : ' 크게 보기');
@@ -1782,9 +1795,14 @@
       plaqueSheetArt(el) +
       '<span class="talis-plaque__glyph" aria-hidden="true">' + (EL_GLYPH[el] || '木') + '</span>' +
       '<span class="talis-plaque__char" aria-hidden="true">' + (Chars ? Chars.svg(el) : '') + '</span>' +
-      '<span class="talis-plaque__vname" aria-hidden="true"><span style="font-size:' + vfs + '">' + esc(shortName) + '</span></span>' +
-      '<span class="talis-plaque__seal" aria-hidden="true"><i>守</i><i>護</i></span>' +
+      '<span class="talis-plaque__vname" aria-hidden="true"><span style="font-size:' + vfs +
+        ';letter-spacing:' + vls + '">' + esc(inscription) + '</span></span>' +
+      '<span class="talis-plaque__seal" aria-hidden="true">' +
+        (sealTxt
+          ? '<i style="font-size:.66em;letter-spacing:0">' + esc(sealTxt) + '</i>'
+          : '<i>守</i><i>護</i>') + '</span>' +
       '<span class="talis-plaque__year" aria-hidden="true"><i>丁未</i></span>' +
+      (type ? '<span class="talis-plaque__mantra" aria-hidden="true"><i>' + esc(type.m) + '</i></span>' : '') +
       '<span class="talis-plaque__shine" aria-hidden="true"></span>' +
       '</span>' +
       (opt.fx ? '<span class="talis-plaque__holo" aria-hidden="true"></span>' : '') +
@@ -1794,27 +1812,35 @@
   function renderTalisman() {
     var box = $('#talisBanner');
     if (!box) return;
-    if (!state.res) { box.innerHTML = ''; return; }
-    var r = repElement(), t = TALIS[r.el];
+    if (!state.res) { box.className = 'talis-banner'; box.innerHTML = ''; return; }
+    var r = repElement(), t = TALIS[r.el], type = repType(r.el, r.gan);
     var total = state.res.total || 8;
     var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
     var lack = (r.count === 0
       ? total + '글자에 ' + t.label + ' 기운이 하나도 없어요.'
       : total + '글자 중 ' + t.label + ' 기운이 ' + r.count + '개로 가장 적어요.');
     var why = lack + ' ' + t.why;
-    var shortWhy = lack + ' 그 자리를 이 부적이 채워 줍니다.';
-    var tname = Chars ? Chars.name(r.el, '', '') : t.label;
-    var ticon = Chars ? Chars.icon(r.el, '') : '✨';
-    state.repTalis = { el: r.el, name: tname, icon: ticon, who: who, why: why, ties: r.ties };
+    var tname = type ? type.n : (Chars ? Chars.name(r.el, '', '') : t.label);
+    var ticon = type ? type.icon : (Chars ? Chars.icon(r.el, '') : '✨');
+    state.repTalis = {
+      el: r.el, gan: r.gan, name: tname, icon: ticon, who: who, why: why, ties: r.ties,
+      hanja: type ? type.h : '', mantra: type ? type.m : '', line: type ? type.d : ''
+    };
+    /* 대문 히어로 — 부적이 배너 한가운데, 글은 위아래로만 (2026-11-22 개편) */
+    box.className = 'talis-banner talis-banner--' + r.el;
+    box.setAttribute('aria-label', who + '의 2027 수호 부적 — ' + tname);
     box.innerHTML =
-      plaqueHTML(r.el, { tag: true, action: 'talis-tap', fx: true }) +
-      '<div class="talis-banner__body">' +
+      '<div class="talis-hero">' +
       '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
-      '<p class="talis-banner__title">' + esc(who) + '의 2027 대표 수호 부적<br><b>' + ticon + ' ' + esc(tname) + '</b></p>' +
-      '<p class="talis-banner__why">' + esc(shortWhy) + '</p>' +
-      '<button type="button" class="talis-banner__more" data-talis-open>부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
-      '<span class="talis-banner__tapnote">부적을 톡 누르면 기운이 크게 퍼져요</span>' +
+      '<p class="talis-banner__title">' + esc(who) + '의 2027 수호 부적</p>' +
+      '<div class="talis-banner__stage">' +
+      '<span class="talis-banner__halo" aria-hidden="true"></span>' +
+      plaqueHTML(r.el, { tag: true, action: 'talis-tap', fx: true, type: type }) +
+      '</div>' +
+      '<p class="talis-banner__name"><span aria-hidden="true">' + ticon + '</span> ' + esc(tname) + '</p>' +
+      '<p class="talis-banner__hint">부적을 톡 눌러 기운을 깨우세요</p>' +
       '<p class="talis-banner__reveal" id="talisReveal" role="status" aria-live="polite"></p>' +
+      '<button type="button" class="talis-banner__more" data-talis-open hidden>부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
       '</div>';
   }
 
@@ -1834,15 +1860,23 @@
     sfxBless();                       /* 낮게 울리는 종 + 상승 차임 + 진동 */
   }
 
-  /** 배너 부적 톡 — 오라 번쩍 + 아래 문구 */
+  /** 배너 부적 톡 — 오라 번쩍 + 문구, 이어서 확대 팝업 가는 길이 조용히 열린다 */
   function onTalisTap(btn) {
     talisCharge(btn);
     var rv = $('#talisReveal');
-    if (!rv) return;
-    rv.textContent = TALIS_PHRASE;
-    rv.classList.remove('is-on');
-    void rv.offsetWidth;
-    rv.classList.add('is-on');
+    if (rv) {
+      rv.textContent = TALIS_PHRASE;
+      rv.classList.remove('is-on');
+      void rv.offsetWidth;
+      rv.classList.add('is-on');
+    }
+    var more = $('.talis-banner__more');
+    if (more && more.hidden) {
+      setTimeout(function () {
+        more.hidden = false;
+        more.classList.add('is-on');
+      }, 900);
+    }
   }
 
   /* ── 대표 부적 확대 모달 ───────────────────────────── */
@@ -1854,14 +1888,18 @@
     talisLastFocus = document.activeElement;
     talisBody.innerHTML =
       '<p class="modal__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
-      '<p class="modal__date" id="talisModalTitle">' + esc(d.who) + '의<br>2027 내 수호 부적</p>' +
+      '<p class="modal__date" id="talisModalTitle">' + esc(d.who) + '의<br>2027 수호 부적</p>' +
       '<p class="modal__sub">한 해 내내 내 사주를 받쳐 주는 대표 부적이에요.</p>' +
-      '<div class="talis-showcase"><div class="talis-showcase__obj">' +
-      plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true, fx: true }) +
+      '<div class="talis-showcase talis-showcase--' + d.el + '"><div class="talis-showcase__obj">' +
+      plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true, fx: true, type: null }) +
       '<span class="talis-showcase__waves" aria-hidden="true"><i></i><i></i></span>' +
       '</div></div>' +
       '<p class="talis-modal__name"><span aria-hidden="true">' + d.icon + '</span>' + esc(d.name) + '</p>' +
-      '<p class="talis-modal__why">' + esc(d.why) + '</p>' +
+      (d.mantra
+        ? '<p class="talis-modal__mantra"><b>' + esc(d.hanja) + '</b> · ' + esc(d.mantra) + '</p>'
+        : '') +
+      '<p class="talis-modal__why">' + esc(d.line || '') +
+        '<small>' + esc(d.why) + '</small></p>' +
       '<button type="button" class="btn talis-bless-btn" data-talis-bless>오늘 기운 받기</button>' +
       '<p class="talis-phrase" id="talisPhrase" role="status" aria-live="polite"></p>' +
       '<p class="talis-bless__note">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
@@ -2024,7 +2062,9 @@
     var tag = b0 ? b0.text : '';
     var lead = info.iso === state.todayISO ? '오늘의 수호 부적' : '이 날의 수호 부적';
     // 무슨 부적인지 한눈에 — 날짜 로테이션으로 이름이 매일 바뀐다
-    var tname = Chars ? Chars.name(el, tag, info.iso) : '수호 부적';
+    // (배지 없는 잔잔한 날은 그 사람의 대표 부적 → 일간×오행 50종 이름 그대로)
+    var tname = tag ? (Chars ? Chars.name(el, tag, info.iso) : '수호 부적')
+      : ((repType(el) || {}).n || (Chars ? Chars.name(el, '', '') : '수호 부적'));
     var ticon = Chars ? Chars.icon(el, tag) : th.badge;
     var seal = tag === '소통' ? '吉' : '護';   // 완료(3타)에 찍히는 주홍 낙관
     var msg = done
@@ -2824,9 +2864,10 @@
 
     /* 결제자 — 초대 할인 한 줄 · 제목도 '네 가지 방법'에서 다음 걸음으로 */
     var paid = !!rank;
-    var paidBox = $('#ctaPaid'), paidD = $('#ctaPaidD');
+    var paidBox = $('#ctaPaid'), paidD = $('#ctaPaidD'), paidT = $('#ctaPaidT');
     if (paidBox) paidBox.hidden = !paid;
-    if (paid && paidD) paidD.textContent = LADDER_TEXT_PAID[tier] || LADDER_TEXT_FREE;
+    if (paidT) paidT.innerHTML = INVITE_PAID_TITLE;          /* 1안 — 부제는 단계 요약 대신 한 줄 */
+    if (paid && paidD) paidD.textContent = INVITE_PAID_SUB;
     var title = $('#ctaTitle');
     if (title) {
       if (!title.getAttribute('data-base')) title.setAttribute('data-base', title.innerHTML);
@@ -2849,17 +2890,22 @@
     allinone: '1명 상담 5천원 · 3명 성찰 에디션 무료 · 5명 원포인트 반값 · 10명 종합 반값',
     diary: '1명 상담 5천원 · 3명 상담 1만원 · 5명 원포인트 반값 · 10명 종합 반값'
   };
+  /* 결제자 초대 문구 1안 (2026-11-22 김나영 님 확정)
+     — 시작값('5,000원~50%')으로 약해 보이던 표현을 빼고, 첫 단계 혜택을 앞세운다.
+       1명~10명 세부 단계는 /calendar/member/ 사다리에서 그대로 보여 준다. */
+  var INVITE_PAID_TITLE = '🎁 친구 초대하면 <b>1:1 상담 최대 반값(50%)</b>';
+  var INVITE_PAID_SUB = '1명만 초대해도 바로 5천원 할인 · 단계별 혜택 보기';
 
-  /** ✨ 케미·초대 배너 — 결제자는 '기간' 대신 '상담 할인권'으로 안내 */
+  /** ✨ 케미·초대 배너 — 결제자에겐 '상담 최대 반값' 1안 문구, 미결제자는 지금 그대로 */
   function renderChemiBanner() {
     var tier = state.unlocked && TIER_NAME[state.tier] ? state.tier : '';
     var t = $('#chemiBannerT'), d = $('#chemiBannerD');
     if (t) {
       t.innerHTML = tier
-        ? '✨ 친구·연인과 2027년 케미 보고,<br>친구 초대하면 <b>상담 할인권</b>이 와요'
+        ? INVITE_PAID_TITLE
         : '✨ 친구·연인과 2027년 케미 보고,<br>친구 초대하면 한 칸씩 열려요';
     }
-    if (d) d.textContent = tier ? (LADDER_TEXT_PAID[tier] || LADDER_TEXT_FREE) : LADDER_TEXT_FREE;
+    if (d) d.textContent = tier ? INVITE_PAID_SUB : LADDER_TEXT_FREE;
   }
 
   /* ── 🧭 4칸 바로가기 — 누르면 그 자리로 부드럽게 (2026‑11‑22) ── */
