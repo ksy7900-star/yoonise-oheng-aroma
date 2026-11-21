@@ -908,7 +908,7 @@ body.locked{overflow:hidden}
     var k = err && err.kind;
     if (k === 'notyet') {
       setState(MSG_NOT_YET,
-        'work/supabase-migration-all-pending.sql 을 Supabase SQL Editor 에서 한 번 실행하면 여기에 바로 나타나요.');
+        'Supabase 대시보드 → SQL Editor 에서 밀린 마이그레이션을 한 번 실행하면 여기에 바로 나타나요.');
     } else if (k === 'pin') {
       setState('비밀번호가 서버와 맞지 않아요', '🔒 잠그기를 누른 뒤 4자리를 다시 넣어 주세요.');
     } else if (k === 'net') {
