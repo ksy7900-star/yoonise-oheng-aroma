@@ -373,13 +373,13 @@ form { margin-top: 22px; }
   padding: 11px 12px; border-radius: 14px; background: #F8FAFC;
 }
 .ychip--warn { background: #FFF1F2; border-color: rgba(190, 18, 60, .26); }
-.ychip--good { background: #FFFBEB; border-color: rgba(180, 83, 9, .30); }
+.ychip--good { background: #ECFDF5; border-color: rgba(4, 120, 87, .26); }
 .ychip__no {
   flex: none; width: 38px; text-align: center;
   font-family: var(--serif); font-size: 19px; font-weight: 700; line-height: 1.15; letter-spacing: -0.03em;
 }
 .ychip--warn .ychip__no { color: #BE123C; }
-.ychip--good .ychip__no { color: #475569; }
+.ychip--good .ychip__no { color: #047857; }
 .ychip__body { flex: 1; min-width: 0; }
 .ychip__title { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.4; }
 .ychip__why { display: block; font-size: 11px; color: var(--ink-2); line-height: 1.5; margin-top: 2px; }
@@ -407,7 +407,7 @@ form { margin-top: 22px; }
 /* 맛보기 칸 — 3순위 조심할 달 한 달만 블러 없이 열어 둔다(#9172) */
 .ychip--teaser { position: relative; padding-top: 20px; border-style: dashed; }
 .ychip--teaser.ychip--warn { background: #FFF7F8; }
-.ychip--teaser.ychip--good { background: #FFFBEB; }
+.ychip--teaser.ychip--good { background: #F2FDF8; }
 .ychip__preview {
   position: absolute; right: 10px; top: 8px;
   padding: 2px 8px; border-radius: 999px;
@@ -429,7 +429,7 @@ form { margin-top: 22px; }
 }
 .calfilter__btn.is-on { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(15, 23, 42, .10); }
 .calfilter__btn[data-filter="bad"].is-on { color: #BE123C; }
-.calfilter__btn[data-filter="good"].is-on { color: #475569; }
+.calfilter__btn[data-filter="good"].is-on { color: #047857; }
 
 /* 무료 3일을 다 쓴 기기 — 달력 바로 위 잠금 안내 한 줄 (누르면 코드 입력) */
 .cal__trialover {
