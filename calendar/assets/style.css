@@ -3357,6 +3357,14 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
   margin-top: 9px; font-size: 11.5px; line-height: 1.55;
   color: #7C7568; letter-spacing: -.02em;
 }
+/* 이 캘린더가 무엇인지 1초에 읽히는 소개 (2026-11-21d) */
+.guide__intro {
+  margin: 11px auto 0; max-width: 300px;
+  font-size: 12.5px; line-height: 1.62; letter-spacing: -.03em;
+  color: #5F5A4E; word-break: keep-all;
+}
+.guide__intro b { color: #8E5A24; font-weight: 800; }
+.guide__intro + .guide__sub { margin-top: 6px; font-size: 10.5px; color: #918A7B; }
 
 .guide__steps {
   margin-top: 17px; display: flex; flex-direction: column; gap: 8px;
