@@ -1,0 +1,35 @@
+{
+  "id": "/yoonise-oheng-aroma/calendar/",
+  "name": "윤이세 사주 달력",
+  "short_name": "사주달력",
+  "description": "생년월일 한 번이면 2027년 조심할 날·치고 나갈 날을 하루씩 짚어 주는 내 사주 타이밍 캘린더 · 윤이세사주",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "/yoonise-oheng-aroma/calendar/",
+  "scope": "/yoonise-oheng-aroma/calendar/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3EB",
+  "theme_color": "#F7F3EB",
+  "categories": ["lifestyle", "entertainment"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

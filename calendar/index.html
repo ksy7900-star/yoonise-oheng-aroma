@@ -22,7 +22,17 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261121j">
+
+<!-- 홈 화면 앱(PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="사주달력">
+<meta name="application-name" content="사주달력">
+
+<link rel="stylesheet" href="assets/style.css?v=20261121k">
 </head>
 <body>
 
@@ -42,6 +52,19 @@
 </header>
 
 <main class="wrap">
+
+  <!-- ───────── 📲 홈 화면 앱 설치 (브라우저로 열었을 때만 · 앱으로 열면 JS가 숨김) ───────── -->
+  <div class="installbar" id="installBar" hidden>
+    <button type="button" class="installbar__main" id="installGo">
+      <span class="installbar__ic" aria-hidden="true">📲</span>
+      <span class="installbar__txt">
+        <b>홈 화면에 앱으로 설치하기</b>
+        <span>주소 안 찾아도 돼요 · 아이콘만 누르면 열려요</span>
+      </span>
+      <span class="installbar__go" aria-hidden="true">›</span>
+    </button>
+    <button type="button" class="installbar__x" id="installHide" aria-label="설치 안내 닫기">✕</button>
+  </div>
 
   <!-- ───────── 입력 ───────── -->
   <section class="card card--form" id="formCard" aria-labelledby="formTitle">
@@ -484,6 +507,17 @@
   </div>
 </div>
 
+<!-- ───────── 📲 홈 화면 앱 설치 안내 (카톡·네이버 인앱 / iOS / 크롬·삼성) ───────── -->
+<div class="modal modal--install" id="installModal" hidden>
+  <div class="modal__backdrop" data-install-close></div>
+  <div class="modal__dialog modal__dialog--install" id="installDialog" role="dialog" aria-modal="true" aria-labelledby="installTitle" tabindex="-1">
+    <div class="modal__topbar">
+      <button type="button" class="modal__close" data-install-close aria-label="팝업 닫기">✕</button>
+    </div>
+    <div class="modal__content" id="installBody"></div>
+  </div>
+</div>
+
 <!-- ───────── 🔥 오늘 액운 태우기 ───────── -->
 <div class="modal modal--burn" id="burnModal" hidden>
   <div class="modal__backdrop" data-burn-close></div>
@@ -495,10 +529,11 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261121j"></script>
-<script src="assets/manse.js?v=20261121j"></script>
-<script src="assets/timing.js?v=20261121j"></script>
-<script src="assets/chars.js?v=20261121j"></script>
-<script src="assets/calendar.js?v=20261121j"></script>
+<script src="vendor/lunar.js?v=20261121k"></script>
+<script src="assets/manse.js?v=20261121k"></script>
+<script src="assets/timing.js?v=20261121k"></script>
+<script src="assets/chars.js?v=20261121k"></script>
+<script src="assets/calendar.js?v=20261121k"></script>
+<script src="assets/pwa.js?v=20261121k"></script>
 </body>
 </html>
