@@ -1343,6 +1343,8 @@ body.is-modal-open { overflow: hidden; }
 /* 확대 팝업에서도 배너와 같은 결 — 뭉툭한 블러 대신 소프트 마스크 라디알 글로우 (2026-11-22) */
 .talis-showcase .talis-plaque__aura { opacity: .72; }
 .talis-showcase .talis-plaque__sheet { animation: talisBreathLg 6s ease-in-out infinite; }
+/* 확대 팝업은 부적이 커서 링이 패널 밖으로 잘리지 않게 살짝 작게 (2026-11-22) */
+.talis-showcase .talis-plaque__rings { transform: translateX(-50%) scale(.88); }
 .talis-showcase__waves {
   position: absolute; left: 0; right: 0; top: 2.4em; bottom: 0;
   pointer-events: none;
