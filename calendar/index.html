@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261122h">
+<link rel="stylesheet" href="assets/style.css?v=20261122i">
 </head>
 <body>
 
@@ -335,6 +335,14 @@
 
       <p class="cal__note" id="calNote">기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
 
+      <!-- ⚡ 달력 하단 — 부적을 붙여도 유독 막히는 날, 긴급 개운템으로 바로 (2026-11-22 김나영 님 요청)
+           누르면 #careCard 로 부드럽게 이동 + 그 자리 한 번 반짝 (data-jump · 달력 위 4칸 바로가기와 같은 동작, 소리 없음) -->
+      <button type="button" class="carejump" id="careJump" data-jump="care">
+        <span class="carejump__ic" aria-hidden="true">⚡</span>
+        <span class="carejump__txt">부적을 붙여도 유독 막히는 날 <span class="carejump__ar" aria-hidden="true">→</span> <b>긴급 개운템 열기</b></span>
+        <span class="carejump__go" aria-hidden="true">↓</span>
+      </button>
+
       <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
       <button type="button" class="diarybook" id="diaryBookBtn">
         <span class="diarybook__ico" aria-hidden="true">📖</span>
@@ -368,7 +376,7 @@
         </div>
         <span class="carecard__price">1종 2,900원<br>3종 5,900원</span>
       </div>
-      <p class="carecard__sub">부적을 붙여도 유독 막히는 날 — 앱에서 바로 꺼내 쓰는 세 가지</p>
+      <p class="carecard__sub">부적을 붙여도 유독 막히는 날 — 앱에서 바로 꺼내 쓰는 세 가지<br><b class="carecard__free">3종 각각 1회 무료 체험</b></p>
       <div class="carecard__items">
         <span class="carecard__it"><b aria-hidden="true">🎋</b>대나무 뽑기</span>
         <span class="carecard__it"><b aria-hidden="true">🪷</b>개운 오브제</span>
@@ -634,11 +642,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261122h"></script>
-<script src="assets/manse.js?v=20261122h"></script>
-<script src="assets/timing.js?v=20261122h"></script>
-<script src="assets/chars.js?v=20261122h"></script>
-<script src="assets/calendar.js?v=20261122h"></script>
-<script src="assets/pwa.js?v=20261122h"></script>
+<script src="vendor/lunar.js?v=20261122i"></script>
+<script src="assets/manse.js?v=20261122i"></script>
+<script src="assets/timing.js?v=20261122i"></script>
+<script src="assets/chars.js?v=20261122i"></script>
+<script src="assets/calendar.js?v=20261122i"></script>
+<script src="assets/pwa.js?v=20261122i"></script>
 </body>
 </html>

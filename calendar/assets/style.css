@@ -3414,6 +3414,46 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
   background: #1E293B; color: #F8FAFC; font-size: 9.5px; font-weight: 700;
 }
 
+/* ── ⚡ 달력 카드 하단 · 긴급 개운템 바로가기 (2026-11-22) ─────────────────
+   달력 그리드를 다 본 자리에서 '오늘 유독 막혔다'는 손님을 바로 개운템으로.
+   누르면 #careCard 로 부드럽게 이동하고 한 번 반짝인다 — 소리 없이(jumpToSection). */
+.carejump {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; margin-top: 10px; padding: 11px 13px;
+  border: 1px solid rgba(180, 83, 9, .26); border-radius: 14px;
+  background:
+    radial-gradient(130% 150% at 100% 0%, rgba(180, 83, 9, .12), transparent 64%),
+    #FFFBF2;
+  color: #7C2D12; font-family: inherit; font-size: 11.5px; font-weight: 700;
+  line-height: 1.45; letter-spacing: -.02em; text-align: left; word-break: keep-all;
+  box-shadow: 0 8px 18px -14px rgba(146, 64, 14, .85);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, filter .18s ease;
+}
+.carejump:active { transform: translateY(1px); filter: brightness(.985); }
+.carejump__ic {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 999px;
+  background: linear-gradient(135deg, #B45309, #92400E); color: #FFF3CF;
+  font-size: 13px; line-height: 1;
+  box-shadow: 0 5px 12px -8px rgba(146, 64, 14, .9);
+}
+.carejump__txt { flex: 1 1 auto; min-width: 0; }
+.carejump__txt b { font-weight: 800; color: #92400E; }
+.carejump__ar { margin: 0 2px; font-weight: 800; color: #B45309; }
+.carejump__go {
+  flex: none; font-size: 12px; font-weight: 800; color: #B45309;
+  animation: carejumpNudge 2.6s ease-in-out infinite;
+}
+@keyframes carejumpNudge {
+  0%, 58%, 100% { transform: translateY(0); opacity: .5; }
+  70% { transform: translateY(2px); opacity: 1; }
+  82% { transform: translateY(0); opacity: .5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carejump__go { animation: none; opacity: .75; }
+}
+
 /* 📖 내 성찰 기록 팝업 */
 .modal__dialog--dbook { max-width: 420px; }
 .dbook__title {
@@ -4407,6 +4447,7 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   color: #92400E;
 }
 .carecard__sub { margin-top: 8px; font-size: 12px; line-height: 1.8; color: var(--ink-2); }
+.carecard__free { font-weight: 800; color: #B45309; }
 .carecard__items { display: flex; gap: 6px; margin-top: 12px; }
 .carecard__it {
   flex: 1 1 0; min-width: 0;

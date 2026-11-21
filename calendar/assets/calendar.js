@@ -3910,9 +3910,11 @@
     return idx;
   }
 
-  /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트 */
+  /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트
+     ⚠️ 상품 이름은 체험 화면과 그대로 맞춘다 (2026-11-22 상품 문구 전수점검):
+        ① 대나무 뽑기 ② 개운 오브제 ③ 1분 싱잉볼 — 예전 이름 '행동 카드'는 남아 있던 오기라 지웠다. */
   var CARE_ITEMS = {
-    card: { ico: '🃏', name: '행동 카드', price: '2,900원' },
+    card: { ico: '🎋', name: '대나무 뽑기', price: '2,900원' },
     objet: { ico: '💎', name: '개운 오브제', price: '2,900원' },
     bowl: { ico: '🔔', name: '1분 싱잉볼', price: '2,900원' },
     set: { ico: '⚡', name: '3종 풀세트', price: '5,900원', rec: true }
@@ -5159,8 +5161,8 @@
     var un = burnUnlimited(), l = burnLeft();
     var leftLine = un
       ? burnTierName() + '은 매일 한 번씩 — 내일 다시 마음을 비우러 오세요.'
-      : (l > 0 ? '무료 5회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
-               : '무료 5회를 모두 썼어요. 내일도 이어 가시려면 올인원을 살펴보세요.');
+      : (l > 0 ? '무료 ' + BURN_FREE + '회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
+               : '무료 ' + BURN_FREE + '회를 모두 썼어요. 내일도 이어 가시려면 올인원을 살펴보세요.');
     return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
       '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
