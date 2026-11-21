@@ -2423,6 +2423,10 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 }
 .burn__left.is-unlimited { color: #6B5A2E; background: #FBF1D6; border-color: rgba(174, 138, 80, .45); }
 .burn__left.is-out { color: #8A8073; background: #F5F2EA; border-color: var(--hair); }
+.burn__left.is-done { color: #6B5A2E; background: #F6F0E2; border-color: rgba(174, 138, 80, .38); }
+.card--burn.is-done .burn__cta { background: linear-gradient(135deg, #2C2722 0%, #43392C 58%, #57482F 100%); }
+.card--burn.is-done .burn__cta b { color: #EBD9B4; }
+.card--burn.is-done .burn__cta span { color: rgba(240, 228, 204, .52); }
 .burn__sub { position: relative; z-index: 1; margin-top: 8px; font-size: 12.5px; line-height: 1.85; color: var(--ink-2); }
 .burn__sub span { color: var(--mute); font-size: 11px; }
 .burn__cta {
@@ -2491,6 +2495,98 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 .burn__hint b { color: #A8562E; }
 .burn__foot { margin-top: 10px; text-align: center; font-size: 10.5px; color: var(--mute); }
 .burn__rite { margin-top: 10px; font-family: var(--serif); font-size: 18px; line-height: 1.55; letter-spacing: -.02em; color: var(--ink); }
+.burn__done-day {
+  margin-top: 12px; text-align: center; font-size: 11.5px; line-height: 1.7;
+  letter-spacing: -.02em; color: #7A6A52; word-break: keep-all;
+}
+
+/* ── 0단계 · 촛불 앞에서 숨 고르기 (2026-11-21h) ──────────────────────
+   어두운 제단 위 금빛 촛불. 불꽃만 은은하게 일렁이고, 3·2·1 이 지나면
+   '의식 시작하기'가 금빛으로 켜진다. */
+.burn__prep-title {
+  margin-top: 8px; font-family: var(--serif); font-weight: 600;
+  font-size: 18px; line-height: 1.62; letter-spacing: -.025em;
+  text-align: center; color: var(--ink); word-break: keep-all;
+}
+.modal__dialog--burn.is-dark .burn__prep-title { color: #F6E7C8; }
+.burn__prep-sub {
+  margin-top: 9px; text-align: center; font-size: 12px; line-height: 1.8;
+  letter-spacing: -.02em; color: var(--ink-2); word-break: keep-all;
+}
+.modal__dialog--burn.is-dark .burn__prep-sub { color: rgba(244, 232, 208, .74); }
+.burn__altar {
+  position: relative; display: flex; justify-content: center; align-items: flex-end;
+  height: 232px; margin: 12px -4px 0; border-radius: 20px; overflow: hidden;
+  background:
+    radial-gradient(60% 42% at 50% 92%, rgba(255, 176, 74, .14), transparent 74%),
+    radial-gradient(120% 100% at 50% 0%, #241D17 0%, #16120F 58%, #0B0A09 100%);
+  box-shadow: inset 0 0 58px rgba(0, 0, 0, .88), inset 0 0 0 1px rgba(214, 168, 106, .08);
+}
+.burn__altar .candle { width: 84%; max-width: 250px; height: 100%; display: block; }
+.burn__altar .candle__flame {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  animation: cndFlick 3.6s ease-in-out infinite;
+}
+.burn__altar .candle__halo {
+  transform-box: fill-box; transform-origin: 50% 50%;
+  animation: cndHalo 4.6s ease-in-out infinite;
+}
+.burn__altar .candle__smoke { opacity: 0; }
+.burn__altar.is-out .candle__flame { opacity: 0; }
+.burn__altar.is-out .candle__ember { opacity: .3; }
+.burn__altar.is-out .candle__halo { opacity: .32; animation: none; }
+.burn__altar.is-out .candle__smoke {
+  opacity: .5; transform-box: fill-box; transform-origin: 50% 100%;
+  animation: cndSmoke 5.4s ease-in-out infinite;
+}
+@keyframes cndFlick {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  22% { transform: scale(.96, 1.05) rotate(-1.6deg); }
+  47% { transform: scale(1.03, .97) rotate(1.2deg); }
+  68% { transform: scale(.98, 1.03) rotate(-.8deg); }
+}
+@keyframes cndHalo {
+  0%, 100% { opacity: .72; transform: scale(.96); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes cndSmoke {
+  0% { opacity: .1; transform: translateY(6px) scaleY(.9); }
+  40% { opacity: .55; }
+  100% { opacity: 0; transform: translateY(-18px) scaleY(1.08); }
+}
+.burn__breath {
+  min-height: 24px; margin: 13px 0 0; text-align: center;
+  font-family: var(--serif); font-size: 17px; letter-spacing: .04em;
+  color: #E8C078; transition: color .3s ease;
+}
+.burn__breath.is-pop { animation: burnBreath 1s ease-out both; }
+.burn__breath.is-ready {
+  font-family: inherit; font-size: 11.5px; letter-spacing: -.01em;
+  color: rgba(240, 230, 212, .6); animation: none;
+}
+@keyframes burnBreath {
+  0% { opacity: .25; transform: scale(.86); }
+  32% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: .78; transform: scale(1); }
+}
+.burn__go--start {
+  margin-top: 10px; color: #2A1B08;
+  background: linear-gradient(135deg, #B98A44 0%, #F0D79B 46%, #C79A4E 100%);
+  box-shadow: 0 14px 26px -18px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.burn__go--start:disabled { opacity: .34; filter: saturate(.55); box-shadow: none; }
+.modal__dialog--burn.is-dark .modal__done-btn {
+  color: #F0E2C6; border-color: rgba(230, 196, 138, .36);
+  background: rgba(255, 244, 226, .06);
+}
+.burn__go--start.is-on { opacity: 1; filter: none; animation: burnGoGlow 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .burn__altar .candle__flame,
+  .burn__altar .candle__halo,
+  .burn__altar.is-out .candle__smoke,
+  .burn__breath.is-pop,
+  .burn__go--start.is-on { animation: none; }
+}
 
 /* 소각대 — 크게, 불이 붙으면 먹빛·금빛으로 */
 .burn__stage {
@@ -3426,7 +3522,7 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 }
 .guide-step__d {
   margin-top: 3px; font-size: 11.5px; line-height: 1.55;
-  color: #7C7568; letter-spacing: -.02em;
+  color: #7C7568; letter-spacing: -.02em; word-break: keep-all;
 }
 .guide-step__badges {
   display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;

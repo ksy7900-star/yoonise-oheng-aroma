@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261121g">
+<link rel="stylesheet" href="assets/style.css?v=20261121h">
 </head>
 <body>
 
@@ -295,8 +295,8 @@
       </div>
       <p class="burn__sub">오늘 두고 갈 일, 잊고 싶은 일, 털어낼 걱정을 적어 보세요<br><span>(어디에도 저장되지 않고 바로 사라져요)</span></p>
       <button type="button" class="burn__cta" id="burnOpen">
-        <span>한 장에 적고 · 구기고 · 태우면 끝</span>
-        <b>🔥 지금 한 장 태우기</b>
+        <span id="burnCtaSub">한 장에 적고 · 구기고 · 태우면 끝</span>
+        <b id="burnCtaMain">🔥 지금 한 장 태우기</b>
       </button>
     </section>
 
@@ -319,14 +319,14 @@
           <span class="shop-btn__no">2</span>
           <span class="shop-btn__text">
             <span class="shop-btn__label">👑 올인원 <b>19,900원</b></span>
-            <span class="shop-btn__desc">1년 패스 전부(타이밍 맵 · 1년 수호 부적) + 매일 일진 부적 · 매일 액운 태우기 무제한</span>
+            <span class="shop-btn__desc">1년 패스 전부(타이밍 맵 · 1년 수호 부적) + 매일 일진 부적 · 매일 1회 액운 태우기</span>
           </span>
         </button>
         <button type="button" class="btn btn--cream shop-btn" data-shop="diary">
           <span class="shop-btn__no">3</span>
           <span class="shop-btn__text">
             <span class="shop-btn__label">✨ 성찰 에디션 <b>24,900원</b> <span class="shop-btn__tag">추천</span></span>
-            <span class="shop-btn__desc">올인원 전부(타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 액운 태우기 무제한) + 365일 1줄 성찰 다이어리 · 내 기록 저장</span>
+            <span class="shop-btn__desc">올인원 전부(타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 매일 1회 액운 태우기) + 365일 1줄 성찰 다이어리 · 내 기록 저장</span>
           </span>
         </button>
         <button type="button" class="btn btn--ghost-light shop-btn shop-btn--care" data-shop="care">
@@ -365,7 +365,7 @@
       </p>
       <h2 class="guide__title" id="guideTitle">내 사주 타이밍<br><span class="guide__title-em">사용법</span></h2>
       <p class="guide__intro">내 사주로 2027년 <b>조심할 날은 피해 가고</b>, <b>치고 나갈 날은 놓치지 않게</b> 막힌 운을 뚫어주는 맞춤 달력이에요.</p>
-      <p class="guide__sub">세 번만 따라 하면 오늘 바로 쓸 수 있어요</p>
+      <p class="guide__sub">네 번만 따라 하면 오늘 바로 쓸 수 있어요</p>
 
       <ol class="guide__steps">
         <li class="guide-step">
@@ -394,6 +394,13 @@
           <div class="guide-step__body">
             <p class="guide-step__t">달력에 착! 붙이기</p>
             <p class="guide-step__d">팝업을 닫으면 달력 칸에 내 수호 스티커가 붙어요</p>
+          </div>
+        </li>
+        <li class="guide-step guide-step--burn">
+          <span class="guide-step__n" aria-hidden="true">4</span>
+          <div class="guide-step__body">
+            <p class="guide-step__t">오늘 액운 태우기</p>
+            <p class="guide-step__d">하루 단 한 번, 진심을 담아 마음을 비워내는 의식 (5회&nbsp;무료)</p>
           </div>
         </li>
       </ol>
@@ -459,10 +466,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261121g"></script>
-<script src="assets/manse.js?v=20261121g"></script>
-<script src="assets/timing.js?v=20261121g"></script>
-<script src="assets/chars.js?v=20261121g"></script>
-<script src="assets/calendar.js?v=20261121g"></script>
+<script src="vendor/lunar.js?v=20261121h"></script>
+<script src="assets/manse.js?v=20261121h"></script>
+<script src="assets/timing.js?v=20261121h"></script>
+<script src="assets/chars.js?v=20261121h"></script>
+<script src="assets/calendar.js?v=20261121h"></script>
 </body>
 </html>

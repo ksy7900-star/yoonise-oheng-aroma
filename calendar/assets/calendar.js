@@ -2284,7 +2284,7 @@
       '<span class="shop-btn__no">2</span>' +
       '<span class="shop-btn__text">' +
       '<span class="shop-btn__label">👑 올인원 · 19,900원</span>' +
-      '<span class="shop-btn__desc">1년 패스 전부 + 매일 일진 부적 · 액운 태우기 무제한</span>' +
+      '<span class="shop-btn__desc">1년 패스 전부 + 매일 일진 부적 · 매일 1회 액운 태우기</span>' +
       '</span></button>' +
       '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
       '<span class="shop-btn__no">3</span>' +
@@ -2366,11 +2366,11 @@
   var TIER_UP_PRICE = { 'pass>allinone': 7900 };
   var OWNED_DESC = {
     pass: '이미 갖고 있는 상품이에요 — 다시 결제하실 필요 없어요',
-    allinone: '1년 패스 전부 + 매일 일진 부적 + 액운 태우기 무제한',
-    diary: '1년 패스 전부 + 매일 부적 + 태우기 무제한 + 성찰 다이어리'
+    allinone: '1년 패스 전부 + 매일 일진 부적 + 매일 1회 액운 태우기',
+    diary: '1년 패스 전부 + 매일 부적 + 매일 1회 액운 태우기 + 성찰 다이어리'
   };
   var UPGRADE_GAIN = {
-    allinone: '매일 일진 부적 · 액운 태우기 무제한까지',
+    allinone: '매일 일진 부적 · 매일 1회 액운 태우기까지',
     diary: '365일 1줄 성찰 다이어리 · 내 기록 저장까지'
   };
   function wonNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
@@ -2449,7 +2449,7 @@
      바뀐다 (data-shop-switch="pass|allinone|diary"). */
   var TIERSW = [
     { k: 'pass', ic: '🎟️', nm: '1년 패스', pr: PASS_PRICE, df: '달력·1년 부적·태우기 5회', tag: '' },
-    { k: 'allinone', ic: '👑', nm: '올인원', pr: ALLINONE_PRICE, df: '매일 일진부적·태우기 무제한', tag: '인기' },
+    { k: 'allinone', ic: '👑', nm: '올인원', pr: ALLINONE_PRICE, df: '매일 일진부적·매일 1회 태우기', tag: '인기' },
     { k: 'diary', ic: '✨', nm: '성찰 에디션', pr: DIARY_PRICE, df: '365일 1줄 성찰 다이어리', tag: '추천' }
   ];
   function tierswHTML(active) {
@@ -2918,11 +2918,11 @@
       '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
       tierswHTML('allinone') +
       trialShopNote() +
-      '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>액운 태우기 무제한</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고 싶다면 여기서 시작하세요.</p>' +
+      '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>매일 1회 액운 태우기</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고, 매일 한 번 마음을 비우고 싶다면 여기서 시작하세요.</p>' +
       '<ul class="shop__list">' +
       '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
       '<li><b>매일 일진 부적</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
-      '<li><b>매일 액운 태우기 무제한</b><span>매일, 몇 장이든 — 적고, 구기고, 태워 보내기</span></li>' +
+      '<li><b>매일 1회 액운 태우기</b><span>매일 한 번 — 적고, 구기고, 태워 보내기</span></li>' +
       '</ul>' +
       '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
       '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
@@ -2940,7 +2940,7 @@
       trialShopNote() +
       '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.</p>' +
       '<ul class="shop__list">' +
-      '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 액운 태우기 무제한</span></li>' +
+      '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 매일 1회 액운 태우기</span></li>' +
       '<li><b>365일 1줄 성찰 다이어리</b><span>날마다 다른 맞춤 질문 하나, 부담 없는 한 줄</span></li>' +
       '<li><b>내 기록 저장</b><span>달력 펜 점 · 📖 내 성찰 기록 보기 · .txt 백업</span></li>' +
       '</ul>' +
@@ -4054,11 +4054,13 @@
   }
 
   /* ══ 🔥 오늘 액운 태우기 ═════════════════════════════════════════
-     무료 5장 → 올인원 코드(YOONALL2027)는 무제한.
+     무료 5회(1년 패스·체험) / 올인원·성찰 에디션은 날마다 계속.
+     **어느 등급이든 하루에 딱 1회** — localStorage 에 마지막으로 태운 날짜(YYYY-MM-DD)를 남긴다.
      · 사람 이름은 묻지도 받지도 않는다 — '일'과 '걱정'만 적는 한 줄.
      · 적은 글은 메모리(burn.text)에만 있고, 팝업을 닫으면 즉시 사라진다.
-       localStorage 에는 '쓴 장수'만 남는다.
-     · 3단계: ① 한 줄 적기 ② 구기기·태우기(불꽃·진동·재) ③ 내 사주로 빈자리 채우기 */
+       localStorage 에는 '쓴 횟수'와 '마지막으로 태운 날짜'만 남는다.
+     · 4단계: ⓿ 촛불 앞에서 숨 고르기 ① 한 줄 적기 ② 구기기·태우기(불꽃·진동·재)
+              ③ 내 사주로 빈자리 채우기 */
   var BURN_KEY = 'yoonise.timing.burn.v1';
   var BURN_FREE = 5;
   var BURN_UPGRADE_PRICE = '7,900원';   // 1년 패스(14,900원) → 올인원(19,900원) 추가 금액
@@ -4094,35 +4096,59 @@
   };
 
   var burnEl = null, burnBody = null, burnDialog = null, burnLastFocus = null, burnClosing = false;
-  var burn = { used: 0, text: '', stage: 'write', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0 };
+  var burn = { used: 0, day: '', text: '', stage: 'prep', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0, prepTimers: [] };
   var BURN_BURN_MS = 7800;        // 불이 붙은 뒤 재가 될 때까지 — 7.8초, 느리고 묵직하게
   var BURN_HOLD_MS = 1000;        // 구겨진 덩어리를 보는 한 박자
   var BURN_PRESS_MS = 800;        // 성냥을 종이 아래에 꾹 눌러 불을 붙이는 시간(0.8초)
+
+  /** 기기 기준 오늘 날짜 — 자정을 넘겨도 새 날로 센다 */
+  function burnISODate(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function burnTodayKey() { return burnISODate(new Date()); }
 
   function loadBurn() {
     var o = null;
     try { o = JSON.parse(localStorage.getItem(BURN_KEY)); } catch (e) { o = null; }
     var n = o && typeof o.used === 'number' && isFinite(o.used) ? Math.floor(o.used) : 0;
     burn.used = Math.max(0, Math.min(BURN_FREE, n));
+    burn.day = o && typeof o.day === 'string' ? o.day : '';
+    /* 2026-11-21h 이전 저장값 — day 없이 at(마지막으로 태운 시각)만 있다. 그 날을 마지막 날로 본다 */
+    if (!burn.day && o && o.at) {
+      var at = new Date(o.at);
+      if (!isNaN(at.getTime())) burn.day = burnISODate(at);
+    }
   }
   function saveBurn() {
-    try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, at: new Date().toISOString() })); } catch (e) {}
+    try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, day: burn.day, at: new Date().toISOString() })); } catch (e) {}
   }
+  /** 오늘 이미 1회 태웠는가 — 등급과 무관하게 하루 1회 */
+  function burnBurnedToday() { return !!burn.day && burn.day === burnTodayKey(); }
   function burnUnlimited() { return tierAtLeast('allinone'); }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
+  function burnTierName() { return state.tier === 'diary' ? '성찰 에디션' : '올인원'; }
   function burnLeftText() {
-    if (burnUnlimited()) return (state.tier === 'diary' ? '성찰 에디션' : '올인원') + ' · 무제한';
+    var done = burnBurnedToday();
+    if (burnUnlimited()) return burnTierName() + (done ? ' · 오늘 마침' : ' · 매일 1회');
     var l = burnLeft();
+    if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 5회 모두 사용';
     return l > 0 ? '남은 무료 ' + l + '회' : '무료 5회를 다 썼어요';
   }
-  /** 달력 위 카드의 남은 횟수 배지 */
+  /** 달력 위 카드의 오늘 상태 배지와 버튼 문구 */
   function renderBurnCard() {
     var el = $('#burnLeft'), card = $('#burnCard');
     if (!el) return;
-    var un = burnUnlimited(), out = !un && burnLeft() <= 0;
-    el.textContent = un ? (state.tier === 'diary' ? '성찰 에디션 · 무제한' : '올인원 · 무제한') : (out ? '무료 5회 모두 사용' : '남은 무료 ' + burnLeft() + '회');
-    el.classList.toggle('is-unlimited', un);
-    el.classList.toggle('is-out', out);
-    if (card) card.classList.toggle('is-out', out);
+    var un = burnUnlimited(), done = burnBurnedToday(), out = !un && burnLeft() <= 0;
+    el.textContent = done ? '오늘의 의식 마침'
+      : (un ? '매일 1회' : (out ? '무료 5회 모두 사용' : '남은 무료 ' + burnLeft() + '회'));
+    el.classList.toggle('is-unlimited', un && !done);
+    el.classList.toggle('is-out', out && !done);
+    el.classList.toggle('is-done', done);
+    if (card) {
+      card.classList.toggle('is-out', out && !done);
+      card.classList.toggle('is-done', done);
+    }
+    var sub = $('#burnCtaSub'), main = $('#burnCtaMain');
+    if (sub) sub.textContent = done ? '하루에 단 한 번, 진심을 담아 비워내는 의식입니다'
+      : (un ? '매일 한 번, 적고 · 구기고 · 태우면 끝' : '한 장에 적고 · 구기고 · 태우면 끝');
+    if (main) main.textContent = done ? '오늘의 의식을 마쳤습니다 · 내일 다시' : '🔥 지금 한 장 태우기';
   }
   function burnElement() {
     try { return (state.res && repElement().el) || '수'; } catch (e) { return '수'; }
@@ -4146,6 +4172,130 @@
         'deg;--sway:' + sway + 'px"></i>';
     }
     return out;
+  }
+
+  /* ⓿ 제단 위 금빛 촛불 — 0단계 준비 화면의 그림. 불꽃만 CSS로 은은하게 일렁인다 */
+  var CANDLE_SVG =
+    '<svg class="candle" viewBox="0 0 240 280" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+        '<radialGradient id="cndHalo" cx="50%" cy="50%" r="50%">' +
+          '<stop offset="0%" stop-color="#FFE9AE" stop-opacity=".55"/>' +
+          '<stop offset="44%" stop-color="#FFBE5C" stop-opacity=".2"/>' +
+          '<stop offset="100%" stop-color="#FF9A2E" stop-opacity="0"/>' +
+        '</radialGradient>' +
+        '<radialGradient id="cndAltar" cx="50%" cy="38%" r="62%">' +
+          '<stop offset="0%" stop-color="#3A3128"/>' +
+          '<stop offset="58%" stop-color="#221C16"/>' +
+          '<stop offset="100%" stop-color="#120F0C"/>' +
+        '</radialGradient>' +
+        '<radialGradient id="cndPool" cx="50%" cy="50%" r="50%">' +
+          '<stop offset="0%" stop-color="#FFCF7A" stop-opacity=".5"/>' +
+          '<stop offset="55%" stop-color="#FFB04E" stop-opacity=".16"/>' +
+          '<stop offset="100%" stop-color="#FF9A2E" stop-opacity="0"/>' +
+        '</radialGradient>' +
+        '<linearGradient id="cndBody" x1="0" y1="0" x2="1" y2="0">' +
+          '<stop offset="0%" stop-color="#6B4B1C"/>' +
+          '<stop offset="16%" stop-color="#C79A4E"/>' +
+          '<stop offset="38%" stop-color="#FFE9B4"/>' +
+          '<stop offset="54%" stop-color="#FFF7DE"/>' +
+          '<stop offset="76%" stop-color="#D7AE63"/>' +
+          '<stop offset="100%" stop-color="#67481A"/>' +
+        '</linearGradient>' +
+        '<radialGradient id="cndTop" cx="46%" cy="36%" r="64%">' +
+          '<stop offset="0%" stop-color="#FFFBEE"/>' +
+          '<stop offset="62%" stop-color="#F2DCA8"/>' +
+          '<stop offset="100%" stop-color="#C9A059"/>' +
+        '</radialGradient>' +
+        '<linearGradient id="cndFlameOut" x1="0" y1="1" x2="0" y2="0">' +
+          '<stop offset="0%" stop-color="#FF8A1E" stop-opacity=".92"/>' +
+          '<stop offset="46%" stop-color="#FFC44F"/>' +
+          '<stop offset="100%" stop-color="#FFEBB0"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="cndFlameIn" x1="0" y1="1" x2="0" y2="0">' +
+          '<stop offset="0%" stop-color="#FFD26B"/>' +
+          '<stop offset="100%" stop-color="#FFFDF2"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      /* 빛 번짐 */
+      '<circle class="candle__halo" cx="120" cy="98" r="78" fill="url(#cndHalo)"/>' +
+      /* 촛불 몸통 */
+      '<rect x="96" y="132" width="48" height="108" rx="7" fill="url(#cndBody)"/>' +
+      '<ellipse cx="120" cy="132" rx="24" ry="8" fill="url(#cndTop)"/>' +
+      '<ellipse cx="120" cy="132.6" rx="16.5" ry="5" fill="#FFEFC6" opacity=".9"/>' +
+      '<ellipse cx="120" cy="237" rx="26" ry="7" fill="#3A2A15" opacity=".5"/>' +
+      /* 심지 */
+      '<path d="M120 132v-12" stroke="#2A1A0C" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<circle class="candle__ember" cx="120" cy="118" r="3.2" fill="#FF9E2E"/>' +
+      /* 불꽃 */
+      '<g class="candle__flame">' +
+        '<path d="M120 64c10.5 18 18 29.5 18 40.5a18 18 0 0 1-36 0c0-11 7.5-22.5 18-40.5z" fill="url(#cndFlameOut)"/>' +
+        '<path d="M120 85c6 10.5 10.5 17 10.5 23.5a10.5 10.5 0 0 1-21 0c0-6.5 4.5-13 10.5-23.5z" fill="url(#cndFlameIn)"/>' +
+        '<path d="M120 101c2.6 4.6 4.2 7.2 4.2 10a4.2 4.2 0 0 1-8.4 0c0-2.8 1.6-5.4 4.2-10z" fill="#FFFDF6"/>' +
+      '</g>' +
+      /* 꺼진 뒤 — 가느다란 연기 한 줄 */
+      '<g class="candle__smoke">' +
+        '<path d="M120 116c-9-13 9-21 0-34s7-18 0-27" fill="none" stroke="#D8C7A6" stroke-width="2.2" stroke-linecap="round"/>' +
+      '</g>' +
+      /* 돌 제단 */
+      '<ellipse cx="120" cy="246" rx="102" ry="19" fill="url(#cndAltar)"/>' +
+      '<path d="M18 246a102 19 0 0 0 204 0v8a102 19 0 0 1-204 0z" fill="#0D0B09"/>' +
+      '<ellipse cx="120" cy="242" rx="66" ry="12" fill="url(#cndPool)"/>' +
+      '<path d="M18 246a102 19 0 0 0 204 0" fill="none" stroke="#C79A4E" stroke-opacity=".22" stroke-width="1.2"/>' +
+    '</svg>';
+
+  /* ⓿ 촛불 앞에서 숨 고르기 — 3·2·1 뒤에 '의식 시작하기'가 살아난다 */
+  function burnPrepHTML() {
+    return '<p class="modal__eyebrow">BEFORE THE RITUAL · 준비</p>' +
+      '<h2 class="burn__prep-title" id="burnModalTitle">하루에 단 한 번, 진심을 담아 비워내는 의식입니다.</h2>' +
+      '<div class="burn__altar" data-burn-altar>' + CANDLE_SVG + '</div>' +
+      '<p class="burn__prep-sub">잠시 숨을 고른 뒤, 오늘 내려놓고 싶은 한 가지를 적어 주세요.</p>' +
+      '<p class="burn__breath" data-burn-breath aria-live="polite">3…</p>' +
+      '<button type="button" class="burn__go burn__go--start" data-burn="start" disabled>의식 시작하기</button>' +
+      '<p class="burn__foot">' + esc(burnLeftText()) + '</p>';
+  }
+
+  /* 오늘 이미 한 번 태웠을 때 — 꺼진 촛불과 함께 내일 다시 오라는 안내 */
+  function burnTodayDoneHTML() {
+    var un = burnUnlimited(), l = burnLeft();
+    var leftLine = un
+      ? burnTierName() + '은 매일 한 번씩 — 내일 다시 마음을 비우러 오세요.'
+      : (l > 0 ? '무료 5회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
+               : '무료 5회를 모두 썼어요. 내일도 이어 가시려면 올인원을 살펴보세요.');
+    return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
+      '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
+      '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_SVG + '</div>' +
+      '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
+      '<p class="burn__foot">하루에 단 한 번, 진심을 담아 비워내는 의식입니다. 적은 글은 어디에도 남지 않았어요.</p>' +
+      (!un && l <= 0 ? '<button type="button" class="burn__go burn__go--start" data-burn="upgrade">올인원 살펴보기</button>' : '') +
+      '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
+  }
+
+  function clearPrepTimers() {
+    (burn.prepTimers || []).forEach(function (t) { clearTimeout(t); });
+    burn.prepTimers = [];
+  }
+  /** 3… 2… 1… — 3초가 지나면 버튼이 켜진다 */
+  function runBurnPrep() {
+    clearPrepTimers();
+    var num = burnBody ? burnBody.querySelector('[data-burn-breath]') : null;
+    var btn = burnBody ? burnBody.querySelector('[data-burn="start"]') : null;
+    if (!num || !btn) return;
+    ['3…', '2…', '1…'].forEach(function (t, i) {
+      burn.prepTimers.push(setTimeout(function () {
+        if (burn.stage !== 'prep') return;
+        num.textContent = t;
+        num.classList.remove('is-pop'); void num.offsetWidth; num.classList.add('is-pop');
+        vibrate(10);
+      }, i * 1000));
+    });
+    burn.prepTimers.push(setTimeout(function () {
+      if (burn.stage !== 'prep') return;
+      num.textContent = '이제, 마음을 열어도 좋아요';
+      num.classList.add('is-ready');
+      btn.disabled = false;
+      btn.classList.add('is-on');
+      vibrate([16, 30, 18]);
+    }, 3000));
   }
 
   /* ① 한 줄 적기 */
@@ -4233,24 +4383,60 @@
       '<p class="burn__done-sub">' + esc(p.why) + '<br>그 빈자리는 <b>' + esc(p.name) + '</b> 기운으로 채웠습니다.</p>' +
       '<p class="burn__rx"><b>오늘의 한 줄 처방</b>' + esc(p.line) + '</p>' +
       '<p class="burn__foot">' + esc(burnLeftText()) + '</p>' +
-      '<button type="button" class="burn__go burn__go--again" data-burn="again">한 장 더 태우기</button>' +
+      '<p class="burn__done-day">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</p>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
   }
 
   function openBurnModal() {
     if (!burnEl) return;
-    // 무료 5장을 다 썼으면 리추얼 대신 올인원 안내 팝업으로 자연스럽게 넘긴다
-    if (!burnUnlimited() && burnLeft() <= 0) { openShop('burn'); return; }
-    burnLastFocus = document.activeElement;
-    burn.text = '';
-    burn.stage = 'write';
     clearTimeout(burn.timer);
-    burnBody.innerHTML = burnWriteHTML();
+    clearPrepTimers();
+    burn.text = '';
+    burnLastFocus = document.activeElement;
+    // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 소각 금지)
+    if (burnBurnedToday()) {
+      burnEl.hidden = false;
+      burn.stage = 'done';
+      burnBody.innerHTML = burnTodayDoneHTML();
+      burnDialog.classList.add('is-dark');
+      document.body.classList.add('is-modal-open');
+      burnBody.scrollTop = 0;
+      sfxBurnOpen();
+      try { burnDialog.focus({ preventScroll: true }); } catch (e) { try { burnDialog.focus(); } catch (e2) {} }
+      return;
+    }
+    // 무료 5회를 다 썼으면 리추얼 대신 올인원 안내 팝업으로 자연스럽게 넘긴다
+    if (!burnUnlimited() && burnLeft() <= 0) { openShop('burn'); return; }
     burnEl.hidden = false;
+    burn.stage = 'prep';
+    burnBody.innerHTML = burnPrepHTML();
+    burnDialog.classList.add('is-dark');       // 어두운 제단 위 촛불
     document.body.classList.add('is-modal-open');
     burnBody.scrollTop = 0;
     sfxBurnOpen();
     try { burnDialog.focus({ preventScroll: true }); } catch (e) { try { burnDialog.focus(); } catch (e2) {} }
+    runBurnPrep();
+  }
+
+  /** 0단계 → 1단계 : 촛불 앞에서 종이로 */
+  function burnBeginWrite() {
+    if (burn.stage !== 'prep') return;
+    if (burnBurnedToday()) { showBurnTodayDone(); return; }
+    clearPrepTimers();
+    burn.stage = 'write';
+    if (burnDialog) burnDialog.classList.remove('is-dark');
+    burnBody.innerHTML = burnWriteHTML();
+    burnBody.scrollTop = 0;
+    sfxTap(1);
+  }
+
+  function showBurnTodayDone() {
+    clearPrepTimers();
+    burn.stage = 'done';
+    burn.text = '';
+    if (burnDialog) burnDialog.classList.add('is-dark');
+    burnBody.innerHTML = burnTodayDoneHTML();
+    burnBody.scrollTop = 0;
   }
 
   function closeBurnModal() {
@@ -4260,6 +4446,7 @@
     clearTimeout(burn.holdTimer);
     clearTimeout(burn.sparkTimer);
     clearTimeout(burn.sparkTimer2);
+    clearPrepTimers();
     stopHold();
     flick.dragging = false; flick.drag = null; flick.src = null; flick.holdLock = false;
     unbindGestures();
@@ -4270,7 +4457,8 @@
       burnEl.hidden = true;
       burnBody.innerHTML = '';
       burnClosing = false;
-      burn.stage = 'write';
+      burn.stage = 'prep';
+      if (burnDialog) burnDialog.classList.remove('is-dark');
       if ((!modalEl || modalEl.hidden) && (!shopEl || shopEl.hidden)) document.body.classList.remove('is-modal-open');
       var t = burnLastFocus;
       if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) {} }
@@ -4590,7 +4778,10 @@
     var btn = burnEl.querySelector('[data-burn="ignite"]');
     if (btn) btn.hidden = true;          // 타오르는 동안에는 글자 대신 불만 보이게
     sfxIgnite();
-    if (!burnUnlimited()) { burn.used = Math.min(BURN_FREE, burn.used + 1); saveBurn(); }
+    /* 하루 1회 — 등급과 무관하게 마지막으로 태운 날짜를 남긴다 */
+    if (!burnUnlimited()) burn.used = Math.min(BURN_FREE, burn.used + 1);
+    burn.day = burnTodayKey();
+    saveBurn();
     renderBurnCard();
     /* 중반·후반 — 굵은 재와 금빛 불티가 2·3차 물결로 화면 가득 올라간다 */
     clearTimeout(burn.sparkTimer);
@@ -4630,25 +4821,28 @@
     vibrate([18, 26, 42]);
   }
 
+  /* 예전 '한 장 더 태우기' 자리 — 이제는 하루 1회라 오늘은 더 태울 수 없다 */
   function burnAgain() {
+    if (burnBurnedToday()) { showBurnTodayDone(); return; }
     if (!burnUnlimited() && burnLeft() <= 0) {
       closeBurnModal();
       setTimeout(function () { openShop('burn'); }, 210);
       return;
     }
     burn.text = '';
-    burn.stage = 'write';
-    burnBody.innerHTML = burnWriteHTML();
+    burn.stage = 'prep';
+    burnBody.innerHTML = burnPrepHTML();
+    burnDialog.classList.add('is-dark');
     burnBody.scrollTop = 0;
-    sfxTap(1);
+    runBurnPrep();
   }
 
   /* 5장을 다 쓴 뒤 — 올인원 안내(1년 패스 사용자는 7,900원 업그레이드) */
   function burnShopHTML() {
     var pass = !!state.unlocked && state.tier === 'pass';
-    return '<p class="modal__eyebrow">ALL-IN-ONE · 액운 태우기 무제한</p>' +
-      '<h2 class="shop__title" id="shopTitle">🔥 무료 5장을 다 태우셨어요</h2>' +
-      '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>횟수 제한 없이</b> 계속 태울 수 있어요. 1년 달력 전체에 액운 태우기 무제한까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
+    return '<p class="modal__eyebrow">ALL-IN-ONE · 매일 1회 액운 태우기</p>' +
+      '<h2 class="shop__title" id="shopTitle">🔥 무료 5회를 다 쓰셨어요</h2>' +
+      '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>매일 한 번씩, 날마다</b> 계속 태울 수 있어요. 1년 달력 전체에 매일 1회 액운 태우기까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
       (pass
         ? '<div class="shop__save"><b>이미 1년 패스(14,900원)를 이용 중이세요</b>' +
           '<span>카톡으로 추가 업그레이드(' + BURN_UPGRADE_PRICE + ')를 신청하시면 올인원 코드로 바로 바꿔 드려요</span></div>' +
@@ -4657,7 +4851,7 @@
         : '<ul class="shop__list">' +
           '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
           '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
-          '<li><b>🔥 오늘 액운 태우기 무제한</b><span>매일, 몇 장이든 — 구워서 재로 날려 버리기</span></li>' +
+          '<li><b>🔥 매일 1회 액운 태우기</b><span>매일 한 번 — 구워서 재로 날려 버리기</span></li>' +
           '</ul>' +
           '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
           '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
@@ -4802,12 +4996,86 @@
     src.start(t0); src.stop(t0 + dur + 0.03);
   }
 
-  /* 5) 한지 구기기 — 짧고 묵직한 한 번. 촐싹대는 바스락 연타 없음 */
+  /* 5) 한지 구기기 — 1.5초 동안 바스락·꾸깃이 여러 겹 이어지는 종이 구김 소리
+     · 2~45ms 짜리 아주 짧은 알갱이 수십 개를 불규칙하게 흩뿌려 종이 섬유가
+       꺾이는 질감을 만들고, 저역의 '꾹'과 넓은 대역의 바스락 깔개를 겹친다.
+     · 알갱이는 앞쪽에 촘촘히, 뒤로 갈수록 성기게 — 손에서 종이가 뭉쳐 가는 결.
+     · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 아무 소리도 나지 않는다. */
   function sfxCrumple() {
-    vibrate([90]);
     var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 132, to: 58, dur: 0.46, glide: 0.3, type: 'sine', gain: 0.26, attack: 0.006 });
-    noise(ctx, { filter: 'lowpass', f0: 1500, f1: 480, q: 0.7, dur: 0.36, at: 0.02, gain: 0.13, attack: 0.025 });
+    var DUR = 1.5;
+    var t = ctx.currentTime;
+
+    /* 여러 알갱이가 겹쳐도 찢어지지 않게 살짝 눌러 주는 버스 */
+    var bus = ctx.createDynamicsCompressor();
+    bus.threshold.value = -20; bus.knee.value = 22; bus.ratio.value = 3.5;
+    bus.attack.value = 0.002; bus.release.value = 0.14;
+    bus.connect(ctx.destination);
+
+    /* 손에 힘이 들어가는 몸통 — 낮게 깔리는 '꾹' */
+    tone(ctx, { from: 132, to: 52, dur: 0.5, glide: 0.36, type: 'sine', gain: 0.19, attack: 0.008 });
+    tone(ctx, { from: 78, to: 42, dur: 0.72, glide: 0.46, type: 'triangle', gain: 0.085, attack: 0.02 });
+
+    /* 종이 전체가 흔들리는 바스락 깔개 */
+    function bed(o) {
+      var n = Math.floor(ctx.sampleRate * o.dur);
+      if (n <= 0) return;
+      var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = o.q;
+      var t0 = t + o.at;
+      bp.frequency.setValueAtTime(o.f0, t0);
+      bp.frequency.linearRampToValueAtTime(o.f1, t0 + o.dur);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(o.gain, t0 + 0.12);
+      g.gain.setValueAtTime(o.gain, t0 + o.dur * 0.42);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
+      src.connect(bp); bp.connect(g); g.connect(bus);
+      src.start(t0); src.stop(t0 + o.dur + 0.02);
+    }
+    bed({ at: 0.02, dur: 1.46, f0: 1100, f1: 2600, q: 0.6, gain: 0.042 });
+    bed({ at: 0.14, dur: 1.30, f0: 3400, f1: 1800, q: 0.45, gain: 0.026 });
+
+    /* 꾸깃꾸깃 — 종이가 접히는 순간마다 터지는 짧은 알갱이 */
+    function grain(at, dur, freq, q, gain) {
+      var n = Math.max(2, Math.floor(ctx.sampleRate * dur));
+      var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6);
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = q;
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 620;
+      var g = ctx.createGain();
+      var t0 = t + at;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.006, dur * 0.4));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(bp); bp.connect(hp); hp.connect(g); g.connect(bus);
+      src.start(t0); src.stop(t0 + dur + 0.01);
+    }
+
+    /* 세 덩어리로 몰아 준다 — 앞은 촘촘하게, 뒤로 갈수록 성기게 */
+    [
+      { start: 0.05, span: 0.44, n: 16, pow: 1.0, lo: 0.010, hi: 0.038, gLo: 0.034, gHi: 0.082 },
+      { start: 0.52, span: 0.40, n: 14, pow: 0.9, lo: 0.008, hi: 0.030, gLo: 0.026, gHi: 0.068 },
+      { start: 1.02, span: 0.40, n: 9, pow: 1.2, lo: 0.006, hi: 0.022, gLo: 0.016, gHi: 0.042 }
+    ].forEach(function (f) {
+      for (var i = 0; i < f.n; i++) {
+        var p = Math.pow(Math.random(), f.pow);
+        grain(f.start + p * f.span,
+          f.lo + Math.random() * (f.hi - f.lo),
+          1200 + Math.random() * 4600,
+          0.7 + Math.random() * 1.8,
+          f.gLo + Math.random() * (f.gHi - f.gLo));
+      }
+    });
+
+    /* 큰 접힘 — 낮게 '뽀득' 하고 꺾이는 순간 */
+    [[0.20, 0.075], [0.66, 0.065], [1.16, 0.05]].forEach(function (f) {
+      grain(f[0], f[1], 700 + Math.random() * 500, 0.8, 0.072);
+      grain(f[0] + 0.004, f[1] * 0.7, 2400 + Math.random() * 900, 1.1, 0.046);
+    });
   }
 
   /* 6) 불을 붙이는 순간 — 낮고 깊은 범종 한 번(68Hz)과 잔잔한 모닥불.
@@ -4871,8 +5139,8 @@
       if (state.tier && state.unlocked) {
         tierEl.hidden = false;
         tierEl.innerHTML = '지금 적용된 티어 · <b>' + esc(TIER_NAME[state.tier]) + '</b>' +
-          (state.tier === 'diary' ? ' — 이 사주 달력 전체 + 성찰 다이어리 + 액운 태우기 무제한'
-            : (state.tier === 'allinone' ? ' — 이 사주 달력 전체 + 액운 태우기 무제한' : ' — 이 사주 달력 전체'));
+          (state.tier === 'diary' ? ' — 이 사주 달력 전체 + 성찰 다이어리 + 매일 1회 액운 태우기'
+            : (state.tier === 'allinone' ? ' — 이 사주 달력 전체 + 매일 1회 액운 태우기' : ' — 이 사주 달력 전체'));
         tierEl.classList.toggle('is-allinone', state.tier === 'allinone' || state.tier === 'diary');
       } else if (state.tier && state.mismatch) {
         tierEl.hidden = false;
@@ -4985,7 +5253,7 @@
       msg.textContent = p.tier === 'diary'
         ? '🔓 성찰 에디션 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
         : (p.tier === 'allinone'
-          ? '🔓 올인원 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 액운 태우기 무제한이 열렸습니다.'
+          ? '🔓 올인원 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
           : '🔓 1년 패스 확인됐어요 — ' + codeOwnerLabel(p) + ' 사주로 2026년 11월부터 2027년 12월까지 열렸습니다.');
       msg.classList.add('is-ok');
     }
@@ -4995,7 +5263,7 @@
     toast(p.tier === 'diary'
       ? '🔓 성찰 에디션 — 이 사주 전용으로 다이어리까지 열렸어요'
       : (p.tier === 'allinone'
-        ? '🔓 올인원 — 이 사주 전용으로 달력 전체 + 액운 태우기 무제한'
+        ? '🔓 올인원 — 이 사주 전용으로 달력 전체 + 매일 1회 액운 태우기'
         : '🔓 1년 패스 확인 — 이 사주 전용으로 전체 날짜가 열렸어요'));
     sfxOpen();
   }
@@ -5247,6 +5515,8 @@
         var b = e.target.closest('[data-burn]');
         if (!b) return;
         var k = b.getAttribute('data-burn');
+        if (k === 'start') { e.preventDefault(); burnBeginWrite(); return; }
+        if (k === 'upgrade') { e.preventDefault(); closeBurnModal(); setTimeout(function () { openShop('burn'); }, 210); return; }
         if (k === 'write') { e.preventDefault(); burnWrite(); return; }
         if (k === 'crumple') { e.preventDefault(); burnCrumple(); return; }
         if (k === 'ignite') { e.preventDefault(); burnIgnite(); return; }
