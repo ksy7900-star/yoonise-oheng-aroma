@@ -36,6 +36,11 @@
     if (code < 0xAC00 || code > 0xD7A3) return false;   // 한글이 아니면 받침 없는 쪽으로
     return (code - 0xAC00) % 28 !== 0;
   }
+  function josaFull(name, kind) {
+    var n = String(name || '').trim();
+    if (PRONOUN[n]) return PRONOUN[n][kind] || n;
+    return n + josa(n, kind);
+  }
   function josa(name, kind) {
     var n = String(name || '').trim();
     if (PRONOUN[n]) return PRONOUN[n][kind] || '';
@@ -65,7 +70,8 @@
     { n: 10, title: '6개월 패스 무료', sub: '반년을 통째로 — 그 뒤는 결제로 이어져요' }
   ];
   var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
-  var HASHTAGS = '#윤이세사주 #2027타이밍캘린더 #사주달력';
+  var HASHTAGS = '#2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
+  var HASHTAG_LIST = ['#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
   var INSTA = 'life.saju_yoonise';
 
   var state = {
@@ -578,10 +584,10 @@
 
   function elRelationText(aEl, bEl, aName, bName) {
     if (aEl === bEl) return { key: 'same', text: '두 사람 다 ' + aEl + ' 기운 — 말이 빨리 통하는 대신, 같이 세지면 둘 다 과열돼요.' };
-    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + aName + josa(aName, 'obj') + ' 살려요(생) — 기댈 때 힘이 나는 쪽은 ' + aName + josa(aName, 'copula') + '.' };
-    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + bName + josa(bName, 'obj') + ' 살려요(생) — ' + aName + josa(aName, 'subj') + ' 먼저 밀어 주는 사이예요.' };
+    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + josaFull(aName, 'obj') + ' 살려요(생) — 기댈 때 힘이 나는 쪽은 ' + josaFull(aName, 'copula') + '.' };
+    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + josaFull(bName, 'obj') + ' 살려요(생) — ' + josaFull(aName, 'subj') + ' 먼저 밀어 주는 사이예요.' };
     if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + josa(aEl, 'subj') + ' ' + bName + '의 ' + bEl + josa(bEl, 'obj') + ' 누르는 관계(극) — ' + aName + '의 말이 세게 들릴 수 있어요.' };
-    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + josa(aEl, 'obj') + ' 누르는 관계(극) — ' + bName + '의 속도에 ' + aName + josa(aName, 'subj') + ' 지칠 수 있어요.' };
+    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + josa(aEl, 'obj') + ' 누르는 관계(극) — ' + bName + '의 속도에 ' + josaFull(aName, 'subj') + ' 지칠 수 있어요.' };
     return { key: 'plain', text: '서로 세게 당기지도 누르지도 않는 담백한 관계예요.' };
   }
 
@@ -634,6 +640,45 @@
   function birthText(ch) {
     var p = ch.p;
     return p.y + '.' + pad2(p.mo) + '.' + pad2(p.d) + (p.timeKnown ? ' ' + pad2(p.hh) + ':' + pad2(p.mm) : ' 시간 모름');
+  }
+
+  /* 2027 한 줄 부적 카드 — 내 원국에서 모자란 오행 하나를 부적으로 세운다 */
+  var EL_HANJA = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
+  var EL_DO = {
+    목: '먼저 말 걸기 · 새로 시작하는 일은 오전에',
+    화: '먼저 웃기 · 큰 결정은 조용한 자리에서',
+    토: '손으로 정리하기 · 먹는 시간 지키기',
+    금: '미뤄 둔 “아니오” 한 번 · 안 쓰는 것 버리기',
+    수: '잠 30분 더 · 큰 결정은 오후로'
+  };
+
+  function amulCard(ch, name) {
+    var el = (ch.need && ch.need.scarce && ch.need.scarce[0]) || ch.natal.element;
+    var hz = EL_HANJA[el] || el;
+    var sorted = ch.months.slice().sort(function (x, y) { return y.chance - x.chance; });
+    var best = sorted[0];
+    var worst = (ch.yd && ch.yd.warnMonths && ch.yd.warnMonths.length) ? ch.yd.warnMonths[0] : null;
+    var bestTx = best && best.chance > 0 ? best.m + '월' : '—';
+    var worstTx = worst ? worst + '월' : '없음';
+
+    return '<div class="amul" id="amulCard">'
+      + '<div class="amul__top"><span class="amul__eyebrow">2027 · 한 줄 부적</span>'
+      + '<span class="amul__seal">丁未</span></div>'
+      + '<div class="amul__core">'
+      + '<span class="amul__hz">' + esc(hz) + '</span>'
+      + '<span class="amul__rule" aria-hidden="true"></span>'
+      + '<p class="amul__line">비어 있는 ' + esc(el) + ' 기운을 채우면<br>2027년 문이 열립니다</p>'
+      + '<p class="amul__do">' + esc(EL_DO[el] || '') + '</p>'
+      + '</div>'
+      + '<div class="amul__facts">'
+      + '<span>트이는 달 <b>' + esc(bestTx) + '</b></span>'
+      + '<span>조심할 달 <b>' + esc(worstTx) + '</b></span>'
+      + '</div>'
+      + '<div class="amul__mark">'
+      + '<span class="amul__mark-row"><span class="amul__mark-ic" aria-hidden="true">🌙</span>'
+      + '<span class="amul__mark-t">2027 타이밍 캘린더 · 윤이세사주</span></span>'
+      + '<span class="amul__mark-h">@life.saju_yoonise</span></div>'
+      + '</div>';
   }
 
   function elBars(chA, chB) {
@@ -722,9 +767,9 @@
 
     var compLines = comp.slice(0, 3).map(function (c) {
       if (c.who === 'you') {
-        return '<b>' + esc(bName) + '</b>의 ' + c.el + ' 기운이 ' + c.theirs + '개, <b>' + esc(aName) + '</b>에게는 ' + c.mine + '개 — ' + esc(bName) + josa(bName, 'subj') + ' ' + esc(aName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
+        return '<b>' + esc(bName) + '</b>의 ' + c.el + ' 기운이 ' + c.theirs + '개, <b>' + esc(aName) + '</b>에게는 ' + c.mine + '개 — ' + esc(josaFull(bName, 'subj')) + ' ' + esc(aName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
       }
-      return '<b>' + esc(aName) + '</b>의 ' + c.el + ' 기운이 ' + c.mine + '개, <b>' + esc(bName) + '</b>에게는 ' + c.theirs + '개 — ' + esc(aName) + josa(aName, 'subj') + ' ' + esc(bName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
+      return '<b>' + esc(aName) + '</b>의 ' + c.el + ' 기운이 ' + c.mine + '개, <b>' + esc(bName) + '</b>에게는 ' + c.theirs + '개 — ' + esc(josaFull(aName, 'subj')) + ' ' + esc(bName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
     });
 
     var html = '';
@@ -843,6 +888,10 @@
       + '<span class="story__mark-h">@life.saju_yoonise</span></div>'
       + '</div>';
     html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 화면을 캡처해 주세요.</p>';
+    html += '<p class="sect-h" style="margin-top:22px">한 줄 부적 카드</p>';
+    html += '<h3 class="sect-t">내 사주로 만든 2027년 부적</h3>';
+    html += amulCard(a, aName);
+    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 이것도 캡처해서 올리면 돼요.</p>';
 
     /* 보내기 */
     html += '<div class="btn-row">'
@@ -1046,6 +1095,9 @@
         if (box && !box.hidden) box.hidden = true;
       });
     });
+
+    var tl = $('#tagList');
+    if (tl) tl.innerHTML = HASHTAG_LIST.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
 
     renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
     initAuth();

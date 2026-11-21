@@ -177,38 +177,49 @@
   <!-- ───────── 케미 결과 ───────── -->
   <section class="card" id="chemiResult" hidden aria-live="polite"></section>
 
-  <!-- ───────── 인스타 스토리 인증 ───────── -->
+  <!-- ───────── 인스타 인증 (스토리 · 피드) ───────── -->
   <section class="card" id="storyGiftCard">
-    <p class="card__eyebrow">한 번 더 · 스토리 이벤트</p>
-    <h2 class="card__title">스토리에 올리면 한 번 더</h2>
-    <p class="card__sub">결과 카드 한 장을 스토리에 올리고, 아래 조건만 맞추면 선물을 한 번 더 드려요. <b>1인 1회</b>예요.</p>
+    <p class="card__eyebrow">한 번 더 · 인스타 인증</p>
+    <h2 class="card__title">스토리도, 피드도<br>받는 게 달라요</h2>
+    <p class="card__sub">캡처 한 장이면 돼요. 채널마다 선물이 달라서, 둘 다 하면 두 번 받아요. <b>채널별 1회</b>예요.</p>
+
+    <div class="tracks">
+      <div class="track track--story">
+        <span class="track__tag">스토리</span>
+        <b class="track__gift">액운 태우기 1회 추가</b>
+        <span class="track__why">24시간만 떠 있는 자리 · 친구가 바로 보고 들어와요</span>
+      </div>
+      <div class="track track--feed">
+        <span class="track__tag">피드 · 릴스</span>
+        <b class="track__gift">모자이크 1달 더 열기</b>
+        <span class="track__why">계속 남는 게시물 · 인스타 검색으로도 들어와요</span>
+      </div>
+    </div>
 
     <p class="sub-h">올리는 방법</p>
     <ol class="steps">
-      <li><b>1</b><span>케미 결과의 <strong>스토리 카드</strong> 한 장을 캡처해요. (달력·액운 태우기 화면도 돼요)</span></li>
-      <li><b>2</b><span>인스타 스토리에 올리고 <strong>@life.saju_yoonise</strong>를 태그해요.</span></li>
-      <li><b>3</b><span>올린 스토리 화면을 캡처해서 <strong>24시간 안에</strong> 카톡 채널 <strong>윤이세사주</strong>로 보내요.</span></li>
+      <li><b>1</b><span>결과 카드(<strong>스토리 카드 · 한 줄 부적 카드</strong>)나 달력·액운 태우기 화면을 캡처해요.</span></li>
+      <li><b>2</b><span>스토리 또는 피드·릴스에 올리고 <strong>@life.saju_yoonise</strong>를 태그해요.</span></li>
+      <li><b>3</b><span>올린 화면을 캡처해서 <strong>24시간 안에</strong> 카톡 채널 <strong>윤이세사주</strong>로 보내요.</span></li>
     </ol>
 
-    <p class="sub-h">필수 조건 3가지</p>
+    <p class="sub-h">해시태그 7종 <span class="sub-h__opt">피드·릴스는 필수 · 스토리는 권장</span></p>
+    <div class="hashtags" id="tagList"></div>
+    <button type="button" class="btn btn--ghost" id="copyTagsBtn" style="margin-top:10px">해시태그 7종 한 번에 복사</button>
+
+    <p class="sub-h">필수 조건</p>
     <ul class="checks">
-      <li><i aria-hidden="true">✓</i><span><b>@life.saju_yoonise</b> 계정 태그</span></li>
-      <li><i aria-hidden="true">✓</i><span>해시태그 <b>#윤이세사주 #2027타이밍캘린더 #사주달력</b> — 빠지면 확인이 안 돼요</span></li>
+      <li><i aria-hidden="true">✓</i><span><b>@life.saju_yoonise</b> 계정 태그 — 스토리·피드 모두</span></li>
+      <li><i aria-hidden="true">✓</i><span>피드·릴스는 <b>해시태그 7종 전부</b> — 빠지면 확인이 안 돼요</span></li>
       <li><i aria-hidden="true">✓</i><span><b>전체 공개</b> 계정만 참여할 수 있어요 (비공개 계정은 확인 불가)</span></li>
     </ul>
-    <button type="button" class="btn btn--ghost" id="copyTagsBtn" style="margin-top:10px">필수 해시태그 복사</button>
-
-    <div class="gift">
-      <span class="gift__ic" aria-hidden="true">🔥</span>
-      <span class="gift__b">확인되면 <b>액운 태우기 1회 추가</b> 또는 <b>모자이크 1달 오픈</b> 중 하나를 골라 드려요. <b>1인 1회 한정</b>입니다.</span>
-    </div>
 
     <div class="btn-row">
       <a class="btn btn--gold btn--wide" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">카톡 채널로 보내기</a>
       <a class="btn btn--ghost" href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타 열기</a>
     </div>
 
-    <p class="fine">중복 참여는 계정 기준으로 확인해요. 같은 캡처를 두 번 쓰거나, 이미 받은 계정으로 다시 보내면 지급되지 않아요. 스토리에는 결과 화면만 올리셔도 되고, 생년월일·이름은 가리셔도 인증됩니다.</p>
+    <p class="fine">중복은 계정 기준으로 확인해요 — 스토리 1회 · 피드·릴스 1회. 같은 캡처를 두 번 쓰거나, 이미 받은 계정으로 다시 보내면 지급되지 않아요. 사주·생년월일은 가리고 올리셔도 인증됩니다.</p>
 
     <div class="brandmark brandmark--card">
       <span class="brandmark__ic" aria-hidden="true">🌙</span>
