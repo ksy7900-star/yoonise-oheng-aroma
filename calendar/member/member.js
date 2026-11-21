@@ -574,7 +574,11 @@
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     var lb = $('#youLabel');
-    if (lb && !state.refFrom) lb.textContent = relNow() === 'love' ? '그 사람 사주' : '친구 · 동료 사주';
+    if (lb) {
+      var peer = state.refFrom || ($('#youName') ? $('#youName').value : '');
+      lb.textContent = peer ? peer + ' 님 사주'
+        : (relNow() === 'love' ? '그 사람 사주' : '친구 · 동료 사주');
+    }
   }
   function bindRelChips() {
     var box = $('#relChips');
@@ -870,6 +874,14 @@
     love:   { key: 'love',   emoji: '💘', name: '사랑 · 썸',   word: '사랑', card: '사랑 부적', hanja: '愛', peer: '그 사람' }
   };
   function relNow() { return RELS[state.rel] ? state.rel : 'friend'; }
+  /* 이름 뒤 조사까지 붙여 {aS}·{aO}·{aT} 로 쓴다 — '이지은가' 같은 어색한 말 방지 */
+  function namesMap(a, b) {
+    return {
+      a: a, b: b,
+      aS: josaFull(a, 'subj'), aO: josaFull(a, 'obj'), aT: josaFull(a, 'top'),
+      bS: josaFull(b, 'subj'), bO: josaFull(b, 'obj'), bT: josaFull(b, 'top')
+    };
+  }
   function fill(t, m) {
     return String(t == null ? '' : t).replace(/\{(\w+)\}/g, function (_, k) {
       return (m && m[k] != null) ? esc(m[k]) : '';
@@ -901,17 +913,17 @@
   /* 훅 아래 한 줄 — 두 사람 기운이 서로 어떻게 작용하는지를 말로만 */
   var ROLE_LINE = {
     friend: {
-      youFeedMe: '{b}가 {a}를 받쳐 주는 조합이에요 — {a}가 급할 때 {b}가 브레이크를 잡아 줘요.',
-      iFeedYou: '{a}가 {b}를 챙겨 주는 조합이에요 — 2027년엔 {a}가 먼저 나서면 {b}가 편해져요.',
-      iBeatYou: '{a}가 앞서 나가기 쉬운 조합이에요 — {a}가 한 박자만 늦추면 {b}가 훨씬 편해져요.',
-      youBeatMe: '{b}의 속도가 빠를 때 {a}가 지칠 수 있어요 — 속도만 미리 맞추면 오래 가요.',
+      youFeedMe: '{bS} {aO} 받쳐 주는 조합이에요 — {aS} 급할 때 {bS} 브레이크를 잡아 줘요.',
+      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 나서면 {bT} 편해져요.',
+      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 한 박자만 늦추면 {bT} 훨씬 편해져요.',
+      youBeatMe: '{b}의 속도가 빠를 때 {aT} 지칠 수 있어요 — 속도만 미리 맞추면 오래 가요.',
       same: '말이 빨리 통해요 — 대신 같이 흥분하면 둘 다 세지니까 한 명은 쉬어 줘야 해요.'
     },
     love: {
-      youFeedMe: '{b}가 {a}를 편안하게 해 주는 조합이에요 — 2027년엔 그 편안함이 오래 가요.',
-      iFeedYou: '{a}가 {b}를 챙겨 주는 조합이에요 — 2027년엔 {a}가 먼저 표현해 주세요.',
-      iBeatYou: '{a}가 앞서 나가기 쉬운 조합이에요 — {a}가 반 박자만 늦추면 훨씬 부드러워져요.',
-      youBeatMe: '{b}의 속도에 {a}가 맞추다 지칠 수 있어요 — 가끔은 {a} 속도로 가도 돼요.',
+      youFeedMe: '{bS} {aO} 편안하게 해 주는 조합이에요 — 2027년엔 그 편안함이 오래 가요.',
+      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 표현해 주세요.',
+      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 반 박자만 늦추면 훨씬 부드러워져요.',
+      youBeatMe: '{b}의 속도에 {aT} 맞추다 지칠 수 있어요 — 가끔은 {a} 속도로 가도 돼요.',
       same: '닮은 기운끼리라 편한데, 같이 뜨거워지면 둘 다 타요 — 한 명이 쉬는 게 필요해요.'
     }
   };
@@ -962,25 +974,27 @@
     }
   };
 
-  /* ④ 부적 한 줄 — 카드에 새기는 짧은 위트 (제목·이름과 겹치지 않게) */
-  var AMUL_LINE = {
+  /* ④ 2027 부적 — 두 사람의 조합(일지 관계)마다 이름도, 금박 도안도 다르다.
+     같은 우정이라도 '지갑수호'가 나오는 콤비와 '텔레파시'가 나오는 콤비가 달라서
+     친구·연인을 바꿔 가며 모으는 재미가 생긴다. (2026-11-21 김나영 님 지시) */
+  var AMUL = {
     friend: {
-      hap:    '지갑은 각자, 밥은 같이',
-      chung:  '싸워도 밥은 같이 먹는다',
-      hyeong: '약속은 문자로, 우정은 길게',
-      hae:    '말보다 밥 — 그래도 통한다',
-      samhap: '같은 쪽 보면 두 배로 벌어요',
-      same:   '취향 일치, 텐션 조절만',
-      plain:  '적당한 거리가 오래 간다'
+      hap:    { name: '찐친 지갑수호 부적',     art: 'key',       line: '지갑은 각자, 밥은 같이' },
+      chung:  { name: '브레이크 없는 콤비 부적', art: 'flame',     line: '싸워도 밥은 같이 먹는다' },
+      hyeong: { name: '오해 제로 의리 부적',     art: 'knot',      line: '약속은 문자로, 우정은 길게' },
+      hae:    { name: '속마음 텔레파시 부적',     art: 'moonwave',  line: '말보다 밥 — 그래도 통한다' },
+      samhap: { name: '대박 합작 시너지 부적',   art: 'money',     line: '같은 쪽 보면 두 배로 벌어요' },
+      same:   { name: '취향저격 찰떡 부적',       art: 'butterfly', line: '취향 일치, 텐션 조절만' },
+      plain:  { name: '적당한 거리 수호 부적',     art: 'stars',     line: '적당한 거리가 오래 간다' }
     },
     love: {
-      hap:    '말하지 않아도 통하는 사이',
-      chung:  '부딪혀도 결국 너에게',
-      hyeong: '서운하면 그날 말하기',
-      hae:    '손은 놓지 않기로 해',
-      samhap: '같은 곳을 보면 가까워진다',
-      same:   '닮아서 편하고, 닮아서 조심',
-      plain:  '천천히, 그러나 오래'
+      hap:    { name: '눈빛 통하는 자석 부적',   art: 'stars',     line: '말하지 않아도 통하는 사이' },
+      chung:  { name: '싸워도 5분 화해 부적',    art: 'flame',     line: '부딪혀도 결국 너에게' },
+      hyeong: { name: '밀당 종료 직진 부적',     art: 'key',       line: '서운하면 그날 말하기' },
+      hae:    { name: '말 엇갈려도 손잡기 부적', art: 'knot',      line: '손은 놓지 않기로 해' },
+      samhap: { name: '2027 꿀떨어짐 부적',      art: 'money',     line: '같은 곳을 보면 가까워진다' },
+      same:   { name: '평생 내 편 수호 부적',    art: 'butterfly', line: '닮아서 편하고, 닮아서 조심' },
+      plain:  { name: '천천히 오래 곁에 부적',   art: 'moonwave',  line: '천천히, 그러나 오래' }
     }
   };
 
@@ -1078,9 +1092,9 @@
   function compLine(rel, lean, rich, el) {
     var trait = EL_TRAIT[el] || el;
     if (rel === 'love') {
-      return '<b>' + esc(lean) + '</b>는 ' + esc(trait) + '이 약해요 — 그 부분은 <b>' + esc(rich) + '</b>가 먼저 움직여 주세요.';
+      return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그 부분은 <b>' + esc(josaFull(rich, 'subj')) + '</b> 먼저 움직여 주세요.';
     }
-    return '<b>' + esc(lean) + '</b>는 ' + esc(trait) + '이 약해요 — 그건 <b>' + esc(rich) + '</b>가 맡아 주세요.';
+    return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그건 <b>' + esc(josaFull(rich, 'subj')) + '</b> 맡아 주세요.';
   }
 
   function renderChemin(a, b) {
@@ -1091,7 +1105,7 @@
     var bName = String(b.p.name || '').trim() || R.peer;
     var info = pairInfo(a, b);
     var zk = info.zhiKey, mk = info.masterKey;
-    var mm = { a: aName, b: bName };
+    var mm = namesMap(aName, bName);
 
     var hook = fill((HOOK[rel] || HOOK.friend)[zk] || (HOOK[rel] || HOOK.friend).plain, mm);
     var role = fill((ROLE_LINE[rel] || ROLE_LINE.friend)[mk] || (ROLE_LINE[rel] || ROLE_LINE.friend).same, mm);
@@ -1116,7 +1130,7 @@
     } else if (info.warnOne.length) {
       var wo = info.warnOne[0];
       var whoName = wo.who === 'me' ? aName : bName;
-      care.push('<b>' + wo.n + '월</b>엔 ' + esc(whoName) + '가 예민해요 — 그달엔 먼저 연락하고 결정은 천천히.');
+      care.push('<b>' + wo.n + '월</b>엔 ' + esc(josaFull(whoName, 'subj')) + ' 예민해요 — 그달엔 먼저 연락하고 결정은 천천히.');
     } else if (bestMs.length) {
       care.push('<b>' + bestMs[0] + '월</b>에 같이 뭐 하나 시작해 보세요 — 올해는 조심할 달이 없어요.');
     } else {
@@ -1130,7 +1144,7 @@
     var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '아직 없어요';
     var warnTx = warnMs.length ? warnMs.map(function (n) { return n + '월'; }).join(' · ') : '없어요';
 
-    var cardLine = (AMUL_LINE[rel] || AMUL_LINE.friend)[zk] || (AMUL_LINE[rel] || AMUL_LINE.friend).plain;
+    var amul = (AMUL[rel] || AMUL.friend)[zk] || (AMUL[rel] || AMUL.friend).plain;
 
     var html = '';
     html += '<div class="chemi__hd">'
@@ -1155,14 +1169,14 @@
       + '<div class="cm cm--warn"><span>' + (rel === 'love' ? '말 조심할 달' : '슬쩍 조심할 달') + '</span><b>' + esc(warnTx) + '</b></div>'
       + '</div>';
 
-    html += '<p class="sect-h">2027 정미년 ' + esc(R.card) + ' (' + R.hanja + ')</p>';
+    html += '<p class="sect-h">2027 정미년 · ' + esc(amul.name) + ' (' + R.hanja + ')</p>';
     html += '<h3 class="sect-t">저장해서 올리는 카드</h3>';
     html += '<div class="amulbox" id="amulBox"></div>';
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--gold btn--wide" id="saveAmulBtn">이미지로 저장</button>'
       + '<button type="button" class="btn btn--ghost" id="againBtn">다시</button>'
       + '</div>';
-    html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 이 카드 한 장이면 인스타 인증 사진으로 충분해요.</p>';
+    html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
 
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
@@ -1183,7 +1197,7 @@
     /* 부적 카드는 그림(Canvas)으로 그려 <img>로 앉힌다 — 길게 눌러 저장 + 버튼 저장 둘 다 되게 */
     var cv = doc.createElement('canvas');
     cv.width = 1080; cv.height = 1920;
-    drawAmul(cv, { rel: rel, a: aName, b: bName, line: cardLine, hanja: R.hanja, word: R.word });
+    drawAmul(cv, { rel: rel, a: aName, b: bName, title: amul.name, art: amul.art, line: amul.line, hanja: R.hanja, word: R.word });
     var dataUrl = '';
     try { dataUrl = cv.toDataURL('image/png'); } catch (e) { dataUrl = ''; }
     var holder = $('#amulBox');
@@ -1291,14 +1305,16 @@
     if (!ctx) return;
     var love = o.rel === 'love';
     var P = love ? {
-      bg1: '#3B0E1D', bg2: '#170710', bg3: '#07040E',
-      glow: 'rgba(228,132,124,0.22)', glow2: 'rgba(64,86,142,0.22)',
+      bg1: '#3A0C1B', bg2: '#14060F', bg3: '#050309',
+      glow: 'rgba(232,132,120,0.26)', glow2: 'rgba(58,80,138,0.26)',
+      goldGlow: 'rgba(238,190,150,0.10)',
       goldHi: '#FFF1E3', gold: '#EFC4AB', goldLow: '#A96C52',
       cream: '#F8EAE0', dim: 'rgba(248,234,224,0.62)', seal: '#A51F35',
       glyphGlow: 'rgba(255,186,158,0.34)'
     } : {
-      bg1: '#0E2B33', bg2: '#081720', bg3: '#040E16',
-      glow: 'rgba(48,150,124,0.24)', glow2: 'rgba(44,78,132,0.22)',
+      bg1: '#0B2A34', bg2: '#061420', bg3: '#030B12',
+      glow: 'rgba(42,148,120,0.32)', glow2: 'rgba(40,74,128,0.26)',
+      goldGlow: 'rgba(226,186,120,0.10)',
       goldHi: '#FFF8E3', gold: '#EED4A4', goldLow: '#A87C42',
       cream: '#F4EBDA', dim: 'rgba(244,235,218,0.62)', seal: '#9C3A2E',
       glyphGlow: 'rgba(255,226,164,0.30)'
@@ -1318,6 +1334,11 @@
     rg2.addColorStop(0, P.glow2); rg2.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = rg2; ctx.fillRect(0, 0, W, H);
 
+    /* 위에서 스며드는 금빛 — 카드가 종이보다 천처럼 보이게 */
+    var rg3 = ctx.createRadialGradient(W * 0.5, -H * 0.05, 40, W * 0.5, H * 0.1, W * 0.95);
+    rg3.addColorStop(0, P.goldGlow); rg3.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg3; ctx.fillRect(0, 0, W, H);
+
     var rnd = mulberry32(love ? 20270214 : 20271121);
     ctx.save();
     for (var i = 0; i < 300; i++) {
@@ -1330,7 +1351,7 @@
         x0 + Math.cos(ang) * len,
         y0 + Math.sin(ang) * len
       );
-      ctx.strokeStyle = 'rgba(255,255,255,' + (0.008 + rnd() * 0.020).toFixed(3) + ')';
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.012 + rnd() * 0.026).toFixed(3) + ')';
       ctx.lineWidth = 0.6 + rnd() * 1.7;
       ctx.stroke();
     }
@@ -1363,6 +1384,19 @@
     ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(238,214,170,0.16)'; ctx.stroke();
     ctx.restore();
 
+    /* 테두리 안쪽 모서리 장식 — 네 귀에 ㄱ자 금선 */
+    ctx.save();
+    ctx.strokeStyle = 'rgba(238,214,170,0.42)'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    var ci = 104, cl = 54;
+    [[ci, ci, 1, 1], [W - ci, ci, -1, 1], [ci, H - ci, 1, -1], [W - ci, H - ci, -1, -1]].forEach(function (c) {
+      ctx.beginPath();
+      ctx.moveTo(c[0] + c[2] * cl, c[1]);
+      ctx.lineTo(c[0], c[1]);
+      ctx.lineTo(c[0], c[1] + c[3] * cl);
+      ctx.stroke();
+    });
+    ctx.restore();
+
     /* 테두리 위 작은 다이아몬드 4개 (상하좌우) */
     ctx.save();
     ctx.fillStyle = goldGrad(ctx, W / 2 - 20, 0, W / 2 + 20, 80, P);
@@ -1385,34 +1419,20 @@
     ctx.beginPath(); ctx.arc(W / 2, 214, 20, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(238,214,170,0.30)'; ctx.lineWidth = 1; ctx.stroke();
 
-    /* 4. 부적 이름 */
-    ctx.font = '700 66px ' + serif;
-    ctx.fillStyle = goldGrad(ctx, 0, 280, 0, 372, P);
-    spacedCenter(ctx, o.word === '사랑' ? '사랑 부적' : '우정 부적', W / 2, 366, 6);
-
-    /* 5. 큰 한자 — 금박 */
-    var gx = W / 2, gy = 810;
-    ctx.save();
-    ctx.textBaseline = 'middle';
-    ctx.beginPath(); ctx.arc(gx, gy, 292, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(238,214,170,0.14)'; ctx.lineWidth = 1.2; ctx.stroke();
-    ctx.beginPath(); ctx.arc(gx, gy, 322, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(238,214,170,0.06)'; ctx.lineWidth = 0.9; ctx.stroke();
-    ctx.shadowColor = P.glyphGlow; ctx.shadowBlur = 80;
-    ctx.font = '700 430px ' + serif;
-    ctx.fillStyle = goldGrad(ctx, 0, gy - 260, 0, gy + 240, P);
-    ctx.fillText(o.hanja, gx, gy + 6);
-    ctx.restore();
-
-    /* 링 위 작은 다이아몬드 */
-    ctx.save();
-    ctx.fillStyle = 'rgba(238,214,170,0.55)';
-    for (var d = 0; d < 4; d++) {
-      var ang2 = Math.PI / 4 + d * Math.PI / 2;
-      diamond(ctx, gx + Math.cos(ang2) * 292, gy + Math.sin(ang2) * 292, 7);
-      ctx.fill();
+    /* 4. 부적 이름 — 조합마다 다르다 */
+    var title = o.title || (o.word + ' 부적');
+    var tfs = 62;
+    ctx.font = '700 ' + tfs + 'px ' + serif;
+    var tw = ctx.measureText(title).width + 4 * Math.max(0, title.length - 1);
+    if (tw > W - 220) {
+      tfs = Math.max(34, Math.floor(tfs * (W - 220) / tw));
+      ctx.font = '700 ' + tfs + 'px ' + serif;
     }
-    ctx.restore();
+    ctx.fillStyle = goldGrad(ctx, 0, 300, 0, 380, P);
+    spacedCenter(ctx, title, W / 2, 368, 4);
+
+    /* 5. 부적 문양 — 조합마다 다른 금박 일러스트(쌍별·달과 파도·열쇠·나비·금전수·매듭·쌍불꽃) */
+    drawEmblem(ctx, o.art, W / 2, 808, 452, P);
 
     /* 6. 이름 */
     ctx.textBaseline = 'alphabetic';
@@ -1448,13 +1468,14 @@
 
     /* 9. 낙관 인장 (友 / 愛) */
     drawSeal(ctx, W - 236, 1548, 168, o.hanja, P, serif);
+    /* 왼쪽 아래 — 2027 정미년 표식 */
     ctx.save();
-    ctx.font = '500 30px ' + serif;
+    ctx.textAlign = 'left';
+    ctx.font = '500 26px ' + serif;
     ctx.fillStyle = 'rgba(238,214,170,0.55)';
-    ctx.textAlign = 'center';
-    for (var v = 0; v < 2; v++) {
-      ctx.fillText('丁未'[v], 236, 1600 + v * 44);
-    }
+    ctx.fillText('丁未', 200, 1620);
+    ctx.strokeStyle = 'rgba(238,214,170,0.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(200, 1644); ctx.lineTo(268, 1644); ctx.stroke();
     ctx.restore();
 
     /* 10. 워터마크 */
@@ -1474,6 +1495,230 @@
       ctx.fillStyle = 'rgba(255,241,214,' + (0.06 + rnd() * 0.22).toFixed(3) + ')';
       ctx.fill();
     }
+    ctx.restore();
+  }
+
+  /* ── 부적 문양 — 금박 선화(線畵). 조합마다 다른 그림 ──────────
+     stars 쌍별 · moonwave 달과 파도 · key 황금열쇠
+     butterfly 쌍나비 · money 금전수 · knot 매듭 · flame 쌍불꽃        */
+  function starPath(ctx, x, y, r) {
+    var k = r * 0.16;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x + k, y - k, x + r, y);
+    ctx.quadraticCurveTo(x + k, y + k, x, y + r);
+    ctx.quadraticCurveTo(x - k, y + k, x - r, y);
+    ctx.quadraticCurveTo(x - k, y - k, x, y - r);
+    ctx.closePath();
+  }
+
+  function emStars(ctx, cx, cy, S) {
+    starPath(ctx, cx - S * 0.26, cy - S * 0.22, S * 0.40); ctx.fill();
+    starPath(ctx, cx + S * 0.34, cy + S * 0.26, S * 0.23); ctx.fill();
+    /* 작은 별가루 */
+    [[-0.60, 0.34, 0.030], [0.58, -0.42, 0.024], [0.12, 0.60, 0.020], [-0.42, -0.58, 0.017]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function emMoonWave(ctx, cx, cy, S) {
+    /* 초승달 — 큰 원에서 작은 원을 빼서 금빛 달 */
+    var mR = S * 0.30, mx = cx - S * 0.30, my = cy - S * 0.30;
+    ctx.beginPath();
+    ctx.arc(mx, my, mR, 0, Math.PI * 2);
+    ctx.moveTo(mx + mR * 0.86 + mR * 0.82, my);
+    ctx.arc(mx + mR * 0.86, my, mR * 0.82, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+    /* 파도 세 줄 */
+    for (var w = 0; w < 3; w++) {
+      var wy = cy + S * 0.10 + w * S * 0.155;
+      ctx.beginPath();
+      ctx.moveTo(cx - S * 0.52, wy);
+      ctx.bezierCurveTo(cx - S * 0.26, wy - S * 0.13, cx - S * 0.10, wy + S * 0.13, cx + S * 0.04, wy);
+      ctx.bezierCurveTo(cx + S * 0.18, wy - S * 0.13, cx + S * 0.34, wy + S * 0.09, cx + S * 0.50, wy - S * 0.02);
+      ctx.stroke();
+    }
+    /* 물빛 반짝임 */
+    [[0.40, -0.34, 0.030], [0.52, -0.16, 0.020]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function emKey(ctx, cx, cy, S) {
+    ctx.beginPath(); ctx.arc(cx, cy - S * 0.40, S * 0.19, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy - S * 0.40, S * 0.095, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy - S * 0.21); ctx.lineTo(cx, cy + S * 0.52); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.20); ctx.lineTo(cx + S * 0.26, cy + S * 0.20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.36); ctx.lineTo(cx + S * 0.20, cy + S * 0.36); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.50); ctx.lineTo(cx + S * 0.14, cy + S * 0.50); ctx.stroke();
+    /* 열쇠 구멍 반짝 — 작은 다이아몬드 */
+    diamond(ctx, cx + S * 0.44, cy - S * 0.46, S * 0.05); ctx.fill();
+    diamond(ctx, cx - S * 0.40, cy + S * 0.30, S * 0.035); ctx.fill();
+  }
+
+  function emButterflyOne(ctx, x, y, s, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt || 0);
+    /* 몸통 — 채워서 또렷하게 */
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.62);
+    ctx.quadraticCurveTo(s * 0.10, -s * 0.10, s * 0.045, s * 0.30);
+    ctx.quadraticCurveTo(s * 0.02, s * 0.56, 0, s * 0.60);
+    ctx.quadraticCurveTo(-s * 0.02, s * 0.56, -s * 0.045, s * 0.30);
+    ctx.quadraticCurveTo(-s * 0.10, -s * 0.10, 0, -s * 0.62);
+    ctx.closePath();
+    ctx.fill();
+    [-1, 1].forEach(function (d) {
+      /* 윗날개 — 크고 뾰족하게 */
+      ctx.beginPath();
+      ctx.moveTo(d * s * 0.05, -s * 0.52);
+      ctx.bezierCurveTo(d * s * 0.40, -s * 1.30, d * s * 1.24, -s * 1.06, d * s * 1.02, -s * 0.54);
+      ctx.bezierCurveTo(d * s * 0.90, -s * 0.22, d * s * 0.34, -s * 0.16, d * s * 0.05, -s * 0.20);
+      ctx.stroke();
+      /* 아랫날개 — 작고 뾰족하게 */
+      ctx.beginPath();
+      ctx.moveTo(d * s * 0.05, -s * 0.10);
+      ctx.bezierCurveTo(d * s * 0.60, -s * 0.02, d * s * 0.86, s * 0.36, d * s * 0.46, s * 0.66);
+      ctx.bezierCurveTo(d * s * 0.20, s * 0.84, d * s * 0.06, s * 0.40, d * s * 0.05, s * 0.20);
+      ctx.stroke();
+      /* 더듬이 */
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.60);
+      ctx.quadraticCurveTo(d * s * 0.28, -s * 0.98, d * s * 0.50, -s * 1.02);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(d * s * 0.52, -s * 1.03, s * 0.038, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function emButterfly(ctx, cx, cy, S) {
+    emButterflyOne(ctx, cx - S * 0.26, cy - S * 0.04, S * 0.36, -0.12);
+    emButterflyOne(ctx, cx + S * 0.36, cy + S * 0.30, S * 0.22, 0.26);
+    diamond(ctx, cx + S * 0.56, cy - S * 0.50, S * 0.038); ctx.fill();
+    diamond(ctx, cx - S * 0.58, cy + S * 0.44, S * 0.030); ctx.fill();
+  }
+
+  function emMoney(ctx, cx, cy, S) {
+    /* 금전수 — 줄기에서 뻗은 가지 끝에 엽전 */
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + S * 0.54);
+    ctx.quadraticCurveTo(cx - S * 0.06, cy + S * 0.10, cx + S * 0.02, cy - S * 0.50);
+    ctx.stroke();
+
+    var coins = [
+      { x: -0.40, y: -0.06, r: 0.115, by: 0.16 },
+      { x: 0.38, y: -0.28, r: 0.100, by: -0.06 },
+      { x: -0.24, y: -0.46, r: 0.085, by: -0.28 }
+    ];
+    ctx.lineWidth = Math.max(3.5, S * 0.020);
+    coins.forEach(function (c) {
+      var px = cx + S * c.x, py = cy + S * c.y;
+      ctx.beginPath();
+      ctx.moveTo(cx + S * 0.01, cy + S * c.by);
+      ctx.quadraticCurveTo((cx + px) / 2, py + S * 0.10, px + (c.x < 0 ? S * c.r * 0.55 : -S * c.r * 0.55), py + S * c.r * 0.45);
+      ctx.stroke();
+    });
+    /* 바닥 */
+    ctx.lineWidth = Math.max(4, S * 0.024);
+    ctx.beginPath(); ctx.moveTo(cx - S * 0.30, cy + S * 0.58); ctx.lineTo(cx + S * 0.30, cy + S * 0.58); ctx.stroke();
+
+    coins.forEach(function (c) {
+      var px = cx + S * c.x, py = cy + S * c.y, r = S * c.r;
+      ctx.lineWidth = Math.max(5, S * 0.028);
+      ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
+      var q = r * 0.34;
+      ctx.beginPath();
+      ctx.moveTo(px - q, py - q); ctx.lineTo(px + q, py - q);
+      ctx.lineTo(px + q, py + q); ctx.lineTo(px - q, py + q);
+      ctx.closePath(); ctx.stroke();
+    });
+  }
+
+  function emKnot(ctx, cx, cy, S) {
+    /* 금실 매듭 — 두 고리가 맞물린 문양 (의리 = 이어진 고리) */
+    var r = S * 0.255, off = S * 0.185;
+    ctx.lineWidth = Math.max(5, S * 0.032);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r, 0, Math.PI * 2); ctx.stroke();
+    /* 맞물린 자리 — 작은 매듭 */
+    ctx.lineWidth = Math.max(4, S * 0.024);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r * 0.42, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r * 0.42, 0, Math.PI * 2); ctx.stroke();
+    /* 아래로 늘어뜨린 술 두 가닥 */
+    for (var t = -1; t <= 1; t += 2) {
+      ctx.beginPath();
+      ctx.moveTo(cx + t * S * 0.055, cy + S * 0.30);
+      ctx.quadraticCurveTo(cx + t * S * 0.13, cy + S * 0.46, cx + t * S * 0.10, cy + S * 0.58);
+      ctx.stroke();
+    }
+    diamond(ctx, cx - S * 0.60, cy - S * 0.40, S * 0.030); ctx.fill();
+    diamond(ctx, cx + S * 0.62, cy + S * 0.42, S * 0.030); ctx.fill();
+  }
+
+  function emFlameShape(ctx, x, yBase, h, w) {
+    ctx.beginPath();
+    ctx.moveTo(x, yBase);
+    ctx.bezierCurveTo(x - w * 1.02, yBase - h * 0.24, x - w * 0.80, yBase - h * 0.66, x - w * 0.02, yBase - h);
+    ctx.bezierCurveTo(x + w * 0.14, yBase - h * 0.62, x + w * 0.54, yBase - h * 0.46, x + w * 0.52, yBase - h * 0.20);
+    ctx.bezierCurveTo(x + w * 0.50, yBase - h * 0.10, x + w * 0.30, yBase - h * 0.02, x + w * 0.22, yBase - h * 0.16);
+    ctx.bezierCurveTo(x + w * 0.16, yBase - h * 0.04, x + w * 0.08, yBase, x, yBase);
+    ctx.stroke();
+  }
+
+  function emFlame(ctx, cx, cy, S) {
+    emFlameShape(ctx, cx - S * 0.18, cy + S * 0.46, S * 0.90, S * 0.30);
+    emFlameShape(ctx, cx + S * 0.24, cy + S * 0.46, S * 0.62, S * 0.22);
+    ctx.lineWidth = Math.max(2.5, S * 0.013);
+    emFlameShape(ctx, cx - S * 0.18, cy + S * 0.42, S * 0.44, S * 0.13);
+    ctx.lineWidth = Math.max(4, S * 0.026);
+    [[0.46, -0.30, 0.032], [-0.44, -0.44, 0.026]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function drawEmblem(ctx, kind, cx, cy, S, P) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    /* 뒤 고리 — 은은한 금빛 */
+    ctx.beginPath(); ctx.arc(cx, cy, S * 0.80, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(238,214,170,0.15)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, S * 0.93, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(238,214,170,0.07)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.save();
+    ctx.fillStyle = 'rgba(238,214,170,0.50)';
+    for (var d = 0; d < 4; d++) {
+      var ang = Math.PI / 4 + d * Math.PI / 2;
+      diamond(ctx, cx + Math.cos(ang) * S * 0.80, cy + Math.sin(ang) * S * 0.80, 6);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = goldGrad(ctx, cx - S, cy - S, cx + S, cy + S, P);
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = Math.max(4, S * 0.026);
+    ctx.shadowColor = P.glyphGlow;
+    ctx.shadowBlur = 46;
+
+    if (kind === 'stars') emStars(ctx, cx, cy, S);
+    else if (kind === 'moonwave') emMoonWave(ctx, cx, cy, S);
+    else if (kind === 'key') emKey(ctx, cx, cy, S);
+    else if (kind === 'butterfly') emButterfly(ctx, cx, cy, S);
+    else if (kind === 'money') emMoney(ctx, cx, cy, S);
+    else if (kind === 'knot') emKnot(ctx, cx, cy, S);
+    else emFlame(ctx, cx, cy, S);
+
     ctx.restore();
   }
 
@@ -1733,6 +1978,9 @@
       }, 400);
     }
   }
+
+  /* QA 임시 — 부적 도안 확인용 (머지 전 제거) */
+  if (/[?&]qa=1/.test(location.search)) global.__qaAmul = drawAmul;
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);
   else boot();
