@@ -584,7 +584,7 @@
   /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '3일' 문구도 5일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
     if (!invited) return;
-    var nodes = $$('.js-trial, .js-trial-over, .cal__trialover-t');
+    var nodes = $$('.js-trial, .js-trial-over, .cal__trialover-t, #guideTrialH, #guideTrialSub');
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       if (el.innerHTML.indexOf(FREE_DAYS_BASE + '일') >= 0) {
