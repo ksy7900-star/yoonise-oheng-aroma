@@ -1219,11 +1219,62 @@
     }, 180);
   }
 
-  /* ── 첫 방문 사용법 팝업 (2026-11-21i) ───────────────────────
-     사이트에 **처음 들어오자마자**(사주를 넣기 전) 딱 한 번 자동으로 뜬다.
-     닫으면(바로 해보기·✕·배경·Esc 어느 쪽이든) 그 사실을 localStorage 에 남기고
-     아래 사주 입력 폼으로 안내한다. 이후 달력이 열려도 다시 뜨지 않고,
-     달력 위 `? 사용법` 버튼(.cal__help)으로는 언제든 다시 열 수 있다. */
+  /* ── 1차 · 첫 접속 웰컴 팝업 (2026-11-21j) ─────────────────────
+     사주를 넣기 전, 이 기기에서 **처음** 사이트를 열었을 때만 뜨는 콤팩트 소개.
+     '내 사주 입력하기'를 누르면 닫히고 welcome.v1='1' 저장 + 사주 입력 폼(#formCard)으로.
+     1~4단계 사용법은 여기서 말하지 않는다 — 사주를 넣어 달력이 처음 열릴 때
+     아래 2차 사용법 팝업(#guideModal)이 맡는다. */
+  var WELCOME_KEY = 'yoonise.timing.welcome.v1';
+  var welcomeEl = null, welcomeDialog = null, welcomeLastFocus = null, welcomeClosing = false;
+  var welcomeShown = false;   // 이번 페이지 로드에서 이미 띄웠는가 — 자동 오픈은 한 번만
+
+  function welcomeSeen() {
+    try { return localStorage.getItem(WELCOME_KEY) === '1'; } catch (e) { return true; }  // 저장이 막힌 환경에서는 자동 팝업을 띄우지 않는다
+  }
+  function markWelcomeSeen() {
+    try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) {}
+  }
+  function openWelcome(quiet) {
+    if (!welcomeEl || !welcomeEl.hidden) return;
+    welcomeShown = true;
+    welcomeLastFocus = document.activeElement;
+    welcomeEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    if (!quiet) sfxOpen();      // 자동으로 뜰 때는 소리 없이 (손가락 없이 오디오를 열지 않는다)
+    try { welcomeDialog.focus({ preventScroll: true }); } catch (e) { welcomeDialog.focus(); }
+  }
+  function closeWelcome() {
+    if (!welcomeEl || welcomeEl.hidden || welcomeClosing) return;
+    welcomeClosing = true;
+    markWelcomeSeen();          // 닫는 방법과 상관없이 '한 번 봤다'로 기록 — 다음 방문부터는 조용히
+    welcomeEl.classList.add('is-closing');
+    setTimeout(function () {
+      welcomeEl.classList.remove('is-closing');
+      welcomeEl.hidden = true;
+      welcomeClosing = false;
+      if (!anyModalOpen()) document.body.classList.remove('is-modal-open');
+      var target = welcomeLastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      welcomeLastFocus = null;
+      /* 웰컴 팝업을 닫으면 바로 사주 입력 칸으로 — 한 번 더 찾아 헤매지 않게 */
+      var fc = $('#formCard');
+      if (fc && !fc.hidden) {
+        try { fc.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { fc.scrollIntoView(); }
+      }
+    }, 180);
+  }
+  /** 첫 접속 한 번 — 사주를 넣기 전(달력이 아직 안 열린 상태)에만. 이미 본 기기면 조용히. */
+  function maybeAutoWelcome(delay) {
+    if (welcomeShown || welcomeSeen() || state.res) return;
+    welcomeShown = true;
+    setTimeout(function () { openWelcome(true); }, typeof delay === 'number' ? delay : 360);
+  }
+
+  /* ── 2차 · 달력 사용법 팝업 (2026-11-21i → 21j 분리) ────
+     사주를 넣어 **달력이 처음 열릴 때** 딱 한 번 자동으로 뜨는 사용법 팝업(1~4단계).
+     닫으면(바로 해보기·✕·배경·Esc 어느 쪽이든) 그 사실을 localStorage 에 남기고,
+     이후에는 달력 위 `? 사용법` 버튼(.cal__help)으로만 다시 연다.
+     사주를 넣기 전(입력 화면)에는 뜨지 않는다 — 그 자리는 1차 웰컴 팝업의 몫이다. */
   var GUIDE_KEY = 'yoonise.timing.guide.v1';
   var guideEl = null, guideDialog = null, guideLastFocus = null, guideClosing = false;
   var guideShown = false;   // 이번 페이지 로드에서 이미 띄웠는가 — 자동 오픈은 한 번만
@@ -1238,7 +1289,7 @@
   function guideAtEntry() { return !state.res; }
   /** 열려 있는 팝업이 하나라도 있으면 body 스크롤 잠금을 유지한다 */
   function anyModalOpen() {
-    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl];
+    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl, welcomeEl];
     for (var i = 0; i < els.length; i++) if (els[i] && !els[i].hidden) return true;
     return false;
   }
@@ -1310,10 +1361,10 @@
       ? '생년월일만 넣으면 시작 — 내 사주 달력을 열어 드려요'
       : '네 번만 따라 하면 오늘 바로 쓸 수 있어요';
   }
-  /** 첫 방문 한 번 — 사주를 넣기 전이라도 페이지가 열리면 바로 띄운다.
+  /** 달력이 열린 뒤 한 번 — 사주를 넣기 전에는 띄우지 않는다(그 자리는 1차 웰컴 팝업).
       이미 본 기기면 아무 것도 하지 않는다. delay 는 화면이 한 번 그려진 뒤 뜨게 하는 여유. */
   function maybeAutoGuide(delay) {
-    if (guideShown || guideSeen()) return;
+    if (guideShown || guideSeen() || !state.res) return;
     guideShown = true;
     setTimeout(function () { openGuide(true); }, typeof delay === 'number' ? delay : 520);
   }
@@ -5341,6 +5392,8 @@
     dbookDialog = $('#diaryBookDialog');
     guideEl = $('#guideModal');
     guideDialog = $('#guideDialog');
+    welcomeEl = $('#welcomeModal');
+    welcomeDialog = $('#welcomeDialog');
 
     loadBurn();
     renderBurnCard();
@@ -5382,6 +5435,12 @@
     if (guideEl) {
       guideEl.addEventListener('click', function (e) {
         if (e.target.closest && e.target.closest('[data-guide-close]')) { closeGuide(); }
+      });
+    }
+    // 1차 웰컴 팝업 — '내 사주 입력하기'·✕·배경 어느 쪽이든 닫으면 입력 폼으로
+    if (welcomeEl) {
+      welcomeEl.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-welcome-close]')) { closeWelcome(); }
       });
     }
 
@@ -5572,6 +5631,21 @@
 
     // ESC 닫기 + Tab 포커스가 팝업 밖으로 나가지 않게
     document.addEventListener('keydown', function (e) {
+      if (welcomeEl && !welcomeEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeWelcome(); return; }
+        if (e.key !== 'Tab') return;
+        var wf = $$('a[href], button:not([disabled])', welcomeDialog).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!wf.length) return;
+        var wFirst = wf[0], wLast = wf[wf.length - 1];
+        if (e.shiftKey && (document.activeElement === wFirst || document.activeElement === welcomeDialog)) {
+          e.preventDefault(); wLast.focus();
+        } else if (!e.shiftKey && document.activeElement === wLast) {
+          e.preventDefault(); wFirst.focus();
+        }
+        return;
+      }
       if (guideEl && !guideEl.hidden) {
         if (e.key === 'Escape') { e.preventDefault(); closeGuide(); return; }
         if (e.key !== 'Tab') return;
@@ -5666,6 +5740,7 @@
     });
 
     var saved = loadInput();
+    var openedFromSaved = false;
     if (saved) {
       applyInput(saved);
       try {
@@ -5689,14 +5764,21 @@
         $('#result').hidden = false;
         document.body.classList.add('is-result');
         render();
-        maybeAutoGuide();     // 저장된 사주로 바로 열린 첫 방문에도 한 번
+        openedFromSaved = true;
       } catch (err) {
         document.body.classList.remove('is-result');
         $('#formCard').hidden = false;
       }
     }
-    /* 첫 접속 — 사주를 넣기 전이라도 페이지가 열리면 사용법 팝업을 한 번 띄운다 */
-    maybeAutoGuide(saved ? 420 : 60);
+    /* 달력이 바로 열린 기기(저장된 사주·오행 앱에서 이어받은 사주) —
+       1차 웰컴은 건너뛰고 2차 사용법 팝업만 1회. 웰컴은 앞으로도 뜨지 않게 표시. */
+    if (openedFromSaved) {
+      markWelcomeSeen();
+      maybeAutoGuide();
+    } else {
+      /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다 */
+      maybeAutoWelcome(60);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

@@ -3389,12 +3389,16 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 @media (max-width: 360px) {
   .day__hint { font-size: 9.5px; padding: 4px 7px; }
   .cal__help { font-size: 11px; padding: 5px 10px; }
-  .guide__title { font-size: 25px; }
-  .guide-step { padding: 12px 12px 13px; gap: 10px; }
-  .guide-step__n { width: 28px; height: 28px; font-size: 13px; }
-  .guide-step__t { font-size: 14px; }
-  .guide-step__d { font-size: 11px; }
-  .guide__cta { font-size: 15.5px; padding: 15px 16px 16px; }
+  .guide__title { font-size: 18px; }
+  .guide__title-em { font-size: 26px; }
+  .guide-step { padding: 10px 11px 11px 10px; gap: 9px; }
+  .guide-step__n { width: 26px; height: 26px; font-size: 12.5px; }
+  .guide-step__t { font-size: 13.5px; }
+  .guide-step__d { font-size: 10.5px; }
+  .guide__cta { font-size: 15px; padding: 13px 14px 14px; }
+  .welcome__title { font-size: 18px; }
+  .welcome__title-em { font-size: 26px; }
+  .welcome__intro { font-size: 11.8px; }
 }
 
 /* ══ 달력 상단 `? 사용법` 버튼 (2026-11-21c) ═══════════════════════════
@@ -3426,6 +3430,68 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
   line-height: 1; letter-spacing: 0;
 }
 
+/* ══ 1차 · 첫 접속 웰컴 팝업 (2026-11-21j) ═══════════════════════════
+   사주를 넣기 전, 처음 온 기기에만 한 번 뜨는 **작고 콤팩트한 소개**.
+   사용법 1~4단계는 여기 넣지 않는다 — 사주 입력 뒤 달력이 열릴 때 뜨는
+   2차 팝업(.modal--guide)의 역할이라, 이 팝업은 '뭔지 + 넣기'만 말한다. */
+.modal__dialog--welcome {
+  max-width: 336px;
+  background:
+    radial-gradient(120% 78% at 102% -8%, rgba(196, 154, 80, .2), transparent 56%),
+    radial-gradient(90% 70% at -10% 110%, rgba(174, 138, 80, .13), transparent 60%),
+    linear-gradient(180deg, #FFFDF8 0%, #F8F1E1 100%);
+  box-shadow:
+    0 34px 74px -28px rgba(20, 18, 15, .62),
+    inset 0 0 0 1px rgba(174, 138, 80, .24),
+    0 2px 8px rgba(20, 18, 15, .1);
+}
+.modal--welcome .modal__content { padding: 0 20px calc(18px + env(safe-area-inset-bottom, 0px)); }
+.welcome { text-align: center; }
+/* 🎁 사주를 넣는 날부터 3일 무료 — 콤팩트 한 줄 배지 */
+.welcome__trial {
+  display: inline-block;
+  margin: 2px auto 0; padding: 7px 14px 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FCF1D6 0%, #EFD9A8 100%);
+  border: 1px solid rgba(174, 138, 80, .58);
+  color: #6E5219;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.03em; line-height: 1.3;
+  box-shadow: 0 8px 18px -12px rgba(110, 82, 25, .95), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+.welcome__trial b { color: #9E4A2E; font-weight: 800; }
+.welcome__title {
+  margin-top: 12px;
+  font-family: var(--serif); font-size: 20px; font-weight: 500; line-height: 1.26;
+  letter-spacing: -.03em; color: #6B6354;
+}
+.welcome__title-em {
+  display: block; margin-top: 1px;
+  font-size: 29px; font-weight: 700; line-height: 1.16;
+  letter-spacing: -.045em; color: var(--ink);
+}
+.welcome__intro {
+  margin: 11px auto 0; max-width: 272px;
+  font-size: 12.2px; line-height: 1.62; letter-spacing: -.03em;
+  color: #5F5A4E; word-break: keep-all;
+}
+.welcome__intro b { color: #8E5A24; font-weight: 800; }
+/* 액운 태우기 훅 1줄 — 3일 체험과 모순 없게 '5회' 숫자는 빼고 맛보기만 알린다 (2026-11-21j) */
+.welcome__hook {
+  margin: 10px auto 0; max-width: 272px;
+  padding: 8px 11px 9px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(252, 241, 214, .92) 0%, rgba(245, 231, 199, .92) 100%);
+  border: 1px solid rgba(174, 138, 80, .34);
+  font-size: 11.2px; font-weight: 600; line-height: 1.5;
+  letter-spacing: -.03em; color: #7A5F2A; word-break: keep-all;
+}
+.welcome__hook b { color: #9E4A2E; font-weight: 800; }
+.welcome__cta { margin-top: 12px; padding: 15px 16px 16px; font-size: 16px; }
+.welcome__note {
+  margin-top: 9px; font-size: 9.5px; line-height: 1.5;
+  color: #9A9384; letter-spacing: -.02em; word-break: keep-all;
+}
+
 /* ══ 첫 방문 사용법 팝업 (2026-11-21c) ════════════════════════════════
    한지 바탕 + 금박 테두리 · 큰 글씨 3단계로 1초에 읽히게.
    localStorage 로 최초 1회만 자동으로 뜬다. */
@@ -3440,17 +3506,19 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
     inset 0 0 0 1px rgba(174, 138, 80, .24),
     0 2px 8px rgba(20, 18, 15, .1);
 }
-.modal--guide .modal__content { padding-top: 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+/* ══ 2차 사용법 팝업은 '달력이 처음 열릴 때' 뜨므로(2026-11-21j)
+   390×844에서 화면을 꽉 채우지 않게 여백·줄간격을 슬림하게 — 높이 약 70%. */
+.modal--guide .modal__content { padding-top: 0; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 .guide { text-align: center; }
 .guide__eyebrow {
-  font-size: 9px; font-weight: 700; letter-spacing: .24em;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .24em;
   color: #A4864B; line-height: 1.5;
 }
 /* 🎁 3일 무료 체험 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만 (2026-11-21d) */
 .guide__trial {
   display: flex; flex-direction: column; align-items: center; gap: 1px;
   width: -moz-fit-content; width: fit-content; max-width: 100%;
-  margin: 9px auto 0; padding: 8px 15px 9px;
+  margin: 7px auto 0; padding: 7px 13px 8px;
   border-radius: 999px;
   background: linear-gradient(180deg, #FCF1D6 0%, #EFD9A8 100%);
   border: 1px solid rgba(174, 138, 80, .58);
@@ -3458,12 +3526,12 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 }
 .guide__trial[hidden] { display: none; }
 .guide__trial-h {
-  font-size: 12.5px; font-weight: 800; letter-spacing: -.035em;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.035em;
   color: #6E5219; line-height: 1.3;
 }
 .guide__trial-h b { color: #9E4A2E; font-weight: 800; }
 .guide__trial-s {
-  font-size: 9.5px; font-weight: 600; letter-spacing: -.02em;
+  font-size: 9px; font-weight: 600; letter-spacing: -.02em;
   color: #8A6B2C; line-height: 1.35;
   font-variant-numeric: tabular-nums;
 }
@@ -3476,18 +3544,18 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .guide__trial.is-over .guide__trial-h { color: #6B6354; }
 .guide__trial.is-over .guide__trial-s { color: #8A8272; }
 .guide__title {
-  font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.24;
-  letter-spacing: -.03em; color: #6B6354; margin-top: 8px;
+  font-family: var(--serif); font-size: 20px; font-weight: 500; line-height: 1.24;
+  letter-spacing: -.03em; color: #6B6354; margin-top: 7px;
 }
 .guide__title-em {
-  display: block; font-size: 34px; font-weight: 700; color: var(--ink);
+  display: block; font-size: 29px; font-weight: 700; color: var(--ink);
   letter-spacing: -.045em; margin-top: 1px; line-height: 1.14;
 }
 .guide__sub {
-  margin-top: 9px; font-size: 11.5px; line-height: 1.55;
+  margin-top: 7px; font-size: 10.5px; line-height: 1.5;
   color: #7C7568; letter-spacing: -.02em;
 }
-/* 이 캘린더가 무엇인지 1초에 읽히는 소개 (2026-11-21d) */
+/* 이 캘린더가 무엇인지 1초에 읽히는 소개 (2026-11-21d — 1차 웰컴 팝업으로 이동, 21j) */
 .guide__intro {
   margin: 11px auto 0; max-width: 300px;
   font-size: 12.5px; line-height: 1.62; letter-spacing: -.03em;
@@ -3497,47 +3565,47 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(169, 162, 150, 
 .guide__intro + .guide__sub { margin-top: 6px; font-size: 10.5px; color: #918A7B; }
 
 .guide__steps {
-  margin-top: 17px; display: flex; flex-direction: column; gap: 8px;
+  margin-top: 13px; display: flex; flex-direction: column; gap: 7px;
   text-align: left;
 }
 .guide-step {
-  display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 12px;
-  padding: 13px 14px 14px 13px; border-radius: 16px;
+  display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 10px;
+  padding: 11px 13px 12px 11px; border-radius: 14px;
   background: rgba(255, 255, 255, .84);
   border: 1px solid rgba(174, 138, 80, .26);
   box-shadow: 0 10px 22px -20px rgba(110, 82, 25, .7), inset 0 1px 0 rgba(255, 255, 255, .9);
 }
 .guide-step__n {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(180deg, #F8E8C2 0%, #E7CD93 100%);
-  color: #6E5219; font-family: var(--serif); font-size: 15px; font-weight: 700; line-height: 1;
+  color: #6E5219; font-family: var(--serif); font-size: 13.5px; font-weight: 700; line-height: 1;
   box-shadow: inset 0 0 0 1px rgba(174, 138, 80, .45), 0 2px 5px -3px rgba(110, 82, 25, .85);
   margin-top: 1px;
 }
 .guide-step__body { min-width: 0; }
 .guide-step__t {
-  font-size: 15px; font-weight: 800; letter-spacing: -.038em;
-  color: var(--ink); line-height: 1.34;
+  font-size: 14px; font-weight: 800; letter-spacing: -.038em;
+  color: var(--ink); line-height: 1.32;
 }
 .guide-step__d {
-  margin-top: 3px; font-size: 11.5px; line-height: 1.55;
+  margin-top: 2px; font-size: 10.8px; line-height: 1.5;
   color: #7C7568; letter-spacing: -.02em; word-break: keep-all;
 }
 .guide-step__badges {
-  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+  display: flex; flex-wrap: wrap; gap: 3.5px; margin-top: 6px;
 }
 .guide-step__badges .badge {
-  font-size: 9.5px; font-weight: 700; padding: 4px 8px;
+  font-size: 9px; font-weight: 700; padding: 3px 7px;
 }
 
 .guide__cta {
   display: flex; align-items: center; justify-content: center;
-  width: 100%; margin-top: 17px; padding: 17px 18px 18px;
-  border-radius: 16px; border: 1px solid rgba(174, 138, 80, .52);
+  width: 100%; margin-top: 13px; padding: 14px 16px 15px;
+  border-radius: 15px; border: 1px solid rgba(174, 138, 80, .52);
   background: linear-gradient(180deg, #2C2823 0%, #1C1B19 100%);
   color: #F7EBD0; font-family: inherit;
-  font-size: 17px; font-weight: 800; letter-spacing: -.03em; line-height: 1;
+  font-size: 16px; font-weight: 800; letter-spacing: -.03em; line-height: 1;
   box-shadow: 0 16px 30px -20px rgba(20, 18, 15, .95), inset 0 1px 0 rgba(255, 255, 255, .13);
   -webkit-tap-highlight-color: transparent;
   transition: transform .16s ease, box-shadow .16s ease;

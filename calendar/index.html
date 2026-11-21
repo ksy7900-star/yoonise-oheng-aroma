@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css?v=20261121i">
+<link rel="stylesheet" href="assets/style.css?v=20261121j">
 </head>
 <body>
 
@@ -350,7 +350,27 @@
   <noscript><p class="card">이 페이지는 자바스크립트가 필요해요. 브라우저 설정에서 자바스크립트를 켜 주세요.</p></noscript>
 </main>
 
-<!-- ───────── 첫 방문 사용법 팝업 (1회 자동 · ? 사용법 버튼으로 다시 보기) ───────── -->
+<!-- ───────── 1차 · 첫 접속 웰컴 팝업 (사주 입력 전 · 1회 자동)
+      역할: '이게 뭔지' 콤팩트 소개 → 내 사주 입력하기.
+      사용법 1~4단계는 여기 넣지 않는다 (사주 입력 뒤 달력이 열릴 때 뜨는 2차 #guideModal 역할). -->
+<div class="modal modal--welcome" id="welcomeModal" hidden>
+  <div class="modal__backdrop" data-welcome-close></div>
+  <div class="modal__dialog modal__dialog--welcome" id="welcomeDialog" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" tabindex="-1">
+    <div class="modal__topbar">
+      <button type="button" class="modal__close" data-welcome-close aria-label="팝업 닫기">✕</button>
+    </div>
+    <div class="modal__content welcome">
+      <p class="welcome__trial js-trial">🎁 사주를 넣는 날부터 <b>3일 무료</b></p>
+      <h2 class="welcome__title" id="welcomeTitle">내 인생 <span class="welcome__title-em">타이밍 캘린더</span></h2>
+      <p class="welcome__intro">내 사주로 2027년 <b>조심할 날은 피해 가고</b>, <b>치고 나갈 날은 놓치지 않게</b> 막힌 운을 뚫어주는 맞춤 달력이에요.</p>
+      <p class="welcome__hook">답답하고 일이 안 풀릴 때 <b>🔥 막힌 기운 태워버리기</b> (무료 체험)</p>
+      <button type="button" class="guide__cta welcome__cta" id="welcomeGo" data-welcome-close>내 사주 입력하기</button>
+      <p class="welcome__note">생년월일 한 번이면 시작 · 입력한 정보는 이 기기에만 저장돼요</p>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 2차 · 달력 사용법 팝업 (달력이 처음 열릴 때 1회 · ? 사용법 버튼으로 다시 보기) ───────── -->
 <div class="modal modal--guide" id="guideModal" hidden>
   <div class="modal__backdrop" data-guide-close></div>
   <div class="modal__dialog modal__dialog--guide" id="guideDialog" role="dialog" aria-modal="true" aria-labelledby="guideTitle" tabindex="-1">
@@ -364,7 +384,6 @@
         <span class="guide__trial-s" id="guideTrialSub">첫 방문일부터 3일 무료 · 부담 없이 먼저 써 보세요</span>
       </p>
       <h2 class="guide__title" id="guideTitle">내 사주 타이밍<br><span class="guide__title-em">사용법</span></h2>
-      <p class="guide__intro">내 사주로 2027년 <b>조심할 날은 피해 가고</b>, <b>치고 나갈 날은 놓치지 않게</b> 막힌 운을 뚫어주는 맞춤 달력이에요.</p>
       <p class="guide__sub" id="guideSub">네 번만 따라 하면 오늘 바로 쓸 수 있어요</p>
 
       <ol class="guide__steps">
@@ -400,7 +419,7 @@
           <span class="guide-step__n" aria-hidden="true">4</span>
           <div class="guide-step__body">
             <p class="guide-step__t">오늘 액운 태우기</p>
-            <p class="guide-step__d">하루 단 한 번, 진심을 담아 마음을 비워내는 의식 (5회&nbsp;무료)</p>
+            <p class="guide-step__d">하루 단 한 번, 진심을 담아 마음을 비워내는 의식</p>
           </div>
         </li>
       </ol>
@@ -466,10 +485,10 @@
   </div>
 </div>
 
-<script src="vendor/lunar.js?v=20261121i"></script>
-<script src="assets/manse.js?v=20261121i"></script>
-<script src="assets/timing.js?v=20261121i"></script>
-<script src="assets/chars.js?v=20261121i"></script>
-<script src="assets/calendar.js?v=20261121i"></script>
+<script src="vendor/lunar.js?v=20261121j"></script>
+<script src="assets/manse.js?v=20261121j"></script>
+<script src="assets/timing.js?v=20261121j"></script>
+<script src="assets/chars.js?v=20261121j"></script>
+<script src="assets/calendar.js?v=20261121j"></script>
 </body>
 </html>
