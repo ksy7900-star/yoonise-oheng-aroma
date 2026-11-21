@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261121d">
+<link rel="stylesheet" href="member.css?v=20261121f">
 </head>
 <body>
 
@@ -113,8 +113,8 @@
 
   <!-- ───────── 케미 입력 ───────── -->
   <section class="card" id="chemiCard">
-    <p class="card__eyebrow">2027 · 케미 비교</p>
-    <h2 class="card__title">둘이 같이 가는 달은 언제일까요</h2>
+    <p class="card__eyebrow">2027 · 케미 테스트</p>
+    <h2 class="card__title">친구 · 연인과<br>2027년 케미 테스트</h2>
     <p class="card__sub">두 사람 사주를 각자 세워서, 2027년 한 해를 겹쳐 봅니다. 계산은 이 기기 안에서만 해요.</p>
 
     <div class="person person--me" id="personMe">
@@ -127,19 +127,53 @@
         <input class="input" id="meName" type="text" maxlength="10" placeholder="결과에 표시될 이름" autocomplete="off">
       </div>
       <div class="field">
-        <span class="label">성별 <span style="color:#BF6A5B">*</span></span>
+        <span class="label">성별 <span class="req">*</span></span>
         <div class="chips" id="meGender" role="group" aria-label="내 성별 (필수)">
           <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
           <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
         </div>
       </div>
       <div class="field">
-        <label class="label" for="meDate">생년월일</label>
-        <input class="input" id="meDate" type="date" min="1900-01-01" max="2026-11-30">
+        <span class="label">달력</span>
+        <div class="segmented" id="meCal" role="group" aria-label="내 생일 달력">
+          <button type="button" class="seg is-on" data-cal="solar" aria-pressed="true">양력</button>
+          <button type="button" class="seg" data-cal="lunar" aria-pressed="false">음력</button>
+        </div>
+        <label class="check" id="meLeapRow" hidden>
+          <input type="checkbox" id="meLeap">
+          <span>윤달(閏月)에 태어났어요</span>
+        </label>
       </div>
       <div class="field">
-        <label class="label" for="meTime">태어난 시간 <span class="opt">모르면 비워 두세요</span></label>
-        <input class="input" id="meTime" type="time" step="1800">
+        <span class="label" id="meDateLabel">생년월일</span>
+        <div class="date-row">
+          <select class="select" id="meYear" aria-label="내 출생 연도"></select>
+          <select class="select" id="meMonth" aria-label="내 출생 월"></select>
+          <select class="select" id="meDay" aria-label="내 출생 일"></select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label-row">
+          <span class="label">태어난 시간 <span class="opt">30분 단위</span></span>
+          <label class="switch">
+            <input type="checkbox" id="meTimeUnknown">
+            <span class="switch__track"><span class="switch__knob"></span></span>
+            <span class="switch__text">몰라요</span>
+          </label>
+        </div>
+        <div id="meTimeBox">
+          <div class="jisi" id="meJisi" role="group" aria-label="내 태어난 시 (12지시)"></div>
+          <div class="time-row">
+            <span class="time-inputs">
+              <select class="select select--time" id="meHour" aria-label="내 출생 시"></select>
+              <span class="colon">:</span>
+              <select class="select select--time" id="meMinute" aria-label="내 출생 분"></select>
+            </span>
+            <span class="hint" id="meTimeHint"></span>
+          </div>
+        </div>
+        <p class="field-note" id="meTimeNote">자시 23:30~01:30, 오시 11:30~13:30 — 30분 경계로 봅니다.</p>
+        <p class="field-note" id="meTimeUnknownNote" hidden>시간을 모르면 <b>년·월·일 6글자</b>로 봅니다. 시주는 비워 둘게요.</p>
       </div>
     </div>
 
@@ -153,19 +187,53 @@
         <input class="input" id="youName" type="text" maxlength="10" placeholder="친구·연인 이름" autocomplete="off">
       </div>
       <div class="field">
-        <span class="label">성별 <span style="color:#BF6A5B">*</span></span>
+        <span class="label">성별 <span class="req">*</span></span>
         <div class="chips" id="youGender" role="group" aria-label="상대방 성별 (필수)">
           <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
           <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
         </div>
       </div>
       <div class="field">
-        <label class="label" for="youDate">생년월일</label>
-        <input class="input" id="youDate" type="date" min="1900-01-01" max="2026-11-30">
+        <span class="label">달력</span>
+        <div class="segmented" id="youCal" role="group" aria-label="상대방 생일 달력">
+          <button type="button" class="seg is-on" data-cal="solar" aria-pressed="true">양력</button>
+          <button type="button" class="seg" data-cal="lunar" aria-pressed="false">음력</button>
+        </div>
+        <label class="check" id="youLeapRow" hidden>
+          <input type="checkbox" id="youLeap">
+          <span>윤달(閏月)에 태어났어요</span>
+        </label>
       </div>
       <div class="field">
-        <label class="label" for="youTime">태어난 시간 <span class="opt">모르면 비워 두세요</span></label>
-        <input class="input" id="youTime" type="time" step="1800">
+        <span class="label" id="youDateLabel">생년월일</span>
+        <div class="date-row">
+          <select class="select" id="youYear" aria-label="상대방 출생 연도"></select>
+          <select class="select" id="youMonth" aria-label="상대방 출생 월"></select>
+          <select class="select" id="youDay" aria-label="상대방 출생 일"></select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label-row">
+          <span class="label">태어난 시간 <span class="opt">30분 단위</span></span>
+          <label class="switch">
+            <input type="checkbox" id="youTimeUnknown">
+            <span class="switch__track"><span class="switch__knob"></span></span>
+            <span class="switch__text">몰라요</span>
+          </label>
+        </div>
+        <div id="youTimeBox">
+          <div class="jisi" id="youJisi" role="group" aria-label="상대방 태어난 시 (12지시)"></div>
+          <div class="time-row">
+            <span class="time-inputs">
+              <select class="select select--time" id="youHour" aria-label="상대방 출생 시"></select>
+              <span class="colon">:</span>
+              <select class="select select--time" id="youMinute" aria-label="상대방 출생 분"></select>
+            </span>
+            <span class="hint" id="youTimeHint"></span>
+          </div>
+        </div>
+        <p class="field-note" id="youTimeNote">자시 23:30~01:30, 오시 11:30~13:30 — 30분 경계로 봅니다.</p>
+        <p class="field-note" id="youTimeUnknownNote" hidden>시간을 모르면 <b>년·월·일 6글자</b>로 봅니다. 시주는 비워 둘게요.</p>
       </div>
     </div>
 
@@ -180,46 +248,42 @@
   <!-- ───────── 인스타 인증 (스토리 · 피드) ───────── -->
   <section class="card" id="storyGiftCard">
     <p class="card__eyebrow">한 번 더 · 인스타 인증</p>
-    <h2 class="card__title">스토리도, 피드도<br>받는 게 달라요</h2>
-    <p class="card__sub">캡처 한 장이면 돼요 — <b>케미 카드 · 한 줄 부적 · 액운 태우기 완료 화면</b> 중 1장. 채널마다 선물이 달라서, 둘 다 하면 두 번 받아요. <b>채널별 1회</b>예요.</p>
+    <h2 class="card__title">사진 2장이면<br>선물이 붙어요</h2>
+    <p class="card__sub"><b>케미 카드 · 한 줄 부적 · 달력 · 액운 태우기 완료 화면</b> 중 <b>2장 이상</b> 캡처예요.</p>
 
-    <div class="tracks">
-      <div class="track track--story">
-        <span class="track__tag">스토리</span>
-        <b class="track__gift">액운 태우기 1회 추가</b>
-        <span class="track__why">24시간만 떠 있는 자리 · 친구가 바로 보고 들어와요</span>
-      </div>
-      <div class="track track--feed">
-        <span class="track__tag">피드 · 릴스</span>
-        <b class="track__gift">조심할 달 1달 더 열기</b>
-        <span class="track__why">1년 중 주의할 달 하나 더 · 계속 남는 게시물이라 검색으로도 들어와요</span>
-      </div>
-    </div>
+    <ul class="rewards">
+      <li>
+        <span class="rewards__tag">스토리</span>
+        <span class="rewards__b"><b>액운 태우기 1회 추가</b><small>24시간만 떠 있어요</small></span>
+      </li>
+      <li>
+        <span class="rewards__tag rewards__tag--feed">피드 · 릴스</span>
+        <span class="rewards__b"><b>조심할 달 1달 더 열기</b><small>1년 중 주의할 달 하나 더</small></span>
+      </li>
+    </ul>
+    <p class="fine fine--tight">둘 다 하면 두 번 받아요 · 채널별 1회</p>
 
-    <p class="sub-h">올리는 방법</p>
-    <ol class="steps">
-      <li><b>1</b><span><strong>케미 카드 · 한 줄 부적 · 액운 태우기 완료 화면</strong> 중 <strong>1장</strong>을 캡처해요. (2027 달력 화면도 인정돼요.)</span></li>
-      <li><b>2</b><span>스토리 또는 피드·릴스에 올리고 <strong>@life.saju_yoonise</strong>를 태그해요.</span></li>
-      <li><b>3</b><span>올린 화면을 캡처해서 <strong>24시간 안에</strong> 카톡 채널 <strong>윤이세사주</strong>로 보내요.</span></li>
+    <p class="sub-h">올리는 방법 <span class="sub-h__opt">3단계</span></p>
+    <ol class="steps steps--easy">
+      <li><b>1</b><span>결과 화면 <strong>2장 이상</strong> 캡처</span></li>
+      <li><b>2</b><span>인스타에 올릴 때 <strong>아래 문구 한 번에 복사</strong> → 그대로 붙여넣기</span></li>
+      <li><b>3</b><span>올린 화면 캡처 → <strong>24시간 안에</strong> 카톡 <strong>윤이세사주</strong>로 보내기</span></li>
     </ol>
 
-    <p class="sub-h">해시태그 7종 <span class="sub-h__opt">피드·릴스는 필수 · 스토리는 권장</span></p>
-    <div class="hashtags" id="tagList"></div>
-    <button type="button" class="btn btn--ghost" id="copyTagsBtn" style="margin-top:10px">해시태그 7종 한 번에 복사</button>
-
-    <p class="sub-h">필수 조건</p>
-    <ul class="checks">
-      <li><i aria-hidden="true">✓</i><span><b>@life.saju_yoonise</b> 계정 태그 — 스토리·피드 모두</span></li>
-      <li><i aria-hidden="true">✓</i><span>피드·릴스는 <b>해시태그 7종 전부</b> — 빠지면 확인이 안 돼요</span></li>
-      <li><i aria-hidden="true">✓</i><span><b>전체 공개</b> 계정만 참여할 수 있어요 (비공개 계정은 확인 불가)</span></li>
-    </ul>
-
-    <div class="btn-row">
-      <a class="btn btn--gold btn--wide" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">카톡 채널로 보내기</a>
-      <a class="btn btn--ghost" href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타 열기</a>
+    <div class="capbox">
+      <p class="capbox__lb">복사할 문구 <span>계정 태그 + 해시태그 7종</span></p>
+      <p class="capbox__text" id="capText"></p>
+      <div class="btn-row">
+        <button type="button" class="btn btn--gold btn--wide" id="copyCapBtn">문구 한 번에 복사</button>
+        <a class="btn btn--ghost" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">인스타 열기</a>
+      </div>
     </div>
 
-    <p class="fine">중복은 계정 기준으로 확인해요 — 스토리 1회 · 피드·릴스 1회. 같은 캡처를 두 번 쓰거나, 이미 받은 계정으로 다시 보내면 지급되지 않아요. 사주·생년월일은 가리고 올리셔도 인증됩니다.</p>
+    <div class="btn-row">
+      <a class="btn btn--kakao btn--wide" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">카톡 채널로 보내기</a>
+    </div>
+
+    <p class="fine">전체 공개 계정만 인증돼요 · 같은 캡처를 두 번 쓰거나 이미 받은 계정으로 다시 보내면 지급되지 않아요. 사주·생년월일은 가리고 올리셔도 인증됩니다.</p>
 
     <div class="brandmark brandmark--card">
       <span class="brandmark__ic" aria-hidden="true">🌙</span>
@@ -245,6 +309,6 @@
 <script src="../assets/timing.js?v=20261121k"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261121e"></script>
+<script src="member.js?v=20261121f"></script>
 </body>
 </html>

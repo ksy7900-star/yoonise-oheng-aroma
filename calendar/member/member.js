@@ -74,6 +74,7 @@
   var HASHTAGS = '#2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
   var HASHTAG_LIST = ['#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
   var INSTA = 'life.saju_yoonise';
+  var CAPTION = '@' + INSTA + '\n' + HASHTAGS;   // 인스타에 그대로 붙여넣는 한 덩어리
 
   var state = {
     user: null, session: null, profile: null,
@@ -480,8 +481,126 @@
     }
   }
 
-  /* ── 케미: 입력 ─────────────────────────────────── */
+  /* ── 케미: 입력 ───────────────────────────────────
+     라이브 /calendar/ 와 같은 방식 — 양력·음력·윤달 + 년/월/일 + 12지시·시분 + '몰라요'.
+     기존 <input type="date"> 는 안드로이드 네이버 앱에서 1979년까지 넘기기 어렵고,
+     음력·윤달을 구분할 수 없어 음력 생일을 넣으면 만세력이 틀어졌다. */
+  function buildPickers(which) {
+    var nowY = new Date().getFullYear();
+    var o = '<option value="">년</option>';
+    for (var y = nowY; y >= 1940; y--) o += '<option value="' + y + '">' + y + '년</option>';
+    $('#' + which + 'Year').innerHTML = o;
+
+    o = '<option value="">월</option>';
+    for (var m = 1; m <= 12; m++) o += '<option value="' + m + '">' + m + '월</option>';
+    $('#' + which + 'Month').innerHTML = o;
+
+    o = '<option value="">시</option>';
+    for (var h = 0; h < 24; h++) o += '<option value="' + h + '">' + pad2(h) + '시</option>';
+    $('#' + which + 'Hour').innerHTML = o;
+
+    o = '<option value="">분</option>';
+    for (var mi = 0; mi < 60; mi += 30) o += '<option value="' + mi + '">' + pad2(mi) + '분</option>';
+    $('#' + which + 'Minute').innerHTML = o;
+
+    $('#' + which + 'Jisi').innerHTML = M.JISI.map(function (j) {
+      return '<button type="button" class="jisi__btn" data-idx="' + j.idx + '"' +
+        ' data-hour="' + Math.floor(j.rep / 60) + '" data-min="' + (j.rep % 60) + '">' + j.ko +
+        '<small>' + j.start + '~' + j.end + '</small></button>';
+    }).join('');
+
+    fillDays(which);
+  }
+
+  function fillDays(which) {
+    var y = $('#' + which + 'Year').value, m = $('#' + which + 'Month').value;
+    var max = 31;
+    if (y && m) {
+      max = new Date(Number(y), Number(m), 0).getDate();
+      if (state[which].calendar === 'lunar') max = 30;
+    }
+    var cur = $('#' + which + 'Day').value;
+    var o = '<option value="">일</option>';
+    for (var d = 1; d <= max; d++) o += '<option value="' + d + '">' + d + '일</option>';
+    var sel = $('#' + which + 'Day');
+    sel.innerHTML = o;
+    if (cur && Number(cur) <= max) sel.value = cur;
+  }
+
+  function syncJisi(which) {
+    var h = $('#' + which + 'Hour').value, mi = $('#' + which + 'Minute').value;
+    var on = (h !== '' && mi !== '');
+    var idx = on ? M.jisiIndex(Number(h), Number(mi)) : -1;
+    $$('#' + which + 'Jisi .jisi__btn').forEach(function (b) {
+      b.classList.toggle('is-on', Number(b.getAttribute('data-idx')) === idx);
+    });
+    var hint = $('#' + which + 'TimeHint');
+    if (hint) hint.textContent = (on && idx >= 0) ? M.JISI[idx].ko + '시' : '';
+  }
+
+  function setCal(which, cal) {
+    state[which].calendar = cal === 'lunar' ? 'lunar' : 'solar';
+    $$('#' + which + 'Cal .seg').forEach(function (b) {
+      var on = b.getAttribute('data-cal') === state[which].calendar;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var leapRow = $('#' + which + 'LeapRow');
+    if (leapRow) leapRow.hidden = state[which].calendar !== 'lunar';
+    var lb = $('#' + which + 'DateLabel');
+    if (lb) lb.textContent = state[which].calendar === 'lunar' ? '음력 생년월일' : '생년월일';
+    fillDays(which);
+  }
+
+  function setGender(which, g) {
+    state[which].gender = (g === 'M' || g === 'F') ? g : '';
+    var box = $('#' + which + 'Gender');
+    if (box) $$('.chip', box).forEach(function (c) {
+      c.setAttribute('aria-pressed', String(c.getAttribute('data-gender') === state[which].gender));
+    });
+  }
+
+  function showTimeBox(which) {
+    var known = state[which].timeKnown !== false;
+    var box = $('#' + which + 'TimeBox');
+    if (box) box.hidden = !known;
+    var note = $('#' + which + 'TimeNote');
+    if (note) note.hidden = !known;
+    var unkNote = $('#' + which + 'TimeUnknownNote');
+    if (unkNote) unkNote.hidden = known;
+  }
+
+  function hideResult() {
+    var box = $('#chemiResult');
+    if (box && !box.hidden) box.hidden = true;
+  }
+
+  /* 저장된 사주·케미 링크의 날짜를 입력 폼에 그대로 앉힌다 */
+  function applyDate(which, o) {
+    setCal(which, o.calendar === 'lunar' ? 'lunar' : 'solar');
+    var leap = $('#' + which + 'Leap');
+    if (leap) leap.checked = !!o.leap;
+    $('#' + which + 'Year').value = o.y;
+    $('#' + which + 'Month').value = o.mo != null ? o.mo : o.m;
+    fillDays(which);
+    $('#' + which + 'Day').value = o.d;
+
+    var known = o.timeKnown !== false && o.hh != null && o.mm != null;
+    state[which].timeKnown = known;
+    var unk = $('#' + which + 'TimeUnknown');
+    if (unk) unk.checked = !known;
+    showTimeBox(which);
+    $('#' + which + 'Hour').value = known ? o.hh : '';
+    $('#' + which + 'Minute').value = known ? o.mm : '';
+    syncJisi(which);
+
+    if (o.name && !$('#' + which + 'Name').value) $('#' + which + 'Name').value = o.name;
+    if (o.gender) setGender(which, o.gender);
+  }
+
   function bindPerson(which) {
+    buildPickers(which);
+
     var g = $('#' + which + 'Gender');
     if (g) {
       g.addEventListener('click', function (e) {
@@ -492,29 +611,85 @@
         $$('.chip', g).forEach(function (c) {
           c.setAttribute('aria-pressed', String(c.getAttribute('data-gender') === state[which].gender));
         });
+        hideResult();
       });
     }
+
+    var cal = $('#' + which + 'Cal');
+    if (cal) cal.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.seg') : null;
+      if (!b) return;
+      setCal(which, b.getAttribute('data-cal'));
+      hideResult();
+    });
+
+    var leap = $('#' + which + 'Leap');
+    if (leap) leap.addEventListener('change', function () {
+      state[which].leap = leap.checked;
+      hideResult();
+    });
+
+    var unk = $('#' + which + 'TimeUnknown');
+    if (unk) unk.addEventListener('change', function () {
+      state[which].timeKnown = !unk.checked;
+      showTimeBox(which);
+      hideResult();
+    });
+
+    var jisi = $('#' + which + 'Jisi');
+    if (jisi) jisi.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.jisi__btn') : null;
+      if (!b) return;
+      $('#' + which + 'Hour').value = b.getAttribute('data-hour');
+      $('#' + which + 'Minute').value = b.getAttribute('data-min');
+      if (unk && unk.checked) {
+        unk.checked = false;
+        state[which].timeKnown = true;
+        showTimeBox(which);
+      }
+      syncJisi(which);
+      hideResult();
+    });
+
+    ['Hour', 'Minute'].forEach(function (k) {
+      var el = $('#' + which + k);
+      if (el) el.addEventListener('change', function () { syncJisi(which); hideResult(); });
+    });
+    ['Year', 'Month'].forEach(function (k) {
+      var el = $('#' + which + k);
+      if (el) el.addEventListener('change', function () { fillDays(which); hideResult(); });
+    });
+    var dayEl = $('#' + which + 'Day');
+    if (dayEl) dayEl.addEventListener('change', hideResult);
   }
 
   function readPerson(which) {
-    var dateEl = $('#' + which + 'Date');
-    var timeEl = $('#' + which + 'Time');
-    var nameEl = $('#' + which + 'Name');
-    var p = { name: (nameEl && nameEl.value || '').trim(), gender: state[which].gender, timeKnown: false, hh: 12, mm: 0 };
+    var p = {
+      name: ($('#' + which + 'Name').value || '').trim(),
+      gender: state[which].gender,
+      calendar: state[which].calendar === 'lunar' ? 'lunar' : 'solar',
+      leap: !!(state[which].calendar === 'lunar' && $('#' + which + 'Leap').checked),
+      timeKnown: state[which].timeKnown !== false
+    };
 
-    var dv = (dateEl && dateEl.value) || '';
-    if (!dv) return { error: 'date', msg: '생년월일을 넣어 주세요.' };
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dv);
-    if (!m) return { error: 'date', msg: '생년월일을 다시 확인해 주세요.' };
-    p.y = Number(m[1]); p.mo = Number(m[2]); p.d = Number(m[3]);
-    if (p.y < 1900 || p.y > 2026 || p.mo < 1 || p.mo > 12 || p.d < 1 || p.d > 31) {
-      return { error: 'date', msg: '생년월일을 다시 확인해 주세요.' };
+    var y = $('#' + which + 'Year').value, mo = $('#' + which + 'Month').value, d = $('#' + which + 'Day').value;
+    if (!y || !mo || !d) {
+      return { error: 'date', msg: (p.calendar === 'lunar' ? '음력 ' : '') + '생년월일을 년·월·일 모두 골라 주세요.' };
     }
-    var tv = (timeEl && timeEl.value) || '';
-    if (tv) {
-      var tm = /^(\d{2}):(\d{2})/.exec(tv);
-      if (tm) { p.timeKnown = true; p.hh = Number(tm[1]); p.mm = Number(tm[2]); }
+    p.y = Number(y); p.mo = Number(mo); p.d = Number(d);
+    if (p.y < 1900 || p.y > 2100) return { error: 'date', msg: '출생 연도를 다시 확인해 주세요.' };
+
+    if (p.timeKnown) {
+      var hh = $('#' + which + 'Hour').value, mm = $('#' + which + 'Minute').value;
+      if (hh === '') {
+        return { error: 'time', msg: '태어난 시간을 고르거나, 모르면 시간 옆의 "몰라요"를 켜 주세요.' };
+      }
+      p.hh = Number(hh);
+      p.mm = mm === '' ? 0 : Number(mm);
+    } else {
+      p.hh = 12; p.mm = 0;
     }
+
     if (!p.gender) return { error: 'gender', msg: '성별을 골라 주세요 — 사주를 정확히 세우려면 필요해요.' };
     return { p: p };
   }
@@ -528,8 +703,9 @@
 
   function chartOf(p) {
     var o = {
-      name: p.name || '', gender: p.gender, calendar: 'solar',
-      y: p.y, m: p.mo, d: p.d, leap: false,
+      name: p.name || '', gender: p.gender,
+      calendar: p.calendar === 'lunar' ? 'lunar' : 'solar',
+      y: p.y, m: p.mo, d: p.d, leap: !!p.leap,
       timeKnown: !!p.timeKnown, hh: p.timeKnown ? p.hh : 12, mm: p.timeKnown ? p.mm : 0,
       region: 'seoul', longitude: 126.98,
       trueSolar: false, dst: false, ziRule: '23'
@@ -726,7 +902,8 @@
   /* ── 케미: 결과 그리기 ──────────────────────────── */
   function birthText(ch) {
     var p = ch.p;
-    return p.y + '.' + pad2(p.mo) + '.' + pad2(p.d) + (p.timeKnown ? ' ' + pad2(p.hh) + ':' + pad2(p.mm) : ' 시간 모름');
+    var s = (p.calendar === 'lunar' ? '음력 ' : '') + p.y + '.' + pad2(p.mo) + '.' + pad2(p.d) + (p.leap ? ' 윤달' : '');
+    return s + (p.timeKnown ? ' ' + pad2(p.hh) + ':' + pad2(p.mm) : ' 시간 모름');
   }
 
   /* 2027 한 줄 부적 카드 — 내 원국에서 모자란 오행 하나를 부적으로 세운다 */
@@ -1005,11 +1182,11 @@
       + '<span class="story__mark-t">2027 타이밍 캘린더 · 윤이세사주</span></span>'
       + '<span class="story__mark-h">@life.saju_yoonise</span></div>'
       + '</div>';
-    html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 화면을 캡처해 주세요. 인스타 인증은 이 카드 한 장이면 돼요.</p>';
+    html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 캡처해 주세요. 이 카드와 한 줄 부적, 두 장이면 인스타 인증이 돼요.</p>';
     html += '<p class="sect-h" style="margin-top:22px">한 줄 부적 카드</p>';
     html += '<h3 class="sect-t">내 사주로 만든 2027년 부적</h3>';
     html += amulCard(a, aName);
-    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 케미 카드 · 한 줄 부적 · 액운 태우기 완료 화면 중 1장만 있으면 인스타 인증이 돼요.</p>';
+    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 여기까지 두 장을 캡처하면 인증 끝 — 아래 인스타 안내에 순서가 있어요.</p>';
 
     /* 보내기 */
     html += '<div class="btn-row">'
@@ -1030,7 +1207,7 @@
     box.hidden = false;
 
     var sh = $('#shareChemiBtn');
-    if (sh) sh.addEventListener('click', function () { onShareChemin(a.p); });
+    if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
     var ag = $('#againBtn');
     if (ag) ag.addEventListener('click', function () {
       box.hidden = true;
@@ -1054,15 +1231,25 @@
     return { y: y, mo: mo, d: d, timeKnown: known, hh: known ? hh : 12, mm: known ? mi : 0, gender: m[5] };
   }
 
-  function chemiLink(p) {
+  /* 링크에는 언제나 양력 날짜를 담는다 — 음력으로 넣은 사주도 받는 쪽에서는 같은 날짜로 앉힌다 */
+  function shareableOf(ch) {
+    var s = ch.res.solar;
+    return {
+      y: s.y, mo: s.m, d: s.d, gender: ch.p.gender,
+      timeKnown: ch.p.timeKnown, hh: ch.p.hh, mm: ch.p.mm, name: ch.p.name
+    };
+  }
+
+  function chemiLink(ch) {
+    var p = shareableOf(ch);
     var q = '?chemi=' + encodeChemin(p) + '&from=' + encodeURIComponent(p.name || '친구');
     var code = myCode();
     if (code) q += '&ref=' + encodeURIComponent(code);
     return LIVE_BASE + q;
   }
 
-  function onShareChemin(p) {
-    var url = chemiLink(p);
+  function onShareChemin(ch) {
+    var url = chemiLink(ch);
     var text = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.\n' + url;
     if (navigator.share) {
       navigator.share({ title: '2027년 케미', text: text, url: url }).then(function () {}, function () {
@@ -1107,7 +1294,7 @@
         btn.disabled = false;
         btn.classList.remove('is-busy');
         state.busy = false;
-        showCheminError({ msg: '사주를 세우지 못했어요. 생년월일을 다시 확인해 주세요.' + (err && err.message ? ' (' + err.message + ')' : '') });
+        showCheminError({ msg: (err && err.message) ? err.message : '사주를 세우지 못했어요. 생년월일을 다시 확인해 주세요.' });
       }
     }, 60);
   }
@@ -1127,20 +1314,11 @@
       var o = null;
       try { o = JSON.parse(localStorage.getItem(keys[i]) || 'null'); } catch (e) { o = null; }
       if (!o || !o.y || !o.m || !o.d || !o.gender) continue;
-      var dEl = $('#meDate');
-      if (dEl && !dEl.value) dEl.value = o.y + '-' + pad2(o.m) + '-' + pad2(o.d);
-      if (o.timeKnown !== false && o.hh != null && o.mm != null) {
-        var tEl = $('#meTime');
-        if (tEl && !tEl.value) tEl.value = pad2(o.hh) + ':' + pad2(o.mm);
-      }
-      if (o.name && $('#meName') && !$('#meName').value) $('#meName').value = o.name;
-      if (o.gender && !state.me.gender) {
-        state.me.gender = o.gender;
-        var g = $('#meGender');
-        if (g) $$('.chip', g).forEach(function (c) {
-          c.setAttribute('aria-pressed', String(c.getAttribute('data-gender') === o.gender));
-        });
-      }
+      applyDate('me', {
+        calendar: o.calendar, leap: o.leap, y: o.y, m: o.m, d: o.d,
+        timeKnown: o.timeKnown !== false && o.hh != null && o.mm != null, hh: o.hh, mm: o.mm,
+        name: o.name, gender: o.gender
+      });
       return true;
     }
     return false;
@@ -1164,14 +1342,10 @@
     if (che) {
       var p = decodeChemin(che);
       if (p) {
-        var dEl = $('#youDate');
-        if (dEl) dEl.value = p.y + '-' + pad2(p.mo) + '-' + pad2(p.d);
-        var tEl = $('#youTime');
-        if (tEl && p.timeKnown) tEl.value = pad2(p.hh) + ':' + pad2(p.mm);
-        state.you.gender = p.gender;
-        var g = $('#youGender');
-        if (g) $$('.chip', g).forEach(function (c) {
-          c.setAttribute('aria-pressed', String(c.getAttribute('data-gender') === p.gender));
+        applyDate('you', {
+          calendar: 'solar', leap: false,
+          y: p.y, m: p.mo, d: p.d,
+          timeKnown: p.timeKnown, hh: p.hh, mm: p.mm
         });
         var lb = $('#youLabel');
         if (lb && state.refFrom) lb.textContent = state.refFrom + ' 님 사주';
@@ -1190,32 +1364,29 @@
       toast('계산 도구를 불러오지 못했어요. 새로고침해 주세요.');
       return;
     }
-    readParams();
-    prefillMe();
     bindPerson('me');
     bindPerson('you');
+    readParams();
+    prefillMe();
 
     var btn = $('#chemiBtn');
     if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); runChemin(); });
 
-    var tags = $('#copyTagsBtn');
-    if (tags) tags.addEventListener('click', function () {
-      copyText(HASHTAGS).then(function (ok) {
-        toast(ok ? '필수 해시태그를 복사했어요. 스토리에 붙여 넣으세요.' : '복사가 안 됐어요. 직접 입력해 주세요.');
+    var cap = $('#copyCapBtn');
+    if (cap) cap.addEventListener('click', function () {
+      copyText(CAPTION).then(function (ok) {
+        toast(ok ? '인스타 문구를 복사했어요. 그대로 붙여넣으세요.' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요.');
       });
     });
 
     // 입력이 바뀌면 이전 결과는 숨긴다(숫자가 어긋나 보이지 않게)
-    ['meDate', 'meTime', 'youDate', 'youTime', 'meName', 'youName'].forEach(function (id) {
+    ['meName', 'youName'].forEach(function (id) {
       var el = $('#' + id);
-      if (el) el.addEventListener('input', function () {
-        var box = $('#chemiResult');
-        if (box && !box.hidden) box.hidden = true;
-      });
+      if (el) el.addEventListener('input', hideResult);
     });
 
-    var tl = $('#tagList');
-    if (tl) tl.innerHTML = HASHTAG_LIST.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
+    var ct = $('#capText');
+    if (ct) ct.innerHTML = '<b>@' + esc(INSTA) + '</b>' + esc(HASHTAG_LIST.join(' '));
 
     renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
     initAuth();

@@ -365,7 +365,62 @@ a { color: inherit; }
 }
 .input:focus { outline: 2px solid rgba(174, 138, 80, .45); outline-offset: 1px; }
 .input::placeholder { color: #B9B2A6; }
-.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* ── 사주 입력 · 라이브 /calendar/ 와 같은 방식(양력·음력·윤달 + 년/월/일 + 12지시 + 몰라요) ── */
+.req { color: var(--coral); font-weight: 700; margin-left: 2px; }
+.label-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.label-row .label { margin-bottom: 0; }
+.select {
+  width: 100%; min-height: 48px;
+  padding: 11px 32px 11px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--hair);
+  background-color: var(--bg-2);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1.2 5.5 5.8 10 1.2' stroke='%238F887B' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  font-family: inherit; font-size: 15.5px; color: var(--ink);
+  letter-spacing: -.01em;
+}
+.select:focus { outline: 2px solid rgba(174, 138, 80, .45); outline-offset: 1px; }
+.select--time {
+  width: auto; min-width: 74px;
+  padding: 11px 26px 11px 12px; background-position: right 9px center;
+}
+.segmented { display: inline-flex; padding: 3px; gap: 3px; background: #EFEBE1; border-radius: 999px; }
+.seg {
+  border: 0; background: transparent; color: var(--mute);
+  font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 999px;
+  transition: background .18s, color .18s;
+}
+.seg.is-on, .seg[aria-pressed="true"] {
+  background: var(--paper); color: var(--ink); font-weight: 700;
+  box-shadow: 0 1px 3px rgba(29, 28, 25, .08);
+}
+.check {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12.5px; color: var(--ink-2); margin-top: 10px; cursor: pointer;
+}
+.check input { flex: none; width: 16px; height: 16px; margin-top: 2px; accent-color: var(--sage); }
+.jisi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+.jisi__btn {
+  border: 1px solid var(--hair); background: var(--bg-2); color: var(--ink-2);
+  border-radius: 10px; padding: 8px 0 7px; font-size: 13px; line-height: 1.15;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.jisi__btn small { display: block; font-size: 8.5px; color: var(--mute); letter-spacing: -.02em; white-space: nowrap; margin-top: 1px; }
+.jisi__btn.is-on { background: var(--ink); border-color: var(--ink); color: #F6F2EA; }
+.jisi__btn.is-on small { color: rgba(246, 242, 234, .55); }
+.time-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 10px; }
+.time-inputs { display: inline-flex; align-items: center; gap: 5px; }
+.colon { color: var(--mute); font-size: 14px; }
+.hint { font-size: 11px; color: var(--ink-2); background: #F2F0E8; border-radius: 999px; padding: 5px 10px; }
+.hint:empty { display: none; }
+.field-note { font-size: 11px; color: var(--mute); margin-top: 8px; line-height: 1.6; }
+.field-note b { color: var(--ink-2); font-weight: 600; }
+
+.date-row { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 7px; }
 
 .chips { display: flex; gap: 8px; }
 .chip {
@@ -832,6 +887,50 @@ a { color: inherit; }
 .track--feed .track__tag { background: #E7EDE4; color: #5E6E5B; }
 .track__gift { font-size: 13.5px; font-weight: 700; line-height: 1.42; color: var(--ink); margin-top: 2px; }
 .track__why { font-size: 10.5px; line-height: 1.5; color: var(--mute); }
+
+/* ── 인스타 보상 두 갈래 — 한 줄에 하나씩 ─────────────── */
+.rewards { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.rewards li {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px; border-radius: 12px;
+  background: linear-gradient(180deg, #FFFDF8, #F8F2E6);
+  border: 1px solid rgba(174, 138, 80, .2);
+}
+.rewards li + li {
+  background: linear-gradient(180deg, #FCFDFA, #F1F4EF);
+  border-color: rgba(140, 156, 136, .28);
+}
+.rewards__tag {
+  flex: 0 0 auto;
+  font-size: 9.5px; letter-spacing: .08em; font-weight: 800;
+  padding: 3px 8px; border-radius: 99px;
+  background: var(--gold-soft); color: var(--gold-deep);
+}
+.rewards__tag--feed { background: #E7EDE4; color: #5E6E5B; }
+.rewards__b { display: flex; flex-direction: column; min-width: 0; }
+.rewards__b b { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+.rewards__b small { font-size: 10.5px; color: var(--mute); }
+.fine--tight { margin-top: 8px; }
+
+/* ── 복사용 문구 상자 (계정 태그 + 해시태그 한 번에) ──── */
+.capbox {
+  margin-top: 12px; padding: 13px 13px 12px; border-radius: 14px;
+  background: #FBF8F2; border: 1px dashed rgba(174, 138, 80, .4);
+}
+.capbox__lb {
+  font-size: 10.5px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--gold-deep);
+}
+.capbox__lb span { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--mute); margin-left: 4px; }
+.capbox__text {
+  margin-top: 7px; font-size: 11.5px; line-height: 1.7; color: var(--ink-2);
+  word-break: keep-all; overflow-wrap: break-word;
+}
+.capbox__text b { display: block; font-size: 13px; color: var(--ink); }
+.capbox .btn-row { margin-top: 10px; }
+.steps--easy { gap: 12px; }
+.steps--easy span { font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.steps--easy b { width: 24px; height: 24px; font-size: 12px; background: var(--ink); color: #FFFDF7; }
 
 .sub-h__opt { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 10.5px; margin-left: 4px; }
 .hashtags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
