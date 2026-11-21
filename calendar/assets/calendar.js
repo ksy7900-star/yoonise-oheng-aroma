@@ -2107,11 +2107,14 @@
     modalBody.innerHTML = pastLock ? pastDayModalHTML(info)
       : (lock ? lockModalHTML(info) : (hasBadges ? briefModalHTML(info) : plainModalHTML(info)));
     modalDialog.classList.toggle('modal__dialog--lock', lock);
+    modalDialog.classList.remove('is-lock-scrolled');
     modalEl.hidden = false;
     document.body.classList.add('is-modal-open');
     modalBody.scrollTop = 0;
     sfxOpen();                              // 뿅 — 사용자 클릭 안에서 재생
     try { modalDialog.focus({ preventScroll: true }); } catch (e) { modalDialog.focus(); }
+    // 브라우저가 포커스·스크롤 복원으로 내용을 살짝 내려 두는 경우가 있어 한 번 더 0으로 되돌린다 (2026-11-21)
+    requestAnimationFrame(function () { if (!modalEl.hidden) modalBody.scrollTop = 0; });
   }
 
   function closeDayModal() {
@@ -2208,14 +2211,39 @@
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
-  /** 잠금 카드·지난 날 안내에 같이 쓰는 상품 3개 버튼 */
+  /** 잠금 카드·지난 날 안내에 같이 쓰는 상품 3개 버튼 — 제목 아래 한 줄로 '무엇이 들어 있는지'까지 (2026-11-21) */
   function lockShopButtonsHTML() {
     return '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">1</span><span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span></button>' +
+      '<span class="shop-btn__no">1</span>' +
+      '<span class="shop-btn__text">' +
+      '<span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span>' +
+      '<span class="shop-btn__desc">2027 타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span>' +
+      '</span></button>' +
       '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">' +
-      '<span class="shop-btn__no">2</span><span class="shop-btn__label">👑 올인원 · 19,900원</span></button>' +
+      '<span class="shop-btn__no">2</span>' +
+      '<span class="shop-btn__text">' +
+      '<span class="shop-btn__label">👑 올인원 · 19,900원</span>' +
+      '<span class="shop-btn__desc">1년 패스 전부 + 매일 일진 부적 · 액운 태우기 무제한</span>' +
+      '</span></button>' +
       '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
-      '<span class="shop-btn__no">3</span><span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span></button>';
+      '<span class="shop-btn__no">3</span>' +
+      '<span class="shop-btn__text">' +
+      '<span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span>' +
+      '<span class="shop-btn__desc">올인원 전부 + 365일 1줄 성찰 다이어리</span>' +
+      '</span></button>';
+  }
+
+  /** 잠금 팝업 머리 — 스크롤이 생겨도 날짜가 상단 버튼 아래에서 잘리지 않게
+     한 덩어리로 묶어 sticky 로 붙인다 (2026-11-21) */
+  function lockHeadHTML(info, eyebrow) {
+    return '<div class="lock__head">' +
+      '<p class="modal__eyebrow">' + eyebrow + '</p>' +
+      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
+      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일' +
+      (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
+      (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
+        (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
+      '</div>';
   }
 
   /** 무료 체험 중 '지난 날'을 눌렀을 때 — 왜 안 열리는지와 여는 방법 (2026-11-21 QA M3) */
@@ -2225,10 +2253,7 @@
     var markHtml = marks.map(function (m) {
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
-    return '<p class="modal__eyebrow">FREE TRIAL · 지난 날</p>' +
-      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
-      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일' +
-      (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
+    return lockHeadHTML(info, 'FREE TRIAL · 지난 날') +
       '<p class="lock__title">🕘 지난 날이에요</p>' +
       '<p class="lock__sub">무료 체험은 오늘부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
       '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.</p>' +
@@ -2244,12 +2269,7 @@
       return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
     }).join('');
     var fe = T.parseISO(T.addDays(state.todayISO, FREE_DAYS - 1));
-    return '<p class="modal__eyebrow">FREE TRIAL · 3 DAYS</p>' +
-      '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
-      '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일' +
-      (info.saeun ? ' · ' + esc(info.saeun.label) : '') + '</span></p>' +
-      (info.term ? '<p class="lock__term">' + esc(info.term.ko) + ' ' + esc(info.term.time) +
-        (info.term.isJie ? ' · ' + esc(info.term.monthText) + '월 시작' : '') + '</p>' : '') +
+    return lockHeadHTML(info, 'FREE TRIAL · 3 DAYS') +
       '<p class="lock__title">🔒 3일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>' +
       '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>내 생년월일·성별 전용 코드</b>를 카톡으로 보내 드려요</p>' +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
@@ -4932,6 +4952,10 @@
     modalEl = $('#dayModal');
     modalBody = $('#modalBody');
     modalDialog = $('#modalDialog');
+    // 내용이 안에서 스크롤될 때만 머리(날짜) 아래에 옅은 그림자를 준다 (2026-11-21)
+    modalBody.addEventListener('scroll', function () {
+      modalDialog.classList.toggle('is-lock-scrolled', modalBody.scrollTop > 2);
+    }, { passive: true });
     talisEl = $('#talisModal');
     talisBody = $('#talisBody');
     talisDialog = $('#talisDialog');
