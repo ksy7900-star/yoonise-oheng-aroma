@@ -394,7 +394,7 @@ form { margin-top: 22px; }
 .ychip__lock:hover { background: #FFF7E6; }
 .ychip__lock:focus-visible { outline: 2px solid rgba(174, 138, 80, .55); outline-offset: 2px; }
 
-/* 맛보기 칸 — 3순위 조심할 달 한 곳만 블러 없이 열어 둔다(#9172) */
+/* 맛보기 칸 — 3순위 조심할 달 한 달만 블러 없이 열어 둔다(#9172) */
 .ychip--teaser { position: relative; padding-top: 20px; border-style: dashed; }
 .ychip--teaser.ychip--warn { background: #FFF9F6; }
 .ychip--teaser.ychip--good { background: #FFFCF2; }

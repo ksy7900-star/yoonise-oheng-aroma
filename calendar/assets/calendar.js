@@ -600,10 +600,10 @@
     var locked = FREE_TRIAL_ENABLED && !state.unlocked;
     box.classList.toggle('yearfold--locked', locked);
 
-    /* 무료 체험 잠금 맛보기 — 핵심(1·2순위) 조심할 달은 잠그고, 3순위 딱 한 곳만 선명하게 보여 준다.
+    /* 무료 체험 잠금 맛보기 — 핵심(1·2순위) 조심할 달은 잠그고, 3순위 딱 한 달만 선명하게 보여 준다.
        전부 모자이크하면 "내 사주에 뭐가 잡혔는지" 감이 안 와서 결제로 이어지지 않는다(2026-11-20 김나영 님 결정 #9172). */
     var teaserIdx = -1;
-    if (locked && d.warn.length >= 2) teaserIdx = d.warn.length - 1;          // 가장 약한 조심할 달 1곳
+    if (locked && d.warn.length >= 2) teaserIdx = d.warn.length - 1;          // 가장 약한 조심할 달 1달
     else if (locked && d.warn.length === 1 && d.good.length >= 1) teaserIdx = 0; // 잠글 카드가 따로 있을 때만
     var teaserCount = teaserIdx >= 0 ? 1 : 0;
 
@@ -613,11 +613,11 @@
     var firstGood = d.good[0] ? d.good[0].m + '월' : '';
     $('#yearLead').innerHTML = locked
       ? (teaserCount
-        ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
-          d.good.length + '곳</b>이 잡혔어요. 그중 <b class="y-bad">' + teaserCount + '곳만</b> 먼저 열어 드렸어요.' +
-          '<span class="year__lead-lock">🔒 나머지 ' + (d.warn.length + d.good.length - teaserCount) + '곳은 1년 패스부터 확인</span>'
-        : '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '곳</b>, 치고 나갈 달 <b class="y-good">' +
-          d.good.length + '곳</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>')
+        ? '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
+          d.good.length + '달</b>이 잡혔어요. 그중 <b class="y-bad">' + teaserCount + '달만</b> 먼저 열어 드렸어요.' +
+          '<span class="year__lead-lock">🔒 나머지 ' + (d.warn.length + d.good.length - teaserCount) + '달은 1년 패스부터 확인</span>'
+        : '2027년에 조심할 달 <b class="y-bad">' + d.warn.length + '달</b>, 치고 나갈 달 <b class="y-good">' +
+          d.good.length + '달</b>이 잡혔어요. <span class="year__lead-lock">🔒 몇 월인지는 1년 패스부터 보여 드려요</span>')
       : (firstWarn && firstGood
         ? '2027년에 가장 조심할 달은 <b class="y-bad">' + firstWarn + '</b>, 치고 나가기 좋은 달은 <b class="y-good">' + firstGood + '</b>이에요.'
         : (firstWarn
@@ -657,8 +657,8 @@
     var meta = $('#yearMeta');
     if (meta) {
       if (locked) {
-        meta.textContent = '조심 ' + d.warn.length + '곳 · 좋은 ' + d.good.length + '곳' +
-          (teaserCount ? ' · 1곳 맛보기' : '') + ' 🔒';
+        meta.textContent = '조심 ' + d.warn.length + '달 · 좋은 ' + d.good.length + '달' +
+          (teaserCount ? ' · 1달 맛보기' : '') + ' 🔒';
       } else {
         var wm = d.warn.map(function (m) { return m.m + '월'; }).join('·');
         var gm = d.good.map(function (m) { return m.m + '월'; }).join('·');
