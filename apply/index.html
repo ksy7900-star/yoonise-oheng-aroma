@@ -404,6 +404,7 @@ a { color: inherit; }
       name: '원포인트 리딩',
       price: '49,000원',
       priceNum: 49000,
+      payName: '원포인트 고민해결',
       eyebrow: '1:1 POINT READING',
       desc: '지금 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.',
       list: ['가장 급한 질문 하나에 집중', '지금 할 일 · 미룰 일 정리', '카톡으로 정리해 전달'],
@@ -420,6 +421,7 @@ a { color: inherit; }
       name: '종합 사주',
       price: '100,000원',
       priceNum: 100000,
+      payName: '종합사주',
       eyebrow: 'FULL READING',
       desc: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 상담이에요.',
       list: ['타고난 기질과 강점', '재물 · 관계 · 일의 흐름', '대운·세운으로 보는 방향'],
@@ -436,6 +438,7 @@ a { color: inherit; }
       name: '개명 · 작명',
       price: '200,000원',
       priceNum: 200000,
+      payName: '개명.작명',
       eyebrow: 'NAME READING',
       desc: '사주에 부족한 기운을 채우는 <b>평생 쓸 이름</b>을 설계해 드려요. 개명도, 신생아 작명도.',
       list: ['이름 후보 3~5개 + 이름 풀이', '선명장(한자·획수·소리) 정리', '신생아 작명은 성씨 한자만'],
@@ -864,7 +867,7 @@ a { color: inherit; }
     PayApp.setTarget('_self');          /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
     PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
     PayApp.setParam({
-      goodname: p.name,
+      goodname: p.payName,
       price: String(p.priceNum),
       recvphone: phone,
       redirectpay: '1',                 /* 연락처 입력 화면 없이 결제창으로 직행 */
