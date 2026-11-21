@@ -57,6 +57,7 @@
   var LIVE_BASE = 'https://ksy7900-star.github.io' + MEMBER_PATH;
   var REF_KEY = 'yoonise.member.ref.v1';
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
+  var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var SAMHAP_EL = ['수', '목', '화', '금'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
@@ -187,11 +188,11 @@
     });
   }
 
-  function onLogin(e) {
+  function onLogin(e, el) {
     if (e) e.preventDefault();
     if (!sb) { toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return; }
-    var btn = $('#loginBtn');
-    if (btn) { btn.classList.add('is-busy'); btn.textContent = '카카오로 이동 중…'; }
+    var btn = el || $('#loginBtn');
+    if (btn) { btn.classList.add('is-busy'); btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 이동 중…</span>'; }
     sb.auth.signInWithOAuth({
       provider: 'kakao',
       options: { redirectTo: location.origin === 'https://ksy7900-star.github.io' ? LIVE_BASE : (location.origin + location.pathname) }
@@ -204,6 +205,83 @@
       if (btn) { btn.classList.remove('is-busy'); btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span>'; }
       toast('카카오 로그인을 열지 못했어요: ' + ((err && err.message) || ''));
     });
+  }
+
+  /* ── 로그인 전에 넣은 사주를 세션에 잠깐 쟁여 둔다 ─────────
+     카카오 로그인은 페이지를 떠났다 돌아오므로 sessionStorage에 남겨야
+     돌아온 직후 같은 탭에서 결과가 바로 열린다. */
+  function rawPerson(which) {
+    var leap = $('#' + which + 'Leap');
+    return {
+      name: ($('#' + which + 'Name').value || '').trim(),
+      gender: state[which].gender || '',
+      calendar: state[which].calendar === 'lunar' ? 'lunar' : 'solar',
+      leap: !!(leap && leap.checked),
+      timeKnown: state[which].timeKnown !== false,
+      hh: $('#' + which + 'Hour').value,
+      mm: $('#' + which + 'Minute').value,
+      y: $('#' + which + 'Year').value,
+      mo: $('#' + which + 'Month').value,
+      d: $('#' + which + 'Day').value
+    };
+  }
+  function saveGate() {
+    try {
+      sessionStorage.setItem(GATE_KEY, JSON.stringify({ me: rawPerson('me'), you: rawPerson('you'), t: Date.now() }));
+    } catch (e) {}
+  }
+  function peekGate() {
+    var o = null;
+    try { o = JSON.parse(sessionStorage.getItem(GATE_KEY) || 'null'); } catch (e) { o = null; }
+    return (o && o.me && o.you) ? o : null;
+  }
+  function clearGate() {
+    try { sessionStorage.removeItem(GATE_KEY); } catch (e) {}
+  }
+  function restorePerson(which, o) {
+    if (!o) return;
+    var known = o.timeKnown !== false && o.hh !== '' && o.hh != null;
+    applyDate(which, {
+      calendar: o.calendar, leap: !!o.leap,
+      y: Number(o.y), m: Number(o.mo), d: Number(o.d),
+      timeKnown: known, hh: known ? Number(o.hh) : 12, mm: known ? (o.mm === '' ? 0 : Number(o.mm)) : 0,
+      name: o.name, gender: o.gender
+    });
+  }
+  /* 로그인돌아온 직후 — 쟁여 둔 사주로 결과를 바로 이어서 연다 */
+  function resumeGate() {
+    var o = peekGate();
+    if (!o) return false;
+    restorePerson('me', o.me);
+    restorePerson('you', o.you);
+    clearGate();
+    runChemin(true);
+    return true;
+  }
+
+  /* ── 화면: 케미 결과 로그인 잠금 ──────────────────
+     사주 입력은 그대로 두고, '2027년 케미 보기' 결과만 로그인하고 보여 준다. */
+  function renderGate() {
+    var box = $('#chemiResult');
+    if (!box) return;
+    box.innerHTML = '<p class="card__eyebrow">2027 · 케미 결과</p>'
+      + '<h2 class="card__title">한 번만 로그인하면<br>바로 열려요</h2>'
+      + '<div class="gate">'
+      + '<span class="gate__lock">🔒 결과 직전 한 단계</span>'
+      + '<p class="gate__lead">카카오로 3초 로그인하고 <b>케미 결과 + 5일 체험</b> 바로 열기</p>'
+      + '<ul class="gate__list">'
+      + '<li><i>1</i><span>카카오로 로그인하면 <b>초대 코드</b>가 생겨요</span></li>'
+      + '<li><i>2</i><span>친구가 내 링크로 들어오면 <b>5일 체험</b>이 붙어요</span></li>'
+      + '<li><i>3</i><span>다시 돌아오면 <b>넣어 둔 사주 그대로</b> 결과가 열려요</span></li>'
+      + '</ul>'
+      + '<button type="button" class="btn btn--navy" id="gateLoginBtn">'
+      + '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span></button>'
+      + '<p class="gate__note">사주·생년월일은 이 기기 안에서만 계산해요.<br>로그인은 초대 코드와 사다리 보상을 위한 거예요.</p>'
+      + '</div>';
+    box.hidden = false;
+    var b = $('#gateLoginBtn');
+    if (b) b.addEventListener('click', function (e) { onLogin(e, b); });
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function onLogout(e) {
@@ -227,6 +305,8 @@
     }
     renderAuth(); renderLadder(); renderInvite();
     loadProfile();
+    // 로그인하고 돌아왔으면 쟁여 둔 사주로 케미 결과를 바로 이어서 연다 (2026-11-21)
+    setTimeout(function () { if (state.user && peekGate()) resumeGate(); }, 60);
   }
 
   function loadProfile() {
@@ -1263,7 +1343,7 @@
   }
 
   /* ── 케미: 실행 ─────────────────────────────────── */
-  function runChemin() {
+  function runChemin(force) {
     if (state.busy) return;
     var msg = $('#chemiMsg');
     msg.hidden = true;
@@ -1272,6 +1352,14 @@
     var rYou = readPerson('you');
     if (rMe.error) { showCheminError(rMe); return; }
     if (rYou.error) { showCheminError(rYou); return; }
+
+    /* 로그인 전 — 결과 대신 로그인 안내. 넣은 사주는 세션에 남겨 돌아오면 그대로 연다. */
+    if (!state.user && !force) {
+      saveGate();
+      renderGate();
+      if (state.db === 'off') toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.');
+      return;
+    }
 
     var btn = $('#chemiBtn'), load = $('#chemiLoading');
     state.busy = true;

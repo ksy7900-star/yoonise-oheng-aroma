@@ -2374,6 +2374,11 @@
       '</span></button>';
   }
 
+  /** 잠금 팝업 하단 — 결제 버튼 아래 한 줄, 부담 없는 친구 초대 링크 (2026-11-21) */
+  function lockInviteHTML() {
+    return '<a class="lock__invite" href="./member/">🎁 친구 초대하고 무료로 열기 →</a>';
+  }
+
   /** 잠금 팝업 머리 — 스크롤이 생겨도 날짜가 상단 버튼 아래에서 잘리지 않게
      한 덩어리로 묶어 sticky 로 붙인다 (2026-11-21) */
   function lockHeadHTML(info, eyebrow) {
@@ -2405,6 +2410,7 @@
           '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
+      lockInviteHTML() +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
       '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
   }
@@ -2433,6 +2439,7 @@
       '<div class="lock__actions">' +
       lockShopButtonsHTML() +
       '</div>' +
+      lockInviteHTML() +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
       '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
   }

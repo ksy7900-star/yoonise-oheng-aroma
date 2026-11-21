@@ -9,8 +9,8 @@
   "scope": "/yoonise-oheng-aroma/calendar/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F7F3EB",
-  "theme_color": "#F7F3EB",
+  "background_color": "#FAFBFD",
+  "theme_color": "#FAFBFD",
   "categories": ["lifestyle", "entertainment"],
   "icons": [
     {
