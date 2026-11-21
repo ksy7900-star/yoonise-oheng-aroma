@@ -890,6 +890,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
       구름문/별자리/태극 워터마크 · 오행 인장 · 주홍 낙관 ──── */
 .talis-plaque {
   --tp-a: #3A1418; --tp-b: #1A0709; --tp-gold: #CE9F62; --tp-halo: #F0845C;
+  --tp-aura: rgba(240, 132, 92, .19); --tp-aura-line: rgba(246, 198, 162, .28);
   position: relative; display: block; flex: none;
   width: 9em; font-size: 10px;
   margin: 0; padding: 2.4em 0 0; border: 0; background: none;
@@ -898,11 +899,16 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   filter: drop-shadow(0 16px 22px rgba(38, 28, 18, .22));
   transition: transform .38s cubic-bezier(.2, .9, .3, 1), filter .38s ease;
 }
-.talis-plaque--목 { --tp-a: #143026; --tp-b: #08180F; --tp-gold: #C9A968; --tp-halo: #8FD9B4; }
-.talis-plaque--화 { --tp-a: #3A1418; --tp-b: #1A0709; --tp-gold: #CE9F62; --tp-halo: #F0845C; }
-.talis-plaque--토 { --tp-a: #35270F; --tp-b: #171006; --tp-gold: #D5B06C; --tp-halo: #E2B45E; }
-.talis-plaque--금 { --tp-a: #232830; --tp-b: #0D1015; --tp-gold: #D2C8A8; --tp-halo: #C3D2E0; }
-.talis-plaque--수 { --tp-a: #122438; --tp-b: #060E1B; --tp-gold: #C3C8C8; --tp-halo: #6FC0DA; }
+.talis-plaque--목 { --tp-a: #143026; --tp-b: #08180F; --tp-gold: #C9A968; --tp-halo: #8FD9B4;
+  --tp-aura: rgba(143, 217, 180, .20); --tp-aura-line: rgba(201, 232, 208, .30); }
+.talis-plaque--화 { --tp-a: #3A1418; --tp-b: #1A0709; --tp-gold: #CE9F62; --tp-halo: #F0845C;
+  --tp-aura: rgba(240, 132, 92, .19); --tp-aura-line: rgba(246, 198, 162, .28); }
+.talis-plaque--토 { --tp-a: #35270F; --tp-b: #171006; --tp-gold: #D5B06C; --tp-halo: #E2B45E;
+  --tp-aura: rgba(226, 180, 94, .20); --tp-aura-line: rgba(240, 214, 160, .30); }
+.talis-plaque--금 { --tp-a: #232830; --tp-b: #0D1015; --tp-gold: #D2C8A8; --tp-halo: #C3D2E0;
+  --tp-aura: rgba(195, 210, 224, .18); --tp-aura-line: rgba(226, 232, 240, .28); }
+.talis-plaque--수 { --tp-a: #122438; --tp-b: #060E1B; --tp-gold: #C3C8C8; --tp-halo: #6FC0DA;
+  --tp-aura: rgba(111, 192, 218, .20); --tp-aura-line: rgba(178, 224, 240, .28); }
 button.talis-plaque { cursor: pointer; }
 button.talis-plaque:active { transform: scale(.972); }
 .talis-plaque:focus-visible { outline: none; }
@@ -1334,41 +1340,50 @@ body.is-modal-open { overflow: hidden; }
 .talis-showcase__obj { position: relative; display: inline-block; }
 .talis-showcase .talis-plaque { font-size: 21px; position: relative; z-index: 1; }
 /* 확대 팝업에서는 부적이 크니 오라도 조금만 번지게 — 화면을 덮지 않게 (2026-11-22) */
-.talis-showcase .talis-plaque__aura { filter: blur(16px) saturate(1.3); opacity: .46; }
+/* 확대 팝업에서도 배너와 같은 결 — 뭉툭한 블러 대신 소프트 마스크 라디알 글로우 (2026-11-22) */
+.talis-showcase .talis-plaque__aura { opacity: .72; }
 .talis-showcase .talis-plaque__sheet { animation: talisBreathLg 6s ease-in-out infinite; }
 .talis-showcase__waves {
   position: absolute; left: 0; right: 0; top: 2.4em; bottom: 0;
   pointer-events: none;
 }
+/* 0.5~1px 헤어라인 두 겹 — 바깥 금빛 · 안쪽 오행빛, 부적 쪽으로 모여든다 */
 .talis-showcase__waves i {
   position: absolute; inset: 0;
-  border-radius: .34em; border: 2px solid rgba(255, 238, 205, .8);
+  border-radius: .52em; border: 1px solid rgba(255, 240, 212, .42);
+  box-shadow: 0 0 .9em rgba(238, 208, 156, .10);
   opacity: 0;
 }
-.talis-showcase.is-blessed .talis-showcase__waves i:first-child { animation: talisWave 1.25s ease-out; }
-.talis-showcase.is-blessed .talis-showcase__waves i:last-child { animation: talisWave 1.25s ease-out .18s; }
-.talis-showcase.is-blessed .talis-plaque { animation: talisLift 1.1s cubic-bezier(.2, 1, .3, 1); }
+.talis-showcase__waves i:last-child {
+  inset: .7em; border: .5px solid rgba(255, 240, 212, .26); box-shadow: none;
+}
+.talis-showcase.is-blessed .talis-showcase__waves i:first-child { animation: talisShowGather 2.15s cubic-bezier(.32, .04, .26, 1) forwards; }
+.talis-showcase.is-blessed .talis-showcase__waves i:last-child { animation: talisShowGather 2.4s cubic-bezier(.32, .04, .26, 1) .16s forwards; }
+.talis-showcase.is-blessed .talis-plaque { animation: talisLift 2.2s cubic-bezier(.26, .8, .3, 1); }
 .talis-showcase::before {
   content: ""; position: absolute; left: 50%; top: 46%; z-index: 0;
-  width: 100%; height: 90%; transform: translate(-50%, -50%) scale(.6);
-  background: radial-gradient(circle, rgba(212, 178, 112, .5), transparent 68%);
+  width: 100%; height: 90%; transform: translate(-50%, -50%) scale(1.12);
+  background: radial-gradient(circle, rgba(232, 200, 140, .42), transparent 66%);
   opacity: 0; pointer-events: none;
 }
-.talis-showcase.is-blessed::before { animation: talisFlash 1.35s ease-out; }
-@keyframes talisWave {
-  0% { opacity: .9; transform: scale(.92); }
-  70% { opacity: .2; }
-  100% { opacity: 0; transform: scale(1.24); }
+/* 바깥으로 퍼지는 섬광 대신, 중심으로 모여드는 따뜻한 코어 발광 */
+.talis-showcase.is-blessed::before { animation: talisCoreConverge 2.5s cubic-bezier(.3, .05, .3, 1); }
+@keyframes talisShowGather {
+  0% { opacity: 0; transform: scale(1.45); }
+  16% { opacity: .5; }
+  62% { opacity: .3; transform: scale(1.06); }
+  100% { opacity: 0; transform: scale(.96); }
 }
 @keyframes talisLift {
-  0% { transform: translateY(0) scale(1); }
-  35% { transform: translateY(-5px) scale(1.03); }
-  100% { transform: translateY(0) scale(1); }
+  0% { transform: scale(1); }
+  34% { transform: scale(1.022); }
+  68% { transform: scale(1.006); }
+  100% { transform: scale(1); }
 }
-@keyframes talisFlash {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
-  30% { opacity: .95; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+@keyframes talisCoreConverge {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.16); }
+  44% { opacity: .82; transform: translate(-50%, -50%) scale(.98); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(.94); }
 }
 @keyframes talisBreathLg {
   0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 101, 0), inset 0 0 0 1px rgba(255, 255, 255, .04); }
@@ -4481,28 +4496,38 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
 
 /* ── 🔮 대표 수호 부적 — 오행 오라 · 금박 홀로그램 · 기운 입자 ──────
    --tp-halo(부족한 오행 색)는 .talis-plaque--목/화/토/금/수 가 정한다.
-   목 초록 · 화 주홍 · 토 황금 · 금 은백 · 수 파랑 */
+   목 초록 · 화 주홍 · 토 황금 · 금 은백 · 수 파랑
+   2026-11-22 세련 개편: 뭉툭한 단색 원형 블러를 걷어 내고
+   다층 라디알 글로우(소프트 마스크) + 얇은 헤어라인 이중 링으로 감싼다. */
 .talis-plaque__aura {
   position: absolute; left: 50%; top: 2.4em;
-  width: 10.6em; height: 14.2em;
+  width: 13.4em; height: 17em;
   transform: translateX(-50%); pointer-events: none;
-  border-radius: 1em;
-  background: var(--tp-halo);
-  filter: blur(1.05em) saturate(1.35);
-  opacity: .5;
-  animation: talisAuraBreath 6.4s ease-in-out infinite;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side,
+      rgba(255, 248, 232, .08) 0%,
+      rgba(255, 240, 214, .26) 30%,
+      rgba(255, 226, 184, .13) 52%,
+      rgba(255, 220, 176, .04) 70%,
+      rgba(255, 220, 176, 0) 88%),
+    radial-gradient(closest-side, var(--tp-aura) 0%, rgba(255, 255, 255, 0) 78%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 58%, rgba(0, 0, 0, .5) 82%, transparent 98%);
+  mask-image: radial-gradient(closest-side, #000 58%, rgba(0, 0, 0, .5) 82%, transparent 98%);
+  opacity: .92;
+  animation: talisAuraBreath 7.4s ease-in-out infinite;
   z-index: 0;
 }
 .talis-plaque__aura::after {
-  content: ""; position: absolute; inset: .35em;
-  border-radius: .8em;
-  background: var(--tp-halo);
-  filter: blur(.35em) brightness(1.15);
-  opacity: .55;
+  content: ""; position: absolute; inset: 24% 20%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 248, 230, .34), rgba(255, 230, 184, .12) 52%, transparent 80%);
+  filter: blur(.6em);
+  opacity: .8;
 }
 @keyframes talisAuraBreath {
-  0%, 100% { opacity: .34; transform: translateX(-50%) scale(.97); }
-  50% { opacity: .78; transform: translateX(-50%) scale(1.04); }
+  0%, 100% { opacity: .72; transform: translateX(-50%) scale(.985); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.022); }
 }
 .talis-plaque__holo {
   position: absolute; inset: 2.4em 0 0; pointer-events: none; z-index: 3;
@@ -4545,53 +4570,153 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   70% { opacity: .55; }
   100% { opacity: 0; transform: translateY(-11.5em) scale(1.05); }
 }
-/* 톡 눌렀을 때 — 오라가 한 번 크게 번쩍 퍼진다 */
-.talis-plaque.is-charged .talis-plaque__aura { animation: talisAuraBurst 1.15s cubic-bezier(.2, .8, .3, 1); }
-@keyframes talisAuraBurst {
-  0% { opacity: .5; transform: translateX(-50%) scale(1); }
-  28% { opacity: 1; transform: translateX(-50%) scale(1.14); }
-  100% { opacity: .5; transform: translateX(-50%) scale(1); }
+/* 톡 눌렀을 때 — 빛무리가 바깥으로 퍼지지 않고 부적 중심으로 모여든다 (2026-11-22)
+   오라 1.45 → 0.96 수렴 + 내부가 따뜻하게 켜지는 코어 발광. */
+.talis-plaque.is-charged .talis-plaque__aura { animation: talisAuraGather 2.62s cubic-bezier(.32, .04, .26, 1) forwards; }
+@keyframes talisAuraGather {
+  0%   { opacity: .46; transform: translateX(-50%) scale(1.45); }
+  16%  { opacity: .78; transform: translateX(-50%) scale(1.32); }
+  62%  { opacity: 1;   transform: translateX(-50%) scale(1.02); }
+  84%  { opacity: .96; transform: translateX(-50%) scale(.96); }
+  100% { opacity: .82; transform: translateX(-50%) scale(.985); }
 }
-.talis-plaque.is-charged .talis-plaque__sheet { animation: talisChargeUp 1.1s cubic-bezier(.2, 1, .3, 1); }
+.talis-plaque.is-charged .talis-plaque__aura::after { animation: talisCoreWarm 2.5s ease-out; }
+@keyframes talisCoreWarm {
+  0%   { opacity: .55; transform: scale(1.28); }
+  46%  { opacity: 1;   transform: scale(1.02); }
+  100% { opacity: .75; transform: scale(1); }
+}
+.talis-plaque.is-charged .talis-plaque__sheet { animation: talisChargeUp 2.3s cubic-bezier(.26, .8, .3, 1); }
 @keyframes talisChargeUp {
   0% { transform: scale(1); }
-  26% { transform: scale(1.045); }
+  30% { transform: scale(1.032); }
+  64% { transform: scale(1.012); }
   100% { transform: scale(1); }
 }
-.talis-plaque__burst {
-  position: absolute; left: 50%; top: 2.4em; width: 9em; height: 12.6em;
-  transform: translate(-50%, 0); pointer-events: none; z-index: 1;
-  border-radius: 50%; border: 1px solid var(--tp-halo); opacity: 0;
+/* 빛무리 링 — 0.5~1px 헤어라인 두 겹(바깥 금빛 · 안쪽 오행빛).
+   톡 누르면 1.45 → 0.96 으로 천천히 빨려 들어오며 사라진다. */
+.talis-plaque__rings {
+  position: absolute; left: 50%; top: 2.4em;
+  width: 9em; height: 12.6em; transform: translateX(-50%);
+  pointer-events: none; z-index: 1;
 }
-.talis-plaque.is-charged .talis-plaque__burst { animation: talisBurstRing 1.1s ease-out; }
-@keyframes talisBurstRing {
-  0% { opacity: .85; transform: translate(-50%, 0) scale(.86); }
-  100% { opacity: 0; transform: translate(-50%, 0) scale(2.05); }
+.talis-plaque__rings i {
+  position: absolute; inset: 0; border-radius: .52em; opacity: 0;
+  padding: 1px;
+  background: linear-gradient(178deg,
+    rgba(255, 244, 218, .78) 0%, rgba(238, 208, 156, .46) 32%,
+    rgba(238, 208, 156, .16) 62%, rgba(255, 244, 218, .52) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 .55em rgba(240, 214, 160, .55));
+}
+.talis-plaque__rings i + i {
+  inset: .72em; padding: .5px;
+  background: linear-gradient(178deg,
+    var(--tp-aura-line, rgba(238, 208, 156, .3)) 0%, rgba(255, 255, 255, .04) 58%,
+    var(--tp-aura-line, rgba(238, 208, 156, .3)) 100%);
+  filter: none;
+}
+.talis-plaque.is-charged .talis-plaque__rings i { animation: talisRingGather 2.15s cubic-bezier(.32, .04, .26, 1) forwards; }
+.talis-plaque.is-charged .talis-plaque__rings i + i { animation-duration: 2.4s; animation-delay: .16s; }
+@keyframes talisRingGather {
+  0%   { opacity: 0;   transform: scale(1.45); }
+  16%  { opacity: .9; }
+  58%  { opacity: .68; transform: scale(1.10); }
+  84%  { opacity: .3;  transform: scale(1); }
+  100% { opacity: 0;   transform: scale(.96); }
+}
+/* 부적 안쪽이 따뜻하게 켜지는 발광 — 빛이 다 모여든 뒤 가장 밝다 */
+.talis-plaque__warm {
+  position: absolute; inset: 2.4em 0 0; z-index: 3; pointer-events: none;
+  border-radius: .34em; opacity: 0;
+  background: radial-gradient(72% 62% at 50% 52%,
+    rgba(255, 232, 182, .40) 0%, rgba(255, 205, 138, .16) 54%, rgba(255, 190, 120, 0) 82%);
+  mix-blend-mode: screen;
+}
+.talis-plaque.is-charged .talis-plaque__warm { animation: talisWarmIn 2.7s ease-out forwards; }
+@keyframes talisWarmIn {
+  0%   { opacity: 0; }
+  26%  { opacity: .16; }
+  66%  { opacity: .8; }
+  100% { opacity: 0; }
+}
+/* 은은하게 빨려 들어오는 미세 금박 입자 — 톡 누를 때만 */
+.talis-plaque__dust {
+  position: absolute; left: 0; right: 0; top: 2.4em; bottom: 0;
+  pointer-events: none; z-index: 2;
+}
+.talis-plaque__dust i {
+  position: absolute; left: 50%; top: 50%;
+  width: .17em; height: .17em; border-radius: 50%;
+  background: radial-gradient(circle, #FFF8E4 0%, rgba(247, 216, 154, .85) 42%, rgba(247, 216, 154, 0) 74%);
+  opacity: 0; transform: translate(-50%, -50%);
+}
+.talis-plaque__dust i:nth-child(1) { --dx: -5.4em; --dy: -5.2em; --dd: 0s; }
+.talis-plaque__dust i:nth-child(2) { --dx: 4.6em; --dy: -5.8em; --dd: .12s; }
+.talis-plaque__dust i:nth-child(3) { --dx: -6.1em; --dy: -.6em; --dd: .24s; }
+.talis-plaque__dust i:nth-child(4) { --dx: 6.3em; --dy: 1.1em; --dd: .06s; }
+.talis-plaque__dust i:nth-child(5) { --dx: -4.2em; --dy: 4.9em; --dd: .3s; }
+.talis-plaque__dust i:nth-child(6) { --dx: 4.9em; --dy: 5.4em; --dd: .18s; }
+.talis-plaque__dust i:nth-child(7) { --dx: -2.2em; --dy: -6.4em; --dd: .36s; }
+.talis-plaque__dust i:nth-child(8) { --dx: 2.6em; --dy: 6.2em; --dd: .09s; }
+.talis-plaque.is-charged .talis-plaque__dust i {
+  animation: talisDustGather 2.4s cubic-bezier(.34, .02, .22, 1) var(--dd, 0s) forwards;
+}
+@keyframes talisDustGather {
+  0%   { opacity: 0;   transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); }
+  18%  { opacity: .85; }
+  72%  { opacity: .5; }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(.3); }
 }
 /* 부적 **위** 예약 자리에 우아하게 떠오르는 문구 (2026-11-22 2차)
-   톡 누르기 전에도 같은 높이를 비워 두어 배너가 들썩이지 않는다. */
+   톡 누르기 전에도 같은 높이를 비워 두어 배너가 들썩이지 않는다.
+   2026-11-22 3차 — 6초 호흡: 0.3s 뒤 시작 → 1.7s 동안 서서히 나타남 → 2s 머묾
+   → 1.8s 동안 서서히 사라짐. JS 가 6초 뒤 is-on 을 떼어 조용한 기본 상태로 돌린다. */
 .talis-banner__reveal {
   flex: none; display: flex; align-items: center; justify-content: center;
   width: 100%;
   margin: 5px 0 0; min-height: 2.9em; text-align: center; text-wrap: balance;
   font-family: var(--serif); font-size: 13px; line-height: 1.5; letter-spacing: -.01em;
   color: #FBF3E1; text-shadow: 0 1px 18px rgba(255, 214, 150, .28);
-  opacity: 0; transform: translateY(-4px) scale(.985); filter: blur(3px);
-  transition: opacity .95s ease, transform .95s cubic-bezier(.2, .8, .3, 1), filter .95s ease;
+  opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px);
 }
-.talis-banner__reveal.is-on { opacity: 1; transform: none; filter: none; }
+.talis-banner__reveal.is-on { animation: talisBreathIn 6s cubic-bezier(.22, .66, .32, 1) forwards; }
+@keyframes talisBreathIn {
+  0%   { opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px); }
+  5%   { opacity: 0; transform: translateY(-3px) scale(.99); filter: blur(3px); }
+  33%  { opacity: 1; transform: none; filter: none; }
+  66%  { opacity: 1; transform: none; filter: none; }
+  96%  { opacity: 0; transform: translateY(-2px); filter: blur(2.2px); }
+  100% { opacity: 0; transform: translateY(-2px); filter: blur(2.2px); }
+}
 @media (prefers-reduced-motion: reduce) {
   .talis-plaque__aura, .talis-plaque__holo::before, .talis-plaque__motes i,
   .talis-plaque__sheet, .talis-plaque__char { animation: none !important; }
   .talis-plaque__motes { display: none; }
+  .talis-plaque__dust { display: none; }
+  .talis-plaque.is-charged .talis-plaque__rings i { animation: none !important; }
+  .talis-banner__reveal.is-on { animation: none; opacity: 1; transform: none; filter: none; }
 }
 
-/* 확대 팝업 안에서 톡 눌렀을 때 뜨는 문구 */
+/* 확대 팝업 안에서 톡 눌렀을 때 뜨는 문구 — 배너와 같은 6초 호흡 */
 .talis-phrase {
   margin: 12px auto 0; max-width: 300px; text-align: center; text-wrap: balance;
   font-family: var(--serif); font-size: 14.5px; line-height: 1.65; letter-spacing: -.02em;
   color: #8E6B2C;
-  opacity: 0; transform: translateY(4px);
-  transition: opacity .5s ease, transform .5s ease;
+  opacity: 0; transform: translateY(4px); filter: blur(2.6px);
 }
-.talis-phrase.is-on { opacity: 1; transform: translateY(0); }
+.talis-phrase.is-on { animation: talisPhraseIn 6s cubic-bezier(.22, .66, .32, 1) forwards; }
+@keyframes talisPhraseIn {
+  0%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
+  5%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
+  33%  { opacity: 1; transform: translateY(0); filter: none; }
+  66%  { opacity: 1; transform: translateY(0); filter: none; }
+  96%  { opacity: 0; transform: translateY(2px); filter: blur(2px); }
+  100% { opacity: 0; transform: translateY(2px); filter: blur(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .talis-phrase.is-on { animation: none; opacity: 1; transform: none; filter: none; }
+}

@@ -1783,10 +1783,13 @@
     var attrs = opt.tag
       ? ' type="button" data-' + (opt.action || 'talis-open') + ' aria-label="' + esc(name) + tapLabel + '"'
       : '';
-    /* 2026-11-22 · 부적 에너지 — 부족한 오행 색 오라 · 금박 홀로그램 · 피어오르는 기운 입자 */
+    /* 2026-11-22 · 부적 에너지 — 부족한 오행 색 오라 · 금박 홀로그램 · 피어오르는 기운 입자
+       2026-11-22 3차 — 톡 누르면 바깥 링 두 겹과 금박 입자가 부적 안쪽으로 모여든다 */
     var fx = opt.fx
       ? '<span class="talis-plaque__aura" aria-hidden="true"></span>' +
-        '<span class="talis-plaque__burst" aria-hidden="true"></span>' +
+        '<span class="talis-plaque__rings" aria-hidden="true"><i></i><i></i></span>' +
+        '<span class="talis-plaque__dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>' +
+        '<span class="talis-plaque__warm" aria-hidden="true"></span>' +
         '<span class="talis-plaque__motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>'
       : '';
     return '<' + tag + ' class="talis-plaque talis-plaque--' + el + (opt.lg ? ' talis-plaque--lg' : '') + '"' + attrs + '>' +
@@ -1848,38 +1851,51 @@
       '</div>';
   }
 
-  /* ── 부적 에너지 — 톡 누르면 오라가 크게 퍼지고 문구가 뜬다 (2026-11-22) ── */
+  /* ── 부적 에너지 — 톡 누르면 빛이 안쪽으로 모이고 문구가 천천히 뜬다 (2026-11-22) ── */
   var TALIS_PHRASE = '지금 이 순간, 흩어졌던 기운이 제자리를 찾습니다';
+  var TALIS_CHARGE_MS = 2800;   /* 링·오라 수렴 → 내부 발광까지 */
+  var TALIS_TEXT_MS = 6000;     /* 문구 한 호흡: 0.3s 뒤 등장 → 1.7s 페이드인 → 2s 머묾 → 1.8s 페이드아웃 */
+  var TALIS_LINK_MS = 2000;     /* 문구가 다 나타난 뒤 '부적 크게 보기'가 조용히 */
 
-  /** 오라 번쩍 클래스만 (소리는 따로) */
+  /** 오라 수렴 클래스만 (소리는 따로) — 다시 눌러도 처음부터 */
   function talisBurst(plaque) {
     if (!plaque) return;
+    clearTimeout(plaque._chargeT);
     plaque.classList.remove('is-charged');
     void plaque.offsetWidth;
     plaque.classList.add('is-charged');
-    setTimeout(function () { plaque.classList.remove('is-charged'); }, 1250);
+    plaque._chargeT = setTimeout(function () { plaque.classList.remove('is-charged'); }, TALIS_CHARGE_MS);
   }
   function talisCharge(plaque) {
     talisBurst(plaque);
-    sfxBless();                       /* 낮고 묵직한 싱잉볼 공명 + 묵직한 진동 */
+    sfxBless();                       /* 6초 싱잉볼 여운 + 묵직한 진동 */
   }
 
-  /** 배너 부적 톡 — 오라 번쩍 + 부적 **위** 예약 자리에 문구, 이어서 확대 팝업 가는 길이 조용히 열린다 */
+  /** 문구 한 호흡 — 6초 뒤 스스로 조용한 기본 상태로 돌아간다 */
+  function talisRevealText(el, text) {
+    if (!el) return;
+    clearTimeout(el._breathT);
+    el.textContent = text;
+    el.classList.remove('is-on');
+    void el.offsetWidth;
+    el.classList.add('is-on');
+    el._breathT = setTimeout(function () {
+      el.classList.remove('is-on');
+      el.textContent = '';
+    }, TALIS_TEXT_MS);
+  }
+
+  /** 배너 부적 톡 — 빛이 모이고 문구가 한 호흡, 이어서 확대 팝업 가는 길이 조용히 열린다 */
   function onTalisTap(btn) {
     talisCharge(btn);
-    var rv = $('#talisReveal');
-    if (rv) {
-      rv.textContent = TALIS_PHRASE;
-      rv.classList.remove('is-on');
-      void rv.offsetWidth;
-      rv.classList.add('is-on');
-    }
+    talisRevealText($('#talisReveal'), TALIS_PHRASE);
     var more = $('.talis-banner__more');
     if (more && !more.classList.contains('is-on')) {
-      setTimeout(function () {
+      clearTimeout(more._linkT);
+      more._linkT = setTimeout(function () {
         more.classList.add('is-on');
         more.removeAttribute('aria-hidden');
-      }, 900);
+      }, TALIS_LINK_MS);
     }
   }
 
@@ -1940,22 +1956,19 @@
     var note = talisBody.querySelector('.talis-bless__note');
     var phrase = talisBody.querySelector('.talis-phrase');
     if (!sc) return;
+    clearTimeout(sc._blessT);
     sc.classList.remove('is-blessed');
     void sc.offsetWidth;
     sc.classList.add('is-blessed');
+    sc._blessT = setTimeout(function () { sc.classList.remove('is-blessed'); }, TALIS_CHARGE_MS);
     var plaque = sc.querySelector('.talis-plaque');
-    talisBurst(plaque);              /* 부적을 눌러도, 아래 버튼을 눌러도 오라는 한 번 크게 */
+    talisBurst(plaque);              /* 부적을 눌러도, 아래 버튼을 눌러도 빛이 안으로 모인다 */
     sfxBless();
     if (note) {                       // 문구가 뜨면 예전 안내 한 줄은 비켜 준다 (겹쳐 보이지 않게)
       note.classList.remove('is-on');
       note.textContent = '';
     }
-    if (phrase) {
-      phrase.textContent = TALIS_PHRASE;
-      phrase.classList.remove('is-on');
-      void phrase.offsetWidth;
-      phrase.classList.add('is-on');
-    }
+    talisRevealText(phrase, TALIS_PHRASE);
   }
 
   /* ── 톡·톡·톡 리추얼 ───────────────────────────────── */
@@ -5803,6 +5816,33 @@
     osc.connect(g); g.connect(ctx.destination);
     osc.start(t0); osc.stop(t0 + o.dur + 0.03);
   }
+  /* 싱잉볼 한 음 — 부드러운 어택(0.06~0.16s) 뒤 6초 가까이 잦아드는 곡선 (2026-11-22)
+     · 지수 램프 하나로는 꼬리가 금방 죽어 '짧은 소리'가 되고, 선형 램프는 종의 울림 같지 않다.
+     · setValueCurveAtTime 으로 몸통(τ) + 긴 잔향(τ×2.6) 두 단계 감쇠를 직접 그린다.
+     · 마지막 0.3s 는 0 으로 마감 — 끊긴 소리 없이 사라진다. */
+  function bowlTone(ctx, f, o) {
+    o = o || {};
+    var t0 = ctx.currentTime + (o.at || 0);
+    var dur = o.dur || 6;
+    var atk = o.attack == null ? 0.12 : o.attack;
+    var peak = o.gain == null ? 0.12 : o.gain;
+    var tau = o.tau || 1.9;
+    var osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(f, t0);
+    if (o.bend) osc.frequency.exponentialRampToValueAtTime(o.bend, t0 + dur);
+    var N = 200, curve = new Float32Array(N);
+    for (var i = 0; i < N; i++) {
+      var t = (i / (N - 1)) * dur;
+      var rise = t < atk ? Math.sin((t / atk) * Math.PI / 2) : 1;
+      var tail = 0.78 * Math.exp(-t / tau) + 0.22 * Math.exp(-t / (tau * 2.6));
+      var close = t > dur - 0.3 ? Math.max(0, (dur - t) / 0.3) : 1;
+      curve[i] = peak * rise * tail * close;
+    }
+    g.gain.setValueCurveAtTime(curve, t0, dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
   /* 나무 타격의 '톡' — 아주 짧은 밴드패스 노이즈 */
   function wood(ctx, at, gain) {
     var n = Math.floor(ctx.sampleRate * 0.05);
@@ -5816,59 +5856,30 @@
     src.start(ctx.currentTime + (at || 0));
   }
 
-  /* 1) 모달이 뿅 튀어나올 때 — 880→1320Hz 맑은 차임 */
-  function sfxOpen() {
-    vibrate([30, 18, 45]);
-    var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 880, to: 1320, dur: 0.34, glide: 0.13, type: 'sine', gain: 0.13 });
-    tone(ctx, { from: 1320, to: 1760, dur: 0.28, type: 'sine', gain: 0.055, at: 0.07, glide: 0.12 });
-  }
-  /* 1-b) 액운 태우기 팝업 — 밝은 차임 대신 낮게 가라앉는 한 음. 의식의 시작 */
-  function sfxBurnOpen() {
-    vibrate([40]);
-    var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 196, to: 196, dur: 2.4, type: 'sine', gain: 0.075, attack: 0.18 });
-    tone(ctx, { from: 147, to: 146, dur: 2.8, type: 'sine', gain: 0.06, attack: 0.24 });
-  }
-  /* 2) 부적 두드리기(1/3·2/3) — 420→220Hz 톡, 두 번째는 살짝 높게 */
-  function sfxTap(step) {
-    vibrate([45, 25, 55]);              // 1·2타 — 손끝까지 오는 톡
-    var ctx = audioCtx(); if (!ctx) return;
-    var base = 420 + (step - 1) * 45;
-    tone(ctx, { from: base, to: base * 0.52, dur: 0.14, glide: 0.05, type: 'triangle', gain: 0.2, attack: 0.004 });
-    tone(ctx, { from: base * 2, to: base * 2, dur: 0.06, type: 'sine', gain: 0.045 });
-    wood(ctx, 0, 0.05);
-  }
-  /* 3) 3/3 완료 — 도장 '쾅' 저음 타격 + C5-E5-G5-C6 상승 아르페지오 */
-  /* 4) 대표 부적 '오늘 기운 받기' — 낮게 울리는 종 + 상승 차임 */
-  /* 대문 부적 · 확대 부적 톡 — 맑은 차임 대신 **낮고 묵직한 싱잉볼/범종 저음 공명** (2026-11-22)
-     110~170Hz 저역 사인파가 아주 천천히 잦아들고, 2·3배 부드러운 배음이 겹친다.
-     종을 친 순간은 낮은 대역 노이즈로만 '웅—' 하고 받쳐 준다(맑은 '톡' 없음). */
+  /* ── 2026-11-22 · 화면 전환·버튼 클릭의 효과음은 걷어 냈다 ──────────────────
+     소리는 **의식**에만 남긴다: 대표 수호부적 톡(sfxBless) · 긴급 개운템 체험
+     (대나무 뽑기·오브제 완료·싱잉볼) · 액운 태우기(구기기·불붙이기·정화).
+     팝업 열기·날짜 팝업·톡톡톡 두드림·탭 전환은 무음 — 진동으로만 조용히 알린다. */
+  function sfxOpen() { }                     // 팝업·화면 전환 — 무음
+  function sfxBurnOpen() { }                 // 액운 태우기 팝업 열기 — 무음
+  function sfxTap(step) { vibrate([45, 25, 55]); }          // 두드림 — 진동만
+  function sfxDone() { vibrate([80, 35, 100, 45, 130]); }   // 3타 완료 — 진동만
+  /* 4) 대문 부적 · 확대 부적 톡 — **6초짜리 따뜻한 싱잉볼** (2026-11-22 3차)
+     · 2~3초로 끊기던 소리를 걷어 내고, 0.12s 부드러운 어택 뒤 6초까지 잦아드는 공명.
+     · C3–G3–C4 열린 화음 + 살짝 어긋난 쌍(0.45Hz 맥놀이)으로 명상 싱잉볼의 미세한 떨림.
+     · 종을 친 순간은 낮은 대역 노이즈 '웅—'으로만 받쳐 맑은 '톡'이 튀지 않게. */
   function sfxBless() {
-    vibrate([45, 40, 80]);            // 가볍지 않게 묵직한 두 번 + 긴 여운
+    vibrate([60, 90, 120]);           // 차분하고 묵직하게 — 세 번, 점점 길게
     var ctx = audioCtx(); if (!ctx) return;
-    /* 기본음 146.8Hz — 2.8초 동안 천천히 잦아드는 몸통 소리 */
-    tone(ctx, { from: 146.83, to: 145.9, dur: 2.8, type: 'sine', gain: 0.22, attack: 0.022 });
-    /* 110Hz 저역 받침 — 배 밑에서 올라오는 무게 */
-    tone(ctx, { from: 110, to: 109.2, dur: 3.2, type: 'sine', gain: 0.12, at: 0.012, attack: 0.05 });
-    /* 부드러운 배음 — 2배·3배를 약하게, 조금 늦게 */
-    tone(ctx, { from: 293.66, to: 293.0, dur: 2.2, type: 'sine', gain: 0.06, at: 0.018, attack: 0.03 });
-    tone(ctx, { from: 440.5, to: 439.6, dur: 1.5, type: 'sine', gain: 0.028, at: 0.035, attack: 0.04 });
-    /* 종을 친 순간의 낮은 '웅' — 260Hz→110Hz 저역 노이즈, 아주 짧게 */
-    noise(ctx, { dur: 0.26, filter: 'lowpass', f0: 260, f1: 110, q: 0.7, gain: 0.075, attack: 0.02 });
-  }
-  function sfxDone() {
-    vibrate([80, 35, 100, 45, 130]);   // 3타 완료 — 쾅! 하고 길게
-    var ctx = audioCtx(); if (!ctx) return;
-    // 쾅 — 낮게 떨어지는 타격 + 노이즈 임팩트
-    tone(ctx, { from: 150, to: 52, dur: 0.26, glide: 0.16, type: 'sine', gain: 0.42, attack: 0.004 });
-    tone(ctx, { from: 96, to: 44, dur: 0.34, glide: 0.22, type: 'triangle', gain: 0.2, attack: 0.006 });
-    wood(ctx, 0, 0.12);
-    // 반짝 — 상승 화음
-    [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) {
-      tone(ctx, { from: f, to: f, dur: 0.55, type: 'sine', gain: 0.15, at: 0.09 + i * 0.085, attack: 0.008 });
-      tone(ctx, { from: f * 2, to: f * 2, dur: 0.4, type: 'triangle', gain: 0.035, at: 0.09 + i * 0.085 });
-    });
+    bowlTone(ctx, 130.81, { gain: .15, dur: 6.0, attack: .12, tau: 2.15 });          // 몸통 C3
+    bowlTone(ctx, 131.26, { gain: .05, dur: 5.7, attack: .16, tau: 2.0, at: .004 }); // 어긋난 쌍 → 맥놀이
+    bowlTone(ctx, 196.00, { gain: .105, dur: 5.9, attack: .11, tau: 2.0 });          // G3 — 따뜻한 5도
+    bowlTone(ctx, 196.48, { gain: .032, dur: 5.5, attack: .15, tau: 1.9, at: .006 });
+    bowlTone(ctx, 261.63, { gain: .05, dur: 4.9, attack: .09, tau: 1.7 });           // C4 옥타브
+    bowlTone(ctx, 392.44, { gain: .016, dur: 3.4, attack: .07, tau: 1.3, at: .03 });  // 3배 배음
+    bowlTone(ctx, 588.66, { gain: .009, dur: 2.6, attack: .06, tau: 1.0, at: .05 });  // 5배 — 은은한 금속감
+    /* 부드러운 '웅' — 620Hz→170Hz 저역, 어택 0.07s, 짧고 낮게 */
+    noise(ctx, { dur: .62, filter: 'lowpass', f0: 620, f1: 170, q: 0.6, gain: .028, attack: .07 });
   }
   /* 노이즈원 — 바스락·불꽃·바람을 만드는 기본 재료 (음원 파일 없음) */
   function noise(ctx, o) {
