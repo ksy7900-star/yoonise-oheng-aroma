@@ -1344,3 +1344,29 @@ python3 -m http.server 8000
 - 상담 팝업: 상품 전환 2종·결제 링크 2종·`결제 → 신청서` 순서·상품 전환해도 신청서 값 유지·카톡 문구 상품별·콘솔 오류 0·가로 넘침 0px.
 - 부적: 터치 전후 높이 변화 0px, 문구가 부적 위에 표시, 확대 팝업·축복(저음) 정상, 360px에서도 넘침 0.
 - 스크린샷 `work/qa-consult-popup-2026-11-22/`.
+
+## 71. 2026-11-22 — 친구 초대 링크를 케미 화면에서 **타이밍 달력 메인**으로 (`/calendar/?ref=코드`) · 달력↔케미 이동에 초대 코드 이어 주기 · 캐시 `20261122k`
+
+김나영 님 지시: 초대 링크를 받은 친구가 케미 페이지가 아니라 **달력**으로 먼저 들어오게. 커밋 `1a8879e`.
+
+### 1. 초대 링크 목적지 (`calendar/member/member.js` · `calendar/member/index.html`)
+- `CALENDAR_PATH` / `CALENDAR_LIVE_BASE = https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/` 추가.
+- `myLink()` · `myDisplayLink()` · 공유 문구(`shareLine()`)가 모두 **`.../calendar/?ref=내코드`** 를 가리킵니다. `#myLink` 기본 안내 문구도 달력 주소로 교체.
+- `chemiLink()`(케미 결과 공유)만 `.../calendar/member/?chemi=...&from=...&rel=...&ref=내코드` 그대로 — 케미는 보내는 사람이 '케미 링크'로 따로 보냅니다.
+
+### 2. 추천 코드(ref) 양방향 이어 주기
+- `calendar.js`(달력): `memberHref()` · `syncMemberLinks()` 추가 — 초대 코드로 들어온 손님이 달력의 `케미·초대` 바로가기·배너·초대 카드·잠금 팝업 속 `./member/` 링크를 누르면 **`./member/?ref=코드`** 로 넘어갑니다(동적 생성 카드 포함).
+- `member.js`: 주소에 `?ref=` 가 없어도 `localStorage`(`yoonise.member.ref.v1`)에 대기 중인 코드가 있으면 `state.refPending` 으로 읽고, `yoonise.invited.v1` 표시가 없으면 함께 남깁니다 → 카카오 로그인 직후 `attach_referrer` 연결(기존 경로)로 이어집니다. 달력으로 돌아가는 링크도 `../?ref=코드` 유지.
+
+### 3. 캐시
+- `sw.js VERSION 20261122j → 20261122k`, `/calendar/` 자산 `?v=20261122k` 7개, `/calendar/member/` `?v=20261122k` 5개.
+
+### 4. 라이브 검증 (2026-11-22 08:2x KST)
+- `…/calendar/?ref=92820D1C&v=20261122k` — 사용법 팝업 `🎁 지금 5일 무료 체험 중 · 11/21~11/25 무료 · 액운 태우기 1회 더`(초대 손님 5일 적용). 액운 태우기 의식 완료 후 `오늘 마침 · 무료 6회 모두 사용` → **초대 손님 무료 총 6회**(기본 5 + 1) 확인.
+- 같은 페이지의 `케미·초대` 링크 5곳이 모두 `./member/?ref=92820D1C` 로 바뀜 → 클릭 시 `…/calendar/member/?ref=92820D1C` 이동.
+- `…/calendar/member/?v=20261122k`(주소에 ref 없음) — 저장된 대기 코드로 배너 `초대 링크로 들어오셨어요` 유지, `2027 타이밍 캘린더로 가기` = `../?ref=92820D1C`, STEP 3 초대 링크 표시 = `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?ref=내코드`.
+- 390px 폭(iframe 실측) — `/calendar/` · `/calendar/member/` 가로 넘침 **0px**, 실패 리소스 **0건**. 스크린샷 `work/qa-invite-link-calendar-live.png`.
+
+### 5. 남은 것
+- 초대받은 친구가 달력만 쓰고 `/calendar/member/` 에서 카카오 로그인을 하지 않으면 `attach_referrer` 는 아직 불리지 않습니다(5일·6회 혜택은 달력에서 바로 적용). 사다리 실적을 잡으려면 달력 안에 로그인 유도 지점을 두는지 결정이 필요합니다.
+- 실제 초대 코드가 붙은 로그인 상태의 링크 문구(`...?ref=P40195`) 복사는 카카오 로그인 후 실기기 확인이 남아 있습니다.
