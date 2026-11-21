@@ -1833,7 +1833,7 @@
     if (rYou.error) { showCheminError(rYou); return; }
 
     /* 로그인 전 — 결과 대신 로그인 안내. 넣은 사주는 세션에 남겨 돌아오면 그대로 연다. */
-    if (!state.user && !force && !/[?&]qa=1/.test(location.search)) {   /* QA 임시 */
+    if (!state.user && !force) {
       saveGate();
       renderGate();
       if (state.db === 'off') toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.');
@@ -1978,9 +1978,6 @@
       }, 400);
     }
   }
-
-  /* QA 임시 — 부적 도안 확인용 (머지 전 제거) */
-  if (/[?&]qa=1/.test(location.search)) global.__qaAmul = drawAmul;
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);
   else boot();
