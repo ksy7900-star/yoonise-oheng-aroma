@@ -2593,12 +2593,45 @@
     var m = String(v || '').replace(/[^0-9]/g, '').match(/^01([016789])([0-9]{3,4})([0-9]{4})$/);
     return m ? '01' + m[1] + m[2] + m[3] : '';
   }
+  /* '01012345678' → '010-1234-5678' (적어 둔 번호를 카톡 접수 문구에 그대로 쓸 때) */
+  function fmtPhone(d) {
+    return String(d || '').replace(/^(01[016789])([0-9]{3,4})([0-9]{4})$/, '$1-$2-$3');
+  }
   /* 결제 팝업에 적어 둔 번호 — 팝업을 다시 그려도(티어 전환) 그대로 남긴다 */
   var payPhone = '';
+  /* ── 결제창을 **이 창에서** 열기 때문에, 결제를 마치고 돌아오면 달력이 새로 열립니다.
+        그때 '결제 완료 → 카톡으로 코드 받기' 한 걸음을 잃지 않게, 방금 결제하러 간 상품을
+        3시간 동안 세션에 기억해 두고 돌아오면 결과 맨 위에 한 줄로 다시 내밉니다. (2026-11-21) */
+  var PAYWAIT_KEY = 'yoonise.timing.paywait.v1';
+  var PAYWAIT_MS = 3 * 60 * 60 * 1000;
+  function payWaitSave(item, phone) {
+    try { sessionStorage.setItem(PAYWAIT_KEY, JSON.stringify({ item: String(item), phone: String(phone || ''), t: Date.now() })); } catch (e) { }
+  }
+  function payWaitRead() {
+    var o = null;
+    try { o = JSON.parse(sessionStorage.getItem(PAYWAIT_KEY) || 'null'); } catch (e) { o = null; }
+    if (!o || !o.item || !o.t || (Date.now() - o.t) > PAYWAIT_MS) return null;
+    return o;
+  }
+  function payWaitClear() { try { sessionStorage.removeItem(PAYWAIT_KEY); } catch (e) { } }
+  var payBackItem = '';
+  function payBackCheck() {
+    var bar = $('#payBack');
+    if (!bar) return;
+    var o = payWaitRead();
+    if (!o) { bar.hidden = true; return; }
+    payBackItem = o.item;
+    /* 결제창으로 넘어가기 전에 적어 둔 번호를 그대로 살려 — 카톡 접수 문구에 바로 채워진다 */
+    if (o.phone) { payPhone = o.phone; payChoice[String(o.item)] = 'card'; }
+    var what = $('#payBackWhat');
+    if (what) what.textContent = orderLabel(o.item) + ' · 결제를 마치셨다면 한 번만 눌러 주세요.';
+    bar.hidden = false;
+  }
   function payappGo(item, phone) {
     if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
     var info = payInfoOf(item);
     if (!info || !info.price || !phone) return false;
+    payWaitSave(item, phone);
     PayApp.setTarget('_self');            /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
     PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
     PayApp.setParam({
@@ -2810,7 +2843,8 @@
   function payIdLine(item) {
     var it = String(item || '');
     var kind = kakaoCareItem(it) ? 'bank' : payChoice[it];
-    if (kind === 'card') return '결제 확인 — 카드결제 연락처(뒷자리만 적어도 돼요):';
+    var ph = mobileOf(payPhoneVal());          /* 결제 팝업에서 적어 둔 번호 — 있으면 그대로 적어 보낸다 */
+    if (kind === 'card') return '결제 확인 — 카드결제 연락처' + (ph ? ': ' + fmtPhone(ph) : '(뒷자리만 적어도 돼요):');
     if (kind === 'bank') return '결제 확인 — 계좌 입금자명:';
     return '결제 확인 — 카드결제 연락처(또는 계좌 입금자명):';
   }
@@ -5912,6 +5946,22 @@
     } else {
       /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다 */
       maybeAutoWelcome(60);
+    }
+
+    /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21) */
+    var pb = $('#payBack');
+    if (pb) {
+      pb.addEventListener('click', function (e) {
+        if (e.target.closest('#payBackGo')) {
+          var it = payBackItem || 'pass';
+          payWaitClear();
+          pb.hidden = true;
+          goKakaoOrder(it);
+          return;
+        }
+        if (e.target.closest('#payBackX')) { payWaitClear(); pb.hidden = true; }
+      });
+      payBackCheck();
     }
   }
 

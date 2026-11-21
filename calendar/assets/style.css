@@ -1720,6 +1720,26 @@ body.is-modal-open { overflow: hidden; }
 .payphone__inp:focus { outline: none; border-color: #1E293B; box-shadow: 0 0 0 3px rgba(30, 41, 59, .10); }
 .payphone__hint { display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.55; color: #64748B; }
 .payphone__inp.is-shake { animation: cformShake .3s cubic-bezier(.36, .07, .19, .97) both; }
+/* ── 결제하고 돌아온 손님 안내 — 결과 맨 위 한 줄 (2026-11-21) */
+.payback {
+  margin: 0 0 12px; padding: 12px 14px; border-radius: 16px;
+  background: #FEF3C7; border: 1px solid rgba(15, 23, 42, .22);
+}
+.payback__t { display: flex; flex-direction: column; gap: 3px; }
+.payback__t b { font-size: 12.5px; font-weight: 800; color: #1E293B; letter-spacing: -0.02em; }
+.payback__t span { font-size: 10.5px; line-height: 1.55; color: #475569; }
+.payback__row { display: flex; gap: 6px; margin-top: 9px; }
+.payback__go {
+  flex: 1 1 auto; padding: 10px 12px; border-radius: 11px; border: 1px solid #1E293B;
+  background: #1E293B; color: #F8FAFC; font-family: inherit;
+  font-size: 11.5px; font-weight: 700; letter-spacing: -0.02em;
+}
+.payback__x {
+  flex: 0 0 auto; padding: 10px 12px; border-radius: 11px; border: 1px solid rgba(15, 23, 42, .22);
+  background: #FFFFFF; color: #475569; font-family: inherit; font-size: 10.5px;
+}
+.payback__go:active, .payback__x:active { transform: translateY(1px); }
+
 .pay { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .pay__btn {
   display: flex; align-items: center; gap: 8px; min-width: 0;
