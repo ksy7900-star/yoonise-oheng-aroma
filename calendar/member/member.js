@@ -64,10 +64,10 @@
 
   // 확정된 4단 (2026-11-21)
   var LADDER = [
-    { n: 1, title: '모자이크 1달 더 열기', sub: '잠겨 있던 달 하나가 열려요' },
-    { n: 3, title: '1개월권 + 액운 태우기 3회', sub: '한 달 전체와 액운 태우기 3회' },
-    { n: 5, title: '3개월 패스 무료', sub: '석 달을 통째로' },
-    { n: 10, title: '6개월 패스 무료', sub: '반년을 통째로 — 그 뒤는 결제로 이어져요' }
+    { n: 1, title: '1개월 패스 무료 + 액운 태우기 1회', sub: '한 달 전체와 액운 태우기 1회를 바로 열어요' },
+    { n: 3, title: '2개월 패스 무료 + 액운 태우기 3회', sub: '두 달 전체와 액운 태우기 3회' },
+    { n: 5, title: '3개월 패스 무료', sub: '석 달을 통째로 열어요' },
+    { n: 10, title: '6개월 패스 무료', sub: '반년을 통째로 열어 드려요' }
   ];
   var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
   var HASHTAGS = '#2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
@@ -583,12 +583,12 @@
   }
 
   function elRelationText(aEl, bEl, aName, bName) {
-    if (aEl === bEl) return { key: 'same', text: '두 사람 다 ' + aEl + ' 기운 — 말이 빨리 통하는 대신, 같이 세지면 둘 다 과열돼요.' };
-    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + josaFull(aName, 'obj') + ' 살려요(생) — 기댈 때 힘이 나는 쪽은 ' + josaFull(aName, 'copula') + '.' };
-    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + josaFull(bName, 'obj') + ' 살려요(생) — ' + josaFull(aName, 'subj') + ' 먼저 밀어 주는 사이예요.' };
-    if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + josa(aEl, 'subj') + ' ' + bName + '의 ' + bEl + josa(bEl, 'obj') + ' 누르는 관계(극) — ' + aName + '의 말이 세게 들릴 수 있어요.' };
-    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + josa(aEl, 'obj') + ' 누르는 관계(극) — ' + bName + '의 속도에 ' + josaFull(aName, 'subj') + ' 지칠 수 있어요.' };
-    return { key: 'plain', text: '서로 세게 당기지도 누르지도 않는 담백한 관계예요.' };
+    if (aEl === bEl) return { key: 'same', text: '두 사람 다 ' + aEl + ' 기운 — 말이 빨리 통하는 대신, 같이 세지면 둘 다 과열돼요. 한 사람이 한 박자 쉬어 주면 둘 다 오래 갑니다.' };
+    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + aName + '에게 힘을 보태요(생) — 함께 움직일수록 균형과 시너지가 커지는 사이예요.' };
+    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + bName + '에게 힘을 보태요(생) — 서로의 빈 곳을 채워 주며 같이 커지는 사이예요.' };
+    if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + josa(aEl, 'subj') + ' ' + bName + '의 ' + bEl + ' 기운을 다스리는 관계(극) — 힘이 한쪽으로 쏠리기 쉬워요. 서로 한 박자씩 늦추면 둘 다 편해집니다.' };
+    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + ' 기운을 다스리는 관계(극) — ' + bName + '의 속도가 빠를 때 ' + josaFull(aName, 'subj') + ' 지칠 수 있어요. 속도를 미리 맞춰 두면 오히려 서로를 세워 줍니다.' };
+    return { key: 'plain', text: '서로 세게 당기지도 누르지도 않는 담백한 관계 — 그만큼 각자 페이스로 오래 갈 수 있어요.' };
   }
 
   function zhiRelationText(chA, chB, aName, bName) {
@@ -618,8 +618,8 @@
     };
     var M2 = {
       same: '같이 흥분하면 둘 다 세져요 — 한 명은 쉬기',
-      youFeedMe: '도움을 청하는 쪽이 유리해요',
-      iFeedYou: '내가 먼저 밀어 주되 지치지 않기',
+      youFeedMe: '한쪽만 받지 않게 서로 보태 주기',
+      iFeedYou: '밀어 줄 때 서로 지치지 않기',
       iBeatYou: '말투를 한 단계 낮추기',
       youBeatMe: '내 속도를 먼저 챙기기'
     };
@@ -648,7 +648,7 @@
   var ROLE_MEAN = {
     비겁: '추진력 · 경쟁 · 주도권',
     식상: '표현 · 실행 · 새 판 열기',
-    재성: '재물 · 결과물 · 수금',
+    재성: '재물 · 결과물 · 결실',
     관성: '책임 · 자리 · 명예',
     인성: '문서 · 자격 · 배움 · 안정'
   };
@@ -668,15 +668,15 @@
     { k: ['비겁', '관성'], t: '일은 벌어지는데 서류가 무거운 해',
       a: '추진력(비겁)과 책임(관성)이 같이 들어와 하려는 일은 많은데 계약·신고·보고가 발목을 잡아요. 뛰는 쪽이 몸을 쓰고 책임 쪽이 서류를 잡으면 오히려 단단해집니다.',
       s: '뛰는 사람 + 서류 잡는 사람' },
-    { k: ['비겁', '인성'], t: '나서는 사람 뒤에 받쳐 주는 사람',
-      a: '인성 쪽이 배움·자격·문서로 뒤를 받치고 비겁 쪽이 몸으로 부딪히면 실력이 눈에 보이는 모양으로 남아요. 새로 배우는 건 인성 쪽이 먼저 시작해 보세요.',
+    { k: ['비겁', '인성'], t: '나서는 힘과 받쳐 주는 힘이 만나면, 배운 게 모양으로 남는 해',
+      a: '인성 쪽은 배움·자격·문서로, 비겁 쪽은 몸으로 부딪히는 힘으로 서로를 보태요. 두 힘이 겹치면 실력이 눈에 보이는 모양으로 남습니다. 새로 배우는 건 두 사람이 같이 시작해 보세요.',
       s: '배우는 사람 + 뛰는 사람' },
     { k: ['식상', '식상'], t: '시작은 둘 다 잘해요 — 마감이 문제',
       a: '丁火가 둘 다 식상으로 들어와 벌이는 재미는 최고인데 끝맺음이 약해져요. 새 일은 마음껏 벌이되 마감은 한 달에 하나로 못 박아 두면 결과가 남습니다.',
       s: '벌이기 좋아요 — 마감은 하나씩' },
-    { k: ['식상', '재성'], t: '한 사람이 판을 열고, 다른 사람이 수금하는 조합',
-      a: '식상 쪽이 만들고 벌이고, 재성 쪽이 값을 매기고 회수하면 부업이 진짜 돈이 돼요. 공동 프로젝트·클래스·공구에 특히 잘 붙는 짝입니다.',
-      s: '여는 사람 + 수금하는 사람' },
+    { k: ['식상', '재성'], t: '한 사람이 판을 열고, 다른 사람이 결실을 맺어주는 조합',
+      a: '식상 쪽이 판을 열어 힘을 모으고, 재성 쪽이 방향을 잡아 결실을 맺어주는 균형 잡힌 짝이에요. 공동 프로젝트·클래스·공구에 특히 잘 맞습니다.',
+      s: '판 여는 쪽 + 결실 맺는 쪽' },
     { k: ['식상', '관성'], t: '아이디어를 직함과 실적으로 바꾸는 해',
       a: '식상 쪽이 말과 콘텐츠를 만들고 관성 쪽이 그걸 보고·계약·자리로 묶으면 인정받는 속도가 빨라요. 벌이기만 하고 기록을 안 남기면 남는 게 없어요.',
       s: '만드는 사람 + 자리 잡는 사람' },
@@ -689,8 +689,8 @@
     { k: ['재성', '관성'], t: '숫자로 말해서 인정받는 해',
       a: '재성 쪽이 결과를 만들고 관성 쪽이 그걸 자리와 이름으로 올리면 승진·선정·일감이 붙어요. 결과는 말이 아니라 숫자와 기록으로 정리해 두세요.',
       s: '숫자 + 자리 — 인정받는 해' },
-    { k: ['재성', '인성'], t: '한쪽이 벌고, 한쪽이 지켜 주는 구조',
-      a: '재성 쪽이 새 수입을 열고 인성 쪽이 살림·계약·안전선을 지키면 흔들리지 않아요. 큰 지출과 보증은 인성 쪽이 마지막에 한 번 더 확인하는 걸로.',
+    { k: ['재성', '인성'], t: '버는 힘과 지키는 힘이 맞물려야 손에 남는 해',
+      a: '재성 쪽이 새 수입을 열고 인성 쪽이 살림·계약·안전선을 지키면 둘 다 흔들리지 않아요. 큰 지출과 보증은 서로 한 번 더 확인하는 걸로.',
       s: '버는 사람 + 지키는 사람' },
     { k: ['관성', '관성'], t: '책임이 두 겹 — 같이 지면 둘 다 눌려요',
       a: '丁火가 둘 다 관성으로 들어와 일은 맡겨지는데 압박도 두 배예요. 같이 하되 결정은 한 명이 하고, 대신 서로의 쉬는 날은 꼭 비워 주세요.',
@@ -877,10 +877,11 @@
     var relZhi = zhiRelationText(a, b, aName, bName);
 
     var compLines = comp.slice(0, 3).map(function (c) {
-      if (c.who === 'you') {
-        return '<b>' + esc(bName) + '</b>의 ' + c.el + ' 기운이 ' + c.theirs + '개, <b>' + esc(aName) + '</b>에게는 ' + c.mine + '개 — ' + esc(josaFull(bName, 'subj')) + ' ' + esc(aName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
-      }
-      return '<b>' + esc(aName) + '</b>의 ' + c.el + ' 기운이 ' + c.mine + '개, <b>' + esc(bName) + '</b>에게는 ' + c.theirs + '개 — ' + esc(josaFull(aName, 'subj')) + ' ' + esc(bName) + '의 빈 ' + c.el + ' 기운을 채워 줘요.';
+      var ka = c.mine, kb = c.theirs;                 // 내(a) 개수 · 상대(b) 개수
+      var richer = (ka > kb) ? aName : bName;
+      var leaner = (ka > kb) ? bName : aName;
+      return '<b>' + esc(richer) + '</b>의 ' + c.el + ' 기운이 ' + Math.max(ka, kb) + '개, <b>' + esc(leaner) + '</b>에게는 ' + Math.min(ka, kb) + '개 — '
+        + esc(richer) + '의 ' + c.el + ' 기운이 ' + esc(leaner) + '에게 힘을 보태요. 둘이 있을 때 ' + c.el + ' 기운이 고르게 채워집니다.';
     });
 
     var html = '';
@@ -901,7 +902,7 @@
 
     /* 서로 채워 주는 기운 */
     html += '<p class="sect-h">오행 · 서로 채우는 것</p>';
-    html += '<h3 class="sect-t">' + (comp.length ? '빈자리를 서로 채우는 사이예요' : '둘이 합치면 오행이 고르게 차요') + '</h3>';
+    html += '<h3 class="sect-t">' + (comp.length ? '서로의 빈 곳을 채워 주는 사이예요' : '둘이 합치면 오행이 고르게 차요') + '</h3>';
     if (compLines.length) {
       html += '<p class="lead">' + compLines.join(' ') + '</p>';
     } else {
@@ -972,9 +973,7 @@
     var warnMs = (warnAll.length ? warnAll : oneOnly).slice(0, 3);
     html += '<p class="sect-h">이 카드로 스토리에 올리면 돼요</p>';
     var oneLine = comp.length
-      ? ((comp[0].who === 'you')
-        ? bName + '의 ' + comp[0].el + ' 기운이 ' + aName + '의 빈자리를 채워요'
-        : aName + '의 ' + comp[0].el + ' 기운이 ' + bName + '의 빈자리를 채워요')
+      ? comp[0].el + ' 기운을 서로 보태며 균형을 잡아요'
       : '서로 세게 누르지 않는 사이예요';
     var advice = pairAdvice(relMaster.key, relZhi.key);
     var jak = jakOf(a, b);
@@ -1005,11 +1004,11 @@
       + '<span class="story__mark-t">2027 타이밍 캘린더 · 윤이세사주</span></span>'
       + '<span class="story__mark-h">@life.saju_yoonise</span></div>'
       + '</div>';
-    html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 화면을 캡처해 주세요.</p>';
+    html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 화면을 캡처해 주세요. 인스타 인증은 이 카드 한 장이면 돼요.</p>';
     html += '<p class="sect-h" style="margin-top:22px">한 줄 부적 카드</p>';
     html += '<h3 class="sect-t">내 사주로 만든 2027년 부적</h3>';
     html += amulCard(a, aName);
-    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 이것도 캡처해서 올리면 돼요.</p>';
+    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 케미 카드 · 한 줄 부적 · 액운 태우기 완료 화면 중 1장만 있으면 인스타 인증이 돼요.</p>';
 
     /* 보내기 */
     html += '<div class="btn-row">'
