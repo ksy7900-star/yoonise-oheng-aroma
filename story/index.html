@@ -12,7 +12,7 @@
 <meta property="og:title" content="신문에 40번 쓴 이야기 · 윤이세의 생활 사주명리">
 <meta property="og:description" content="경북신문 40편 연재 전편과 유튜브 대표 영상 — 사주를 처음 보는 사람도 읽히는 글">
 <meta property="og:url" content="https://ksy7900-star.github.io/yoonise-oheng-aroma/story/">
-<meta property="og:image" content="https://i.ytimg.com/vi/kZP7l8L7ljs/hqdefault.jpg">
+<meta property="og:image" content="https://i.ytimg.com/vi/kZP7l8L7ljs/maxresdefault.jpg">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
@@ -139,11 +139,13 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 9.5px; font-weight: 800; letter-spacing: -.01em;
 }
 .bcard__title {
+  display: block;
   position: relative; margin-top: 9px; padding-right: 26px;
   font-family: var(--serif); font-size: 17.5px; line-height: 1.46;
   font-weight: 600; letter-spacing: -.035em;
 }
 .bcard__teaser {
+  display: block;
   position: relative; margin-top: 7px; font-size: 11.5px; line-height: 1.78; color: var(--ink-2);
 }
 .bcard__go {
@@ -168,6 +170,8 @@ button { font-family: inherit; cursor: pointer; }
 .tabs {
   display: flex; gap: 6px; margin: 15px -16px 0; padding: 0 16px 4px;
   overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
@@ -194,7 +198,7 @@ button { font-family: inherit; cursor: pointer; }
 .rows { border-top: 1px solid var(--hair); }
 .row {
   display: grid; grid-template-columns: 24px 1fr 34px; gap: 8px; align-items: start;
-  padding: 11px 2px 10px; border-bottom: 1px solid var(--hair);
+  padding: 10px 2px 9px; border-bottom: 1px solid var(--hair);
   text-decoration: none; transition: background .16s ease;
 }
 .row:active { background: #F1F5F9; }
@@ -202,7 +206,7 @@ button { font-family: inherit; cursor: pointer; }
   font-family: var(--serif); font-size: 11.5px; line-height: 1.7; font-weight: 700;
   color: var(--gold); text-align: right; letter-spacing: -.02em;
 }
-.row__t { font-size: 12.5px; line-height: 1.62; color: var(--ink-2); letter-spacing: -.02em; }
+.row__t { font-size: 12.5px; line-height: 1.58; color: var(--ink-2); letter-spacing: -.02em; }
 .row__d { font-size: 9.5px; line-height: 1.85; color: #94A3B8; text-align: right; white-space: nowrap; }
 
 .aside { margin-top: 14px; }
@@ -218,31 +222,39 @@ button { font-family: inherit; cursor: pointer; }
 /* ── 영상 ────────────────────────────────── */
 .yt-lead { margin-top: 15px; }
 .yt-lead a {
-  position: relative; display: block; overflow: hidden; border-radius: 18px;
-  background: var(--navy-deep); text-decoration: none; color: #fff;
-  box-shadow: 0 16px 30px -22px rgba(15, 23, 42, .9);
+  display: block; overflow: hidden; border-radius: 18px; text-decoration: none;
+  background: var(--paper); border: 1px solid var(--hair-soft);
+  box-shadow: 0 16px 30px -24px rgba(15, 23, 42, .8);
+  transition: transform .18s ease;
 }
-.yt-lead img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; opacity: .92; }
-.yt-lead__cap {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 32px 14px 13px;
-  background: linear-gradient(transparent, rgba(15, 23, 42, .92));
+.yt-lead a:active { transform: scale(.99); }
+.yt-lead__thumb { position: relative; display: block; background: var(--navy-deep); }
+.yt-lead__thumb img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.yt-lead__body { display: block; padding: 12px 14px 13px; }
+.yt-lead__body b {
+  display: block; font-size: 13.5px; font-weight: 800; line-height: 1.45;
+  letter-spacing: -.025em; color: var(--ink);
 }
-.yt-lead__cap b { display: block; font-size: 13.5px; font-weight: 800; line-height: 1.45; letter-spacing: -.025em; }
-.yt-lead__cap span { display: block; margin-top: 3px; font-size: 10px; font-weight: 600; color: rgba(226, 232, 240, .82); }
+.yt-lead__body span {
+  display: block; margin-top: 4px; font-size: 10px; font-weight: 600; color: var(--mute);
+}
+.yt-lead__body span em { font-style: normal; color: var(--emerald); font-weight: 800; }
 .yt-play {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 48px; height: 48px; border-radius: 50%;
-  background: rgba(255, 255, 255, .94); color: var(--navy);
-  display: flex; align-items: center; justify-content: center; font-size: 16px;
-  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .7); padding-left: 3px;
+  position: absolute; left: 10px; bottom: 10px;
+  height: 28px; padding: 0 11px; border-radius: 999px;
+  background: rgba(15, 23, 42, .84); color: #FFFFFF;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-style: normal; font-size: 10.5px; font-weight: 800; letter-spacing: -.01em;
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .8);
+  backdrop-filter: blur(2px);
 }
 .yt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .yt-card { display: block; text-decoration: none; }
 .yt-card__thumb {
-  position: relative; overflow: hidden; border-radius: 13px; background: #E2E8F0;
+  display: block; position: relative; overflow: hidden; border-radius: 13px; background: #E2E8F0;
   box-shadow: var(--shadow);
 }
-.yt-card__thumb img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.yt-card__thumb img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
 .yt-card__thumb i {
   position: absolute; right: 5px; bottom: 5px;
   width: 20px; height: 20px; border-radius: 5px; background: rgba(15, 23, 42, .78);
@@ -252,7 +264,7 @@ button { font-family: inherit; cursor: pointer; }
   margin-top: 6px; font-size: 11px; line-height: 1.5; font-weight: 700; letter-spacing: -.025em; color: var(--ink-2);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.yt-card__m { margin-top: 2px; font-size: 9.5px; color: #94A3B8; }
+.yt-card__m { display: block; margin-top: 2px; font-size: 9.5px; color: #94A3B8; }
 
 .yt-more { margin-top: 12px; }
 .yt-more a {
@@ -293,7 +305,7 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 9.5px; line-height: 1.8; color: #94A3B8; text-align: center;
 }
 .foot b { font-weight: 600; color: #64748B; }
-.foot__line { margin-top: 8px; }
+.foot__line { display: block; margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -335,7 +347,7 @@ button { font-family: inherit; cursor: pointer; }
       <a class="bcard bcard--lead" href="https://www.kbsm.net/news/view.php?idx=542608" target="_blank" rel="noopener noreferrer">
         <span class="bcard__no" aria-hidden="true">40</span>
         <span class="bcard__tag">🔥 지금 연재 중 · 40회</span>
-        <span class="bcard__title">세상과 나를 연결하는 온도 — 화(火) 기운이 없을 때</span>
+        <span class="bcard__title">세상과 나를 연결하는 온도-화(火) 기운이 없을 때</span>
         <span class="bcard__teaser">잘 챙겨주면서도 "고맙다" 한마디는 못 하는 사람. 마음이 없는 게 아니라 표현의 온도가 낮은 것뿐이에요.</span>
         <span class="bcard__go">경북신문에서 읽기 <span>→</span></span>
       </a>
@@ -343,7 +355,7 @@ button { font-family: inherit; cursor: pointer; }
       <a class="bcard" href="https://www.kbsm.net/news/view.php?idx=510734" target="_blank" rel="noopener noreferrer">
         <span class="bcard__no" aria-hidden="true">6</span>
         <span class="bcard__tag">💰 돈 · 6회</span>
-        <span class="bcard__title">왜 내 통장은 '정거장'일까 — 돈을 대하는 기운의 습관</span>
+        <span class="bcard__title">왜 내 통장은 ‘정거장’일까?...돈을 대하는 기운의 습관</span>
         <span class="bcard__teaser">"벌기는 하는데 남는 게 없어요." 상담실에서 가장 자주 듣는 말 중 하나였습니다.</span>
         <span class="bcard__go">경북신문에서 읽기 <span>→</span></span>
       </a>
@@ -351,7 +363,7 @@ button { font-family: inherit; cursor: pointer; }
       <a class="bcard" href="https://www.kbsm.net/news/view.php?idx=511753" target="_blank" rel="noopener noreferrer">
         <span class="bcard__no" aria-hidden="true">7</span>
         <span class="bcard__tag">💗 애정 · 7회</span>
-        <span class="bcard__title">왜 나는 사랑 앞에서 작아질까 — 애정운 알고리즘</span>
+        <span class="bcard__title">왜 나는 사랑 앞에서 작아질까?-‘애정운 알고리즘’</span>
         <span class="bcard__teaser">매번 나쁜 사람만 만나는 것 같다면, 사람을 고르는 기준보다 나를 보는 눈이 먼저예요.</span>
         <span class="bcard__go">경북신문에서 읽기 <span>→</span></span>
       </a>
@@ -359,7 +371,7 @@ button { font-family: inherit; cursor: pointer; }
       <a class="bcard" href="https://www.kbsm.net/news/view.php?idx=507132" target="_blank" rel="noopener noreferrer">
         <span class="bcard__no" aria-hidden="true">4</span>
         <span class="bcard__tag">🧭 일 · 4회</span>
-        <span class="bcard__title">내 팔자에 맞는 일은 따로 있다 — 직업 선택의 기운 공식</span>
+        <span class="bcard__title">내 팔자에 맞는 일은 따로 있다-직업 선택의 기운 공식</span>
         <span class="bcard__teaser">같은 일을 해도 숨이 찬 사람과 신이 나는 사람이 있어요. 버티는 힘의 문제가 아니라 기운이 맞는 자리 문제.</span>
         <span class="bcard__go">경북신문에서 읽기 <span>→</span></span>
       </a>
@@ -615,15 +627,16 @@ button { font-family: inherit; cursor: pointer; }
   <section class="sec" aria-labelledby="ytTitle">
     <p class="sec__eyebrow">03 · 영상</p>
     <h2 class="sec__title" id="ytTitle">글보다 말이 편한 날엔</h2>
-    <p class="sec__sub">띠별 운세는 걷어내고, 내 기운 이야기만 네 편 골랐어요. 5분 남짓이면 끝나요.</p>
+    <p class="sec__sub">띠별 운세는 걷어내고, 내 기운 이야기만 네 편 골랐어요.</p>
 
     <div class="yt-lead">
       <a href="https://www.youtube.com/watch?v=kZP7l8L7ljs" target="_blank" rel="noopener noreferrer">
-        <img src="https://i.ytimg.com/vi/kZP7l8L7ljs/hqdefault.jpg" alt="(치우친사주) 물이 많은 사주 특징과 살아남는 법 — 윤이세의 사주특별수사대" loading="lazy" width="480" height="360">
-        <span class="yt-play" aria-hidden="true">▶</span>
-        <span class="yt-lead__cap">
+        <span class="yt-lead__thumb">
+          <img src="https://i.ytimg.com/vi/kZP7l8L7ljs/maxresdefault.jpg" alt="(치우친사주) 물이 많은 사주 특징과 살아남는 법 — 윤이세의 사주특별수사대" loading="lazy" width="1280" height="720">
+                  </span>
+        <span class="yt-lead__body">
           <b>(치우친사주) 물이 많은 사주 특징과 살아남는 법</b>
-          <span>조회 5.5만 · 채널에서 가장 많이 본 영상</span>
+          <span>조회 <em>5.5만</em> · 5분 28초 · 채널에서 가장 많이 본 영상</span>
         </span>
       </a>
     </div>
@@ -631,7 +644,7 @@ button { font-family: inherit; cursor: pointer; }
     <div class="yt-grid">
       <a class="yt-card" href="https://www.youtube.com/watch?v=ISMQbw5akog" target="_blank" rel="noopener noreferrer">
         <span class="yt-card__thumb">
-          <img src="https://i.ytimg.com/vi/ISMQbw5akog/hqdefault.jpg" alt="사주는 운명일까? 신문 연재로 풀어본 윤이세의 생활 사주명리" loading="lazy" width="480" height="360">
+          <img src="https://i.ytimg.com/vi/ISMQbw5akog/mqdefault.jpg" alt="사주는 운명일까? 신문 연재로 풀어본 윤이세의 생활 사주명리" loading="lazy" width="320" height="180">
           <i aria-hidden="true">▶</i>
         </span>
         <span class="yt-card__t">사주는 운명일까? 신문 연재로 풀어본 생활 사주명리</span>
@@ -640,7 +653,7 @@ button { font-family: inherit; cursor: pointer; }
 
       <a class="yt-card" href="https://www.youtube.com/watch?v=025SPQtuLN4" target="_blank" rel="noopener noreferrer">
         <span class="yt-card__thumb">
-          <img src="https://i.ytimg.com/vi/025SPQtuLN4/hqdefault.jpg" alt="점심 메뉴 하나 못 고르는 당신, 사주를 열어보면 이것이 문제" loading="lazy" width="480" height="360">
+          <img src="https://i.ytimg.com/vi/025SPQtuLN4/mqdefault.jpg" alt="점심 메뉴 하나 못 고르는 당신, 사주를 열어보면 이것이 문제" loading="lazy" width="320" height="180">
           <i aria-hidden="true">▶</i>
         </span>
         <span class="yt-card__t">점심 메뉴 하나 못 고르는 당신, 사주를 열어보면 '이것'이 문제</span>
@@ -649,7 +662,7 @@ button { font-family: inherit; cursor: pointer; }
 
       <a class="yt-card" href="https://www.youtube.com/watch?v=0fs2Ax4ZG6Q" target="_blank" rel="noopener noreferrer">
         <span class="yt-card__thumb">
-          <img src="https://i.ytimg.com/vi/0fs2Ax4ZG6Q/hqdefault.jpg" alt="(2026년 운세) 병오년 운세 - 불바다를 피하는 법" loading="lazy" width="480" height="360">
+          <img src="https://i.ytimg.com/vi/0fs2Ax4ZG6Q/mqdefault.jpg" alt="(2026년 운세) 병오년 운세 - 불바다를 피하는 법" loading="lazy" width="320" height="180">
           <i aria-hidden="true">▶</i>
         </span>
         <span class="yt-card__t">(2026년 운세) 병오년 운세 — 불바다를 피하는 법</span>
@@ -658,7 +671,7 @@ button { font-family: inherit; cursor: pointer; }
 
       <a class="yt-card" href="https://www.youtube.com/watch?v=Rz43XGX_8-4" target="_blank" rel="noopener noreferrer">
         <span class="yt-card__thumb">
-          <img src="https://i.ytimg.com/vi/Rz43XGX_8-4/hqdefault.jpg" alt="(내 사주에 없는 오행) 목이 없는 사주 특징과 개운법" loading="lazy" width="480" height="360">
+          <img src="https://i.ytimg.com/vi/Rz43XGX_8-4/mqdefault.jpg" alt="(내 사주에 없는 오행) 목이 없는 사주 특징과 개운법" loading="lazy" width="320" height="180">
           <i aria-hidden="true">▶</i>
         </span>
         <span class="yt-card__t">(내 사주에 없는 오행) 목이 없는 사주 특징과 개운법</span>
@@ -679,7 +692,7 @@ button { font-family: inherit; cursor: pointer; }
     <h2 class="cta__title" id="ctaTitle">내 사주에서 비어 있는 기운,<br>2027년 흐름이 궁금하다면</h2>
     <p class="cta__sub">생년월일만 넣으면 2027년 하루하루를 짚어 드리고, 이야기로 풀고 싶으면 1:1로 앉아요.</p>
     <div class="cta__btns">
-      <a class="btn btn--cal" href="../calendar/">📅 2027 타이밍 달력 열기 <small>무료로 시작</small></a>
+      <a class="btn btn--cal" href="../calendar/">📅 2027 타이밍 달력 열기 <small>생년월일만 넣으면</small></a>
       <a class="btn btn--talk" href="../apply/">💬 1:1 상담 신청하기</a>
     </div>
   </section>
