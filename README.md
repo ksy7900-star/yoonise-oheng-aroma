@@ -725,3 +725,27 @@ python3 -m http.server 8000
 - **라이브 검증** — `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?v=20261121j` 에서 같은 7묶음 전부 PASS(콘솔 오류 0 · pageerror 0).
 - 스크린샷: `work/qa21j/live-01-welcome.png` · `-02-after-welcome-form.png` · `-03-guide-after-saju.png` · `-04-calendar.png` · `-05-reopen-guide.png` · `-06-inherit-guide.png`
 - 저장소에 임시 QA 페이지는 만들지 않았습니다(로컬 서버 + Playwright, QA 스크립트는 저장소 밖 `work/qa21j/qa.py`).
+
+## 48. 2026-11-21 — 캘린더 카톡·SNS 링크 미리보기 정비 (제목·설명·og:image 800×400 카드) 
+
+김나영 님 지시: `/calendar/` 링크를 카톡에 붙였을 때 뜨는 **제목·설명·대표 이미지**를 정비. 최종 제목은 사용자가 직접 고른 `내 사주 2027년 길흉 달력 + 액운 태우기`이고, 설명에는 `3일 무료` 문구를 넣지 않았습니다(전체 오픈 상태와 모순되므로).
+
+- **제목·설명(`calendar/index.html` head)**
+  - `<title>` `내 사주 2027년 길흉 달력 + 액운 태우기 | 윤이세사주` (33자)
+  - `og:title` `내 사주 2027년 길흉 달력 + 액운 태우기` (25자)
+  - `og:description` = `meta[name="description"]` = `생년월일만 넣으면 2027년 조심할 날·치고 나갈 날을 하루씩 짚어주고, 막힌 운을 태워 비우는 맞춤 사주 달력 · 윤이세사주` (70자)
+  - 기존 `2026년 11월부터 2027년 12월까지` 류의 긴 설명은 이 문구로 교체.
+- **대표 이미지** — `work/kakao-cards-2026-11-20/1-내사주타이밍.png`(800×400, 카톡 큰이미지 2:1 규격 그대로)를 `calendar/assets/og-timing-2027.png`(217KB)로 저장소에 함께 커밋. 리사이즈 없이 원본 비율을 유지했습니다 — 800×400이 카톡 큰이미지 카드의 권장 비율(2:1)이라 크롭이 없습니다.
+  - `og:image` `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/assets/og-timing-2027.png` + `og:image:width` 800 · `og:image:height` 400 · `og:image:alt`
+  - `og:url` `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/` · `og:site_name` `윤이세사주`
+  - `twitter:card summary_large_image` + `twitter:title`·`twitter:description`·`twitter:image` 추가.
+- **라이브 검증(2026-11-21 11:17~11:22 KST)**
+  - `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/` → HTTP 200, `<title>`·`og:title`·`og:description`·`og:image`·`og:url`·`twitter:card` 모두 새 값으로 응답(Pages 반영에 약 20초).
+  - `KakaoTalk/1.0` UA로 요청해도 200 + 같은 OG 태그 4종(`og:image`·`:width`·`:height`·`:alt`) 반환. 차단·리다이렉트 없음.
+  - `.../calendar/assets/og-timing-2027.png` → HTTP 200, `content-type: image/png`, 222,095 bytes, 실제 디코딩 800×400(원본과 sha256 일치).
+  - 외부 OG 검사(opengraph.xyz) 결과: 제목 25자·설명 70자·이미지 정상 로드(217KB)·`twitter:card` 인식·`og:site_name` 인식 — Good 11건.
+  - 남은 경고 2건은 참고용: ① 800×400은 페이스북·X가 선호하는 1.91:1(1200×630)과 달라 그쪽에선 위아래가 조금 잘릴 수 있음(카톡 2:1에는 정확) ② 이미지 안에 CTA 문구 없음.
+- **카톡 캐시** — 이미 보낸 링크의 말풍선은 그대로 남고, 같은 URL을 다시 붙일 때 예전 카드가 뜨면 [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에 URL을 넣고 `캐시 초기화`가 필요합니다(카카오 계정 로그인 필요 — 원격 브라우저에서는 로그인할 수 없어 사용자 손이 필요).
+- **가격 없는 OG 카드 대안(저장소 밖)** — `work/og-timing-2027-noprice.png`(같은 디자인 시스템, 800×400, 가격 3단 대신 `조심할 날은 피하고 / 막힌 운은 태워 비우기` 문구). 링크 미리보기에서 가격이 먼저 보이지 않게 하고 싶을 때 이 파일로 갈아끼우면 됩니다.
+- 미리보기 예상 모형(실제 카톡 캡처 아님): `work/kakao-og-preview-mock-2026-11-21.png`(현재 적용안) · `work/kakao-og-preview-mock-noprice-2026-11-21.png`(대안)
+- 남은 불일치: 페이지 본문 h1은 아직 `내 인생 타이밍 캘린더`입니다. 탭·공유 제목만 바꾼 상태이니, 히어로 제목까지 맞출지는 별도 판단이 필요합니다.
