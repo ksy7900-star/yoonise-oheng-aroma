@@ -101,6 +101,7 @@
   var PAYAPP_CARE_ONE_URL = '';   // ⚡ 긴급 개운템 낱개 2,900원
   var PAYAPP_CARE_SET_URL = '';   // ⚡ 긴급 개운템 3종 세트 5,900원
   var PAYAPP_CONSULT_URL = 'https://www.payapp.kr/L/z4ovI1'; // 🔎 윤이세 1:1 원포인트 리딩 49,000원 (질문 1가지)
+  var PAYAPP_SIGNATURE_URL = 'https://www.payapp.kr/L/z4ovJ1'; // 🌿 윤이세 1:1 시그니처 리딩 100,000원 (전체 흐름)
   var BANK_NAME = 'SC제일은행';                 // 은행 이름 (통장 사본 확인)
   var BANK_ACCOUNT = '504-20-454146';          // 계좌번호 (통장 사본 확인)
   var BANK_HOLDER = '김나영 (엔와이트레이드)';   // 예금주 (통장 사본 확인)
@@ -1826,21 +1827,24 @@
       el: r.el, gan: r.gan, name: tname, icon: ticon, who: who, why: why, ties: r.ties,
       hanja: type ? type.h : '', mantra: type ? type.m : '', line: type ? type.d : ''
     };
-    /* 대문 히어로 — 부적이 배너 한가운데, 글은 위아래로만 (2026-11-22 개편) */
+    /* 대문 히어로 — 부적이 배너 한가운데, 글은 위아래로만 (2026-11-22 개편)
+       2026-11-22 2차: 톡 눌렀을 때 뜨는 문구를 **부적 위(타이틀 아래 예약 자리)**로 올린다.
+       · 예약 자리는 늘 같은 높이로 비어 있어서 배너가 들썩이지 않는다.
+       · 부적 아래 힌트는 자리 그대로 — 문구가 바뀌어도 힌트가 밀리지 않는다. */
     box.className = 'talis-banner talis-banner--' + r.el;
     box.setAttribute('aria-label', who + '의 2027 수호 부적 — ' + tname);
     box.innerHTML =
       '<div class="talis-hero">' +
       '<p class="talis-banner__eyebrow">GUARDIAN TALISMAN · 2027 丁未</p>' +
       '<p class="talis-banner__title">' + esc(who) + '의 2027 수호 부적</p>' +
+      '<p class="talis-banner__reveal" id="talisReveal" role="status" aria-live="polite"></p>' +
       '<div class="talis-banner__stage">' +
       '<span class="talis-banner__halo" aria-hidden="true"></span>' +
       plaqueHTML(r.el, { tag: true, action: 'talis-tap', fx: true, type: type }) +
       '</div>' +
       '<p class="talis-banner__name"><span aria-hidden="true">' + ticon + '</span> ' + esc(tname) + '</p>' +
       '<p class="talis-banner__hint">부적을 톡 눌러 기운을 깨우세요</p>' +
-      '<p class="talis-banner__reveal" id="talisReveal" role="status" aria-live="polite"></p>' +
-      '<button type="button" class="talis-banner__more" data-talis-open hidden>부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
+      '<button type="button" class="talis-banner__more" data-talis-open aria-hidden="true">부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
       '</div>';
   }
 
@@ -1857,10 +1861,10 @@
   }
   function talisCharge(plaque) {
     talisBurst(plaque);
-    sfxBless();                       /* 낮게 울리는 종 + 상승 차임 + 진동 */
+    sfxBless();                       /* 낮고 묵직한 싱잉볼 공명 + 묵직한 진동 */
   }
 
-  /** 배너 부적 톡 — 오라 번쩍 + 문구, 이어서 확대 팝업 가는 길이 조용히 열린다 */
+  /** 배너 부적 톡 — 오라 번쩍 + 부적 **위** 예약 자리에 문구, 이어서 확대 팝업 가는 길이 조용히 열린다 */
   function onTalisTap(btn) {
     talisCharge(btn);
     var rv = $('#talisReveal');
@@ -1871,10 +1875,10 @@
       rv.classList.add('is-on');
     }
     var more = $('.talis-banner__more');
-    if (more && more.hidden) {
+    if (more && !more.classList.contains('is-on')) {
       setTimeout(function () {
-        more.hidden = false;
         more.classList.add('is-on');
+        more.removeAttribute('aria-hidden');
       }, 900);
     }
   }
@@ -2877,7 +2881,7 @@
     if (consult) {
       if (!consult.getAttribute('data-base')) consult.setAttribute('data-base', consult.innerHTML);
       consult.innerHTML = paid
-        ? '더 깊이 보고 싶으면 <button type="button" class="cta__consult-btn" data-shop="consult">🔎 <b>1:1 상담</b> · 원포인트 49,000 · 종합 100,000 →</button>'
+        ? '더 깊이 보고 싶으면 <button type="button" class="cta__consult-btn" data-shop="consult">🔎 <b>1:1 상담</b> · 원포인트 49,000 · 시그니처 100,000 →</button>'
         : consult.getAttribute('data-base');
     }
     box.classList.toggle('is-compact', paid);
@@ -2886,9 +2890,9 @@
   /* ── 초대 사다리 문구 — 미결제 / 결제자 (2026‑11‑22 김나영 님 확정) ── */
   var LADDER_TEXT_FREE = '1명 액운3회+할인 · 3명 1개월 · 5명 2개월 · 10명 3개월';
   var LADDER_TEXT_PAID = {
-    pass: '1명 상담 5천원 · 3명 올인원 무료 · 5명 원포인트 반값 · 10명 종합 반값',
-    allinone: '1명 상담 5천원 · 3명 성찰 에디션 무료 · 5명 원포인트 반값 · 10명 종합 반값',
-    diary: '1명 상담 5천원 · 3명 상담 1만원 · 5명 원포인트 반값 · 10명 종합 반값'
+    pass: '1명 상담 5천원 · 3명 올인원 무료 · 5명 원포인트 반값 · 10명 시그니처 반값',
+    allinone: '1명 상담 5천원 · 3명 성찰 에디션 무료 · 5명 원포인트 반값 · 10명 시그니처 반값',
+    diary: '1명 상담 5천원 · 3명 상담 1만원 · 5명 원포인트 반값 · 10명 시그니처 반값'
   };
   /* 결제자 초대 문구 1안 (2026-11-22 김나영 님 확정)
      — 시작값('5,000원~50%')으로 약해 보이던 표현을 빼고, 첫 단계 혜택을 앞세운다.
@@ -2938,6 +2942,42 @@
   var DIARY_PRICE = '24,900원';
   var CARE_PRICE = '1종 2,900원 · 3종 풀세트 5,900원';
   var CONSULT_PRICE = '49,000원';
+
+  /* ── 1:1 상담 두 상품 (2026-11-22 개편) ────────────────────────────
+     원포인트·시그니처를 팝업 맨 위에서 고르고, 고른 상품 그대로 결제한다.
+       · 원포인트 리딩 49,000원 — 지금 걸리는 고민 1가지
+       · 시그니처 리딩 100,000원 — 기질부터 대운·세운까지 전체 흐름
+     페이앱 링크는 /apply/ 와 같은 것을 쓴다(원포인트 z4ovI1 · 시그니처 z4ovJ1). */
+  var CONSULT_SIG_PRICE = '100,000원';
+  var CONSULT_PRODUCTS = {
+    onepoint: {
+      key: 'onepoint', item: 'consult', ic: '🔎', name: '원포인트 리딩', price: CONSULT_PRICE, df: '고민 1가지',
+      sub: '캘린더로도 계속 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.',
+      list: [
+        ['딱 1가지 핵심 질문 집중', '이직·계약·관계·시기 중 지금 가장 급한 문제 하나만 깊게 봅니다'],
+        ['지금 할 일 · 미룰 일 정리', '바로 움직일 때인지, 한 템포 쉴 때인지 방향을 딱 갈라 드려요'],
+        ['일정은 카카오톡 채널에서', '결제한 뒤 아래 신청서를 채워 보내 주시면 일정을 바로 잡아 드려요']
+      ],
+      priceLabel: '윤이세 1:1 원포인트 리딩',
+      qLb: '⑥ 궁금한 점', qHint: '1가지면 충분해요', qPh: '예: 지금 이직을 해도 될까요?',
+      order: '[윤이세 1:1 원포인트 리딩 신청] ' + CONSULT_PRICE
+    },
+    signature: {
+      key: 'signature', item: 'consult-sig', ic: '🌿', name: '시그니처 리딩', price: CONSULT_SIG_PRICE, df: '전체 흐름',
+      sub: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 대표 상담이에요.',
+      list: [
+        ['타고난 기질과 강점', '명식 전체를 놓고 어떤 사람인지, 어디서 힘이 나는지부터'],
+        ['재물 · 관계 · 일의 흐름', '돈이 붙는 자리와 새는 자리, 사람과 일에서의 결을 짚어 드려요'],
+        ['대운·세운으로 보는 방향', '앞으로 몇 해를 크게 보고, 지금 무엇을 해야 할지 정리합니다']
+      ],
+      priceLabel: '윤이세 1:1 시그니처 리딩',
+      qLb: '⑥ 가장 궁금한 점', qHint: '전체 흐름을 보되 이건 꼭', qPh: '예: 올해 이직과 돈 흐름이 궁금해요',
+      order: '[윤이세 1:1 시그니처 리딩 신청] ' + CONSULT_SIG_PRICE
+    }
+  };
+  function consultProduct(item) {
+    return String(item || '') === 'consult-sig' ? CONSULT_PRODUCTS.signature : CONSULT_PRODUCTS.onepoint;
+  }
 
   var shopEl = null, shopBody = null, shopDialog = null, shopLastFocus = null, shopClosing = false;
 
@@ -2993,6 +3033,7 @@
     'allinone': { name: '2027 올인원패키지', price: 19900 },
     'diary': { name: '성찰에디션', price: 24900 },
     'consult': { name: '원포인트 고민해결', price: 49000 },
+    'consult-sig': { name: '시그니처 리딩', price: 100000 },
     'up-allinone': { name: '2027 올인원 업그레이드', price: 7900 }
   };
   function payInfoOf(item) {
@@ -3017,6 +3058,7 @@
   }
   /* 결제 팝업에 적어 둔 번호 — 팝업을 다시 그려도(티어 전환) 그대로 남긴다 */
   var payPhone = '';
+  var lastPayPhoneMirror = '';   // 결제 확인용 번호를 신청서 ⑤칸에 그대로 채웠는지 기억
   /* ── 결제창을 **이 창에서** 열기 때문에, 결제를 마치고 돌아오면 달력이 새로 열립니다.
         그때 '결제 완료 → 카톡으로 코드 받기' 한 걸음을 잃지 않게, 방금 결제하러 간 상품을
         3시간 동안 세션에 기억해 두고 돌아오면 결과 맨 위에 한 줄로 다시 내밉니다. (2026-11-21) */
@@ -3058,6 +3100,12 @@
     if (o.phone) { rememberPhone(o.phone); payChoice[String(o.item)] = 'card'; }
     var what = $('#payBackWhat');
     if (what) what.textContent = orderLabel(o.item) + ' · 결제를 마치셨다면 한 번만 눌러 주세요.';
+    /* 1:1 상담(원포인트·시그니처)은 코드가 아니라 신청서로 이어진다 — 버튼 문구도 그에 맞춰 */
+    var consultPay = /^consult/.test(String(o.item));
+    var go = $('#payBackGo');
+    if (go) go.textContent = consultPay ? '📝 신청서 적고 접수하기' : '💬 카톡으로 입장 코드 받기';
+    var codeBtn = $('#payBackCode');
+    if (codeBtn) codeBtn.hidden = consultPay;     // 상담은 입장 코드가 없어요
     bar.hidden = false;
   }
   /* 페이앱이 결제 완료 후 returnurl 로 되돌려 보낸 경우(?paid=1) —
@@ -3105,13 +3153,16 @@
   }
   /* 번호 입력칸 — 결제 버튼 바로 위 한 칸. 이 번호로 페이앱이 결제를 받고, 코드도 이 번호로 간다. */
   function phoneFieldHTML(item) {
+    var consult = /^consult/.test(String(item || ''));
     return '<label class="payphone" for="payPhone-' + esc(item) + '">' +
-      '<span class="payphone__lb"><b>📱 입장 코드 받으실 휴대폰 번호</b>' +
+      '<span class="payphone__lb"><b>' + (consult ? '📱 결제 확인용 휴대폰 번호' : '📱 입장 코드 받으실 휴대폰 번호') + '</b>' +
       '<span>적으면 결제창이 한 단계 줄어요</span></span>' +
       '<input class="payphone__inp" id="payPhone-' + esc(item) + '" type="tel" inputmode="numeric"' +
       ' autocomplete="tel" maxlength="13" placeholder="010-1234-5678"' +
       ' value="' + esc(payPhone) + '" data-pay-phone="' + esc(item) + '">' +
-      '<span class="payphone__hint">결제 확인과 코드 발송에만 써요 · 이 기기에만 기억해요</span>' +
+      '<span class="payphone__hint">' + (consult
+        ? '결제 확인에만 써요 · 이 기기에만 기억해요'
+        : '결제 확인과 코드 발송에만 써요 · 이 기기에만 기억해요') + '</span>' +
       '</label>';
   }
   function payPhoneVal() {
@@ -3134,7 +3185,8 @@
       'diary': PAYAPP_DIARY_URL,
       'care-one': PAYAPP_CARE_ONE_URL,
       'care-set': PAYAPP_CARE_SET_URL,
-      'consult': PAYAPP_CONSULT_URL
+      'consult': PAYAPP_CONSULT_URL,
+      'consult-sig': PAYAPP_SIGNATURE_URL
     };
     var url = map[item];
     return url && String(url).trim() ? String(url).trim() : '';
@@ -3273,6 +3325,7 @@
     if (it === 'allinone') return '2027 올인원 ' + ALLINONE_PRICE;
     if (it === 'diary') return '2027 성찰 에디션 ' + DIARY_PRICE;
     if (it === 'consult') return '윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE;
+    if (it === 'consult-sig') return '윤이세 1:1 시그니처 리딩 ' + CONSULT_SIG_PRICE;
     if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) {
       var upinfo = payInfoOf(it);
       return '2027 ' + TIER_NAME[it.slice(3)] + ' 업그레이드' + (upinfo ? ' ' + wonNum(upinfo.price) : '');
@@ -3295,6 +3348,7 @@
     if (it === 'allinone') return '2번 올인원 ' + ALLINONE_PRICE;
     if (it === 'diary') return '3번 성찰 에디션 ' + DIARY_PRICE;
     if (it === 'consult') return '4번 원포인트 리딩 ' + CONSULT_PRICE;
+    if (it === 'consult-sig') return '4번 시그니처 리딩 ' + CONSULT_SIG_PRICE;
     if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) {
       var to = it.slice(3), up = payInfoOf(it);
       return (ORDER_NO[to] ? ORDER_NO[to] + ' ' : '') + TIER_NAME[to] + ' 업그레이드' + (up ? ' ' + wonNum(up.price) : '');
@@ -3339,7 +3393,7 @@
   /** 노란 카카오 버튼 — 결제 카드·계좌이체 바로 아래.
       부제는 버튼을 그릴 때 굳으므로 짧게 한 줄로 적는다. */
   function kakaoSubText(item) {
-    if (String(item || '') === 'consult') return '누르면 신청 양식이 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝';
+    if (/^consult/.test(String(item || ''))) return '누르면 신청서가 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝';
     return kakaoCareItem(item)
       ? '누르면 상품명이 복사돼요 — 카톡에 붙여넣고 입금자명·번호만 적어 주세요'
       : '누르면 상품명이 복사돼요 — 카톡에 붙여넣고 휴대폰 번호만 적어 주세요';
@@ -3359,6 +3413,8 @@
      · 생년월일시·성별은 캘린더에 이미 넣어 둔 사주가 있으면 그대로 채워 두고, 고객이 고칠 수 있다.
      · 입력값은 이 화면(메모리)에만 둔다 — 저장소에 남기지 않는다. */
   var consultForm = null;   // { name, birth, cal, gender, who, q, sig }
+  var consultTier = 'onepoint';   // 팝업에서 고른 상담 상품 — ① 원포인트 ② 시그니처
+  function consultTierItem() { return CONSULT_PRODUCTS[consultTier] ? CONSULT_PRODUCTS[consultTier].item : 'consult'; }
   /* 생년월일시는 날짜·시간만 적는다 — 양력/음력은 아래 '양력·음력·윤달' 칩이 따로 받는다(#8891) */
   function consultBirthValue() {
     var r = state.res;
@@ -3401,6 +3457,17 @@
     if (!String(f.who || '').trim()) return { key: 'who', msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
     if (!String(f.q || '').trim()) return { key: 'q', msg: '가장 궁금한 고민을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
     return null;
+  }
+  /* 결제창에 적은 번호를 신청서 ⑤칸에도 — 두 번 적지 않게.
+     (⑤칸에 이미 다른 값이 있으면 건드리지 않는다) */
+  function mirrorPayPhone() {
+    var v = String(payPhone || '').trim();
+    var f = consultFormState();
+    if (String(f.who || '').trim() && String(f.who) !== lastPayPhoneMirror) return;
+    f.who = v;
+    lastPayPhoneMirror = v;
+    var inp = shopBody ? shopBody.querySelector('[data-cf="who"]') : null;
+    if (inp) inp.value = v;
   }
   function setConsultCal(v) {
     var f = consultFormState();
@@ -3455,10 +3522,11 @@
     sfxTap(1);
   }
   /* 신청 메시지 — 양식에 적은 그대로, 한 줄에 하나씩 */
-  function consultOrderText() {
+  function consultOrderText(item) {
     var f = consultFormState();
+    var p = consultProduct(item);
     return [
-      '[윤이세 1:1 원포인트 리딩 신청] ' + CONSULT_PRICE,
+      p.order,
       '성함: ' + String(f.name || '').trim(),
       '연락처(카드결제) 또는 입금자명(계좌이체): ' + String(f.who || '').trim(),
       '생년월일시: ' + String(f.birth || '').trim(),
@@ -3467,14 +3535,14 @@
       '궁금한 점: ' + String(f.q || '').trim()
     ].join('\n');
   }
-  /* 노란 카톡 버튼 — 원포인트 리딩은 양식 여섯 칸을 먼저 확인한다 */
-  function goConsultOrder() {
+  /* 노란 카톡 버튼 — 1:1 상담은 양식 여섯 칸을 먼저 확인한다 */
+  function goConsultOrder(item) {
     var miss = consultMissing();
     if (miss) { consultWarn(miss); return; }
-    var text = consultOrderText();
+    var text = consultOrderText(item);
     copyText(text, function (copied) {
       toast(copied === true
-        ? '✅ 신청 양식을 복사했어요 — 카톡에 붙여넣고 보내 주세요'
+        ? '✅ 신청서를 복사했어요 — 카톡에 붙여넣고 보내 주세요'
         : '카톡 채널로 이동해요 — 양식에 적은 내용을 붙여 보내 주세요');
     });
     vibrate(18);
@@ -3482,7 +3550,8 @@
   }
   function goKakaoOrder(item) {
     if (String(item) === 'care') item = 'care-' + (care && care.buy ? care.buy : 'set');
-    if (String(item) === 'consult') { goConsultOrder(); return; }
+    if (String(item) === 'consult') { goConsultOrder(item); return; }
+    if (String(item) === 'consult-sig') { goConsultOrder(item); return; }
     var text = codeOrderText(item);
     var hasPhone = !!codeOrderPhone();
     var isCare = kakaoCareItem(item);
@@ -3924,6 +3993,7 @@
   function itemLabel(item) {
     var it = String(item || '');
     if (it === 'consult') return '윤이세 1:1 원포인트 리딩';
+    if (it === 'consult-sig') return '윤이세 1:1 시그니처 리딩';
     if (TIER_NAME[it]) return '2027 ' + TIER_NAME[it];
     if (/^up-/.test(it) && TIER_NAME[it.slice(3)]) return '2027 ' + TIER_NAME[it.slice(3)] + ' 업그레이드';
     var m = /^care-(card|objet|bowl|set)$/.exec(it);
@@ -3979,14 +4049,15 @@
       '<b class="bamboo__text">' + esc(m.text) + '</b>';
   }
 
-  /* 신청 양식 마크업 — 결제 버튼 바로 위에 놓는다 */
-  function consultFormHTML() {
+  /* 신청 양식 마크업 — ② 단계, 결제 다음에 놓는다 */
+  function consultFormHTML(p) {
+    p = p || consultProduct(consultTierItem());
     var f = consultFormState();
     var calChip = function (v, label) {
       return '<button type="button" class="chip' + (f.cal === v ? ' is-on' : '') + '" data-cf-cal="' + v + '" aria-pressed="' + (f.cal === v ? 'true' : 'false') + '">' + label + '</button>';
     };
     return '<div class="cform" data-consult-form>' +
-      '<p class="cform__head">📝 신청 양식 <span>여섯 칸만 채우고 결제한 뒤, 맨 아래 노란 버튼을 누르면 끝나요</span></p>' +
+      '<p class="cform__head">📝 상담 신청서 <span>여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요</span></p>' +
       '<label class="cform__row"><span class="cform__lb">① 성함</span>' +
       '<input type="text" class="cform__input" data-cf="name" value="' + esc(f.name) + '" ' +
       'placeholder="예: 김나영" autocomplete="name"></label>' +
@@ -4003,30 +4074,61 @@
       '<label class="cform__row"><span class="cform__lb">⑤ 연락처 또는 입금자명 <i>결제 확인용</i></span>' +
       '<input type="text" class="cform__input" data-cf="who" value="' + esc(f.who) + '" ' +
       'placeholder="카드결제는 휴대폰 번호 · 계좌이체는 입금자명" autocomplete="off"></label>' +
-      '<label class="cform__row"><span class="cform__lb">⑥ 궁금한 점 <i>1가지면 충분해요</i></span>' +
+      '<label class="cform__row"><span class="cform__lb">' + p.qLb + ' <i>' + p.qHint + '</i></span>' +
       '<input type="text" class="cform__input" data-cf="q" value="' + esc(f.q) + '" ' +
-      'placeholder="예: 지금 이직을 해도 될까요?" autocomplete="off"></label>' +
+      'placeholder="' + esc(p.qPh) + '" autocomplete="off"></label>' +
       '<p class="cform__msg" data-cf-msg role="alert" hidden></p>' +
       '</div>';
   }
 
-  /* 4번 — 윤이세 1:1 원포인트 리딩 (49,000원 · 질문 딱 1가지)
-     ※ 종합 사주 컨설팅(100,000원 · 기질·대운 전체)과 섞이지 않게 씁니다.
-       이 팝업은 '지금 걸리는 질문 하나'만 보는 원포인트 상품입니다. */
+  /* 4번 — 윤이세 1:1 상담 (원포인트 49,000 · 시그니처 100,000)
+     2026-11-22 개편:
+       · 팝업 맨 위에서 두 상품 중 하나를 고른다 — 누르면 설명·금액·결제 링크가 그 자리에서 바뀐다
+       · ① 상품 고르고 결제(카드·계좌이체) → ② 신청서 적고 카톡 접수  (결제가 먼저)
+     ※ 개명·작명은 이 팝업이 아니라 카톡 채널에서 따로 안내한다. */
+  function consultStepHTML(no, title, sub, sep) {
+    return '<p class="shop__step' + (sep ? ' shop__step--sep' : '') + '">' +
+      '<i aria-hidden="true">' + no + '</i><b>' + title + '</b><span>' + sub + '</span></p>';
+  }
+  function consultPickHTML() {
+    return '<div class="tiersw tiersw--2" role="group" aria-label="1:1 상담 상품 — 하나를 고르고 결제하세요">' +
+      ['onepoint', 'signature'].map(function (k) {
+        var p = CONSULT_PRODUCTS[k], on = k === consultTier;
+        return '<button type="button" class="tiersw__b' + (on ? ' is-on' : '') + '"' +
+          ' data-consult-tier="' + k + '" aria-pressed="' + (on ? 'true' : 'false') + '"' +
+          ' aria-label="' + esc(p.name + ' ' + p.price + ' · ' + p.df + (on ? ' — 지금 고른 상품' : ' — 이 상품 고르기')) + '">' +
+          '<span class="tiersw__nm"><span class="tiersw__ic" aria-hidden="true">' + p.ic + '</span> ' + esc(p.name) + '</span>' +
+          '<span class="tiersw__pr">' + esc(p.price) + '</span>' +
+          '<span class="tiersw__df">' + esc(p.df) + '</span></button>';
+      }).join('') + '</div>';
+  }
   function consultShopHTML() {
-    return '<p class="modal__eyebrow">1:1 POINT READING · 윤이세</p>' +
-      '<h2 class="shop__title" id="shopTitle">🔎 윤이세 1:1 원포인트 리딩</h2>' +
-      '<p class="shop__sub">캘린더로도 계속 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>딱 1가지 핵심 질문 집중</b><span>이직·계약·관계·시기 중 지금 가장 급한 문제 하나만 깊게 봅니다</span></li>' +
-      '<li><b>지금 할 일 · 미룰 일 정리</b><span>바로 움직일 때인지, 한 템포 쉴 때인지 방향을 딱 갈라 드려요</span></li>' +
-      '<li><b>일정은 카카오톡 채널에서</b><span>결제 후 아래 신청 양식을 채워 보내 주시면 일정을 바로 잡아 드려요</span></li>' +
+    var p = consultProduct(consultTierItem());
+    return '<p class="modal__eyebrow">1:1 READING · 윤이세</p>' +
+      '<h2 class="shop__title" id="shopTitle">🔎 윤이세 1:1 상담</h2>' +
+      consultStepHTML('1', '상품 고르고 결제', '카드 · 계좌이체', false) +
+      consultPickHTML() +
+      '<p class="shop__sub">' + p.sub + '</p>' +
+      '<ul class="shop__list shop__list--tight">' +
+      p.list.map(function (row) { return '<li><b>' + row[0] + '</b><span>' + row[1] + '</span></li>'; }).join('') +
       '</ul>' +
-      priceHTML('윤이세 1:1 원포인트 리딩', CONSULT_PRICE) +
-      consultFormHTML() +
-      payActionsHTML('consult') +
-      kakaoOrderHTML('consult', '💬 결제 완료 · 카톡으로 질문 보내기') +
-      '<p class="shop__note">양식을 채우고 결제한 뒤 노란 버튼을 누르면 신청 내용이 복사되고 카톡 채널이 열려요. 채팅창에 붙여넣기만 하면 접수 끝.<br>인생 전체 방향을 보는 종합 사주 컨설팅(100,000원)은 채널에서 따로 안내해 드려요.</p>';
+      priceHTML(p.priceLabel, p.price) +
+      payActionsHTML(p.item) +
+      consultStepHTML('2', '신청서 적고 카톡 접수', '결제한 상품 그대로 접수', true) +
+      consultFormHTML(p) +
+      kakaoOrderHTML(p.item, '💬 신청서 완료 · 카톡으로 접수하기') +
+      '<p class="shop__note">결제를 마치고 신청서를 채워 노란 버튼을 누르면 신청 내용이 복사되고 카톡 채널이 열려요. 채팅창에 붙여넣기만 하면 접수 끝.<br>개명·작명(200,000원)은 카톡 채널에서 따로 안내해 드려요.</p>';
+  }
+  /* 상품을 바꿔도 신청서에 적던 값은 그대로 — 값은 이미 consultForm 메모리에 있다 */
+  function switchConsultTier(k) {
+    if (!shopBody || !CONSULT_PRODUCTS[k] || k === consultTier) return;
+    consultTier = k;
+    shopBody.innerHTML = consultShopHTML() + shopCodeLinkHTML('consult') + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.scrollTop = 0;
+    var nb = shopBody.querySelector('[data-consult-tier="' + k + '"]');
+    if (nb) { try { nb.focus({ preventScroll: true }); } catch (e) { nb.focus(); } }
+    vibrate(12);
+    sfxTap(1);
   }
 
   function careShopHTML() {
@@ -4160,9 +4262,9 @@
       kakaoOrderHTML('care', '💬 결제 완료 · 카톡으로 알려 주기') +
       '</div>' +
       '<div class="shop__consult">' +
-      '<b>🔎 윤이세 1:1 원포인트 리딩 ' + CONSULT_PRICE + '</b>' +
-      '<span>캘린더·개운템으로도 계속 걸리는 딱 1가지, 질문 하나만 놓고 짚어 드려요.</span>' +
-      '<button type="button" class="shop__consult-btn" data-shop="consult">원포인트 리딩 보기 →</button>' +
+      '<b>🔎 윤이세 1:1 상담</b>' +
+      '<span>원포인트 49,000원(고민 1가지) · 시그니처 100,000원(전체 흐름) — 캘린더로도 계속 걸리는 것을 사람이 짚어 드려요.</span>' +
+      '<button type="button" class="shop__consult-btn" data-shop="consult">1:1 상담 보기 →</button>' +
       '</div>' +
       '<p class="shop__note">3종은 각각 <b>처음 1회 무료</b>로 체험할 수 있어요 — 다 쓰면 소장하고 매일 꺼내 쓰세요.</p>';
   }
@@ -5739,13 +5841,21 @@
   }
   /* 3) 3/3 완료 — 도장 '쾅' 저음 타격 + C5-E5-G5-C6 상승 아르페지오 */
   /* 4) 대표 부적 '오늘 기운 받기' — 낮게 울리는 종 + 상승 차임 */
+  /* 대문 부적 · 확대 부적 톡 — 맑은 차임 대신 **낮고 묵직한 싱잉볼/범종 저음 공명** (2026-11-22)
+     110~170Hz 저역 사인파가 아주 천천히 잦아들고, 2·3배 부드러운 배음이 겹친다.
+     종을 친 순간은 낮은 대역 노이즈로만 '웅—' 하고 받쳐 준다(맑은 '톡' 없음). */
   function sfxBless() {
-    vibrate([18, 26, 42]);
+    vibrate([45, 40, 80]);            // 가볍지 않게 묵직한 두 번 + 긴 여운
     var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 392, to: 388, dur: 0.7, type: 'sine', gain: 0.11, attack: 0.012 });
-    tone(ctx, { from: 588, to: 588, dur: 0.55, type: 'sine', gain: 0.06, at: 0.02 });
-    tone(ctx, { from: 784, to: 1176, dur: 0.5, glide: 0.2, type: 'triangle', gain: 0.07, at: 0.12 });
-    wood(ctx, 0, 0.035);
+    /* 기본음 146.8Hz — 2.8초 동안 천천히 잦아드는 몸통 소리 */
+    tone(ctx, { from: 146.83, to: 145.9, dur: 2.8, type: 'sine', gain: 0.22, attack: 0.022 });
+    /* 110Hz 저역 받침 — 배 밑에서 올라오는 무게 */
+    tone(ctx, { from: 110, to: 109.2, dur: 3.2, type: 'sine', gain: 0.12, at: 0.012, attack: 0.05 });
+    /* 부드러운 배음 — 2배·3배를 약하게, 조금 늦게 */
+    tone(ctx, { from: 293.66, to: 293.0, dur: 2.2, type: 'sine', gain: 0.06, at: 0.018, attack: 0.03 });
+    tone(ctx, { from: 440.5, to: 439.6, dur: 1.5, type: 'sine', gain: 0.028, at: 0.035, attack: 0.04 });
+    /* 종을 친 순간의 낮은 '웅' — 260Hz→110Hz 저역 노이즈, 아주 짧게 */
+    noise(ctx, { dur: 0.26, filter: 'lowpass', f0: 260, f1: 110, q: 0.7, gain: 0.075, attack: 0.02 });
   }
   function sfxDone() {
     vibrate([80, 35, 100, 45, 130]);   // 3타 완료 — 쾅! 하고 길게
@@ -6355,6 +6465,8 @@
         if (gb) { e.preventDefault(); setConsultGender(gb.getAttribute('data-cf-gender')); return; }
         var cb = e.target.closest ? e.target.closest('[data-cf-cal]') : null;
         if (cb) { e.preventDefault(); setConsultCal(cb.getAttribute('data-cf-cal')); return; }
+        var ct = e.target.closest ? e.target.closest('[data-consult-tier]') : null;
+        if (ct) { e.preventDefault(); switchConsultTier(ct.getAttribute('data-consult-tier')); return; }
         var ko = e.target.closest ? e.target.closest('[data-kakao-order]') : null;
         if (ko) { e.preventDefault(); goKakaoOrder(ko.getAttribute('data-kakao-order')); return; }
         var pay = e.target.closest ? e.target.closest('[data-pay]') : null;
@@ -6396,7 +6508,7 @@
       /* 신청 양식 입력 — 팝업을 다시 그려도 값이 남게 메모리에 담고, 안내 문구를 지진다 */
       shopEl.addEventListener('input', function (e) {
         var ph = e.target.closest ? e.target.closest('[data-pay-phone]') : null;
-        if (ph) { payPhone = ph.value; return; }          // 결제용 번호 — 화면 메모리에만 둔다
+        if (ph) { payPhone = ph.value; mirrorPayPhone(); return; }   // 결제용 번호 — 화면 메모리에만 둔다
         var inp = e.target.closest ? e.target.closest('[data-cf]') : null;
         if (!inp) return;
         var k = inp.getAttribute('data-cf');
@@ -6616,6 +6728,12 @@
           var it = payBackItem || 'pass';
           payWaitClear();
           pb.hidden = true;
+          /* 1:1 상담 — 신청서를 적을 수 있게 결제한 그 상품으로 팝업을 다시 연다 */
+          if (/^consult/.test(String(it))) {
+            consultTier = String(it) === 'consult-sig' ? 'signature' : 'onepoint';
+            openShop('consult');
+            return;
+          }
           goKakaoOrder(it);
           return;
         }

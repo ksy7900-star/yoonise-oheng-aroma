@@ -781,7 +781,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   --tb-aura2: rgba(232, 168, 84, .15);
   --tb-gold: #EBC48C; --tb-cream: #F7F1E4; --tb-sub: rgba(245, 236, 220, .60);
   position: relative; overflow: hidden; isolation: isolate;
-  margin-top: 14px; padding: 20px 18px 20px;
+  margin-top: 14px; padding: 16px 16px 15px;
   text-align: center;
   background:
     radial-gradient(74% 46% at 50% 32%, var(--tb-aura), transparent 74%),
@@ -859,7 +859,7 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   0%, 100% { opacity: .65; transform: translate(-50%, -50%) scale(.96); }
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
 }
-.talis-banner__stage .talis-plaque { font-size: 19px; z-index: 2; }
+.talis-banner__stage .talis-plaque { font-size: 15px; z-index: 2; }
 .talis-banner__name {
   margin-top: 10px; font-family: var(--serif);
   font-size: 14px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3;
@@ -873,14 +873,15 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 }
 .talis-banner__more {
   display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 12px; padding: 6px 14px;
+  margin-top: 6px; padding: 4px 11px;
   border-radius: 999px; border: 1px solid rgba(226, 196, 140, .32);
   background: rgba(255, 246, 224, .07);
-  font-family: inherit; font-size: 10.5px; font-weight: 600; letter-spacing: -.01em;
+  font-family: inherit; font-size: 9.5px; font-weight: 600; letter-spacing: -.01em;
   color: var(--tb-gold);
-  opacity: 0; transition: opacity .6s ease, background .2s ease, border-color .2s ease;
+  opacity: 0; visibility: hidden;
+  transition: opacity .6s ease, visibility .6s ease, background .2s ease, border-color .2s ease;
 }
-.talis-banner__more.is-on { opacity: 1; }
+.talis-banner__more.is-on { opacity: 1; visibility: visible; }
 .talis-banner__more[hidden] { display: none; }
 .talis-banner__more span { font-size: 11px; opacity: .8; }
 .talis-banner__more:active { background: rgba(255, 246, 224, .15); }
@@ -1778,6 +1779,33 @@ body.is-modal-open { overflow: hidden; }
   .tiersw__b { padding: 8px 3px 9px; }
   .tiersw__nm { font-size: 10.5px; }
 }
+/* 1:1 상담 — 두 상품(원포인트·시그니처)만 놓는 두 칸 판 (2026-11-22)
+   390px에서 이름이 잘리지 않게 글자를 조금 키우고 줄바꿈을 통째로 막지 않는다. */
+.tiersw--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.tiersw--2 .tiersw__b { padding: 11px 6px 12px; border-radius: 15px; }
+.tiersw--2 .tiersw__nm { font-size: 12.5px; font-weight: 700; white-space: normal; word-break: keep-all; }
+.tiersw--2 .tiersw__pr { margin-top: 3px; padding: 2px 8px; font-size: 11.5px; }
+.tiersw--2 .tiersw__df { margin-top: 3px; font-size: 9.5px; }
+
+/* 1:1 상담 팝업의 단계 표시 — ① 상품 고르고 결제 → ② 신청서 적고 카톸 접수 */
+.shop__step {
+  display: flex; align-items: center; gap: 6px; margin-top: 16px;
+  font-size: 11px; line-height: 1.4; color: var(--ink-2);
+}
+.shop__step--sep {
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px dashed rgba(15, 23, 42, .18);
+}
+.shop__step i {
+  flex: none; display: grid; place-items: center;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #1E293B; color: #FDE68A;
+  font-style: normal; font-size: 9px; font-weight: 800;
+}
+.shop__step b { font-size: 12px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.shop__step span { font-size: 9.5px; font-weight: 400; color: var(--mute); letter-spacing: -.01em; }
+/* 1:1 상담 — 결제가 첫 화면 안에 들어오도록 상품 설명 목록만 담담하게 */
+
 /* 결제 팝업 상단 '먼저 3일 무료' 안내 */
 .shop__trial {
   margin-top: 12px; padding: 9px 12px;
@@ -1794,6 +1822,11 @@ body.is-modal-open { overflow: hidden; }
 }
 .shop__list b { display: block; font-size: 12.5px; color: var(--ink); letter-spacing: -0.02em; }
 .shop__list span { display: block; font-size: 10.5px; color: var(--mute); line-height: 1.65; margin-top: 3px; }
+/* 1:1 상담 — 결제가 첫 화면 안에 들어오도록 상품 설명 목록만 담담하게 */
+.shop__list.shop__list--tight { margin-top: 11px; gap: 6px; }
+.shop__list.shop__list--tight li { padding: 9px 12px; }
+.shop__list.shop__list--tight b { font-size: 12px; }
+.shop__list.shop__list--tight span { margin-top: 2px; font-size: 10px; line-height: 1.55; }
 .shop__talis {
   display: flex; gap: 12px; align-items: center;
   margin-top: 14px; padding: 12px;
@@ -3550,13 +3583,16 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
   .yearfold__sum { padding: 16px; }
   .yearfold__body { padding: 0 16px 16px; }
 
-  /* 2027 대표 부적 — 대문 히어로 (2026-11-22 개편: 좌우 배치 → 정가운데 세로) */
-  .talis-banner { padding: 20px 15px 19px; }
-  .talis-banner__stage .talis-plaque { font-size: 19px; }
+  /* 2027 대표 부적 — 대문 히어로 (2026-11-22 2차: 중간 크기 · 약 320px)
+     부적이 주인공이되 아래 달력이 첫 화면에 걸치도록 여백·크기를 줄였다. */
+  .talis-banner { padding: 10px 14px 9px; }
+  .talis-banner__stage .talis-plaque { font-size: 10.8px; }
   .talis-banner__eyebrow { font-size: 7.2px; letter-spacing: .22em; }
-  .talis-banner__title { font-size: 15px; margin-top: 6px; }
-  .talis-banner__name { font-size: 14px; }
-  .talis-banner__hint { font-size: 10.5px; }
+  .talis-banner__title { font-size: 13px; margin-top: 3px; }
+  .talis-banner__name { font-size: 12px; margin-top: 6px; }
+  .talis-banner__hint { font-size: 9.5px; margin-top: 1px; }
+  .talis-banner__reveal { font-size: 12.5px; margin-top: 4px; min-height: 2.55em; }
+  .talis-banner__more { margin-top: 4px; padding: 4px 11px; font-size: 9.5px; }
 
   /* 내 사주 요약 — 여백은 남기고 군더더기만 덜어 낸다 */
   .card--natal { padding: 18px 15px 14px; }
@@ -4532,12 +4568,15 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   0% { opacity: .85; transform: translate(-50%, 0) scale(.86); }
   100% { opacity: 0; transform: translate(-50%, 0) scale(2.05); }
 }
-/* 부적 아래에 우아하게 떠오르는 문구 */
+/* 부적 **위** 예약 자리에 우아하게 떠오르는 문구 (2026-11-22 2차)
+   톡 누르기 전에도 같은 높이를 비워 두어 배너가 들썩이지 않는다. */
 .talis-banner__reveal {
-  margin: 13px 0 0; text-align: center; text-wrap: balance;
-  font-family: var(--serif); font-size: 14.5px; line-height: 1.62; letter-spacing: -.01em;
+  flex: none; display: flex; align-items: center; justify-content: center;
+  width: 100%;
+  margin: 5px 0 0; min-height: 2.9em; text-align: center; text-wrap: balance;
+  font-family: var(--serif); font-size: 13px; line-height: 1.5; letter-spacing: -.01em;
   color: #FBF3E1; text-shadow: 0 1px 18px rgba(255, 214, 150, .28);
-  opacity: 0; transform: translateY(7px); filter: blur(3px);
+  opacity: 0; transform: translateY(-4px) scale(.985); filter: blur(3px);
   transition: opacity .95s ease, transform .95s cubic-bezier(.2, .8, .3, 1), filter .95s ease;
 }
 .talis-banner__reveal.is-on { opacity: 1; transform: none; filter: none; }
