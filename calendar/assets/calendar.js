@@ -5718,7 +5718,7 @@
                 return;
               }
             }
-            cardNote(pay.getAttribute('href'), { phone: false });
+            cardNote(pay.getAttribute('href'), { phone: !!phone });
             payLinkGuard(pay.getAttribute('href'));
             return;
           }
