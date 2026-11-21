@@ -612,6 +612,11 @@ body.locked{overflow:hidden}
     for (var i = 0; i < words.length; i++) out += ('00000000' + (words[i] >>> 0).toString(16)).slice(-8);
     return out;
   }
+  function bytesToHex(u8) {
+    var out = '';
+    for (var i = 0; i < u8.length; i++) out += ('0' + u8[i].toString(16)).slice(-2);
+    return out;
+  }
   function utf8Bytes(str) {
     if (window.TextEncoder) return new TextEncoder().encode(str);
     var out = [], i, c;
@@ -628,7 +633,7 @@ body.locked{overflow:hidden}
     var bytes = utf8Bytes(str);
     if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest) {
       return window.crypto.subtle.digest('SHA-256', bytes).then(function (buf) {
-        return toHex(new Uint8Array(buf));
+        return bytesToHex(new Uint8Array(buf));
       }, function () { return sha256HexSync(str); });
     }
     return Promise.resolve(sha256HexSync(str));
