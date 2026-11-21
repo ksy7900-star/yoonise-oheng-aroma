@@ -296,6 +296,19 @@ a { color: inherit; }
 }
 .pchip.is-on { background: var(--ink); color: #FFFDF7; border-color: var(--ink); }
 
+/* ── 사다리 하단 한 줄 안내 — 이미 1년 패스를 쓴 분의 보상 ── */
+.ladder-note {
+  margin-top: 14px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: var(--bg-2);
+  border: 1px dashed rgba(174, 138, 80, .30);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.ladder-note b { color: var(--gold-deep); font-weight: 700; }
+
 /* ── 초대 링크 ────────────────────────────────────── */
 .linkbox {
   margin-top: 14px;
