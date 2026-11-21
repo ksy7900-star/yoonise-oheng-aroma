@@ -702,5 +702,6 @@ python3 -m http.server 8000
 - 캐시 버전 `?v=20261121i`(CSS 1 + 스크립트 5).
 - **검증(390×844 · Android UA · 로컬 서버 + Playwright · 콘솔 오류 0 · pageerror 0)**
   - ① 완전 첫 방문(localStorage 비움): 페이지 로드 900ms 안에 `#guideModal` 열림, 그 뒤에 `#formCard` 그대로, 팝업 내용 스크롤 0(675/675) ② `바로 해보기` → `guide.v1='1'`, `#formCard` 상단이 뷰포트 맨 위(스크롤 358) ③ 사주 입력 → 달력 열림, 팝업 없음(520ms 뒤에도) ④ `? 사용법` → 다시 열림, 부제·체험 배지가 달력용으로 전환, 잘림 없음 ⑤ 새로고침 → 팝업 없이 달력 바로 ⑥ 오행 앱 사주 이어받기(`yoonise.oheng.last.v1`만 있는 첫 방문): 달력이 바로 열려도 팝업 1회, 닫으면 저장, 새로고침 뒤 중복 없음 ⑦ `Esc`·배경 닫기도 `guide.v1` 저장.
-- 스크린샷: `work/qa21i/live-01-first-load-guide.png` ~ `-07`
+- **라이브 검증** — `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?v=20261121i` 에서 같은 7묶음 전부 PASS(콘솔 오류 0 · pageerror 0).
+- 스크린샷: `work/qa21i/live-01-first-load-guide.png` ~ `-06`
 - 저장소에 임시 QA 페이지는 만들지 않았습니다(로컬 서버 + Playwright, QA 스크립트는 저장소 밖 `work/qa21i/qa.py`).
