@@ -726,7 +726,7 @@ python3 -m http.server 8000
 - 스크린샷: `work/qa21j/live-01-welcome.png` · `-02-after-welcome-form.png` · `-03-guide-after-saju.png` · `-04-calendar.png` · `-05-reopen-guide.png` · `-06-inherit-guide.png`
 - 저장소에 임시 QA 페이지는 만들지 않았습니다(로컬 서버 + Playwright, QA 스크립트는 저장소 밖 `work/qa21j/qa.py`).
 
-## 48. 2026-11-21 — 캘린더 카톡·SNS 링크 미리보기 정비 (제목·설명·og:image 800×400 카드) 
+## 48. 2026-11-21 — 캘린더 카톡·SNS 링크 미리보기 정비 (제목·설명·og:image 800×400 카드)
 
 김나영 님 지시: `/calendar/` 링크를 카톡에 붙였을 때 뜨는 **제목·설명·대표 이미지**를 정비. 최종 제목은 사용자가 직접 고른 `내 사주 2027년 길흉 달력 + 액운 태우기`이고, 설명에는 `3일 무료` 문구를 넣지 않았습니다(전체 오픈 상태와 모순되므로).
 
@@ -749,3 +749,18 @@ python3 -m http.server 8000
 - **가격 없는 OG 카드 대안(저장소 밖)** — `work/og-timing-2027-noprice.png`(같은 디자인 시스템, 800×400, 가격 3단 대신 `조심할 날은 피하고 / 막힌 운은 태워 비우기` 문구). 링크 미리보기에서 가격이 먼저 보이지 않게 하고 싶을 때 이 파일로 갈아끼우면 됩니다.
 - 미리보기 예상 모형(실제 카톡 캡처 아님): `work/kakao-og-preview-mock-2026-11-21.png`(현재 적용안) · `work/kakao-og-preview-mock-noprice-2026-11-21.png`(대안)
 - 남은 불일치: 페이지 본문 h1은 아직 `내 인생 타이밍 캘린더`입니다. 탭·공유 제목만 바꾼 상태이니, 히어로 제목까지 맞출지는 별도 판단이 필요합니다.
+
+## 49. 2026-11-21 — 카톡 미리보기 OG 카드를 '가격 없는 카드'로 교체
+
+- **배경** — §48에서 대안으로만 두었던 `work/og-timing-2027-noprice.png`(800×400, 226,780B)를 실제 링크 미리보기 카드로 채택. 카톡 미리보기에서 14,900/19,900/24,900 가격 3단이 먼저 보이던 것을 없애고, `조심할 날은 피하고, 치고 나갈 날은 밀고 / 막힌 운은 태워 비우는 액운 태우기까지` 문구가 보이게 했습니다(가격은 페이지 안에서 결제 팝업으로 확인).
+- **변경**
+  - `calendar/assets/og-timing-2027-noprice.png` 추가(원본과 sha256 동일).
+  - `calendar/index.html` — `og:image`·`twitter:image` → `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/assets/og-timing-2027-noprice.png`. `og:image:width` 800 · `og:image:height` 400 · `og:image:alt` · `og:url` · `og:site_name`은 그대로.
+  - 기존 `calendar/assets/og-timing-2027.png`(가격 카드)는 삭제하지 않고 보존 — 되돌릴 때 이 태그 두 줄만 바꾸면 됩니다.
+- **라이브 검증(2026-11-21 11:23~11:24 KST)**
+  - `.../calendar/assets/og-timing-2027-noprice.png` → HTTP 200, `content-type: image/png`, 226,780 bytes, 실제 디코딩 800×400, 원본과 sha256 일치(Pages 반영 약 40초).
+  - 라이브 `.../calendar/` HTML과 `KakaoTalk/1.0` UA 요청 모두 `og:image`·`twitter:image`가 새 파일로 응답.
+- **카톡 캐시 초기화(2026-11-21 11:24 KST)** — [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing) 조회 시 캐시에 **옛 값**(`og:image` = `og-timing-2027.png`, 미리보기 카드에 가격 3단 노출). `캐시 초기화` → `1개의 스크랩 정보가 삭제되었습니다.` → 같은 URL 재조회에서 `og:image` = `og-timing-2027-noprice.png`, 미리보기 카드가 **가격 없는 새 카드**로 표시됨을 확인.
+  - 캡처: `work/kakao-debugger-before-reset-2026-11-21.png` · `work/kakao-debugger-after-reset-card-2026-11-21.png` · `work/kakao-debugger-after-reset-ogtags-2026-11-21.png`
+- **주의** — 이미 보낸 말풍선은 보낸 시점 모습 그대로 남고, 새로 붙이는 링크부터 새 카드가 뜹니다. `?v=`가 붙은 URL은 별개 URL로 스크랩되므로 별도 초기화 없이 새 OG를 읽습니다.
+- 남은 불일치(§48과 동일): 페이지 본문 h1은 아직 `내 인생 타이밍 캘린더`입니다.
