@@ -1821,12 +1821,16 @@
   /* ── 부적 에너지 — 톡 누르면 오라가 크게 퍼지고 문구가 뜬다 (2026-11-22) ── */
   var TALIS_PHRASE = '지금 이 순간, 흩어졌던 기운이 제자리를 찾습니다';
 
-  function talisCharge(plaque) {
+  /** 오라 번쩍 클래스만 (소리는 따로) */
+  function talisBurst(plaque) {
     if (!plaque) return;
     plaque.classList.remove('is-charged');
     void plaque.offsetWidth;
     plaque.classList.add('is-charged');
     setTimeout(function () { plaque.classList.remove('is-charged'); }, 1250);
+  }
+  function talisCharge(plaque) {
+    talisBurst(plaque);
     sfxBless();                       /* 낮게 울리는 종 + 상승 차임 + 진동 */
   }
 
@@ -1898,8 +1902,8 @@
     void sc.offsetWidth;
     sc.classList.add('is-blessed');
     var plaque = sc.querySelector('.talis-plaque');
-    if (plaque && !(e && e.closest && e.closest('.talis-plaque'))) talisCharge(plaque);
-    else sfxBless();
+    talisBurst(plaque);              /* 부적을 눌러도, 아래 버튼을 눌러도 오라는 한 번 크게 */
+    sfxBless();
     if (note) {                       // 문구가 뜨면 예전 안내 한 줄은 비켜 준다 (겹쳐 보이지 않게)
       note.classList.remove('is-on');
       note.textContent = '';
