@@ -343,7 +343,7 @@ body.locked{overflow:hidden}
       <ul class="mem" id="mList" hidden></ul>
     </section>
 
-    <p class="note">회원 DB(profiles)에서 바로 읽어 온 값이에요. 최신 가입 순 · 이 화면은 나영 님만 볼 수 있고, 손님에게는 보이지 않습니다.</p>
+    <p class="note">회원 DB(profiles)에서 바로 읽어 온 값이에요. 최신 가입 순 · 이 화면은 나영 님만 볼 수 있고, 손님에게는 보이지 않습니다.<span id="mStamp"></span></p>
   </div><!-- /tabMembers -->
 
   <p class="foot">윤이세사주 · 나만 보는 발급기<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
@@ -775,6 +775,251 @@ body.locked{overflow:hidden}
   window.YoonKey = { sha256Hex: sha256Hex, sha256HexSync: sha256HexSync, pinHash: PIN_HASH };
   /* '가입자 현황' 탭이 서버에 보낼 PIN — 이 탭 세션에만 있는 값 */
   window.YoonKeyPin = { get: pinOf, set: rememberPin, clear: forgetPin };
+})();
+</script>
+
+<script>
+/* ── 상단 탭 · 가입자 현황 (2026-11-22) ──────────────────────────────────
+   · '🔑 코드 발급'은 이 브라우저 안에서만 계산하고, '👥 가입자 현황'만 서버에서 읽는다.
+   · 서버에서 부르는 것은 함수 하나 — public.admin_dashboard(p_pin).
+     publishable(anon) 키로 부르고, PIN 은 잠금 화면에서 넣은 4자리를 이 탭 세션에만 기억해 둔
+     window.YoonKeyPin 값을 그대로 보낸다(평문은 저장하지 않고, 잠그면 바로 지운다).
+   · 함수가 아직 없으면(PGRST202) 화면은 '아직 DB 연결 전'이라고만 알려 주고,
+     코드 발급기는 서버와 상관없이 그대로 쓴다. */
+(function () {
+  'use strict';
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 공개 전제 키
+  var $ = function (s) { return document.querySelector(s); };
+  var TIER = {
+    pass:     { name: '1년 패스',    cls: 'badge--pass' },
+    allinone: { name: '올인원',      cls: 'badge--allinone' },
+    diary:    { name: '성찰 에디션', cls: 'badge--diary' }
+  };
+  var FREE = { name: '무료', cls: 'badge--free' };
+  var MSG_NOT_YET = '아직 DB 연결 전이에요 — 마이그레이션 실행 후 바로 표시됩니다';
+  var busy = false, hasData = false;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function num(v) {
+    if (v === null || v === undefined || v === '') return '–';
+    var n = Number(v);
+    return isNaN(n) ? '–' : n.toLocaleString('ko-KR');
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  /** 서버가 준 시각(UTC ISO) → 한국 날짜 'MM.DD' */
+  function kstMD(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    var p = new Date(d.getTime() + 9 * 3600 * 1000);
+    return pad2(p.getUTCMonth() + 1) + '.' + pad2(p.getUTCDate());
+  }
+  /** 지금(또는 서버가 준 시각) → 한국 시각 'HH:MM' */
+  function kstHM(iso) {
+    var d = iso ? new Date(iso) : new Date();
+    if (isNaN(d.getTime())) d = new Date();
+    var p = new Date(d.getTime() + 9 * 3600 * 1000);
+    return pad2(p.getUTCHours()) + ':' + pad2(p.getUTCMinutes());
+  }
+  function setState(html, sub) {
+    var st = $('#mState');
+    st.innerHTML = html + (sub ? '<br><span class="state__sub">' + sub + '</span>' : '');
+    st.hidden = false;
+  }
+  function resetNumbers() {
+    $('#mTotal').textContent = '–';
+    $('#mToday').textContent = '–';
+    $('#mRefs').textContent = '–';
+    $('#mTiers').hidden = true;
+    $('#mTiers').textContent = '';
+    $('#mCount').textContent = '';
+    $('#mList').hidden = true;
+    $('#mList').innerHTML = '';
+    $('#mStamp').textContent = '';
+  }
+
+  /* ── 탭 전환 ───────────────────────────────────── */
+  function showTab(which) {
+    var members = which === 'members';
+    var bi = $('#tabBtnIssue'), bm = $('#tabBtnMembers');
+    $('#tabIssue').hidden = members;
+    $('#tabMembers').hidden = !members;
+    bi.classList.toggle('is-on', !members);
+    bm.classList.toggle('is-on', members);
+    bi.setAttribute('aria-selected', members ? 'false' : 'true');
+    bm.setAttribute('aria-selected', members ? 'true' : 'false');
+    if (members) load();
+  }
+
+  /* ── 서버 호출 — 함수 하나만 ─────────────────────── */
+  function rpc(pin) {
+    var opt = {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify({ p_pin: pin })
+    };
+    var ctrl = null, timer = null;
+    if (window.AbortController) {
+      ctrl = new AbortController();
+      opt.signal = ctrl.signal;
+      timer = setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 12000);
+    }
+    var done = function () { if (timer) clearTimeout(timer); };
+    return fetch(SB_URL + '/rest/v1/rpc/admin_dashboard', opt).then(function (res) {
+      return res.text().then(function (text) {
+        done();
+        var body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) {}
+        if (res.ok) {
+          if (!body || body.ok === false) { var e0 = new Error('bad shape'); e0.kind = 'shape'; throw e0; }
+          return body;
+        }
+        var code = (body && body.code) || '';
+        var msg = (body && (body.message || body.hint)) || '';
+        var e = new Error(msg || ('HTTP ' + res.status));
+        if (code === 'PGRST202' || (res.status === 404 && /admin_dashboard/.test(msg))) {
+          e.kind = 'notyet';
+        } else if (code === '28000' || /pin/i.test(msg)) {
+          e.kind = 'pin';
+        } else {
+          e.kind = 'other';
+          e.code = code || ('HTTP ' + res.status);
+        }
+        throw e;
+      });
+    }, function () {
+      done();
+      var e = new Error('network');
+      e.kind = 'net';
+      throw e;
+    });
+  }
+
+  function showError(err) {
+    var k = err && err.kind;
+    if (k === 'notyet') {
+      setState(MSG_NOT_YET,
+        'work/supabase-migration-all-pending.sql 을 Supabase SQL Editor 에서 한 번 실행하면 여기에 바로 나타나요.');
+    } else if (k === 'pin') {
+      setState('비밀번호가 서버와 맞지 않아요', '🔒 잠그기를 누른 뒤 4자리를 다시 넣어 주세요.');
+    } else if (k === 'net') {
+      setState('서버에 닿지 않아요', '연결을 확인하고 새로고침을 눌러 주세요.');
+    } else {
+      setState('불러오지 못했어요', esc((err && err.code) || '') +
+        (err && err.message ? ' · ' + esc(err.message) : ''));
+    }
+  }
+
+  /* ── 불러오기 ──────────────────────────────────── */
+  function load() {
+    if (busy) return;
+    var pin = '';
+    try { pin = window.YoonKeyPin ? (window.YoonKeyPin.get() || '') : ''; } catch (e) { pin = ''; }
+    if (!pin) {
+      hasData = false;
+      resetNumbers();
+      setState('비밀번호가 아직 없어요',
+        '🔒 잠그기를 누른 뒤 4자리를 다시 넣으면 여기서 가입자를 볼 수 있어요.');
+      return;
+    }
+    busy = true;
+    var rl = $('#mReload');
+    rl.disabled = true;
+    rl.textContent = '불러오는 중…';
+    if (!hasData) { resetNumbers(); setState('불러오는 중…'); }
+    rpc(pin).then(function (d) {
+      busy = false;
+      rl.disabled = false;
+      rl.textContent = '새로고침';
+      render(d);
+    }, function (err) {
+      busy = false;
+      rl.disabled = false;
+      rl.textContent = '새로고침';
+      hasData = false;
+      resetNumbers();
+      showError(err);
+    });
+  }
+
+  /* ── 그리기 ────────────────────────────────────── */
+  function render(d) {
+    var s = (d && d.summary) || {};
+    var list = (d && d.members) || [];
+    $('#mTotal').textContent = num(s.total);
+    $('#mToday').textContent = num(s.today);
+    $('#mRefs').textContent = num(s.referrals);
+
+    var tiers = s.by_tier || {};
+    var parts = [];
+    ['pass', 'allinone', 'diary'].forEach(function (k) {
+      if (Number(tiers[k]) > 0) parts.push(TIER[k].name + ' ' + num(Number(tiers[k])));
+    });
+    if (Number(tiers.free) > 0) parts.push('무료 ' + num(Number(tiers.free)));
+    var tl = $('#mTiers');
+    tl.textContent = parts.join(' · ');
+    tl.hidden = !parts.length;
+
+    $('#mCount').textContent = list.length ? ' (' + list.length + '명)' : '';
+    var ul = $('#mList');
+    hasData = true;
+    stamp(d);
+    if (!list.length) {
+      ul.innerHTML = '';
+      ul.hidden = true;
+      setState('아직 가입자가 없어요', '손님이 카카오로 로그인해 회원이 되면 여기에 한 줄씩 쌓여요.');
+      return;
+    }
+    ul.innerHTML = list.map(function (m) {
+      var t = TIER[m && m.paid_tier] || FREE;
+      var refs = Number(m && m.referral_count) || 0;
+      var md = kstMD(m && m.created_at);
+      return '<li>' +
+        '<div class="mem__main">' +
+          '<span class="mem__name">' + esc((m && m.nickname) || '이름 없음') + '</span>' +
+          '<span class="mem__email">' + esc((m && m.email) || '이메일 없음') + '</span>' +
+        '</div>' +
+        '<div class="mem__side">' +
+          '<span class="badge ' + t.cls + '">' + t.name + '</span>' +
+          '<span class="mem__meta">' +
+            (refs ? '추천 ' + refs + '명' + (md ? ' · ' : '') : '') + md +
+          '</span>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+    ul.hidden = false;
+    $('#mState').hidden = true;
+  }
+
+  function stamp(d) {
+    var at = (d && d.generated_at) || '';
+    $('#mStamp').textContent = ' · ' + kstHM(at) + ' 기준';
+  }
+
+  /* ── 붙이기 ────────────────────────────────────── */
+  $('#tabBtnIssue').addEventListener('click', function () { showTab('issue'); });
+  $('#tabBtnMembers').addEventListener('click', function () { showTab('members'); });
+  $('#mReload').addEventListener('click', load);
+  $('.tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var members = !$('#tabMembers').hidden;
+    var next = members ? 'issue' : 'members';
+    e.preventDefault();
+    showTab(next);
+    $(next === 'members' ? '#tabBtnMembers' : '#tabBtnIssue').focus();
+  });
+
+  /* 콘솔 확인용 */
+  window.YoonAdmin = { show: showTab, load: load };
 })();
 </script>
 
