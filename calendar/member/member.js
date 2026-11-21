@@ -1386,7 +1386,8 @@
     });
 
     var ct = $('#capText');
-    if (ct) ct.innerHTML = '<b>@' + esc(INSTA) + '</b>' + esc(HASHTAG_LIST.join(' '));
+    if (ct) ct.innerHTML = '<b>@' + esc(INSTA) + '</b>' +
+      HASHTAG_LIST.map(function (t) { return '<i>' + esc(t) + '</i>'; }).join('');
 
     renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
     initAuth();

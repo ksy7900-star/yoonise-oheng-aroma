@@ -927,6 +927,7 @@ a { color: inherit; }
   word-break: keep-all; overflow-wrap: break-word;
 }
 .capbox__text b { display: block; font-size: 13px; color: var(--ink); }
+.capbox__text i { font-style: normal; display: inline-block; white-space: nowrap; margin: 2px 4px 0 0; }
 .capbox .btn-row { margin-top: 10px; }
 .steps--easy { gap: 12px; }
 .steps--easy span { font-size: 14px; line-height: 1.5; color: var(--ink-2); }
