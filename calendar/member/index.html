@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>친구와 나, 2027년 케미 · 내 초대 사다리 | 윤이세사주</title>
+<meta name="description" content="내 사주와 친구 사주를 겹쳐 2027년 같이 치고 나갈 달과 같이 조심할 달을 나란히 봐요. 친구가 내 링크로 들어오면 내 달력이 한 칸씩 더 열립니다.">
+<meta name="theme-color" content="#F6F2EA">
+<meta name="robots" content="noindex, nofollow">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="member.css?v=20261121a">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__inner">
+    <p class="hero__eyebrow">YOONISE · MEMBER</p>
+    <h1 class="hero__title">친구와 나,<br><em>2027년</em></h1>
+    <p class="hero__sub">둘의 2027년을 겹쳐 놓고 봐요.<br>친구가 내 링크로 들어올 때마다 내 달력이 한 칸씩 더 열립니다.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 초대 링크로 들어온 사람 -->
+  <div class="banner" id="refBanner" hidden>
+    <b id="refBannerTitle">초대 링크로 들어오셨어요</b>
+    <span>친구 초대 혜택 · <b>5일 체험 + 액운 태우기 1회</b></span>
+  </div>
+
+  <!-- ───────── STEP 1 · 로그인 ───────── -->
+  <section class="card" id="authCard">
+    <p class="card__eyebrow">STEP 1 · 내 계정</p>
+    <h2 class="card__title" id="authTitle">카카오로 3초면 끝나요</h2>
+    <p class="card__sub" id="authSub">닉네임과 이메일만 받아요. 사주는 여전히 이 기기 안에서만 계산합니다.</p>
+
+    <div id="authOut">
+      <button type="button" class="btn btn--kakao" id="loginBtn" style="margin-top:16px">
+        <span class="btn__ic" aria-hidden="true">💬</span>
+        <span>카카오로 시작하기</span>
+      </button>
+      <p class="fine" id="loginHint">로그인하면 내 초대 코드가 만들어지고, 친구가 그 코드로 들어올 때마다 사다리가 한 칸씩 올라가요.</p>
+    </div>
+
+    <div id="authIn" hidden>
+      <div class="who">
+        <span class="who__av" id="whoAv" aria-hidden="true">윤</span>
+        <span class="who__b">
+          <b class="who__name" id="whoName">이름</b>
+          <span class="who__mail" id="whoMail">메일</span>
+        </span>
+        <button type="button" class="who__out" id="logoutBtn">로그아웃</button>
+      </div>
+      <p class="fine" id="dbNote" hidden></p>
+    </div>
+  </section>
+
+  <!-- ───────── STEP 2 · 사다리 ───────── -->
+  <section class="card" id="ladderCard">
+    <p class="card__eyebrow">STEP 2 · 내 사다리</p>
+    <h2 class="card__title" id="ladderTitle">친구가 들어오면, 한 칸씩</h2>
+
+    <div class="count">
+      <span class="count__n" id="cntNum">0</span>
+      <span class="count__u">명</span>
+      <span class="count__next" id="cntNext">첫 칸까지 1명</span>
+    </div>
+
+    <div class="rail" aria-hidden="true">
+      <div class="rail__track"><span class="rail__fill" id="railFill" style="width:0%"></span></div>
+      <div class="rail__marks" id="railMarks"></div>
+    </div>
+
+    <ul class="rungs" id="rungs"></ul>
+
+    <div class="preview" id="previewRow" hidden>
+      <p class="preview__lb">미리보기 — 실제 숫자가 아니에요. 칸이 차는 모양만 봐 주세요.</p>
+      <div class="preview__chips" id="previewChips"></div>
+    </div>
+
+    <div class="brandmark brandmark--card">
+      <span class="brandmark__ic" aria-hidden="true">🌙</span>
+      <span class="brandmark__t">2027 타이밍 캘린더</span>
+      <span class="brandmark__sep" aria-hidden="true">·</span>
+      <span class="brandmark__b">윤이세사주</span>
+      <span class="brandmark__h">(@life.saju_yoonise)</span>
+    </div>
+  </section>
+
+  <!-- ───────── STEP 3 · 초대 링크 ───────── -->
+  <section class="card" id="inviteCard">
+    <p class="card__eyebrow">STEP 3 · 초대 링크</p>
+    <h2 class="card__title">한 번만 복사해서 보내면 돼요</h2>
+    <p class="card__sub">친구가 내 링크로 들어와 로그인하면, 두 사람 모두에게 혜택이 붙어요.</p>
+
+    <div class="code" id="codeRow">
+      <span>내 초대 코드</span>
+      <b id="myCode">····</b>
+    </div>
+    <p class="linkbox" id="myLink">https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/member/?ref=내코드</p>
+
+    <div class="btn-row">
+      <button type="button" class="btn btn--gold btn--wide" id="copyLinkBtn">링크 복사</button>
+      <button type="button" class="btn btn--ghost" id="copyTextBtn">공유 문구</button>
+    </div>
+
+    <div class="gift">
+      <span class="gift__ic" aria-hidden="true">🎁</span>
+      <span class="gift__b">초대받은 친구는 <b>5일 체험 + 액운 태우기 1회</b>를 받아요. 그냥 들어온 사람은 3일이에요.</span>
+    </div>
+  </section>
+
+  <!-- ───────── 케미 입력 ───────── -->
+  <section class="card" id="chemiCard">
+    <p class="card__eyebrow">2027 · 케미 비교</p>
+    <h2 class="card__title">둘이 같이 가는 달은 언제일까요</h2>
+    <p class="card__sub">두 사람 사주를 각자 세워서, 2027년 한 해를 겹쳐 봅니다. 계산은 이 기기 안에서만 해요.</p>
+
+    <div class="person person--me" id="personMe">
+      <div class="person__hd">
+        <span class="person__tag">나</span>
+        <span class="person__nm">내 사주</span>
+      </div>
+      <div class="field">
+        <label class="label" for="meName">이름 <span class="opt">선택</span></label>
+        <input class="input" id="meName" type="text" maxlength="10" placeholder="결과에 표시될 이름" autocomplete="off">
+      </div>
+      <div class="field">
+        <span class="label">성별 <span style="color:#BF6A5B">*</span></span>
+        <div class="chips" id="meGender" role="group" aria-label="내 성별 (필수)">
+          <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
+          <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="meDate">생년월일</label>
+        <input class="input" id="meDate" type="date" min="1900-01-01" max="2026-11-30">
+      </div>
+      <div class="field">
+        <label class="label" for="meTime">태어난 시간 <span class="opt">모르면 비워 두세요</span></label>
+        <input class="input" id="meTime" type="time" step="1800">
+      </div>
+    </div>
+
+    <div class="person person--you" id="personYou">
+      <div class="person__hd">
+        <span class="person__tag">너</span>
+        <span class="person__nm" id="youLabel">상대방 사주</span>
+      </div>
+      <div class="field">
+        <label class="label" for="youName">이름 <span class="opt">선택</span></label>
+        <input class="input" id="youName" type="text" maxlength="10" placeholder="친구·연인 이름" autocomplete="off">
+      </div>
+      <div class="field">
+        <span class="label">성별 <span style="color:#BF6A5B">*</span></span>
+        <div class="chips" id="youGender" role="group" aria-label="상대방 성별 (필수)">
+          <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
+          <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="youDate">생년월일</label>
+        <input class="input" id="youDate" type="date" min="1900-01-01" max="2026-11-30">
+      </div>
+      <div class="field">
+        <label class="label" for="youTime">태어난 시간 <span class="opt">모르면 비워 두세요</span></label>
+        <input class="input" id="youTime" type="time" step="1800">
+      </div>
+    </div>
+
+    <p class="formmsg" id="chemiMsg" role="alert" hidden></p>
+    <div class="loading" id="chemiLoading" hidden><span class="spinner" aria-hidden="true"></span><span>두 사주를 세우고 2027년을 겹치는 중…</span></div>
+    <button type="button" class="btn btn--kakao" id="chemiBtn" style="margin-top:18px">2027년 케미 보기</button>
+  </section>
+
+  <!-- ───────── 케미 결과 ───────── -->
+  <section class="card" id="chemiResult" hidden aria-live="polite"></section>
+
+  <!-- ───────── 인스타 스토리 인증 ───────── -->
+  <section class="card" id="storyGiftCard">
+    <p class="card__eyebrow">한 번 더 · 스토리 이벤트</p>
+    <h2 class="card__title">스토리에 올리면 한 번 더</h2>
+    <p class="card__sub">결과 카드 한 장을 스토리에 올리고, 아래 조건만 맞추면 선물을 한 번 더 드려요. <b>1인 1회</b>예요.</p>
+
+    <p class="sub-h">올리는 방법</p>
+    <ol class="steps">
+      <li><b>1</b><span>케미 결과의 <strong>스토리 카드</strong> 한 장을 캡처해요. (달력·액운 태우기 화면도 돼요)</span></li>
+      <li><b>2</b><span>인스타 스토리에 올리고 <strong>@life.saju_yoonise</strong>를 태그해요.</span></li>
+      <li><b>3</b><span>올린 스토리 화면을 캡처해서 <strong>24시간 안에</strong> 카톡 채널 <strong>윤이세사주</strong>로 보내요.</span></li>
+    </ol>
+
+    <p class="sub-h">필수 조건 3가지</p>
+    <ul class="checks">
+      <li><i aria-hidden="true">✓</i><span><b>@life.saju_yoonise</b> 계정 태그</span></li>
+      <li><i aria-hidden="true">✓</i><span>해시태그 <b>#윤이세사주 #2027타이밍캘린더 #사주달력</b> — 빠지면 확인이 안 돼요</span></li>
+      <li><i aria-hidden="true">✓</i><span><b>전체 공개</b> 계정만 참여할 수 있어요 (비공개 계정은 확인 불가)</span></li>
+    </ul>
+    <button type="button" class="btn btn--ghost" id="copyTagsBtn" style="margin-top:10px">필수 해시태그 복사</button>
+
+    <div class="gift">
+      <span class="gift__ic" aria-hidden="true">🔥</span>
+      <span class="gift__b">확인되면 <b>액운 태우기 1회 추가</b> 또는 <b>모자이크 1달 오픈</b> 중 하나를 골라 드려요. <b>1인 1회 한정</b>입니다.</span>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn btn--gold btn--wide" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">카톡 채널로 보내기</a>
+      <a class="btn btn--ghost" href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타 열기</a>
+    </div>
+
+    <p class="fine">중복 참여는 계정 기준으로 확인해요. 같은 캡처를 두 번 쓰거나, 이미 받은 계정으로 다시 보내면 지급되지 않아요. 스토리에는 결과 화면만 올리셔도 되고, 생년월일·이름은 가리셔도 인증됩니다.</p>
+
+    <div class="brandmark brandmark--card">
+      <span class="brandmark__ic" aria-hidden="true">🌙</span>
+      <span class="brandmark__t">2027 타이밍 캘린더</span>
+      <span class="brandmark__sep" aria-hidden="true">·</span>
+      <span class="brandmark__b">윤이세사주</span>
+      <span class="brandmark__h">(@life.saju_yoonise)</span>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  윤이세사주 · 만세력은 절기 시각까지 반영합니다. 케미는 명리 관계(오행·일지)로만 계산하고, 사람을 평가하지 않아요.<br>
+  <a href="../">2027 타이밍 캘린더로 가기</a>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- 계산 엔진(달력과 같은 파일) -->
+<script src="../vendor/lunar.js?v=20261121k"></script>
+<script src="../assets/manse.js?v=20261121k"></script>
+<script src="../assets/timing.js?v=20261121k"></script>
+<!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+<script src="member.js?v=20261121a"></script>
+</body>
+</html>
