@@ -87,6 +87,7 @@
     refPending: '',
     refFrom: '',
     me: { gender: '' }, you: { gender: '' },
+    rel: 'friend',          // 'friend' 우정 · 'love' 사랑 (관계 칩)
     charts: null,          // { me:{...}, you:{...}, pair:{...} }
     busy: false
   };
@@ -562,6 +563,36 @@
     }
   }
 
+  /* ── 케미: 관계 칩 (👯 우정 · 💘 사랑) ─────────────
+     같은 사주라도 결과 카피와 부적이 완전히 달라진다. */
+  function renderRelChips() {
+    var box = $('#relChips');
+    if (!box) return;
+    $$('.relchip', box).forEach(function (b) {
+      var on = b.getAttribute('data-rel') === relNow();
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var lb = $('#youLabel');
+    if (lb) {
+      var peer = state.refFrom || ($('#youName') ? $('#youName').value : '');
+      lb.textContent = peer ? peer + ' 님 사주'
+        : (relNow() === 'love' ? '그 사람 사주' : '친구 · 동료 사주');
+    }
+  }
+  function bindRelChips() {
+    var box = $('#relChips');
+    if (!box || box.getAttribute('data-bound')) return;
+    box.setAttribute('data-bound', '1');
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.relchip') : null;
+      if (!b) return;
+      state.rel = b.getAttribute('data-rel') === 'love' ? 'love' : 'friend';
+      renderRelChips();
+      hideResult();
+    });
+  }
+
   /* ── 케미: 입력 ───────────────────────────────────
      라이브 /calendar/ 와 같은 방식 — 양력·음력·윤달 + 년/월/일 + 12지시·시분 + '몰라요'.
      기존 <input type="date"> 는 안드로이드 네이버 앱에서 1979년까지 넘기기 어렵고,
@@ -832,217 +863,224 @@
     return set;
   }
 
-  function lineOfMonth(m, want) {
-    if (want === 'neutral') return { kind: 'plain', title: '이 달은 무난해요', why: '한쪽만 조심하면 되는 달이에요' };
-    if (want === 'good' && m.good) return { kind: 'good', title: m.good.title, why: m.good.why };
-    if (want === 'warn' && m.warn) return { kind: 'warn', title: m.warn.title, why: m.warn.why };
-    if (m.good) return { kind: 'good', title: m.good.title, why: m.good.why };
-    return { kind: 'warn', title: m.warn ? m.warn.title : '잔잔한 달', why: m.warn ? m.warn.why : '급한 결정 없이 흐름을 보기 좋아요' };
+  /* ── 케미: 관계 · 카피 (2026-11-21 전면 개편) ──────────────
+     김나영 님 지시: "케미는 27년 궁합의 다른 말", "육친·겹치는 날 말고
+     위트 + 서로 보완할 점 + 챙길 점". 그래서 결과는 네 덩어리만 남긴다.
+       ① 2027 한 줄 훅        ② 서로 보완할 점 (2줄)
+       ③ 꼭 챙겨줄 점 (2줄)   ④ 딱 맞는 달 · 조심할 달
+     오행 막대는 작은 요약 바로만 남기고, 명리 용어·육친·날짜 목록은 화면에서 뺀다. */
+  var RELS = {
+    friend: { key: 'friend', emoji: '👯', name: '우정 · 동료', word: '우정', card: '우정 부적', hanja: '友', peer: '친구' },
+    love:   { key: 'love',   emoji: '💘', name: '사랑 · 썸',   word: '사랑', card: '사랑 부적', hanja: '愛', peer: '그 사람' }
+  };
+  function relNow() { return RELS[state.rel] ? state.rel : 'friend'; }
+  /* 이름 뒤 조사까지 붙여 {aS}·{aO}·{aT} 로 쓴다 — '이지은가' 같은 어색한 말 방지 */
+  function namesMap(a, b) {
+    return {
+      a: a, b: b,
+      aS: josaFull(a, 'subj'), aO: josaFull(a, 'obj'), aT: josaFull(a, 'top'),
+      bS: josaFull(b, 'subj'), bO: josaFull(b, 'obj'), bT: josaFull(b, 'top')
+    };
+  }
+  function fill(t, m) {
+    return String(t == null ? '' : t).replace(/\{(\w+)\}/g, function (_, k) {
+      return (m && m[k] != null) ? esc(m[k]) : '';
+    });
   }
 
-  function elRelationText(aEl, bEl, aName, bName) {
-    if (aEl === bEl) return { key: 'same', text: '두 사람 다 ' + aEl + ' 기운 — 말이 빨리 통하는 대신, 같이 세지면 둘 다 과열돼요. 한 사람이 한 박자 쉬어 주면 둘 다 오래 갑니다.' };
-    if (EL_MOTHER[aEl] === bEl) return { key: 'youFeedMe', text: bName + '의 ' + bEl + ' 기운이 ' + aName + '에게 힘을 보태요(생) — 함께 움직일수록 균형과 시너지가 커지는 사이예요.' };
-    if (EL_MOTHER[bEl] === aEl) return { key: 'iFeedYou', text: aName + '의 ' + aEl + ' 기운이 ' + bName + '에게 힘을 보태요(생) — 서로의 빈 곳을 채워 주며 같이 커지는 사이예요.' };
-    if (EL_OVER[aEl] === bEl) return { key: 'iBeatYou', text: aName + '의 ' + aEl + josa(aEl, 'subj') + ' ' + bName + '의 ' + bEl + ' 기운을 다스리는 관계(극) — 힘이 한쪽으로 쏠리기 쉬워요. 서로 한 박자씩 늦추면 둘 다 편해집니다.' };
-    if (EL_OVER[bEl] === aEl) return { key: 'youBeatMe', text: bName + '의 ' + bEl + josa(bEl, 'subj') + ' ' + aName + '의 ' + aEl + ' 기운을 다스리는 관계(극) — ' + bName + '의 속도가 빠를 때 ' + josaFull(aName, 'subj') + ' 지칠 수 있어요. 속도를 미리 맞춰 두면 오히려 서로를 세워 줍니다.' };
-    return { key: 'plain', text: '서로 세게 당기지도 누르지도 않는 담백한 관계 — 그만큼 각자 페이스로 오래 갈 수 있어요.' };
-  }
+  /* ① 한 줄 훅 — 일지 관계(붙는 힘)로 갈래를 잡고, 관계마다 말투를 완전히 다르게 */
+  var HOOK = {
+    friend: {
+      hap:    '서로 지갑 지켜주는 찐친 콤비',
+      chung:  '티격태격해도 결국 다시 붙는 콤비',
+      hyeong: '약속만 안 미루면 10년은 가는 콤비',
+      hae:    '말은 살짝 엇갈려도 밥은 잘 먹는 사이',
+      samhap: '같은 쪽을 보면 힘이 두 배 되는 콤비',
+      same:   '취향이 겹쳐서 노는 게 제일 재밌는 콤비',
+      plain:  '적당한 거리에서 오래 가는 편한 콤비'
+    },
+    love: {
+      hap:    '말 안 해도 눈빛으로 통하는 찰떡궁합',
+      chung:  '투닥거려도 결국 서로한테 붙는 자석 케미',
+      hyeong: '서운한 건 그날 말해야 오래 가는 사이',
+      hae:    '말이 살짝 어긋나도 손은 놓지 않는 사이',
+      samhap: '같은 곳을 보면 마음이 빨리 가까워지는 사이',
+      same:   '닮아서 편한데, 가끔 둘 다 답답한 사이',
+      plain:  '설레는 속도는 천천히, 오래 가는 사이'
+    }
+  };
 
-  function zhiRelationText(chA, chB, aName, bName) {
+  /* 훅 아래 한 줄 — 두 사람 기운이 서로 어떻게 작용하는지를 말로만 */
+  var ROLE_LINE = {
+    friend: {
+      youFeedMe: '{bS} {aO} 받쳐 주는 조합이에요 — {aS} 급할 때 {bS} 브레이크를 잡아 줘요.',
+      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 나서면 {bT} 편해져요.',
+      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 한 박자만 늦추면 {bT} 훨씬 편해져요.',
+      youBeatMe: '{b}의 속도가 빠를 때 {aT} 지칠 수 있어요 — 속도만 미리 맞추면 오래 가요.',
+      same: '말이 빨리 통해요 — 대신 같이 흥분하면 둘 다 세지니까 한 명은 쉬어 줘야 해요.'
+    },
+    love: {
+      youFeedMe: '{bS} {aO} 편안하게 해 주는 조합이에요 — 2027년엔 그 편안함이 오래 가요.',
+      iFeedYou: '{aS} {bO} 챙겨 주는 조합이에요 — 2027년엔 {aS} 먼저 표현해 주세요.',
+      iBeatYou: '{aS} 앞서 나가기 쉬운 조합이에요 — {aS} 반 박자만 늦추면 훨씬 부드러워져요.',
+      youBeatMe: '{b}의 속도에 {aT} 맞추다 지칠 수 있어요 — 가끔은 {a} 속도로 가도 돼요.',
+      same: '닮은 기운끼리라 편한데, 같이 뜨거워지면 둘 다 타요 — 한 명이 쉬는 게 필요해요.'
+    }
+  };
+
+  var EL_TRAIT = { 목: '새로 시작하는 힘', 화: '먼저 표현하는 힘', 토: '챙기고 정리하는 힘', 금: '끊고 정리하는 힘', 수: '쉬고 비우는 힘' };
+
+  /* ② 보완할 점 — 두 번째 줄은 일지 관계에서 (막대 대신 사람 말로) */
+  var COMP_ZHI = {
+    friend: {
+      chung:  '부딪히면 크게 흔들려요 — 큰 결정은 하루 두고 보기.',
+      hyeong: '약속·서류에서 엉키기 쉬워요 — 말 대신 글로 남기기.',
+      hae:    '말이 엇갈리기 쉬워요 — 중요한 얘기는 얼굴 보고 하기.',
+      hap:    '붙는 힘이 좋은 대신, 같이 늘어지기 쉬워요 — 한 명은 계획을 챙기기.',
+      samhap: '같은 방향을 볼 때 힘이 커져요 — 목표는 하나만 정해 두기.',
+      same:   '둘 다 같은 기운이라 같이 세져요 — 한 명이 먼저 말리는 역할.',
+      plain:  '부딪히진 않아요 — 대신 먼저 손 내미는 쪽이 늘 한 명이에요.'
+    },
+    love: {
+      chung:  '부딪히면 크게 흔들려요 — 큰 얘기는 하루 두고 하기.',
+      hyeong: '서운함이 쌓이기 쉬워요 — 그날그날 말해 두기.',
+      hae:    '말이 자꾸 어긋나요 — 문자보다 얼굴 보고 얘기하기.',
+      hap:    '붙는 힘이 좋은 대신, 서로의 시간을 뺏기 쉬워요 — 각자 시간 남겨 두기.',
+      samhap: '같이 보는 게 많아요 — 각자 취미 하나는 꼭 남겨 두기.',
+      same:   '닮아서 편한데 같이 늘어져요 — 한 명은 계획을 챙기기.',
+      plain:  '온도 차이가 있어요 — 급한 쪽이 한 번만 기다려 주기.'
+    }
+  };
+
+  /* ③ 꼭 챙겨줄 점 — 두 번째 줄은 일지 관계별 행동 팁 */
+  var CARE_ZHI = {
+    friend: {
+      chung:  '부딪힌 날은 그날 안에 한 번 웃고 끝내기 — 미루면 커져요.',
+      hyeong: '돈 얘기·약속은 카톡으로 남겨 두기.',
+      hae:    '중요한 말은 얼굴 보고, 문자로는 짧게.',
+      hap:    '같이 하기로 한 건 3월 전에 첫발 떼기.',
+      samhap: '같은 목표 하나 정해서 같이 밀어 보기.',
+      same:   '한 명이 흥분하면 다른 한 명은 10분 쉬기.',
+      plain:  '방향만 먼저 맞추고, 속도는 각자.'
+    },
+    love: {
+      chung:  '싸운 날은 그날 안에 손 잡고 끝내기.',
+      hyeong: '서운한 건 그날 말하고, 다음 날로 넘기지 않기.',
+      hae:    '연락은 짧아도 매일 — 말보다 안부 먼저.',
+      hap:    '같이 가고 싶은 곳 하나 정해 두기.',
+      samhap: '같은 목표(여행·저축) 하나 정해 두기.',
+      same:   '같이 화날 땐 한 명이 먼저 나가서 10분 걷기.',
+      plain:  '중요한 얘기는 속도를 맞춰서, 한 번에 하나씩.'
+    }
+  };
+
+  /* ④ 2027 부적 — 두 사람의 조합(일지 관계)마다 이름도, 금박 도안도 다르다.
+     같은 우정이라도 '지갑수호'가 나오는 콤비와 '텔레파시'가 나오는 콤비가 달라서
+     친구·연인을 바꿔 가며 모으는 재미가 생긴다. (2026-11-21 김나영 님 지시) */
+  var AMUL = {
+    friend: {
+      hap:    { name: '찐친 지갑수호 부적',     art: 'key',       line: '지갑은 각자, 밥은 같이' },
+      chung:  { name: '브레이크 없는 콤비 부적', art: 'flame',     line: '싸워도 밥은 같이 먹는다' },
+      hyeong: { name: '오해 제로 의리 부적',     art: 'knot',      line: '약속은 문자로, 우정은 길게' },
+      hae:    { name: '속마음 텔레파시 부적',     art: 'moonwave',  line: '말보다 밥 — 그래도 통한다' },
+      samhap: { name: '대박 합작 시너지 부적',   art: 'money',     line: '같은 쪽 보면 두 배로 벌어요' },
+      same:   { name: '취향저격 찰떡 부적',       art: 'butterfly', line: '취향 일치, 텐션 조절만' },
+      plain:  { name: '적당한 거리 수호 부적',     art: 'stars',     line: '적당한 거리가 오래 간다' }
+    },
+    love: {
+      hap:    { name: '눈빛 통하는 자석 부적',   art: 'stars',     line: '말하지 않아도 통하는 사이' },
+      chung:  { name: '싸워도 5분 화해 부적',    art: 'flame',     line: '부딪혀도 결국 너에게' },
+      hyeong: { name: '밀당 종료 직진 부적',     art: 'key',       line: '서운하면 그날 말하기' },
+      hae:    { name: '말 엇갈려도 손잡기 부적', art: 'knot',      line: '손은 놓지 않기로 해' },
+      samhap: { name: '2027 꿀떨어짐 부적',      art: 'money',     line: '같은 곳을 보면 가까워진다' },
+      same:   { name: '평생 내 편 수호 부적',    art: 'butterfly', line: '닮아서 편하고, 닮아서 조심' },
+      plain:  { name: '천천히 오래 곁에 부적',   art: 'moonwave',  line: '천천히, 그러나 오래' }
+    }
+  };
+
+  function zhiKeyOf(chA, chB) {
     var I = T._internal;
     var za = chA.natal.dayZhiIndex, zb = chB.natal.dayZhiIndex;
-    var a = T.zhiKo(za), b = T.zhiKo(zb);
-    if (za === zb) return { key: 'same', text: '일지가 같아요(' + a + ') — 생활 리듬이 비슷해 편하지만, 같이 늘어지기 쉬워요.' };
-    if (I.yukhapOf(za) === zb) return { key: 'hap', text: '일지가 육합(' + a + '·' + b + ') — 붙는 힘이 있는 사이예요. 같이 시작한 일이 오래갑니다.' };
-    if (I.chungOf(za) === zb) return { key: 'chung', text: '일지가 충(' + a + '·' + b + ') — 부딪히면 크게 흔들려요. 큰 결정은 하루 두고 보세요.' };
-    if (I.isHyeong(za, zb)) return { key: 'hyeong', text: '일지가 형(' + a + '·' + b + ') — 서류·절차에서 엉키기 쉬워요. 약속은 글로 남기세요.' };
-    if (I.haeOf(za) === zb) return { key: 'hae', text: '일지가 해(' + a + '·' + b + ') — 말이 엇갈리기 쉬워요. 중요한 이야기는 대면으로.' };
+    if (za === zb) return 'same';
+    if (I.yukhapOf(za) === zb) return 'hap';
+    if (I.chungOf(za) === zb) return 'chung';
+    if (I.isHyeong(za, zb)) return 'hyeong';
+    if (I.haeOf(za) === zb) return 'hae';
     var ga = I.samhapGroupOf(za), gb = I.samhapGroupOf(zb);
-    if (ga >= 0 && ga === gb) return { key: 'samhap', text: '같은 삼합국(' + (SAMHAP_EL[ga] || '') + ') — 같은 방향을 보는 사이예요. 같이 밀면 힘이 큽니다.' };
-    return { key: 'plain', text: '일지가 서로 부딪히지도 얽히지도 않는 담담한 사이예요.' };
+    if (ga >= 0 && ga === gb) return 'samhap';
+    return 'plain';
   }
 
-  /* 두 사람 관계에서 '지킬 한 가지' — 명리 관계별로 다르게 */
-  function pairAdvice(masterKey, zhiKey) {
-    var Z = {
-      chung: '큰 결정은 하루 두고 보기',
-      hyeong: '약속과 금전은 글로 남기기',
-      hae: '중요한 이야기는 대면으로',
-      hap: '같이 시작한 일은 오래갑니다',
-      samhap: '같이 밀 때 힘이 커져요',
-      same: '같이 늘어지지 않게 한 명은 채찍을',
-      plain: '속도보다 방향을 먼저 맞추기'
-    };
-    var M2 = {
-      same: '같이 흥분하면 둘 다 세져요 — 한 명은 쉬기',
-      youFeedMe: '한쪽만 받지 않게 서로 보태 주기',
-      iFeedYou: '밀어 줄 때 서로 지치지 않기',
-      iBeatYou: '말투를 한 단계 낮추기',
-      youBeatMe: '내 속도를 먼저 챙기기'
-    };
-    return (Z[zhiKey] || Z.plain) + ' · ' + (M2[masterKey] || M2.same);
+  function masterKeyOf(chA, chB) {
+    var ae = chA.natal.element, be = chB.natal.element;
+    if (ae === be) return 'same';
+    if (EL_MOTHER[ae] === be) return 'youFeedMe';
+    if (EL_MOTHER[be] === ae) return 'iFeedYou';
+    if (EL_OVER[ae] === be) return 'iBeatYou';
+    if (EL_OVER[be] === ae) return 'youBeatMe';
+    return 'same';
   }
 
-  function complementList(chA, chB) {
-    var out = [];
-    EL_ORDER.forEach(function (e) {
-      var ca = chA.counts[e] || 0, cb = chB.counts[e] || 0;
-      if (ca <= 1 && cb >= 2) out.push({ who: 'you', el: e, mine: ca, theirs: cb });
-      if (cb <= 1 && ca >= 2) out.push({ who: 'me', el: e, mine: ca, theirs: cb });
+  /* 두 사람의 2027년 — 달·빈 기운만 뽑아 둔다(화면에 쓰는 값) */
+  function pairInfo(a, b) {
+    var hotA = hotMap(a), hotB = hotMap(b);
+    var warnA = warnMap(a), warnB = warnMap(b);
+    var both = [], warnBoth = [], warnOne = [];
+    a.months.forEach(function (m) {
+      var n = m.m;
+      if (hotA[n] && hotB[n] && !warnA[n] && !warnB[n]) both.push(n);
+      if (warnA[n] && warnB[n]) warnBoth.push(n);
+      else if (warnA[n] || warnB[n]) warnOne.push({ n: n, who: warnA[n] ? 'me' : 'you' });
     });
-    return out;
-  }
+    both.sort(function (x, y) { return x - y; });
+    warnBoth.sort(function (x, y) { return x - y; });
+    warnOne.sort(function (x, y) { return x.n - y.n; });
 
-  /* ── 2027 정미년(丁未) 합작 — 丁火가 각자 일간에 어떤 십신으로 들어오는지로 짝의 쓰임을 본다
-   *   목 일간 → 식상 / 화 → 비겁 / 토 → 인성 / 금 → 관성 / 수 → 재성 (음양까지 보면 식신·상관 등으로 갈림)
-   *   未의 토 기운은 따로 세지 않고 천간 丁火만 기준으로 잡는다(화면 각주에 밝힌다).
-   */
-  var ROLE_ORDER = ['비겁', '식상', '재성', '관성', '인성'];
-  var TG_FAM = {
-    비견: '비겁', 겁재: '비겁', 식신: '식상', 상관: '식상',
-    편재: '재성', 정재: '재성', 편관: '관성', 정관: '관성', 편인: '인성', 정인: '인성'
-  };
-  var ROLE_MEAN = {
-    비겁: '추진력 · 경쟁 · 주도권',
-    식상: '표현 · 실행 · 새 판 열기',
-    재성: '재물 · 결과물 · 결실',
-    관성: '책임 · 자리 · 명예',
-    인성: '문서 · 자격 · 배움 · 안정'
-  };
-  var ROLE_FALLBACK = { 목: '식상', 화: '비겁', 토: '인성', 금: '관성', 수: '재성' };   // 丁火=화 기준
-
-  /* 짝마다 다른 합작 포인트 — t: 제목 한 줄 / a: 행동 조언 / s: 인스타 카드 한 줄 */
-  var JAK = [
-    { k: ['비겁', '비겁'], t: '둘 다 앞에 서려는 해 — 순서만 정하면 판이 커져요',
-      a: '丁火가 둘 다 비겁으로 들어와 기세는 좋은데, 누가 앞설지로 힘을 빼기 쉬워요. 같이 벌이되 결정하는 사람과 받치는 사람을 처음에 정해 두고, 정산은 꼭 한 사람만 맡으세요.',
-      s: '둘 다 앞장 — 순서 정하기' },
-    { k: ['비겁', '식상'], t: '한 사람이 열고, 한 사람이 알리는 조합',
-      a: '비겁 쪽이 먼저 몸으로 부딪혀 문을 열고, 식상 쪽이 그걸 말과 글로 퍼뜨리면 반응이 빨리 와요. 공동구매·장사·홍보처럼 하고 바로 보여 줘야 하는 일에 잘 붙습니다.',
-      s: '열고 알리는 조합' },
-    { k: ['비겁', '재성'], t: '벌리는 힘에 챙기는 힘 — 손에 남는 해',
-      a: '비겁 쪽이 밖에서 뛰고 재성 쪽이 돈과 일정을 챙기면 벌어도 새는 게 없어요. 둘 다 뛰기만 하면 매출은 보이는데 통장은 그대로예요.',
-      s: '뛰는 사람 + 챙기는 사람' },
-    { k: ['비겁', '관성'], t: '일은 벌어지는데 서류가 무거운 해',
-      a: '추진력(비겁)과 책임(관성)이 같이 들어와 하려는 일은 많은데 계약·신고·보고가 발목을 잡아요. 뛰는 쪽이 몸을 쓰고 책임 쪽이 서류를 잡으면 오히려 단단해집니다.',
-      s: '뛰는 사람 + 서류 잡는 사람' },
-    { k: ['비겁', '인성'], t: '나서는 힘과 받쳐 주는 힘이 만나면, 배운 게 모양으로 남는 해',
-      a: '인성 쪽은 배움·자격·문서로, 비겁 쪽은 몸으로 부딪히는 힘으로 서로를 보태요. 두 힘이 겹치면 실력이 눈에 보이는 모양으로 남습니다. 새로 배우는 건 두 사람이 같이 시작해 보세요.',
-      s: '배우는 사람 + 뛰는 사람' },
-    { k: ['식상', '식상'], t: '시작은 둘 다 잘해요 — 마감이 문제',
-      a: '丁火가 둘 다 식상으로 들어와 벌이는 재미는 최고인데 끝맺음이 약해져요. 새 일은 마음껏 벌이되 마감은 한 달에 하나로 못 박아 두면 결과가 남습니다.',
-      s: '벌이기 좋아요 — 마감은 하나씩' },
-    { k: ['식상', '재성'], t: '한 사람이 판을 열고, 다른 사람이 결실을 맺어주는 조합',
-      a: '식상 쪽이 판을 열어 힘을 모으고, 재성 쪽이 방향을 잡아 결실을 맺어주는 균형 잡힌 짝이에요. 공동 프로젝트·클래스·공구에 특히 잘 맞습니다.',
-      s: '판 여는 쪽 + 결실 맺는 쪽' },
-    { k: ['식상', '관성'], t: '아이디어를 직함과 실적으로 바꾸는 해',
-      a: '식상 쪽이 말과 콘텐츠를 만들고 관성 쪽이 그걸 보고·계약·자리로 묶으면 인정받는 속도가 빨라요. 벌이기만 하고 기록을 안 남기면 남는 게 없어요.',
-      s: '만드는 사람 + 자리 잡는 사람' },
-    { k: ['식상', '인성'], t: '배운 걸 바로 꺼내 쓰는 조합',
-      a: '인성 쪽이 자료와 자격을 모으고 식상 쪽이 말과 글로 풀면, 배운 게 강의·클래스·콘텐츠로 바로 돈이 돼요. 혼자면 준비만 하다 끝날 일이 같이 하면 결과로 나옵니다.',
-      s: '모으는 사람 + 푸는 사람' },
-    { k: ['재성', '재성'], t: '수입은 잘 잡히는데, 몫에서 서운해지기 쉬운 해',
-      a: '丁火가 둘 다 재성으로 들어와 돈 보는 눈은 좋아지는데, 나눌 때 서운함이 쌓여요. 시작 전에 몫을 글로 정해 두면 한 해 내내 편합니다.',
-      s: '수입은 좋아요 — 몫 먼저' },
-    { k: ['재성', '관성'], t: '숫자로 말해서 인정받는 해',
-      a: '재성 쪽이 결과를 만들고 관성 쪽이 그걸 자리와 이름으로 올리면 승진·선정·일감이 붙어요. 결과는 말이 아니라 숫자와 기록으로 정리해 두세요.',
-      s: '숫자 + 자리 — 인정받는 해' },
-    { k: ['재성', '인성'], t: '버는 힘과 지키는 힘이 맞물려야 손에 남는 해',
-      a: '재성 쪽이 새 수입을 열고 인성 쪽이 살림·계약·안전선을 지키면 둘 다 흔들리지 않아요. 큰 지출과 보증은 서로 한 번 더 확인하는 걸로.',
-      s: '버는 사람 + 지키는 사람' },
-    { k: ['관성', '관성'], t: '책임이 두 겹 — 같이 지면 둘 다 눌려요',
-      a: '丁火가 둘 다 관성으로 들어와 일은 맡겨지는데 압박도 두 배예요. 같이 하되 결정은 한 명이 하고, 대신 서로의 쉬는 날은 꼭 비워 주세요.',
-      s: '책임은 둘, 결정은 하나' },
-    { k: ['관성', '인성'], t: '서두르기보다 계약·일정 정리하는 쪽이 든든한 해',
-      a: '관성 쪽은 책임이 무겁게 들어오고 인성 쪽은 문서·자격으로 그걸 받쳐 줘요. 급하게 밀기보다 계약서·일정·영수증을 정리하는 쪽이 결국 웃습니다.',
-      s: '서류 잡는 쪽이 든든' },
-    { k: ['인성', '인성'], t: '같이 배우고 같이 따는 해',
-      a: '丁火가 둘 다 인성으로 들어와 공부·자격·정리에 힘이 붙어요. 같은 강의나 자격증을 함께 준비하면 서로가 감시자가 돼서 끝까지 갈 확률이 확 올라갑니다.',
-      s: '같이 배우면 끝까지 가요' }
-  ];
-
-  function jeongmiRole(ch) {
-    var gi = (M.GAN || []).indexOf('丁');
-    var tg = (gi >= 0 && M.tenGodOf) ? M.tenGodOf(ch.natal.dayGanIndex, gi) : '';
-    var fam = TG_FAM[tg] || ROLE_FALLBACK[ch.natal.element] || '비겁';
-    return { tg: tg || (fam === '비겁' ? '비견' : fam), fam: fam };
-  }
-
-  function jakOf(chA, chB) {
-    var ra = jeongmiRole(chA), rb = jeongmiRole(chB);
-    var ka = ra.fam, kb = rb.fam;
-    var ia = ROLE_ORDER.indexOf(ka), ib = ROLE_ORDER.indexOf(kb);
-    var first = ia <= ib ? ka : kb, second = ia <= ib ? kb : ka;
-    var pick = null;
-    for (var i = 0; i < JAK.length; i++) {
-      if (JAK[i].k[0] === first && JAK[i].k[1] === second) { pick = JAK[i]; break; }
+    /* 겹치는 '좋은 달'이 없을 때 — 둘 다 무리하지 않는 달로 대신 */
+    var near = [];
+    if (!both.length) {
+      var scored = a.months.map(function (m) {
+        var n = m.m, s = m.chance + b.months[n - 1].chance;
+        if (warnA[n] && warnB[n]) s -= 120;
+        else if (warnA[n] || warnB[n]) s -= 30;
+        return { n: n, s: s };
+      }).sort(function (x, y) { return y.s - x.s; });
+      near = scored.slice(0, 2).map(function (x) { return x.n; }).sort(function (x, y) { return x - y; });
     }
-    return { a: ra, b: rb, e: pick || JAK[0] };
+
+    /* 한쪽은 얇고 한쪽은 넉넉한 오행 — '서로 보완할 점'의 재료 */
+    var gaps = [];
+    EL_ORDER.forEach(function (e) {
+      var ca = a.counts[e] || 0, cb = b.counts[e] || 0;
+      if (ca <= 1 && cb >= 2) gaps.push({ lean: 'me', el: e });
+      if (cb <= 1 && ca >= 2) gaps.push({ lean: 'you', el: e });
+    });
+
+    return {
+      both: both, near: near, warnBoth: warnBoth, warnOne: warnOne,
+      gaps: gaps,
+      zhiKey: zhiKeyOf(a, b),
+      masterKey: masterKeyOf(a, b)
+    };
   }
 
-  /* ── 케미: 결과 그리기 ──────────────────────────── */
-  function birthText(ch) {
-    var p = ch.p;
-    var s = (p.calendar === 'lunar' ? '음력 ' : '') + p.y + '.' + pad2(p.mo) + '.' + pad2(p.d) + (p.leap ? ' 윤달' : '');
-    return s + (p.timeKnown ? ' ' + pad2(p.hh) + ':' + pad2(p.mm) : ' 시간 모름');
-  }
-
-  /* 2027 한 줄 부적 카드 — 내 원국에서 모자란 오행 하나를 부적으로 세운다 */
-  var EL_HANJA = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
-  var EL_DO = {
-    목: '먼저 말 걸기 · 새로 시작하는 일은 오전에',
-    화: '먼저 웃기 · 큰 결정은 조용한 자리에서',
-    토: '손으로 정리하기 · 먹는 시간 지키기',
-    금: '미뤄 둔 “아니오” 한 번 · 안 쓰는 것 버리기',
-    수: '잠 30분 더 · 큰 결정은 오후로'
-  };
-
-  function amulCard(ch, name) {
-    var el = (ch.need && ch.need.scarce && ch.need.scarce[0]) || ch.natal.element;
-    var hz = EL_HANJA[el] || el;
-    var sorted = ch.months.slice().sort(function (x, y) { return y.chance - x.chance; });
-    var best = sorted[0];
-    var worst = (ch.yd && ch.yd.warnMonths && ch.yd.warnMonths.length) ? ch.yd.warnMonths[0] : null;
-    var bestTx = best && best.chance > 0 ? best.m + '월' : '—';
-    var worstTx = worst ? worst + '월' : '없음';
-
-    return '<div class="amul" id="amulCard">'
-      + '<div class="amul__top"><span class="amul__eyebrow">2027 · 한 줄 부적</span>'
-      + '<span class="amul__seal">丁未</span></div>'
-      + '<div class="amul__core">'
-      + '<span class="amul__hz">' + esc(hz) + '</span>'
-      + '<span class="amul__rule" aria-hidden="true"></span>'
-      + '<p class="amul__line">비어 있는 ' + esc(el) + ' 기운을 채우면<br>2027년 문이 열립니다</p>'
-      + '<p class="amul__do">' + esc(EL_DO[el] || '') + '</p>'
-      + '</div>'
-      + '<div class="amul__facts">'
-      + '<span>트이는 달 <b>' + esc(bestTx) + '</b></span>'
-      + '<span>조심할 달 <b>' + esc(worstTx) + '</b></span>'
-      + '</div>'
-      + '<div class="amul__mark">'
-      + '<span class="amul__mark-row"><span class="amul__mark-ic" aria-hidden="true">🌙</span>'
-      + '<span class="amul__mark-t">2027 타이밍 캘린더 · 윤이세사주</span></span>'
-      + '<span class="amul__mark-h">@life.saju_yoonise</span></div>'
-      + '</div>';
-  }
-
+  /* 오행 요약 바 — 작게, 오방색만 지키고 사람은 채움/빗금으로 */
   function elBars(chA, chB, opt) {
     opt = opt || {};
     var mx = 1;
     EL_ORDER.forEach(function (e) {
       mx = Math.max(mx, chA.counts[e] || 0, chB.counts[e] || 0);
     });
-    var html = '<div class="els">' + EL_ORDER.map(function (e) {
+    var html = '<div class="els' + (opt.mini ? ' els--mini' : '') + '">' + EL_ORDER.map(function (e) {
       var a = chA.counts[e] || 0, b = chB.counts[e] || 0;
       return '<div class="el el--' + e + '">'
         + '<span class="el__pair">'
-        + '<i class="el__bar el__bar--me" style="height:' + Math.max(4, Math.round(a / mx * 100)) + '%"></i>'
-        + '<i class="el__bar el__bar--you" style="height:' + Math.max(4, Math.round(b / mx * 100)) + '%"></i>'
+        + '<i class="el__bar el__bar--me" style="height:' + Math.max(5, Math.round(a / mx * 100)) + '%"></i>'
+        + '<i class="el__bar el__bar--you" style="height:' + Math.max(5, Math.round(b / mx * 100)) + '%"></i>'
         + '</span>'
         + '<span class="el__lb">' + e + '</span>'
         + '</div>';
     }).join('') + '</div>';
-    /* 막대는 오행 색을 지키고 사람은 채움/빗금으로 나누므로, 읽는 법 한 줄을 붙인다 */
     if (opt.legend) {
       html += '<p class="els__lg">'
         + '<i class="els__lg-i is-me" aria-hidden="true"></i>채운 막대 ' + esc(opt.legA || '나')
@@ -1051,236 +1089,97 @@
     return html;
   }
 
-  function monthGrid(chA, chB, hotA, hotB, warnA, warnB) {
-    function cells(set, warnSet, both) {
-      return chA.months.map(function (m) {
-        var n = m.m;
-        var a = !!hotA[n], b = !!hotB[n];
-        var cls = 'mc';
-        if (both) cls += (a && b) ? ' is-both' : (warnA[n] && warnB[n] ? ' is-warn' : '');
-        else cls += set[n] ? ' is-good' : (warnSet[n] ? ' is-warn' : '');
-        return '<span class="' + cls + '">' + n + '</span>';
-      }).join('');
+  function compLine(rel, lean, rich, el) {
+    var trait = EL_TRAIT[el] || el;
+    if (rel === 'love') {
+      return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그 부분은 <b>' + esc(josaFull(rich, 'subj')) + '</b> 먼저 움직여 주세요.';
     }
-    return '<div class="mgrid">'
-      + '<div class="mrow"><span class="mrow__lb is-me">나</span>' + cells(hotA, warnA, false) + '</div>'
-      + '<div class="mrow"><span class="mrow__lb">너</span>' + cells(hotB, warnB, false) + '</div>'
-      + '<div class="mrow"><span class="mrow__lb">겹침</span>' + cells(hotA, warnA, true) + '</div>'
-      + '</div>'
-      + '<div class="legend">'
-      + '<span><i style="background:#DCC79A"></i>나</span>'
-      + '<span><i style="background:#A9B7A4"></i>너</span>'
-      + '<span><i style="background:#F3E6CB"></i>좋은 달</span>'
-      + '<span><i style="background:#F7E0DA"></i>조심할 달</span>'
-      + '<span><i style="background:#E9E0C6;box-shadow:inset 0 0 0 1px #8E6E3B"></i>둘 다 좋은 달</span>'
-      + '</div>';
-  }
-
-  function monthCard(m, kind, who, aLine, bLine, aName, bName) {
-    return '<div class="mcard mcard--' + kind + '">'
-      + '<div class="mcard__hd"><span class="mcard__m">' + m + '<small>월</small></span>'
-      + '<span class="mcard__who">' + esc(who) + '</span></div>'
-      + '<div class="mcard__line is-me"><b>' + esc(aName) + '</b><span>' + esc(aLine.title) + ' — ' + esc(aLine.why) + '</span></div>'
-      + '<div class="mcard__line"><b>' + esc(bName) + '</b><span>' + esc(bLine.title) + ' — ' + esc(bLine.why) + '</span></div>'
-      + '</div>';
-  }
-
-  /* 2027 정미년 합작 카드 — 두 사람의 십신 역할 → 같이 하면 좋은 것 */
-  function jakBlock(a, b, aName, bName) {
-    var j = jakOf(a, b);
-    var A = j.a, B = j.b;
-    function roleCell(name, r, isMe) {
-      return '<div class="jak__p' + (isMe ? ' is-me' : '') + '">'
-        + '<span class="jak__who">' + esc(name) + '</span>'
-        + '<span class="jak__role">' + esc(r.fam) + '<small>' + esc(r.tg) + '</small></span>'
-        + '<span class="jak__mean">' + esc(ROLE_MEAN[r.fam] || '') + '</span>'
-        + '</div>';
-    }
-    return '<div class="jak" id="jakCard">'
-      + '<div class="jak__hd"><span class="jak__seal">2027</span>'
-      + '<span class="jak__eyebrow">정미년(丁未)의 두 사람</span></div>'
-      + '<div class="jak__roles">'
-      + roleCell(aName, A, true)
-      + '<span class="jak__plus" aria-hidden="true">+</span>'
-      + roleCell(bName, B, false)
-      + '</div>'
-      + '<p class="jak__t">' + esc(j.e.t) + '</p>'
-      + '<p class="jak__a">' + esc(j.e.a) + '</p>'
-      + '<p class="jak__fine">丁火(정미년 천간)가 두 사람 일간에 각각 ' + esc(A.tg) + '·' + esc(B.tg) + '로 들어오는 해로 봤어요. 未의 토 기운은 따로 세지 않았습니다.</p>'
-      + '</div>';
+    return '<b>' + esc(josaFull(lean, 'top')) + '</b> ' + esc(trait) + '이 약해요 — 그건 <b>' + esc(josaFull(rich, 'subj')) + '</b> 맡아 주세요.';
   }
 
   function renderChemin(a, b) {
     var box = $('#chemiResult');
     if (!box) return;
-    var aName = a.p.name || '나';
-    var bName = b.p.name || '상대';
+    var rel = relNow(), R = RELS[rel];
+    var aName = String(a.p.name || '').trim() || '나';
+    var bName = String(b.p.name || '').trim() || R.peer;
+    var info = pairInfo(a, b);
+    var zk = info.zhiKey, mk = info.masterKey;
+    var mm = namesMap(aName, bName);
 
-    var hotA = hotMap(a), hotB = hotMap(b);
-    var warnA = warnMap(a), warnB = warnMap(b);
-    var both = [], near = [], bothWarn = [], oneWarn = [];
-    a.months.forEach(function (m) {
-      var n = m.m;
-      if (hotA[n] && hotB[n] && !warnA[n] && !warnB[n]) both.push(n);
-      if (warnA[n] && warnB[n]) bothWarn.push(n);
-      else if (warnA[n] || warnB[n]) oneWarn.push(n);
+    var hook = fill((HOOK[rel] || HOOK.friend)[zk] || (HOOK[rel] || HOOK.friend).plain, mm);
+    var role = fill((ROLE_LINE[rel] || ROLE_LINE.friend)[mk] || (ROLE_LINE[rel] || ROLE_LINE.friend).same, mm);
+
+    /* 서로 보완할 점 — 딱 2줄 */
+    var comps = [];
+    info.gaps.slice(0, 2).forEach(function (g) {
+      var lean = g.lean === 'me' ? aName : bName;
+      var rich = g.lean === 'me' ? bName : aName;
+      comps.push(compLine(rel, lean, rich, g.el));
     });
-    both.sort(function (x, y) { return x - y; });
-
-    if (!both.length) {
-      // 겹치는 '좋은 달'이 없을 때 — 둘 다 나쁘지 않은 달로 대신(한쪽이라도 조심할 달은 빼고)
-      var scored = a.months.map(function (m) {
-        var n = m.m;
-        var s = m.chance + b.months[n - 1].chance;
-        if (warnA[n] && warnB[n]) s -= 120;
-        else if (warnA[n] || warnB[n]) s -= 30;
-        return { n: n, s: s };
-      }).sort(function (x, y) { return y.s - x.s; });
-      near = scored.slice(0, 2).map(function (x) { return x.n; }).sort(function (x, y) { return x - y; });
+    if (comps.length < 2) {
+      comps.push(fill((COMP_ZHI[rel] || COMP_ZHI.friend)[zk] || (COMP_ZHI[rel] || COMP_ZHI.friend).plain, mm));
     }
+    comps = comps.slice(0, 2);
 
-    var comp = complementList(a, b);
-    var relMaster = elRelationText(a.natal.element, b.natal.element, aName, bName);
-    var relZhi = zhiRelationText(a, b, aName, bName);
+    /* 2027년 꼭 챙겨줄 점 — 딱 2줄 */
+    var bestMs = info.both.length ? info.both : info.near;
+    var care = [];
+    if (info.warnBoth.length) {
+      care.push('<b>' + info.warnBoth[0] + '월</b>엔 둘 다 예민해요 — 그달엔 큰 결정 미루고 맛있는 거 먹기.');
+    } else if (info.warnOne.length) {
+      var wo = info.warnOne[0];
+      var whoName = wo.who === 'me' ? aName : bName;
+      care.push('<b>' + wo.n + '월</b>엔 ' + esc(josaFull(whoName, 'subj')) + ' 예민해요 — 그달엔 먼저 연락하고 결정은 천천히.');
+    } else if (bestMs.length) {
+      care.push('<b>' + bestMs[0] + '월</b>에 같이 뭐 하나 시작해 보세요 — 올해는 조심할 달이 없어요.');
+    } else {
+      care.push('올해는 둘 다 크게 흔들리는 달이 없어요 — 페이스만 맞춰 가요.');
+    }
+    care.push(fill((CARE_ZHI[rel] || CARE_ZHI.friend)[zk] || (CARE_ZHI[rel] || CARE_ZHI.friend).plain, mm));
 
-    var compLines = comp.slice(0, 3).map(function (c) {
-      var ka = c.mine, kb = c.theirs;                 // 내(a) 개수 · 상대(b) 개수
-      var richer = (ka > kb) ? aName : bName;
-      var leaner = (ka > kb) ? bName : aName;
-      return '<b>' + esc(richer) + '</b>의 ' + c.el + ' 기운이 ' + Math.max(ka, kb) + '개, <b>' + esc(leaner) + '</b>에게는 ' + Math.min(ka, kb) + '개 — '
-        + esc(richer) + '의 ' + c.el + ' 기운이 ' + esc(leaner) + '에게 힘을 보태요. 둘이 있을 때 ' + c.el + ' 기운이 고르게 채워집니다.';
-    });
+    /* 딱 맞는 달 · 조심할 달 — 각 한 줄 */
+    var goodMs = bestMs.slice(0, 3);
+    var warnMs = (info.warnBoth.length ? info.warnBoth : info.warnOne.map(function (x) { return x.n; })).slice(0, 2);
+    var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '아직 없어요';
+    var warnTx = warnMs.length ? warnMs.map(function (n) { return n + '월'; }).join(' · ') : '없어요';
+
+    var amul = (AMUL[rel] || AMUL.friend)[zk] || (AMUL[rel] || AMUL.friend).plain;
 
     var html = '';
-    html += '<p class="card__eyebrow">2027 · 케미 결과</p>';
-    html += '<h2 class="card__title">' + esc(aName) + ' · ' + esc(bName) + ', 2027년</h2>';
-
-    /* 두 사람 원국 요약 */
-    html += '<div class="pair">'
-      + '<div class="pair__c"><span class="pair__nm">' + esc(aName) + '</span>'
-      + '<span class="pair__gz">' + esc(a.natal.gan) + ' ' + esc(a.natal.zhi) + '</span>'
-      + '<span class="pair__el"><b class="elc--' + esc(a.natal.element) + '">' + esc(a.natal.element) + '</b> · ' + birthText(a) + '</span></div>'
-      + '<div class="pair__mid">·</div>'
-      + '<div class="pair__c"><span class="pair__nm">' + esc(bName) + '</span>'
-      + '<span class="pair__gz">' + esc(b.natal.gan) + ' ' + esc(b.natal.zhi) + '</span>'
-      + '<span class="pair__el"><b class="elc--' + esc(b.natal.element) + '">' + esc(b.natal.element) + '</b> · ' + birthText(b) + '</span></div>'
+    html += '<div class="chemi__hd">'
+      + '<span class="chemi__badge">' + R.emoji + ' ' + esc(R.name) + '</span>'
+      + '<span class="chemi__year">2027</span>'
       + '</div>';
-    html += elBars(a, b, { legend: true, legA: aName, legB: bName });
+    html += '<p class="chemi__names">' + esc(aName) + ' <i>·</i> ' + esc(bName) + '</p>';
+    html += '<h2 class="chemi__hook"><span class="chemi__yr">2027년엔</span>' + hook + '</h2>';
+    html += '<p class="chemi__role">' + role + '</p>';
+    html += elBars(a, b, { mini: true, legend: false });
 
-    /* 서로 채워 주는 기운 */
-    html += '<p class="sect-h">오행 · 서로 채우는 것</p>';
-    html += '<h3 class="sect-t">' + (comp.length ? '서로의 빈 곳을 채워 주는 사이예요' : '둘이 합치면 오행이 고르게 차요') + '</h3>';
-    if (compLines.length) {
-      html += '<p class="lead">' + compLines.join(' ') + '</p>';
-    } else {
-      html += '<p class="lead">한쪽이 크게 비어 있거나 넘치는 오행이 없어요. 대신 서로의 기운이 ' + esc(relMaster.key === 'same' ? '같은 방향' : '다른 방향') + '이라, 힘을 합칠 때 시야가 넓어집니다.</p>';
-    }
-    html += '<p class="lead">' + esc(relMaster.text) + '</p>';
-    html += '<p class="lead">' + esc(relZhi.text) + '</p>';
-    var needA = (a.need && a.need.scarce || []).join('·');
-    var needB = (b.need && b.need.scarce || []).join('·');
-    html += '<div class="tags">'
-      + (needA ? '<span class="tag">' + esc(aName) + '에게 필요한 기운 · ' + esc(needA) + '</span>' : '')
-      + (needB ? '<span class="tag tag--sage">' + esc(bName) + '에게 필요한 기운 · ' + esc(needB) + '</span>' : '')
+    html += '<div class="csect">'
+      + '<p class="csect__lb"><i aria-hidden="true">1</i>서로 보완할 점</p>'
+      + '<ul class="csect__ul">' + comps.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>'
+      + '</div>';
+    html += '<div class="csect">'
+      + '<p class="csect__lb"><i aria-hidden="true">2</i>2027년 꼭 챙겨줄 점</p>'
+      + '<ul class="csect__ul csect__ul--do">' + care.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>'
+      + '</div>';
+    html += '<div class="cmonths">'
+      + '<div class="cm cm--good"><span>' + (rel === 'love' ? '마음이 잘 통하는 달' : '둘이 딱 맞는 달') + '</span><b>' + esc(goodTx) + '</b></div>'
+      + '<div class="cm cm--warn"><span>' + (rel === 'love' ? '말 조심할 달' : '슬쩍 조심할 달') + '</span><b>' + esc(warnTx) + '</b></div>'
       + '</div>';
 
-    /* 2027 정미년 · 둘의 합작 (丁火 십신 기준) */
-    html += '<p class="sect-h">2027 정미년 · 둘의 합작</p>';
-    html += jakBlock(a, b, aName, bName);
-
-    /* 12달 겹쳐 보기 */
-    html += '<p class="sect-h">2027 · 12달 겹쳐 보기</p>';
-    html += monthGrid(a, b, hotA, hotB, warnA, warnB);
-
-    /* 같이 치고 나가는 달 */
-    html += '<p class="sect-h">같이 치고 나가는 달</p>';
-    if (both.length) {
-      html += '<h3 class="sect-t">' + both.map(function (n) { return n + '월'; }).join(' · ') + ' — 같이 밀면 힘이 붙어요</h3>';
-      html += '<div class="mcards">' + both.slice(0, 4).map(function (n) {
-        var ma = a.months[n - 1], mb = b.months[n - 1];
-        return monthCard(n, 'good', '둘 다', lineOfMonth(ma, 'good'), lineOfMonth(mb, 'good'), aName, bName);
-      }).join('') + '</div>';
-    } else {
-      html += '<h3 class="sect-t">두 사람의 좋은 달이 겹치지 않아요</h3>';
-      html += '<div class="empty">한쪽이 치고 나가는 달에 다른 쪽은 속도를 줄이는 게 맞아요. 아래 달은 둘 다 무리하지 않는 달이에요. '
-        + '같이 하는 일은 한 사람이 앞서 끌고, 다른 사람이 받쳐 주는 식으로 나눠 보세요.</div>';
-      html += '<div class="mcards">' + near.map(function (n) {
-        var ma = a.months[n - 1], mb = b.months[n - 1];
-        return monthCard(n, 'good', '무리 없음', lineOfMonth(ma, 'good'), lineOfMonth(mb, 'good'), aName, bName);
-      }).join('') + '</div>';
-    }
-
-    /* 같이 조심할 달 */
-    html += '<p class="sect-h">같이 조심할 달</p>';
-    var warnAll = bothWarn.slice().sort(function (x, y) { return x - y; });
-    var oneOnly = oneWarn.slice().sort(function (x, y) { return x - y; });
-    if (warnAll.length) {
-      html += '<h3 class="sect-t">' + warnAll.map(function (n) { return n + '월'; }).join(' · ') + ' — 둘 다 조심</h3>';
-      html += '<div class="mcards">' + warnAll.slice(0, 4).map(function (n) {
-        var ma = a.months[n - 1], mb = b.months[n - 1];
-        return monthCard(n, 'warn', '둘 다', lineOfMonth(ma, 'warn'), lineOfMonth(mb, 'warn'), aName, bName);
-      }).join('') + '</div>';
-    }
-    if (oneOnly.length) {
-      html += '<h3 class="sect-t" style="margin-top:16px">' + oneOnly.slice(0, 4).map(function (n) { return n + '월'; }).join(' · ') + ' — 한쪽만 조심</h3>';
-      html += '<div class="mcards">' + oneOnly.slice(0, 4).map(function (n) {
-        var ma = a.months[n - 1], mb = b.months[n - 1];
-        var who = warnA[n] && warnB[n] ? '둘 다' : (warnA[n] ? aName : bName);
-        return monthCard(n, 'warn', who + ' 쪽', lineOfMonth(ma, warnA[n] ? 'warn' : 'neutral'), lineOfMonth(mb, warnB[n] ? 'warn' : 'neutral'), aName, bName);
-      }).join('') + '</div>';
-    }
-    if (!warnAll.length && !oneOnly.length) {
-      html += '<div class="empty">2027년에 크게 부딪히는 달은 없어요. 잔잔한 해입니다.</div>';
-    }
-
-    /* 인스타 카드 — 9:16, 피드·릴스 공용 (캡처해서 올리는 카드 · 브랜드 마크 포함) */
-    var goodMs = both.length ? both.slice(0, 3) : near;
-    var goodLb = both.length ? '같이 치고 나갈 달' : '무리 없이 갈 달';
-    var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '—';
-    var warnMs = (warnAll.length ? warnAll : oneOnly).slice(0, 3);
-    html += '<p class="sect-h">이 카드로 피드·릴스에 올리면 돼요</p>';
-    var oneLine = comp.length
-      ? comp[0].el + ' 기운을 서로 보태며 균형을 잡아요'
-      : '서로 세게 누르지 않는 사이예요';
-    var advice = pairAdvice(relMaster.key, relZhi.key);
-    var jak = jakOf(a, b);
-    html += '<div class="story" id="storyCard">'
-      + '<div class="story__top"><span class="story__eyebrow">2027 · CHEMI</span>'
-      + '<span class="story__seal">丁未</span></div>'
-      + '<div class="story__pair">'
-      + '<div><span class="story__nm">' + esc(aName) + '</span><span class="story__gz">' + esc(a.natal.gan) + ' ' + esc(a.natal.zhi) + '</span></div>'
-      + '<span class="story__dot">·</span>'
-      + '<div><span class="story__nm">' + esc(bName) + '</span><span class="story__gz">' + esc(b.natal.gan) + ' ' + esc(b.natal.zhi) + '</span></div>'
-      + '</div>'
-      + elBars(a, b)
-      + '<div class="story__body">'
-      + '<div class="story__row"><span class="story__lb">' + esc(goodLb) + '</span>'
-      + '<span class="story__ms">' + esc(goodTx) + '</span></div>'
-      + '<div class="story__row story__row--warn"><span class="story__lb">겹쳐서 조심할 달</span>'
-      + '<span class="story__ms">' + (warnMs.length ? esc(warnMs.map(function (n) { return n + '월'; }).join(' · ')) : '없음') + '</span></div>'
-      + '<div class="story__row story__row--jak"><span class="story__lb">2027 같이 하면</span>'
-      + '<span class="story__ms story__ms--jak">' + esc(jak.e.s) + '</span></div>'
-      + '<p class="story__line">' + esc(oneLine) + '</p>'
-      + '<div class="story__advice"><span class="story__lb">두 사람이 지킬 한 가지</span>'
-      + '<span class="story__advice-t">' + esc(advice) + '</span></div>'
-      + '</div>'
-      + '<span class="story__wm" aria-hidden="true">丁未</span>'
-      + '<div class="story__foot">2027 정미년 · 2026년 11월부터 하루씩 짚어 주는 사주 달력</div>'
-      + '<div class="story__mark">'
-      + '<span class="story__mark-row"><span class="story__mark-ic" aria-hidden="true">🌙</span>'
-      + '<span class="story__mark-t">2027 타이밍 캘린더 · 윤이세사주</span></span>'
-      + '<span class="story__mark-h">@life.saju_yoonise</span></div>'
+    html += '<p class="sect-h">2027 정미년 · ' + esc(amul.name) + ' (' + R.hanja + ')</p>';
+    html += '<h3 class="sect-t">저장해서 올리는 카드</h3>';
+    html += '<div class="amulbox" id="amulBox"></div>';
+    html += '<div class="btn-row">'
+      + '<button type="button" class="btn btn--gold btn--wide" id="saveAmulBtn">이미지로 저장</button>'
+      + '<button type="button" class="btn btn--ghost" id="againBtn">다시</button>'
       + '</div>';
-    html += '<p class="story__cap">이 카드를 길게 눌러 저장하거나 캡처해 주세요. 이 카드와 한 줄 부적, 두 장이면 인스타 인증이 돼요.</p>';
-    html += '<p class="sect-h" style="margin-top:22px">한 줄 부적 카드</p>';
-    html += '<h3 class="sect-t">내 사주로 만든 2027년 부적</h3>';
-    html += amulCard(a, aName);
-    html += '<p class="story__cap">모자란 기운 하나를 부적으로 세웠어요. 여기까지 두 장을 캡처하면 인증 끝 — 아래 인스타 안내에 순서가 있어요.</p>';
+    html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
 
-    /* 보내기 */
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
-      + '<button type="button" class="btn btn--ghost" id="againBtn">다시</button>'
       + '</div>';
     html += '<p class="note">보내는 링크에는 <b>내 사주 정보만</b>(생년월일·시각·성별) 담겨요. 상대방 사주는 담기지 않아요. '
       + '친구가 링크를 열고 자기 사주를 넣으면 같은 비교가 그쪽 화면에서 만들어집니다.</p>';
@@ -1295,8 +1194,34 @@
     box.innerHTML = html;
     box.hidden = false;
 
+    /* 부적 카드는 그림(Canvas)으로 그려 <img>로 앉힌다 — 길게 눌러 저장 + 버튼 저장 둘 다 되게 */
+    var cv = doc.createElement('canvas');
+    cv.width = 1080; cv.height = 1920;
+    drawAmul(cv, { rel: rel, a: aName, b: bName, title: amul.name, art: amul.art, line: amul.line, hanja: R.hanja, word: R.word });
+    var dataUrl = '';
+    try { dataUrl = cv.toDataURL('image/png'); } catch (e) { dataUrl = ''; }
+    var holder = $('#amulBox');
+    if (holder) {
+      if (dataUrl) {
+        var img = doc.createElement('img');
+        img.className = 'amulimg';
+        img.id = 'amulCard';
+        img.alt = '2027 정미년 ' + R.card;
+        img.src = dataUrl;
+        holder.appendChild(img);
+      } else {
+        holder.innerHTML = '<p class="story__cap">카드를 그리지 못했어요 — 새로고침 후 다시 시도해 주세요.</p>';
+      }
+    }
+
+    var saveB = $('#saveAmulBtn');
+    if (saveB) saveB.addEventListener('click', function () {
+      saveAmul(cv, rel, aName, bName);
+    });
+
     var sh = $('#shareChemiBtn');
     if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
+
     var ag = $('#againBtn');
     if (ag) ag.addEventListener('click', function () {
       box.hidden = true;
@@ -1304,6 +1229,550 @@
     });
 
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── 부적 카드: 1080×1920 실크 + 금박 이중 테두리 + 낙관 ───────── */
+  var SERIF_STACK = '"Nanum Myeongjo","NanumMyeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","SamsungMyeongjo","Batang",serif';
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function roundPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function goldGrad(ctx, x0, y0, x1, y1, P) {
+    var g = ctx.createLinearGradient(x0, y0, x1, y1);
+    g.addColorStop(0.00, P.goldLow);
+    g.addColorStop(0.14, P.goldHi);
+    g.addColorStop(0.30, P.gold);
+    g.addColorStop(0.46, P.goldHi);
+    g.addColorStop(0.60, P.gold);
+    g.addColorStop(0.78, P.goldHi);
+    g.addColorStop(1.00, P.goldLow);
+    return g;
+  }
+
+  /* 글자를 한 자씩 가운데 정렬로 — 캔버스엔 letter-spacing 이 없어서 */
+  function spacedCenter(ctx, text, cx, y, gap) {
+    var chars = Array.from(String(text));
+    var ws = [], total = 0, i;
+    for (i = 0; i < chars.length; i++) { ws.push(ctx.measureText(chars[i]).width); total += ws[i]; }
+    total += gap * Math.max(0, chars.length - 1);
+    var x = cx - total / 2;
+    for (i = 0; i < chars.length; i++) {
+      ctx.fillText(chars[i], x + ws[i] / 2, y);
+      x += ws[i] + gap;
+    }
+  }
+
+  function wrapLines(ctx, text, maxW) {
+    var words = String(text).split(' '), lines = [], cur = '';
+    words.forEach(function (w) {
+      var t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; }
+      else cur = t;
+    });
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  function diamond(ctx, cx, cy, r) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r, cy); ctx.lineTo(cx, cy + r); ctx.lineTo(cx - r, cy);
+    ctx.closePath();
+  }
+
+  function drawAmul(cv, o) {
+    var W = cv.width, H = cv.height;
+    var ctx = cv.getContext('2d');
+    if (!ctx) return;
+    var love = o.rel === 'love';
+    var P = love ? {
+      bg1: '#3A0C1B', bg2: '#14060F', bg3: '#050309',
+      glow: 'rgba(232,132,120,0.26)', glow2: 'rgba(58,80,138,0.26)',
+      goldGlow: 'rgba(238,190,150,0.10)',
+      goldHi: '#FFF1E3', gold: '#EFC4AB', goldLow: '#A96C52',
+      cream: '#F8EAE0', dim: 'rgba(248,234,224,0.62)', seal: '#A51F35',
+      glyphGlow: 'rgba(255,186,158,0.34)'
+    } : {
+      bg1: '#0B2A34', bg2: '#061420', bg3: '#030B12',
+      glow: 'rgba(42,148,120,0.32)', glow2: 'rgba(40,74,128,0.26)',
+      goldGlow: 'rgba(226,186,120,0.10)',
+      goldHi: '#FFF8E3', gold: '#EED4A4', goldLow: '#A87C42',
+      cream: '#F4EBDA', dim: 'rgba(244,235,218,0.62)', seal: '#9C3A2E',
+      glyphGlow: 'rgba(255,226,164,0.30)'
+    };
+    var serif = SERIF_STACK;
+
+    /* 1. 바탕 — 실크 */
+    var g = ctx.createLinearGradient(0, 0, W * 0.4, H);
+    g.addColorStop(0, P.bg1); g.addColorStop(0.54, P.bg2); g.addColorStop(1, P.bg3);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    var rg = ctx.createRadialGradient(W * 0.5, H * 0.3, 40, W * 0.5, H * 0.32, W * 0.98);
+    rg.addColorStop(0, P.glow); rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+
+    var rg2 = ctx.createRadialGradient(W * 0.12, H * 0.88, 20, W * 0.12, H * 0.9, W * 0.85);
+    rg2.addColorStop(0, P.glow2); rg2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg2; ctx.fillRect(0, 0, W, H);
+
+    /* 위에서 스며드는 금빛 — 카드가 종이보다 천처럼 보이게 */
+    var rg3 = ctx.createRadialGradient(W * 0.5, -H * 0.05, 40, W * 0.5, H * 0.1, W * 0.95);
+    rg3.addColorStop(0, P.goldGlow); rg3.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg3; ctx.fillRect(0, 0, W, H);
+
+    var rnd = mulberry32(love ? 20270214 : 20271121);
+    ctx.save();
+    for (var i = 0; i < 300; i++) {
+      var x0 = rnd() * W, y0 = rnd() * H, len = 180 + rnd() * 560, ang = -0.62 + rnd() * 0.26;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.quadraticCurveTo(
+        x0 + Math.cos(ang) * len * 0.5 + (rnd() - 0.5) * 46,
+        y0 + Math.sin(ang) * len * 0.5,
+        x0 + Math.cos(ang) * len,
+        y0 + Math.sin(ang) * len
+      );
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.012 + rnd() * 0.026).toFixed(3) + ')';
+      ctx.lineWidth = 0.6 + rnd() * 1.7;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* 넓은 광택 밴드 (실크 결) */
+    for (var b2 = 0; b2 < 3; b2++) {
+      var by = H * (0.18 + b2 * 0.31);
+      var bgGrad = ctx.createLinearGradient(0, by - 260, W, by + 260);
+      bgGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      bgGrad.addColorStop(0.48, 'rgba(255,255,255,0.038)');
+      bgGrad.addColorStop(0.52, 'rgba(255,255,255,0.050)');
+      bgGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, by - 300, W, 600);
+    }
+
+    /* 비네트 */
+    var vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.22, W / 2, H / 2, H * 0.74);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+
+    /* 2. 금박 이중 테두리 */
+    ctx.save();
+    roundPath(ctx, 40, 40, W - 80, H - 80, 30);
+    ctx.lineWidth = 3.2; ctx.strokeStyle = goldGrad(ctx, 40, 40, W - 40, H - 40, P); ctx.stroke();
+    roundPath(ctx, 66, 66, W - 132, H - 132, 22);
+    ctx.lineWidth = 1.1; ctx.strokeStyle = 'rgba(238,214,170,0.55)'; ctx.stroke();
+    roundPath(ctx, 82, 82, W - 164, H - 164, 15);
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(238,214,170,0.16)'; ctx.stroke();
+    ctx.restore();
+
+    /* 테두리 안쪽 모서리 장식 — 네 귀에 ㄱ자 금선 */
+    ctx.save();
+    ctx.strokeStyle = 'rgba(238,214,170,0.42)'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    var ci = 104, cl = 54;
+    [[ci, ci, 1, 1], [W - ci, ci, -1, 1], [ci, H - ci, 1, -1], [W - ci, H - ci, -1, -1]].forEach(function (c) {
+      ctx.beginPath();
+      ctx.moveTo(c[0] + c[2] * cl, c[1]);
+      ctx.lineTo(c[0], c[1]);
+      ctx.lineTo(c[0], c[1] + c[3] * cl);
+      ctx.stroke();
+    });
+    ctx.restore();
+
+    /* 테두리 위 작은 다이아몬드 4개 (상하좌우) */
+    ctx.save();
+    ctx.fillStyle = goldGrad(ctx, W / 2 - 20, 0, W / 2 + 20, 80, P);
+    [[W / 2, 40], [W / 2, H - 40], [40, H / 2], [W - 40, H / 2]].forEach(function (p) {
+      diamond(ctx, p[0], p[1], 9); ctx.fill();
+    });
+    ctx.restore();
+
+    /* 3. 위 — 연도 · 매듭 장식 */
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '500 25px ' + serif;
+    ctx.fillStyle = P.dim;
+    spacedCenter(ctx, '2027 · 정미년', W / 2, 176, 11);
+
+    ctx.strokeStyle = 'rgba(238,214,170,0.42)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 168, 214); ctx.lineTo(W / 2 - 42, 214); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W / 2 + 42, 214); ctx.lineTo(W / 2 + 168, 214); ctx.stroke();
+    ctx.fillStyle = goldGrad(ctx, W / 2 - 14, 200, W / 2 + 14, 228, P);
+    diamond(ctx, W / 2, 214, 10); ctx.fill();
+    ctx.beginPath(); ctx.arc(W / 2, 214, 20, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(238,214,170,0.30)'; ctx.lineWidth = 1; ctx.stroke();
+
+    /* 4. 부적 이름 — 조합마다 다르다 */
+    var title = o.title || (o.word + ' 부적');
+    var tfs = 62;
+    ctx.font = '700 ' + tfs + 'px ' + serif;
+    var tw = ctx.measureText(title).width + 4 * Math.max(0, title.length - 1);
+    if (tw > W - 220) {
+      tfs = Math.max(34, Math.floor(tfs * (W - 220) / tw));
+      ctx.font = '700 ' + tfs + 'px ' + serif;
+    }
+    ctx.fillStyle = goldGrad(ctx, 0, 300, 0, 380, P);
+    spacedCenter(ctx, title, W / 2, 368, 4);
+
+    /* 5. 부적 문양 — 조합마다 다른 금박 일러스트(쌍별·달과 파도·열쇠·나비·금전수·매듭·쌍불꽃) */
+    drawEmblem(ctx, o.art, W / 2, 808, 452, P);
+
+    /* 6. 이름 */
+    ctx.textBaseline = 'alphabetic';
+    var nmTx = o.a + '  ·  ' + o.b;
+    var fs = 48;
+    ctx.font = '600 ' + fs + 'px ' + serif;
+    var nmW = ctx.measureText(nmTx).width + 2 * Math.max(0, nmTx.length - 1);
+    if (nmW > W - 280) { fs = Math.max(28, Math.floor(fs * (W - 280) / nmW)); ctx.font = '600 ' + fs + 'px ' + serif; }
+    ctx.fillStyle = P.cream;
+    spacedCenter(ctx, nmTx, W / 2, 1196, 2);
+
+    ctx.font = '400 26px ' + serif;
+    ctx.fillStyle = P.dim;
+    spacedCenter(ctx, '2027 정미년 · ' + o.word + ' 케미', W / 2, 1252, 5);
+
+    /* 7. 부적 한 줄 */
+    ctx.font = '600 44px ' + serif;
+    var lines = wrapLines(ctx, o.line, 820);
+    if (lines.length > 2) { ctx.font = '600 38px ' + serif; lines = wrapLines(ctx, o.line, 860); }
+    var ly = lines.length > 1 ? 1336 : 1352;
+    ctx.fillStyle = P.cream;
+    lines.slice(0, 2).forEach(function (ln, idx) {
+      spacedCenter(ctx, ln, W / 2, ly + idx * 64, 2);
+    });
+
+    /* 8. 구분선 */
+    var dy = 1480;
+    ctx.strokeStyle = 'rgba(238,214,170,0.30)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 210, dy); ctx.lineTo(W / 2 - 40, dy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W / 2 + 40, dy); ctx.lineTo(W / 2 + 210, dy); ctx.stroke();
+    ctx.fillStyle = 'rgba(238,214,170,0.55)';
+    diamond(ctx, W / 2, dy, 8); ctx.fill();
+
+    /* 9. 낙관 인장 (友 / 愛) */
+    drawSeal(ctx, W - 236, 1548, 168, o.hanja, P, serif);
+    /* 왼쪽 아래 — 2027 정미년 표식 */
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.font = '500 26px ' + serif;
+    ctx.fillStyle = 'rgba(238,214,170,0.55)';
+    ctx.fillText('丁未', 200, 1620);
+    ctx.strokeStyle = 'rgba(238,214,170,0.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(200, 1644); ctx.lineTo(268, 1644); ctx.stroke();
+    ctx.restore();
+
+    /* 10. 워터마크 */
+    ctx.textAlign = 'center';
+    ctx.font = '600 33px ' + serif;
+    ctx.fillStyle = 'rgba(240,216,172,0.92)';
+    spacedCenter(ctx, '@life.saju_yoonise', W / 2, 1772, 1);
+    ctx.font = '400 25px ' + serif;
+    ctx.fillStyle = P.dim;
+    spacedCenter(ctx, '윤이세사주 · 2027 타이밍 캘린더', W / 2, 1818, 3);
+
+    /* 11. 금가루 */
+    ctx.save();
+    for (var s = 0; s < 46; s++) {
+      var sx = 90 + rnd() * (W - 180), sy = 120 + rnd() * (H - 260), sr = 0.8 + rnd() * 1.9;
+      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,241,214,' + (0.06 + rnd() * 0.22).toFixed(3) + ')';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* ── 부적 문양 — 금박 선화(線畵). 조합마다 다른 그림 ──────────
+     stars 쌍별 · moonwave 달과 파도 · key 황금열쇠
+     butterfly 쌍나비 · money 금전수 · knot 매듭 · flame 쌍불꽃        */
+  function starPath(ctx, x, y, r) {
+    var k = r * 0.16;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x + k, y - k, x + r, y);
+    ctx.quadraticCurveTo(x + k, y + k, x, y + r);
+    ctx.quadraticCurveTo(x - k, y + k, x - r, y);
+    ctx.quadraticCurveTo(x - k, y - k, x, y - r);
+    ctx.closePath();
+  }
+
+  function emStars(ctx, cx, cy, S) {
+    starPath(ctx, cx - S * 0.26, cy - S * 0.22, S * 0.40); ctx.fill();
+    starPath(ctx, cx + S * 0.34, cy + S * 0.26, S * 0.23); ctx.fill();
+    /* 작은 별가루 */
+    [[-0.60, 0.34, 0.030], [0.58, -0.42, 0.024], [0.12, 0.60, 0.020], [-0.42, -0.58, 0.017]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function emMoonWave(ctx, cx, cy, S) {
+    /* 초승달 — 큰 원에서 작은 원을 빼서 금빛 달 */
+    var mR = S * 0.30, mx = cx - S * 0.30, my = cy - S * 0.30;
+    ctx.beginPath();
+    ctx.arc(mx, my, mR, 0, Math.PI * 2);
+    ctx.moveTo(mx + mR * 0.86 + mR * 0.82, my);
+    ctx.arc(mx + mR * 0.86, my, mR * 0.82, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+    /* 파도 세 줄 */
+    for (var w = 0; w < 3; w++) {
+      var wy = cy + S * 0.10 + w * S * 0.155;
+      ctx.beginPath();
+      ctx.moveTo(cx - S * 0.52, wy);
+      ctx.bezierCurveTo(cx - S * 0.26, wy - S * 0.13, cx - S * 0.10, wy + S * 0.13, cx + S * 0.04, wy);
+      ctx.bezierCurveTo(cx + S * 0.18, wy - S * 0.13, cx + S * 0.34, wy + S * 0.09, cx + S * 0.50, wy - S * 0.02);
+      ctx.stroke();
+    }
+    /* 물빛 반짝임 */
+    [[0.40, -0.34, 0.030], [0.52, -0.16, 0.020]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function emKey(ctx, cx, cy, S) {
+    ctx.beginPath(); ctx.arc(cx, cy - S * 0.40, S * 0.19, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy - S * 0.40, S * 0.095, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy - S * 0.21); ctx.lineTo(cx, cy + S * 0.52); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.20); ctx.lineTo(cx + S * 0.26, cy + S * 0.20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.36); ctx.lineTo(cx + S * 0.20, cy + S * 0.36); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + S * 0.50); ctx.lineTo(cx + S * 0.14, cy + S * 0.50); ctx.stroke();
+    /* 열쇠 구멍 반짝 — 작은 다이아몬드 */
+    diamond(ctx, cx + S * 0.44, cy - S * 0.46, S * 0.05); ctx.fill();
+    diamond(ctx, cx - S * 0.40, cy + S * 0.30, S * 0.035); ctx.fill();
+  }
+
+  function emButterflyOne(ctx, x, y, s, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt || 0);
+    /* 몸통 — 채워서 또렷하게 */
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.62);
+    ctx.quadraticCurveTo(s * 0.10, -s * 0.10, s * 0.045, s * 0.30);
+    ctx.quadraticCurveTo(s * 0.02, s * 0.56, 0, s * 0.60);
+    ctx.quadraticCurveTo(-s * 0.02, s * 0.56, -s * 0.045, s * 0.30);
+    ctx.quadraticCurveTo(-s * 0.10, -s * 0.10, 0, -s * 0.62);
+    ctx.closePath();
+    ctx.fill();
+    [-1, 1].forEach(function (d) {
+      /* 윗날개 — 크고 뾰족하게 */
+      ctx.beginPath();
+      ctx.moveTo(d * s * 0.05, -s * 0.52);
+      ctx.bezierCurveTo(d * s * 0.40, -s * 1.30, d * s * 1.24, -s * 1.06, d * s * 1.02, -s * 0.54);
+      ctx.bezierCurveTo(d * s * 0.90, -s * 0.22, d * s * 0.34, -s * 0.16, d * s * 0.05, -s * 0.20);
+      ctx.stroke();
+      /* 아랫날개 — 작고 뾰족하게 */
+      ctx.beginPath();
+      ctx.moveTo(d * s * 0.05, -s * 0.10);
+      ctx.bezierCurveTo(d * s * 0.60, -s * 0.02, d * s * 0.86, s * 0.36, d * s * 0.46, s * 0.66);
+      ctx.bezierCurveTo(d * s * 0.20, s * 0.84, d * s * 0.06, s * 0.40, d * s * 0.05, s * 0.20);
+      ctx.stroke();
+      /* 더듬이 */
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.60);
+      ctx.quadraticCurveTo(d * s * 0.28, -s * 0.98, d * s * 0.50, -s * 1.02);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(d * s * 0.52, -s * 1.03, s * 0.038, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function emButterfly(ctx, cx, cy, S) {
+    emButterflyOne(ctx, cx - S * 0.26, cy - S * 0.04, S * 0.36, -0.12);
+    emButterflyOne(ctx, cx + S * 0.36, cy + S * 0.30, S * 0.22, 0.26);
+    diamond(ctx, cx + S * 0.56, cy - S * 0.50, S * 0.038); ctx.fill();
+    diamond(ctx, cx - S * 0.58, cy + S * 0.44, S * 0.030); ctx.fill();
+  }
+
+  function emMoney(ctx, cx, cy, S) {
+    /* 금전수 — 줄기에서 뻗은 가지 끝에 엽전 */
+    ctx.lineWidth = Math.max(5, S * 0.030);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + S * 0.54);
+    ctx.quadraticCurveTo(cx - S * 0.06, cy + S * 0.10, cx + S * 0.02, cy - S * 0.50);
+    ctx.stroke();
+
+    var coins = [
+      { x: -0.40, y: -0.06, r: 0.115, by: 0.16 },
+      { x: 0.38, y: -0.28, r: 0.100, by: -0.06 },
+      { x: -0.24, y: -0.46, r: 0.085, by: -0.28 }
+    ];
+    ctx.lineWidth = Math.max(3.5, S * 0.020);
+    coins.forEach(function (c) {
+      var px = cx + S * c.x, py = cy + S * c.y;
+      ctx.beginPath();
+      ctx.moveTo(cx + S * 0.01, cy + S * c.by);
+      ctx.quadraticCurveTo((cx + px) / 2, py + S * 0.10, px + (c.x < 0 ? S * c.r * 0.55 : -S * c.r * 0.55), py + S * c.r * 0.45);
+      ctx.stroke();
+    });
+    /* 바닥 */
+    ctx.lineWidth = Math.max(4, S * 0.024);
+    ctx.beginPath(); ctx.moveTo(cx - S * 0.30, cy + S * 0.58); ctx.lineTo(cx + S * 0.30, cy + S * 0.58); ctx.stroke();
+
+    coins.forEach(function (c) {
+      var px = cx + S * c.x, py = cy + S * c.y, r = S * c.r;
+      ctx.lineWidth = Math.max(5, S * 0.028);
+      ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
+      var q = r * 0.34;
+      ctx.beginPath();
+      ctx.moveTo(px - q, py - q); ctx.lineTo(px + q, py - q);
+      ctx.lineTo(px + q, py + q); ctx.lineTo(px - q, py + q);
+      ctx.closePath(); ctx.stroke();
+    });
+  }
+
+  function emKnot(ctx, cx, cy, S) {
+    /* 금실 매듭 — 두 고리가 맞물린 문양 (의리 = 이어진 고리) */
+    var r = S * 0.255, off = S * 0.185;
+    ctx.lineWidth = Math.max(5, S * 0.032);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r, 0, Math.PI * 2); ctx.stroke();
+    /* 맞물린 자리 — 작은 매듭 */
+    ctx.lineWidth = Math.max(4, S * 0.024);
+    ctx.beginPath(); ctx.arc(cx - off, cy - S * 0.04, r * 0.42, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + off, cy + S * 0.10, r * 0.42, 0, Math.PI * 2); ctx.stroke();
+    /* 아래로 늘어뜨린 술 두 가닥 */
+    for (var t = -1; t <= 1; t += 2) {
+      ctx.beginPath();
+      ctx.moveTo(cx + t * S * 0.055, cy + S * 0.30);
+      ctx.quadraticCurveTo(cx + t * S * 0.13, cy + S * 0.46, cx + t * S * 0.10, cy + S * 0.58);
+      ctx.stroke();
+    }
+    diamond(ctx, cx - S * 0.60, cy - S * 0.40, S * 0.030); ctx.fill();
+    diamond(ctx, cx + S * 0.62, cy + S * 0.42, S * 0.030); ctx.fill();
+  }
+
+  function emFlameShape(ctx, x, yBase, h, w) {
+    ctx.beginPath();
+    ctx.moveTo(x, yBase);
+    ctx.bezierCurveTo(x - w * 1.02, yBase - h * 0.24, x - w * 0.80, yBase - h * 0.66, x - w * 0.02, yBase - h);
+    ctx.bezierCurveTo(x + w * 0.14, yBase - h * 0.62, x + w * 0.54, yBase - h * 0.46, x + w * 0.52, yBase - h * 0.20);
+    ctx.bezierCurveTo(x + w * 0.50, yBase - h * 0.10, x + w * 0.30, yBase - h * 0.02, x + w * 0.22, yBase - h * 0.16);
+    ctx.bezierCurveTo(x + w * 0.16, yBase - h * 0.04, x + w * 0.08, yBase, x, yBase);
+    ctx.stroke();
+  }
+
+  function emFlame(ctx, cx, cy, S) {
+    emFlameShape(ctx, cx - S * 0.18, cy + S * 0.46, S * 0.90, S * 0.30);
+    emFlameShape(ctx, cx + S * 0.24, cy + S * 0.46, S * 0.62, S * 0.22);
+    ctx.lineWidth = Math.max(2.5, S * 0.013);
+    emFlameShape(ctx, cx - S * 0.18, cy + S * 0.42, S * 0.44, S * 0.13);
+    ctx.lineWidth = Math.max(4, S * 0.026);
+    [[0.46, -0.30, 0.032], [-0.44, -0.44, 0.026]].forEach(function (d) {
+      ctx.beginPath();
+      ctx.arc(cx + S * d[0], cy + S * d[1], S * d[2], 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function drawEmblem(ctx, kind, cx, cy, S, P) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    /* 뒤 고리 — 은은한 금빛 */
+    ctx.beginPath(); ctx.arc(cx, cy, S * 0.80, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(238,214,170,0.15)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, S * 0.93, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(238,214,170,0.07)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.save();
+    ctx.fillStyle = 'rgba(238,214,170,0.50)';
+    for (var d = 0; d < 4; d++) {
+      var ang = Math.PI / 4 + d * Math.PI / 2;
+      diamond(ctx, cx + Math.cos(ang) * S * 0.80, cy + Math.sin(ang) * S * 0.80, 6);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = goldGrad(ctx, cx - S, cy - S, cx + S, cy + S, P);
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = Math.max(4, S * 0.026);
+    ctx.shadowColor = P.glyphGlow;
+    ctx.shadowBlur = 46;
+
+    if (kind === 'stars') emStars(ctx, cx, cy, S);
+    else if (kind === 'moonwave') emMoonWave(ctx, cx, cy, S);
+    else if (kind === 'key') emKey(ctx, cx, cy, S);
+    else if (kind === 'butterfly') emButterfly(ctx, cx, cy, S);
+    else if (kind === 'money') emMoney(ctx, cx, cy, S);
+    else if (kind === 'knot') emKnot(ctx, cx, cy, S);
+    else emFlame(ctx, cx, cy, S);
+
+    ctx.restore();
+  }
+
+  function drawSeal(ctx, x, y, size, hanja, P, serif) {
+    ctx.save();
+    ctx.translate(x + size / 2, y + size / 2);
+    ctx.rotate(-4 * Math.PI / 180);
+    var h = size / 2;
+    roundPath(ctx, -h, -h, size, size, 10);
+    ctx.fillStyle = P.seal;
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(255,238,224,0.55)';
+    roundPath(ctx, -h + 7, -h + 7, size - 14, size - 14, 6);
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FBEEE2';
+    ctx.font = '700 ' + Math.round(size * 0.52) + 'px ' + serif;
+    ctx.fillText(hanja, 0, -size * 0.04);
+    ctx.font = '500 ' + Math.round(size * 0.12) + 'px ' + serif;
+    ctx.fillStyle = 'rgba(255,238,224,0.85)';
+    ctx.fillText('2027', 0, size * 0.30);
+    ctx.restore();
+  }
+
+  function saveAmul(cv, rel, aName, bName) {
+    var fname = '2027-' + (rel === 'love' ? '사랑부적' : '우정부적') + '-' + (aName || '나') + (bName ? '-' + bName : '') + '.png';
+    function fail() {
+      toast('저장이 막히면 카드를 길게 눌러 저장해 주세요.');
+    }
+    try {
+      if (cv.toBlob) {
+        cv.toBlob(function (blob) {
+          if (!blob) { fail(); return; }
+          var url = URL.createObjectURL(blob);
+          var aEl = doc.createElement('a');
+          aEl.href = url;
+          aEl.download = fname;
+          aEl.rel = 'noopener';
+          doc.body.appendChild(aEl);
+          aEl.click();
+          doc.body.removeChild(aEl);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 6000);
+          toast('이미지로 저장했어요 — 사진첩에서 확인해 주세요.');
+        }, 'image/png');
+        return;
+      }
+      var url2 = cv.toDataURL('image/png');
+      var a2 = doc.createElement('a');
+      a2.href = url2; a2.download = fname;
+      doc.body.appendChild(a2); a2.click(); doc.body.removeChild(a2);
+      toast('이미지로 저장했어요 — 사진첩에서 확인해 주세요.');
+    } catch (e) { fail(); }
   }
 
   /* ── 케미: 링크 ─────────────────────────────────── */
@@ -1331,7 +1800,8 @@
 
   function chemiLink(ch) {
     var p = shareableOf(ch);
-    var q = '?chemi=' + encodeChemin(p) + '&from=' + encodeURIComponent(p.name || '친구');
+    var q = '?chemi=' + encodeChemin(p) + '&from=' + encodeURIComponent(p.name || '친구')
+      + '&rel=' + encodeURIComponent(relNow());
     var code = myCode();
     if (code) q += '&ref=' + encodeURIComponent(code);
     return LIVE_BASE + q;
@@ -1363,7 +1833,7 @@
     if (rYou.error) { showCheminError(rYou); return; }
 
     /* 로그인 전 — 결과 대신 로그인 안내. 넣은 사주는 세션에 남겨 돌아오면 그대로 연다. */
-    if (!state.user && !force) {
+    if (!state.user && !force && !/[?&]qa=1/.test(location.search)) {   /* QA 임시 */
       saveGate();
       renderGate();
       if (state.db === 'off') toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.');
@@ -1457,6 +1927,9 @@
       }
     }
 
+    var rl = (q.get('rel') || '').toLowerCase();
+    if (rl === 'love' || rl === 'friend') state.rel = rl;
+
     var pv = q.get('preview');
     if (pv && /^\d+$/.test(pv)) state.demo = Math.min(12, Number(pv));
   }
@@ -1470,6 +1943,8 @@
     bindPerson('me');
     bindPerson('you');
     readParams();
+    renderRelChips();
+    bindRelChips();
     prefillMe();
 
     var btn = $('#chemiBtn');
@@ -1503,6 +1978,9 @@
       }, 400);
     }
   }
+
+  /* QA 임시 — 부적 도안 확인용 (머지 전 제거) */
+  if (/[?&]qa=1/.test(location.search)) global.__qaAmul = drawAmul;
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);
   else boot();
