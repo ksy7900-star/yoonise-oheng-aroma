@@ -12,6 +12,8 @@
 <meta property="og:description" content="양식에 적고 결제한 뒤, 노란 버튼 한 번이면 카톡으로 접수 끝.">
 <meta property="og:locale" content="ko_KR">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<!-- 페이앱 JS 연동 — 휴대폰 번호를 실어 보내 연락처 입력 화면을 건너뛴다 (defer: 첫 화면을 막지 않게) -->
+<script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 <style>
 /* ==========================================================
    윤이세 — 상담·작명 전용 신청서 (/apply/)
@@ -353,7 +355,7 @@ a { color: inherit; }
 
   <section class="pay" aria-label="결제">
     <a class="pay__btn pay__btn--card" id="payCard" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener" data-pay-link>
-      <b>💳 카드결제 (페이앱)</b><span>카드·간편결제로 바로 결제</span>
+      <b>💳 카드 · 간편결제 하기</b><span>휴대폰 번호를 적으면 바로 결제창으로</span>
     </a>
     <button type="button" class="pay__btn pay__btn--bank" id="payBank">
       <b>🏦 계좌이체</b><span>SC제일은행 504-20-454146<br>김나영(엔와이트레이드)</span><em>눌러서 계좌번호 복사</em>
@@ -401,6 +403,7 @@ a { color: inherit; }
       emoji: '🔎',
       name: '원포인트 리딩',
       price: '49,000원',
+      priceNum: 49000,
       eyebrow: '1:1 POINT READING',
       desc: '지금 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.',
       list: ['가장 급한 질문 하나에 집중', '지금 할 일 · 미룰 일 정리', '카톡으로 정리해 전달'],
@@ -416,6 +419,7 @@ a { color: inherit; }
       emoji: '🌿',
       name: '종합 사주',
       price: '100,000원',
+      priceNum: 100000,
       eyebrow: 'FULL READING',
       desc: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 상담이에요.',
       list: ['타고난 기질과 강점', '재물 · 관계 · 일의 흐름', '대운·세운으로 보는 방향'],
@@ -431,6 +435,7 @@ a { color: inherit; }
       emoji: '✍️',
       name: '개명 · 작명',
       price: '200,000원',
+      priceNum: 200000,
       eyebrow: 'NAME READING',
       desc: '사주에 부족한 기운을 채우는 <b>평생 쓸 이름</b>을 설계해 드려요. 개명도, 신생아 작명도.',
       list: ['이름 후보 3~5개 + 이름 풀이', '선명장(한자·획수·소리) 정리', '신생아 작명은 성씨 한자만'],
@@ -839,18 +844,68 @@ a { color: inherit; }
     try { if (navigator.vibrate) navigator.vibrate(18); } catch (e3) { }
   });
 
-  /* ── 카드결제: 진짜 링크(팝업차단 회피) + 0.9초 현재창 가드 ──
-     새 탭이 안 열린 환경(인앱 브라우저·팝업 차단)이면 현재 창을 결제창으로 넘긴다.
-     새 탭이 열려 화면을 벗어났으면(blur·hidden) 넘기지 않는다. */
-  var card = $('payCard');
-  card.addEventListener('click', function () {
-    storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
-    var url = card.href;
-    toast('페이앱 결제창을 열었어요 — 결제 후 노란 버튼을 눌러 주세요');
+  /* ── 카드결제 ─────────────────────────────
+     ① '연락처 또는 입금자명'에 휴대폰 번호가 적혀 있으면 — 페이앱 JS 연동.
+        shopname·goodname·price·recvphone 을 실어 이 창을 결제창으로 넘기므로
+        페이앱의 '연락처 입력' 화면을 건너뛰고 결제수단 선택부터 시작한다.
+     ② 번호가 없거나 JS 연동을 못 쓰면 — 지금까지의 결제 링크 그대로.
+        새 탭이 안 열리는 인앱 브라우저에서는 0.9초 뒤 이 창을 결제창으로 넘긴다. */
+  var PAYAPP = { userid: 'yoonise', shopname: '윤이세사주' };
+
+  /* '010-1234-5678' · '01012345678' · '김나영 010 1234 5678' → '01012345678' */
+  function mobileOf(v) {
+    var m = String(v || '').match(/(?:^|[^0-9])010[-\s.]?([0-9]{3,4})[-\s.]?([0-9]{4})(?![0-9])/);
+    return m ? '010' + m[1] + m[2] : '';
+  }
+
+  function payappGo(phone) {
+    if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
+    var p = prod();
+    PayApp.setTarget('_self');          /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
+    PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
+    PayApp.setParam({
+      goodname: p.name,
+      price: String(p.priceNum),
+      recvphone: phone,
+      redirectpay: '1',                 /* 연락처 입력 화면 없이 결제창으로 직행 */
+      smsuse: 'n',                      /* 결제요청 문자는 보내지 않는다 */
+      charset: 'utf-8',
+      var1: p.key                       /* 결제내역에서 상품 구분용 */
+    });
+    PayApp.payrequest();
+    return true;
+  }
+
+  /* 폴백 — 결제 링크: 새 탭으로 먼저, 안 열렸으면(blur·hidden 없음) 이 창으로 */
+  function payappLink(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+    a.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(a);
+    try { a.click(); } catch (e) { try { location.href = url; } catch (e2) { } }
     setTimeout(function () {
       if (sawBlur || document.visibilityState !== 'visible' || !document.hasFocus()) return;
       try { location.href = url; } catch (e) { }
     }, 900);
+  }
+
+  var card = $('payCard');
+  card.addEventListener('click', function (e) {
+    storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
+
+    var phone = mobileOf($('fWho').value);
+    if (phone) {
+      var went = false;
+      try { went = payappGo(phone); } catch (err) { went = false; }
+      if (went) { e.preventDefault(); return; }   /* 이 창이 결제창으로 넘어간다 */
+    }
+
+    e.preventDefault();
+    if (!phone) toast('휴대폰 번호를 적으면 결제 화면이 한 단계 줄어요');
+    payappLink(card.href);
   });
 
   /* 결제창이 안 보여 '여기 누르기'로 나가는 경우도 같은 복귀용 저장 */
