@@ -56,6 +56,19 @@
     font-size:11.5px; line-height:1.6; color:var(--mute); margin:0 2px 11px;
     word-break:keep-all;
   }
+  .sec__pill{
+    font-size:9.5px; letter-spacing:.12em; font-weight:700; color:#FFF;
+    background:var(--gold); border-radius:999px; padding:3px 8px;
+  }
+
+  /* 새로 올린 후보 — 눈에 먼저 들어오게 금빛 테두리 */
+  .sec--new{margin-top:14px}
+  .sec--new .card{
+    border-color:rgba(180,83,9,.26);
+    box-shadow:0 2px 10px rgba(180,83,9,.08), 0 1px 2px rgba(15,23,42,.04);
+  }
+  .sec--new .card__no{background:var(--gold)}
+  .sec--new .card__go{background:var(--gold-soft); color:var(--gold)}
 
   /* ── 카드 = 버튼 ── */
   .card{
@@ -149,10 +162,43 @@
     <p class="head__brand">윤이세사주 · 2027 타이밍달력</p>
     <h1 class="head__title">효과음 미리듣기</h1>
     <p class="head__sub">
-      부적이 <b>열릴 때</b> 3가지, 도장이 <b>찍힐 때</b> 2가지.<br>
+      <b>맨 위 두 가지가 새로 올린 도장 소리 후보</b>입니다.<br>
       폰에서 직접 눌러 듣고 마음에 드는 걸 골라 주세요.
     </p>
   </header>
+
+  <section class="sec sec--new sec--seal">
+    <div class="sec__head">
+      <h2 class="sec__title">새로 올린 도장 소리 후보</h2>
+      <span class="sec__pill">NEW</span>
+      <span class="sec__count">2가지</span>
+    </div>
+    <p class="sec__note">말씀하신 '큰북 둥—'과 '물방울 똑!' 그대로 두 가지로 만들어 봤습니다</p>
+
+    <button type="button" class="card" data-sfx="bigDrum">
+      <span class="card__no">C</span>
+      <span class="card__txt">
+        <b class="card__name">큰 북 한 번 '둥—'</b>
+        <span class="card__desc">사찰 법고처럼 가죽을 한 번 크게. '둥!' 친 뒤 깊은 저음이 3초 가까이 길게 앉아 있습니다.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">3.0초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+
+    <button type="button" class="card" data-sfx="droplet">
+      <span class="card__no">D</span>
+      <span class="card__txt">
+        <b class="card__name">맑은 물방울 '똑!'</b>
+        <span class="card__desc">고요한 수면에 물방울 하나. 맑게 튀는 '똑!' 뒤로 잔물결이 1.4초 은은하게 퍼집니다.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">1.4초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+  </section>
 
   <section class="sec sec--open">
     <div class="sec__head">
@@ -230,8 +276,8 @@
     </button>
   </section>
 
-  <button type="button" class="allbtn" id="allBtn">5가지 차례로 듣기</button>
-  <p class="allbtn__hint" id="allHint">1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요</p>
+  <button type="button" class="allbtn" id="allBtn">7가지 차례로 듣기</button>
+  <p class="allbtn__hint" id="allHint">C → D → 1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요</p>
 
   <div class="tips">
     <p><b>소리가 안 들리면</b> 폰의 무음 모드를 풀고 볼륨을 올려 주세요. 아이폰은 첫 번째 터치에서 소리가 켜집니다.</p>
@@ -470,17 +516,90 @@ function sfxStampInk(ctx, dest) {
   bowlTone(ctx, 62.0, { gain: .045, dur: .45, attack: .004, tau: .14, dest: bus });
 }
 
+/* ── C · 큰 북 한 번 '둥—' (3.0초) ────────────────────────────────────────
+   사찰 법고·대북을 한 번 크게 친 소리. 김나영 님 요청 "큰북 한 번을 둥, 좀 길게".
+   · 0ms 어택: 92→54Hz 미끄러지는 북가죽 타격('둥!') + 저역으로 떨어지는 채 소리(700→260Hz).
+   · 몸통: 북통 기본음 55Hz·82Hz 두 겹씩(살짝 어긋난 쌍 = 북통이 천천히 흔들리는 맥놀이),
+     시간상수 1.0~1.3초로 2.96초까지 길게 앉힌다.
+   · 폰 스피커 보강: 55Hz는 작은 스피커에서 거의 안 나오므로 110·137.5·165Hz 배음을 따로 얹어
+     '둥'의 몸통을 만들었다(요청: 110~165Hz 보강).
+   · 220·330Hz 가죽 테두리의 얇은 배음이 먼저 사라지며 저음만 남는다 — 여운이 '둥—'으로 끝난다.
+   · 묵직해서 겹치면 뭉개지므로 내부 trim 으로 peak 를 0.6 근처에 맞춘다. */
+var DRUM_MS = 2980;          /* 카드·이어듣기에서 쓰는 길이 */
+var DRUM_TRIM = 0.72;        /* 최종 크기 — offline 렌더 peak 0.45~0.75 안으로 맞춘 값 */
+function sfxBigDrum(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+  var bus = ctx.createGain(); bus.gain.value = 1;
+  var trim = ctx.createGain(); trim.gain.value = DRUM_TRIM;
+  bus.connect(trim); trim.connect(d);
+  var DUR = 2.96;
+
+  /* ① 가죽을 때리는 순간 — '둥!' */
+  tone(ctx, { from: 92, to: 54, type: 'sine', gain: 0.26, dur: 0.32, attack: 0.004, glide: 0.24, dest: bus });
+  noise(ctx, { dur: 0.070, filter: 'lowpass', f0: 700, f1: 260, q: 0.75, gain: 0.115, attack: 0.001, decay: 2.2, dest: bus });
+  noise(ctx, { dur: 0.024, filter: 'bandpass', f0: 1600, q: 1.1, gain: 0.032, attack: 0.0008, decay: 3, dest: bus });
+
+  /* ② 북통의 깊은 울림 — 55~82Hz, 길게. 어긋난 쌍은 진폭을 낮게 — 여운이 출렁이지 않고 잦아들게 */
+  bowlTone(ctx, 55.0,  { gain: 0.255, dur: DUR,        attack: 0.014, tau: 1.30, dest: bus });
+  bowlTone(ctx, 55.7,  { gain: 0.035, dur: DUR * 0.98, attack: 0.020, tau: 1.10, dest: bus });
+  bowlTone(ctx, 82.0,  { gain: 0.195, dur: DUR * 0.94, attack: 0.010, tau: 1.02, dest: bus });
+  bowlTone(ctx, 82.7,  { gain: 0.030, dur: DUR * 0.92, attack: 0.014, tau: 0.92, dest: bus });
+
+  /* ③ 폰 스피커에서도 들리는 몸통 — 110·137.5·165Hz */
+  bowlTone(ctx, 110.0, { gain: 0.145, dur: DUR * 0.82, attack: 0.008, tau: 0.86, dest: bus });
+  bowlTone(ctx, 137.5, { gain: 0.072, dur: DUR * 0.66, attack: 0.008, tau: 0.64, dest: bus });
+  bowlTone(ctx, 165.0, { gain: 0.052, dur: DUR * 0.56, attack: 0.006, tau: 0.50, dest: bus });
+
+  /* ④ 가죽 테두리 — 먼저 사라지는 얇은 배음 */
+  bowlTone(ctx, 220.0, { gain: 0.026, dur: 1.55, attack: 0.010, tau: 0.42, dest: bus });
+  bowlTone(ctx, 330.0, { gain: 0.011, dur: 0.95, attack: 0.008, tau: 0.25, dest: bus });
+}
+
+/* ── D · 맑은 물방울 '똑!' (1.4초) ───────────────────────────────────────
+   고요한 수반에 물방울이 하나 떨어지는 소리. 김나영 님 요청 "물방울 소리".
+   · 0ms 580→1480Hz 상향 스윕 45ms — 물방울이 표면을 뚫고 솟는 그 '똑!'의 상승음.
+     (물방울은 내려가는 소리가 아니라 올라가는 소리다 — 이 상승이 물소리의 핵심.)
+   · 1480Hz 잔향이 시간상수 0.36초로 1.34초까지 — 수면이 투명하게 울린다.
+   · 2960Hz 옅은 배음 + 740Hz 아랫물결로 폰 스피커에서도 두께가 있게.
+   · 0.28초 뒤 아주 여린 두 번째 물방울(1318Hz) — 잔물결이 한 번 더 번지는 느낌. */
+var DROP_MS = 1420;
+var DROP_TRIM = 1.35;        /* offline 렌더 peak 0.45~0.75 안으로 맞춘 값 */
+function sfxDroplet(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+  var bus = ctx.createGain(); bus.gain.value = 1;
+  var trim = ctx.createGain(); trim.gain.value = DROP_TRIM;
+  bus.connect(trim); trim.connect(d);
+
+  /* ① 똑! — 상향 스윕 45ms */
+  tone(ctx, { from: 580, to: 1480, type: 'sine', gain: 0.30, dur: 0.17, attack: 0.0015, glide: 0.045, dest: bus });
+  tone(ctx, { from: 1160, to: 2960, type: 'sine', gain: 0.058, dur: 0.10, attack: 0.0015, glide: 0.040, at: 0.001, dest: bus });
+  noise(ctx, { dur: 0.012, filter: 'highpass', f0: 5200, q: 0.7, gain: 0.028, attack: 0.0008, decay: 4, dest: bus });
+
+  /* ② 수면에 퍼지는 투명한 잔향 — 1.4초 */
+  bowlTone(ctx, 1480.0, { gain: 0.115, dur: 1.40, attack: 0.003, tau: 0.375, dest: bus });
+  bowlTone(ctx, 1483.4, { gain: 0.016, dur: 1.36, attack: 0.004, tau: 0.360, dest: bus });
+  bowlTone(ctx, 2960.0, { gain: 0.029, dur: 0.92, attack: 0.003, tau: 0.22, dest: bus });
+  bowlTone(ctx, 740.0,  { gain: 0.024, dur: 1.25, attack: 0.008, tau: 0.34, dest: bus });
+
+  /* ③ 잔물결 — 0.28초 뒤 여린 두 번째 물방울 */
+  bowlTone(ctx, 1318.5, { gain: 0.010, dur: 0.50, attack: 0.004, tau: 0.12, at: 0.28, dest: bus });
+}
+
 /* ==========================================================================
    미리듣기 페이지 — 버튼 · 재생 중 표시
    ========================================================================== */
 var SFX = {
+  bigDrum: { name: 'C · 큰 북 한 번 둥—',      ms: DRUM_MS, fn: sfxBigDrum },
+  droplet: { name: 'D · 맑은 물방울 똑!',       ms: DROP_MS, fn: sfxDroplet },
   chime:  { name: '1번 · 맑은 한옥 풍경',      ms: 2280, fn: sfxChimeHome },
   moktak: { name: '2번 · 단정한 목탁·죽비',    ms: 1280, fn: sfxMoktak },
   glass:  { name: '3번 · 맑은 유리종',         ms: 2080, fn: sfxGlassBell },
   stampA: { name: 'A · 묵직한 나무 도장 탁!',  ms: 880,  fn: sfxStampWood },
   stampB: { name: 'B · 더 강한 착! (최종)',     ms: 900,  fn: sfxStampInk }
 };
-var ORDER = ['chime', 'moktak', 'glass', 'stampA', 'stampB'];
+var ORDER = ['bigDrum', 'droplet', 'chime', 'moktak', 'glass', 'stampA', 'stampB'];
 
 var liveEl = document.getElementById('live');
 var allBtn = document.getElementById('allBtn');
@@ -564,8 +683,8 @@ function stopAllSequence() {
   for (var i = 0; i < allTimers.length; i++) clearTimeout(allTimers[i]);
   allTimers = [];
   allBtn.disabled = false;
-  allBtn.textContent = '5가지 차례로 듣기';
-  allHint.textContent = '1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요';
+  allBtn.textContent = '7가지 차례로 듣기';
+  allHint.textContent = 'C → D → 1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요';
 }
 allBtn.addEventListener('click', function () {
   stopAllSequence();
@@ -576,12 +695,12 @@ allBtn.addEventListener('click', function () {
     (function (id, delay) {
       allTimers.push(setTimeout(function () { play(id); }, delay));
     })(ORDER[i], at);
-    allHint.textContent = (i + 1) + ' / 5 — ' + SFX[ORDER[i]].name;
+    allHint.textContent = (i + 1) + ' / 7 — ' + SFX[ORDER[i]].name;
     at += SFX[ORDER[i]].ms + gap;
   }
   allTimers.push(setTimeout(function () {
     stopAllSequence();
-    if (liveEl) liveEl.textContent = '5가지 모두 들었습니다';
+    if (liveEl) liveEl.textContent = '7가지 모두 들었습니다';
   }, at + 120));
 });
 </script>
