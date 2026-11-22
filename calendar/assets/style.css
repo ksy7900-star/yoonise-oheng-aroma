@@ -1083,63 +1083,94 @@ button.talis-plaque:active { transform: scale(.972); }
   color: var(--accent); opacity: .85;
 }
 .ritual__tap {
-  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  position: relative; z-index: 2; display: inline-flex; align-items: center; justify-content: center;
   width: 158px; height: 158px;
   margin: 2px auto 0; padding: 0; border: 0; background: none;
-  border-radius: 26px; -webkit-tap-highlight-color: transparent;
+  border-radius: 26px; cursor: pointer; -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none; -webkit-user-drag: none;
 }
-.ritual__tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+.ritual__tap:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 8px; }
+.ritual.is-open .ritual__tap { cursor: default; }
 
-.ritual__fx {
-  position: absolute; inset: -8px; border-radius: 32px;
-  border: 2px solid var(--accent); opacity: 0; pointer-events: none;
-  animation: fxRing .66s ease-out forwards;
+/* ── 부적 의식 (2026-11-22) — 1.5초 금빛 링 ─────────────────────────
+   누르고 있는 동안 한 바퀴 차오르고, 중간에 손을 떼면 부드럽게 원위치.
+   pathLength=100 · dasharray=100 이라 dashoffset 100→0 이 곧 '한 바퀴'다. */
+.ritual__hold {
+  position: absolute; left: 50%; top: 50%; z-index: 1;
+  width: 176px; height: 176px; margin: -88px 0 0 -88px;
+  pointer-events: none; overflow: visible;
+  transform: rotate(-90deg);            /* 12시에서 시작해 시계 방향으로 */
+  --hold-w: .8;                          /* 반지름 47 → 둘레 295.31, 굵기는 크기마다 1.4px 되게 */
 }
-.ritual__fx::after {
-  content: ""; position: absolute; inset: -9px; border-radius: 40px;
-  border: 1px solid var(--accent); opacity: .5;
+.ritual__hold-track {
+  fill: none; stroke: rgba(174, 138, 80, .20); stroke-width: calc(var(--hold-w) * .78);
 }
-.ritual--목 .ritual__fx::before {
-  content: "✦"; position: absolute; left: 50%; top: -6px; transform: translateX(-50%);
-  font-size: 15px; line-height: 1; color: #D9A93C;
-  animation: sparkUp .66s ease-out forwards;
+.ritual__hold-bar {
+  fill: none; stroke: #BE8F42; stroke-width: var(--hold-w); stroke-linecap: round;
+  stroke-dasharray: 295.31; stroke-dashoffset: 295.31;   /* 한 바퀴 = 둘레 그대로 */
+  filter: drop-shadow(0 0 3px rgba(214, 175, 104, .55));
+  transition: stroke-dashoffset .42s cubic-bezier(.3, .9, .4, 1), opacity .5s ease;
 }
-@keyframes fxRing {
-  0% { opacity: .8; transform: scale(.88); }
-  100% { opacity: 0; transform: scale(1.32); }
+.ritual.is-holding .ritual__hold-bar {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.5s linear;   /* 1.5초 — 손가락 아래에서 한 바퀴 */
 }
-@keyframes sparkUp {
-  0% { opacity: 0; transform: translate(-50%, 6px) scale(.6); }
-  30% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -18px) scale(1.15); }
-}
+.ritual.is-open .ritual__hold-bar { stroke-dashoffset: 0; opacity: .68; }
+.ritual.is-open .ritual__hold-track { opacity: 0; }
 
-.ritual__count {
-  margin-top: 11px; font-size: 11.5px; letter-spacing: .04em; color: var(--mute);
+/* 안내 한 줄 — 부적 패 안, 캐릭터 아래 */
+.ritual__holdhint {
+  position: relative; z-index: 2;
+  margin: 8px 0 0; padding: 0 8px;
+  font-size: 11px; line-height: 1.55; letter-spacing: -0.01em; color: var(--mute);
+  text-align: center; word-break: keep-all;
 }
-.ritual__count b { color: var(--ink-2); font-weight: 700; font-variant-numeric: tabular-nums; }
-.ritual__msg {
-  margin-top: 4px; font-size: 11px; line-height: 1.6; color: var(--mute);
-  min-height: 18px; transition: color .3s;
+.ritual.is-open .ritual__holdhint { display: none; }
+
+/* ── 열린 기운 — 그날의 부적 문장 · 한 줄 처방 · 직접 붙이기 ──
+   연타·폭죽 없이 아래에서 조용히 떠오른다. */
+.ritual__open { margin-top: 15px; padding: 0 2px; }
+.ritual__verse {
+  margin: 0; font-family: var(--serif);
+  font-size: 15px; line-height: 1.62; font-weight: 600; letter-spacing: -0.03em;
+  color: var(--ink-2); text-align: center; word-break: keep-all;
+}
+.ritual__rx {
+  margin: 7px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--mute);
+  text-align: center; word-break: keep-all;
+}
+.ritual__stick {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; max-width: 300px; margin: 15px auto 0; padding: 12px 16px;
+  border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: -0.02em;
+  color: #5C4420;
+  border: 1px solid rgba(174, 138, 80, .62);
+  background: linear-gradient(180deg, #FFFCF2 0%, #F6E7C6 100%);
+  box-shadow: 0 12px 24px -16px rgba(120, 86, 36, .8), inset 0 1px 0 #fff;
+  transition: transform .16s ease, box-shadow .2s ease, background .3s ease, color .3s ease;
+}
+.ritual__stick:active { transform: translateY(1px); }
+.ritual__stick:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 4px; }
+.ritual__stick.is-sealed,
+.ritual__stick[disabled] {
+  cursor: default; color: #8A7A55;
+  border-color: rgba(174, 138, 80, .28);
+  background: linear-gradient(180deg, #FFFCF4 0%, #F4EDDD 100%);
+  box-shadow: inset 0 1px 0 #fff;
+}
+.ritual__open.is-on .ritual__verse { animation: verseRise 1s cubic-bezier(.22, .7, .28, 1) both; }
+.ritual__open.is-on .ritual__rx { animation: verseRise 1s cubic-bezier(.22, .7, .28, 1) .34s both; }
+.ritual__open.is-on .ritual__stick { animation: verseRise 1s cubic-bezier(.22, .7, .28, 1) .66s both; }
+@keyframes verseRise {
+  0% { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 .ritual[data-stage="1"] .ch { filter: drop-shadow(0 10px 18px var(--el-2)); }
-.ritual[data-stage="2"] .ch { filter: drop-shadow(0 12px 22px var(--el-1)); }
+.ritual[data-stage="3"] .ch,
 .ritual.is-done .ch { filter: drop-shadow(0 14px 26px var(--el-1)); }
-.ritual.is-done .ritual__count { color: var(--accent); }
-.ritual.is-done .ritual__msg {
-  color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -0.01em;
-  animation: msgPop .5s cubic-bezier(.2, 1.6, .4, 1) both;
-}
-@keyframes msgPop {
-  0% { transform: scale(.82); opacity: 0; }
-  60% { transform: scale(1.06); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.ritual__msg small {
-  display: block; margin-top: 3px;
-  font-size: 10.5px; font-weight: 400; color: var(--mute); letter-spacing: 0;
-}
 
 /* 달력 칸 — 그날의 미니 오행 캐릭터 스티커 (착!) */
 .day { position: relative; }
@@ -1157,13 +1188,24 @@ button.talis-plaque:active { transform: scale(.972); }
 .day__sticker .ch {
   width: 92%; height: 92%; overflow: hidden;   /* 캐릭터만 잘라 쓰는 미니 스티커 */
 }
-.day__sticker.is-new { animation: stickerIn .72s cubic-bezier(.2, 1.5, .4, 1) both; }
-@keyframes stickerIn {
-  0% { transform: rotate(-30deg) scale(2.5); opacity: 0; }
-  38% { opacity: .92; }
-  64% { transform: rotate(-3deg) scale(.85); opacity: 1; }
-  84% { transform: rotate(-12deg) scale(1.06); }
-  100% { transform: rotate(-9deg) scale(1); opacity: 1; }
+.day__sticker.is-new { animation: sealIn .9s cubic-bezier(.22, .7, .28, 1) both; }
+/* 달력에 새겨지는 순간 — 팡 튀지 않고, 금빛 인장이 눌린 듯 조용히 맺힌다 (2026-11-22) */
+@keyframes sealIn {
+  0% {
+    opacity: 0; transform: rotate(-8deg) scale(1.3); filter: blur(2.2px);
+    box-shadow: 0 0 0 12px rgba(226, 180, 94, 0), 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
+  }
+  46% {
+    opacity: 1; transform: rotate(-8deg) scale(.98); filter: blur(0);
+    box-shadow: 0 0 0 2px rgba(226, 180, 94, .55), 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
+  }
+  72% {
+    box-shadow: 0 0 0 5px rgba(226, 180, 94, .16), 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
+  }
+  100% {
+    opacity: 1; transform: rotate(-8deg) scale(1); filter: blur(0);
+    box-shadow: 0 1px 2px rgba(28, 27, 25, .2), 0 0 0 .5px rgba(28, 27, 25, .08);
+  }
 }
 /* 팝업 안 완료 문구 옆 미니 스티커 */
 .sticker-mini {
@@ -1188,6 +1230,7 @@ button.talis-plaque:active { transform: scale(.972); }
   .talis-banner__title { font-size: 13.5px; }
   .talis-banner__name { font-size: 12.5px; }
   .ritual__tap { width: 134px; height: 134px; }
+  .ritual__hold { width: 152px; height: 152px; margin: -76px 0 0 -76px; --hold-w: .92; }
 }
 @media (min-width: 420px) {
   /* 칸이 넉넉해지면 숫자를 가리지 않고 옆에 나란히 붙인다 */
@@ -1200,6 +1243,7 @@ button.talis-plaque:active { transform: scale(.972); }
   .cal__title { font-size: 26px; }
   .natal__tile { width: 46px; height: 46px; font-size: 24px; }
   .ritual__tap { width: 176px; height: 176px; }
+  .ritual__hold { width: 194px; height: 194px; margin: -97px 0 0 -97px; --hold-w: .72; }
   .day__sticker { width: 33px; height: 33px; margin-left: 1px; }
 }
 
@@ -1288,10 +1332,6 @@ body.is-modal-open { overflow: hidden; }
 .modal .ritual { margin-top: 10px; padding: 0; border-radius: 0; }
 .modal .ritual__eyebrow { font-size: 9.5px; }
 .modal .ritual__tap { margin-top: 4px; }
-.modal .ritual__count { font-size: 13px; margin-top: 8px; letter-spacing: .06em; }
-.modal .ritual__count b { font-size: 15px; }
-.modal .ritual__msg { font-size: 11.5px; margin-top: 5px; }
-.modal .ritual.is-done .ritual__msg { font-size: 13px; }
 
 .modal__stamp-note {
   margin-top: 10px; text-align: center;
@@ -1515,41 +1555,20 @@ body.is-modal-open { overflow: hidden; }
 .ritual__tap { position: relative; z-index: 2; }
 .ritual__char {
   position: relative; display: block; width: 100%; height: 100%;
-  animation: charIn .74s cubic-bezier(.18, 1.55, .45, 1) both,
-             floaty 3.6s ease-in-out .74s infinite;
+  animation: charIn 1s cubic-bezier(.22, .7, .28, 1) both,
+             floaty 6s ease-in-out 1s infinite;
   will-change: transform;
 }
 .ritual__char .ch { width: 100%; height: 100%; }
-.ritual__char.is-jelly { animation: jelly .6s cubic-bezier(.2, 1.5, .4, 1); }
-.ritual__char.is-jelly--big { animation: jellyBig .72s cubic-bezier(.2, 1.5, .4, 1); }
 
+/* 부적 등장 — 팡 튀지 않고 아래에서 조용히 떠오른다 (2026-11-22) */
 @keyframes charIn {
-  0% { transform: scale(.45) translateY(22px) rotate(-9deg); opacity: 0; }
-  52% { transform: scale(1.14) translateY(-8px) rotate(4deg); opacity: 1; }
-  74% { transform: scale(.95) translateY(3px) rotate(-1.5deg); }
-  100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; }
+  0% { transform: translateY(12px) scale(.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes floaty {
-  0%, 100% { transform: translateY(0) rotate(-.9deg) scale(1); }
-  50% { transform: translateY(-8px) rotate(.9deg) scale(1.018); }
-}
-/* 젤리 — 찌그러졌다가 팡 튀어오르는 바운스 */
-@keyframes jelly {
-  0% { transform: scale(1, 1) translateY(0); }
-  18% { transform: scale(1.2, .78) translateY(9px); }
-  42% { transform: scale(.86, 1.2) translateY(-16px); }
-  62% { transform: scale(1.08, .93) translateY(4px); }
-  80% { transform: scale(.97, 1.03) translateY(-3px); }
-  100% { transform: scale(1, 1) translateY(0); }
-}
-@keyframes jellyBig {
-  0% { transform: scale(1, 1) rotate(0); }
-  14% { transform: scale(1.28, .7) translateY(14px) rotate(-4deg); }
-  34% { transform: scale(.8, 1.3) translateY(-28px) rotate(5deg); }
-  52% { transform: scale(1.16, .88) translateY(8px) rotate(-3deg); }
-  70% { transform: scale(.93, 1.08) translateY(-10px) rotate(2deg); }
-  86% { transform: scale(1.03, .98) translateY(2px) rotate(-1deg); }
-  100% { transform: scale(1, 1) translateY(0) rotate(0); }
+  0%, 100% { transform: translateY(0) rotate(-.3deg) scale(1); }
+  50% { transform: translateY(-4px) rotate(.3deg) scale(1.008); }
 }
 
 /* ── 기운 오라 ────────────────────────────────────── */
@@ -1569,110 +1588,6 @@ body.is-modal-open { overflow: hidden; }
 @keyframes auraGlow {
   0%, 100% { filter: brightness(1) saturate(1); }
   50% { filter: brightness(1.22) saturate(1.15); }
-}
-
-/* ── 둥글게 번지는 링 ─────────────────────────────── */
-.ritual__ring {
-  position: absolute; left: 50%; top: 50%;
-  width: 122px; height: 122px; margin: -61px 0 0 -61px;
-  border-radius: 50%; border: 1px solid var(--el);
-  opacity: .15; pointer-events: none; z-index: 0;
-  animation: ringPulse 3s ease-out infinite;
-}
-.ritual[data-stage="1"] .ritual__ring { animation-duration: 2s; }
-.ritual[data-stage="2"] .ritual__ring { animation-duration: 1.35s; }
-.ritual[data-stage="3"] .ritual__ring { animation-duration: 1.7s; }
-@keyframes ringPulse {
-  0% { transform: scale(.84); opacity: .5; }
-  70% { transform: scale(1.3); opacity: 0; }
-  100% { transform: scale(1.3); opacity: 0; }
-}
-
-/* ── 단계가 바뀔 때 퍼지는 기운 파동 ──────────────── */
-.ritual__pop {
-  position: absolute; left: 50%; top: 50%;
-  width: 132px; height: 132px; margin: -66px 0 0 -66px;
-  border-radius: 50%; border: 3px solid var(--el);
-  opacity: 0; pointer-events: none; z-index: 0;
-}
-.ritual[data-stage="1"] .ritual__pop { animation: waveOut .82s ease-out both; }
-.ritual[data-stage="2"] .ritual__pop { animation: waveOut .9s ease-out both; }
-.ritual[data-stage="3"] .ritual__pop { animation: waveOut 1.2s ease-out both; }
-@keyframes waveOut {
-  0% { transform: scale(.5); opacity: .9; border-width: 6px; }
-  55% { opacity: .38; }
-  100% { transform: scale(2.15); opacity: 0; border-width: 1px; }
-}
-
-/* ── 터치 지점 파문 ──────────────────────────────── */
-.ritual__fx {
-  position: absolute; inset: auto; width: 22px; height: 22px; margin: -11px 0 0 -11px;
-  border-radius: 50%; border: 2.5px solid var(--el);
-  opacity: 0; pointer-events: none; z-index: 3;
-  animation: ripOut .82s cubic-bezier(.15, .7, .3, 1) forwards;
-}
-.ritual__fx::before, .ritual__fx::after { content: none; }
-.ritual__stage .ritual__tap { margin: 0; }
-@keyframes ripOut {
-  0% { transform: scale(.2); opacity: .9; }
-  70% { opacity: .35; }
-  100% { transform: scale(6.4); opacity: 0; }
-}
-
-/* ── 파티클 폭발 ─────────────────────────────────── */
-.ritual__parts {
-  position: absolute; left: 50%; top: 50%;
-  width: 0; height: 0; pointer-events: none; z-index: 3;
-}
-.ritual__p {
-  position: absolute; left: 0; top: 0;
-  font-size: var(--sz, 12px); line-height: 1;
-  transform: translate(-50%, -50%);
-  animation: pFly var(--dur, .8s) var(--dl, 0s) cubic-bezier(.15, .75, .3, 1) forwards;
-  will-change: transform, opacity;
-  filter: drop-shadow(0 1px 2px rgba(29, 28, 25, .18));
-}
-.ritual__p--big { animation-timing-function: cubic-bezier(.1, .8, .3, 1); animation-fill-mode: forwards; }
-@keyframes pFly {
-  0% { transform: translate(-50%, -50%) scale(.2) rotate(0deg); opacity: 0; }
-  14% { opacity: 1; }
-  58% { opacity: 1; }
-  82% { opacity: .55; }
-  100% {
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.12) rotate(var(--rot));
-    opacity: 0;
-  }
-}
-
-/* ── 2타 이후 캐릭터가 살짝 부들부들 ──────────────── */
-.ritual[data-stage="2"] .ritual__tap { animation: tremble 1.7s ease-in-out infinite; }
-@keyframes tremble {
-  0%, 100% { transform: translate(0, 0) rotate(0); }
-  25% { transform: translate(-1.5px, 1px) rotate(-.7deg); }
-  50% { transform: translate(1.5px, -1px) rotate(.7deg); }
-  75% { transform: translate(-1px, -1px) rotate(-.4deg); }
-}
-
-/* ── 모달 흔들림 ─────────────────────────────────── */
-.modal__dialog.is-quake { animation: quake .44s cubic-bezier(.36, .07, .19, .97) both; }
-.modal__dialog.is-quake--big { animation: quakeBig .66s cubic-bezier(.36, .07, .19, .97) both; }
-@keyframes quake {
-  0%, 100% { transform: translate(0, 0) rotate(0); }
-  15% { transform: translate(-2px, 1px) rotate(-.35deg); }
-  30% { transform: translate(3px, -2px) rotate(.4deg); }
-  45% { transform: translate(-3px, 2px) rotate(-.45deg); }
-  62% { transform: translate(3px, -1px) rotate(.35deg); }
-  82% { transform: translate(-1px, 1px) rotate(-.2deg); }
-}
-@keyframes quakeBig {
-  0%, 100% { transform: translate(0, 0) rotate(0) scale(1); }
-  10% { transform: translate(-6px, 3px) rotate(-.9deg) scale(1.006); }
-  22% { transform: translate(7px, -5px) rotate(.95deg) scale(1.006); }
-  34% { transform: translate(-8px, 4px) rotate(-1.1deg) scale(1.004); }
-  47% { transform: translate(7px, -4px) rotate(.9deg) scale(1.004); }
-  60% { transform: translate(-5px, 3px) rotate(-.7deg) scale(1.002); }
-  74% { transform: translate(4px, -2px) rotate(.5deg) scale(1); }
-  88% { transform: translate(-2px, 1px) rotate(-.3deg) scale(1); }
 }
 
 /* ── 모달이 뿅 — 더 크게 튀어나오게 ──────────────── */
@@ -2280,9 +2195,9 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 @keyframes sparkTwinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ritual__char, .ritual__aura, .ritual__ring, .ritual__pop,
-  .ritual[data-stage="2"] .ritual__tap, .ritual__p, .ritual__fx,
-  .modal__dialog.is-quake, .modal__dialog.is-quake--big,
+  .ritual__char, .ritual__aura,
+  .ritual__open.is-on .ritual__verse, .ritual__open.is-on .ritual__rx,
+  .ritual__open.is-on .ritual__stick, .ritual.is-sealing .talis-pad__sheet::before,
   .bamboo.is-picked .bamboo__stick.is-chosen .bamboo__shaft,
   .care-obj.is-awake .care-obj__art, .care-obj.is-awake .care-obj__ring,
   .care-obj.is-awake .care-obj__beam, .bowl.is-on .bowl__spark {
@@ -2299,33 +2214,19 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 .modal .ritual__stage { min-height: 288px; padding: 2px 0 0; margin-top: -20px; }
 .modal .ritual__tap { width: 276px; height: 276px; }
 .modal .ritual__aura { width: 330px; height: 330px; margin: -165px 0 0 -165px; }
-.modal .ritual__ring { width: 274px; height: 274px; margin: -137px 0 0 -137px; }
-.modal .ritual__pop { width: 286px; height: 286px; margin: -143px 0 0 -143px; }
-.modal .ritual__count { margin-top: 6px; font-size: 13px; letter-spacing: .1em; }
-.modal .ritual__count b { font-size: 16px; }
+/* 금빛 링은 부적(276px)을 살짝 감싸는 크기 — 1.5초에 한 바퀴 */
+.modal .ritual__hold { width: 294px; height: 294px; margin: -147px 0 0 -147px; --hold-w: .48; }
+.modal .ritual__holdhint { margin-top: 10px; font-size: 11.5px; }
+.modal .ritual__verse { font-size: 16.5px; }
+.modal .ritual__rx { font-size: 12px; margin-top: 8px; }
+.modal .ritual__stick { margin-top: 17px; padding: 13px 18px; font-size: 13px; }
 .modal .modal__headline { font-size: 20px; margin-top: 10px; }
 
 @media (max-height: 700px) {
   .modal .ritual__stage { min-height: 240px; }
   .modal .ritual__tap { width: 228px; height: 228px; }
   .modal .ritual__aura { width: 280px; height: 280px; margin: -140px 0 0 -140px; }
-  .modal .ritual__ring { width: 226px; height: 226px; margin: -113px 0 0 -113px; }
-}
-
-/* 3타 완료 뒤에도 기운이 살아 있게 — 잔불 반짝임 */
-.ritual[data-stage="3"] .ritual__stage::before,
-.ritual[data-stage="3"] .ritual__stage::after {
-  position: absolute; color: var(--el); pointer-events: none; z-index: 1;
-  font-size: 15px; line-height: 1; opacity: .9;
-  animation: orbitSpark 3.2s ease-in-out infinite;
-}
-.ritual[data-stage="3"] .ritual__stage::before { content: "✦"; left: 11%; top: 20%; }
-.ritual[data-stage="3"] .ritual__stage::after {
-  content: "✧"; right: 12%; bottom: 24%; font-size: 12px; animation-delay: -1.6s;
-}
-@keyframes orbitSpark {
-  0%, 100% { transform: translateY(0) scale(.9) rotate(0); opacity: .45; }
-  50% { transform: translateY(-11px) scale(1.2) rotate(18deg); opacity: 1; }
+  .modal .ritual__hold { width: 246px; height: 246px; margin: -123px 0 0 -123px; --hold-w: .57; }
 }
 
 /* ==========================================================
@@ -2441,7 +2342,7 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 }
 .modal .talis-pad .ritual__name { font-size: 17.5px; padding: 9px 21px 10px; }
 .talis-pad .ritual__stage { position: relative; z-index: 2; margin-top: 0; padding-top: 2px; }
-.talis-pad .ritual__count { position: relative; z-index: 2; }
+.talis-pad .ritual__holdhint { position: relative; z-index: 2; }
 
 /* 완료 3타 — 패 위를 지나가는 금빛 한 줄기 */
 .talis-pad__shine {
@@ -2457,7 +2358,20 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
   100% { opacity: 0; transform: translateX(55%); }
 }
 
-/* 완료 3타 — 테두리가 은은한 금빛으로 빛난다 */
+/* 새김의 순간 — 금빛 인장이 눌린 듯 패 위로 빛이 조용히 번진다 (폭죽 대신, 2026-11-22) */
+.talis-pad__sheet::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 47%,
+    rgba(255, 247, 219, .95) 0%, rgba(226, 180, 94, .38) 36%, rgba(226, 180, 94, 0) 70%);
+}
+.ritual.is-sealing .talis-pad__sheet::before { animation: sealBloom .95s ease-out both; }
+@keyframes sealBloom {
+  0% { opacity: 0; transform: scale(.55); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.16); }
+}
+
+/* 새김 — 테두리가 은은한 금빛으로 빛난다 */
 .talis-pad__sheet::after {
   content: ""; position: absolute; inset: 2px; border-radius: 12px;
   pointer-events: none; z-index: 5;
@@ -3399,8 +3313,9 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
   .modal .talis-pad { margin-top: 34px; }
   .modal .talis-pad__sheet { padding: 26px 12px 26px; }
   .modal .ritual__tap { width: 146px; height: 146px; }
-  .modal .ritual__count { margin-top: 4px; }
-  .modal .ritual__msg { margin-top: 4px; }
+  .modal .ritual__hold { width: 164px; height: 164px; margin: -82px 0 0 -82px; --hold-w: .85; }
+  .modal .ritual__stage { min-height: 214px; }
+  .modal .ritual__verse { font-size: 16px; }
   .modal .modal__stamp-note { margin-top: 8px; }
 }
 

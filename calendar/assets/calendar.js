@@ -15,7 +15,7 @@
      FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). **첫 방문일(달력을 처음 연 날)부터 딱 FREE_DAYS일**만 열리고,
         그 뒤로는 오늘 날짜까지 전부 잠겨 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)가 뜹니다.
         (매일 '오늘~모레'로 굴러가면 결제 없이 계속 무료로 쓸 수 있어서 2026-11-21 첫 방문일 고정으로 바꿨습니다.)
-     FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·톡톡톡·스티커·처방이 바로 열립니다(테스트용).
+     FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·1.5초 의식·스티커·처방이 바로 열립니다(테스트용).
      → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
   var FREE_DAYS_BASE = 3;   // 그냥 들어온 손님 — 첫 방문일 포함 3일(D+0·D+1·D+2)
@@ -172,7 +172,7 @@
   var BANK_ACCOUNT = '504-20-454146';          // 계좌번호 (통장 사본 확인)
   var BANK_HOLDER = '김나영 (엔와이트레이드)';   // 예금주 (통장 사본 확인)
 
-  /* ── 2027 정미년 대표 수호 부적 · 톡톡톡 리추얼 ────── */
+  /* ── 2027 정미년 대표 수호 부적 · 하루 부적 의식 ────── */
   var STAMP_KEY = 'yoonise.timing.stamp.v1';
   /* 달력 칸에 착 붙는 '그날의 미니 오행 캐릭터 스티커'
      — 도장(낙관) 대신 그날의 오행 캐릭터를 작게 잘라 붙인다. chars.js 가 그림을 맡는다. */
@@ -307,8 +307,7 @@
     return sets[seedOf(iso) % sets.length];
   }
 
-  var ritual = {};   // { iso: 두드린 횟수 } — 같은 화면 안에서만 기억
-
+  /* 날짜 팝업의 부적 의식은 2026-11-22 개편 — 연타 횟수를 기억하지 않는다(1.5초 홀드 + 직접 붙이기) */
   var state = {
     gender: '', calendar: 'solar', res: null, natal: null,
     terms: null, view: null, sel: null, todayISO: '', cache: {},
@@ -524,7 +523,6 @@
         state.filter = 'all';
         state.sel = null;
         state.justStamped = null;
-        for (var kd in ritual) if (Object.prototype.hasOwnProperty.call(ritual, kd)) delete ritual[kd];
         var today = new Date();
         state.todayISO = T.isoOf(today.getFullYear(), today.getMonth() + 1, today.getDate());
         state.view = clampView(today.getFullYear(), today.getMonth() + 1);
@@ -1403,7 +1401,7 @@
     return '<span class="day__pen" aria-hidden="true"></span>';
   }
 
-  /** 날짜 팝업 안 성찰 섹션 — 부적 톡톡톡 완료 영역 아래
+  /** 날짜 팝업 안 성찰 섹션 — 부적 의식 영역 아래
       무료 손님: 3회까지 쓸 수 있고, 다 쓰면 성찰 에디션 안내로 바뀐다. */
   function diarySectionHTML(info) {
     if (!diaryAllowed()) {
@@ -2187,7 +2185,7 @@
     talisRevealText(phrase, TALIS_PHRASE);
   }
 
-  /* ── 톡·톡·톡 리추얼 ───────────────────────────────── */
+  /* ── 하루 부적 — 그날의 부적 고르기 ─────────────────── */
   function dayElement(info) {
     var badges = info.badges || [];
     if (badges.length && BADGE_TO_EL[badges[0].text]) return BADGE_TO_EL[badges[0].text];
@@ -2288,24 +2286,26 @@
     var el = (st && st.el && TALIS[st.el]) ? st.el : auto;
     var t = TALIS[el];
     var th = EL_THEME[el] || EL_THEME['화'];
-    var lot = lotOf(el, info.iso);            // 날짜 시드로 고른 오늘의 멘트
+    var lot = lotOf(el, info.iso);            // 날짜 시드로 고른 그날의 문장·한 줄 처방
     var done = !!st;
-    var n = done ? 3 : (ritual[info.iso] || 0);
+    var today = info.iso === state.todayISO;
     var b0 = (info.badges || [])[0];
     var tag = b0 ? b0.text : '';
-    var lead = info.iso === state.todayISO ? '오늘의 수호 부적' : '이 날의 수호 부적';
+    var lead = today ? '오늘의 수호 부적' : '이 날의 수호 부적';
     // 무슨 부적인지 한눈에 — 날짜 로테이션으로 이름이 매일 바뀐다
     // (배지 없는 잔잔한 날은 그 사람의 대표 부적 → 일간×오행 50종 이름 그대로)
     var tname = tag ? (Chars ? Chars.name(el, tag, info.iso) : '수호 부적')
       : ((repType(el) || {}).n || (Chars ? Chars.name(el, '', '') : '수호 부적'));
     var ticon = Chars ? Chars.icon(el, tag) : th.badge;
-    var seal = tag === '소통' ? '吉' : '護';   // 완료(3타)에 찍히는 주홍 낙관
-    var msg = done
-      ? esc(lot.done) + '<small>' + esc(lot.sub) + '</small>'
-      : (n > 0 ? lot.taps[n - 1] : '부적을 톡톡톡 세 번 두드리면 ' +
-        (info.iso === state.todayISO ? '오늘' : '그날') + ' 기운이 켜져요.');
-    return '<div class="ritual ritual--' + el + (done ? ' is-done' : '') + '" data-ritual-wrap="' + info.iso +
-      '" data-el="' + el + '" data-stage="' + n + '">' +
+    var seal = tag === '소통' ? '吉' : '護';   // 새김에 찍히는 주홍 낙관
+    var hintId = 'ritualHint' + info.iso.replace(/-/g, '');
+    /* 2026-11-22 개편 — 톡·톡·톡 연타 자리에 **1.5초 지긋이 누르기**.
+       · 닫힌 상태: 금빛 가는 링(빈 원) + '1.5초 지긋이 눌러 기운을 여세요'
+       · 열린 상태: 링이 한 바퀴 차서 금빛 원으로 남고, 아래에 문장·처방·붙이기 버튼
+       · 붙인 상태: 낙관이 찍히고 버튼이 '✓ … 새겼어요' */
+    return '<div class="ritual ritual--' + el + (done ? ' is-done is-open' : '') + '"' +
+      ' data-ritual-wrap="' + info.iso + '" data-el="' + el + '" data-name="' + esc(tname) + '"' +
+      ' data-stage="' + (done ? 3 : 0) + '">' +
       '<p class="ritual__eyebrow">' + lead + ' · ' + esc(t.label) + (tag ? ' · ' + esc(tag) : '') + '</p>' +
       '<div class="talis-pad">' +
       '<span class="talis-pad__norigae" aria-hidden="true">' + padNorigaeArt() + '</span>' +
@@ -2316,131 +2316,151 @@
       '</div>' +
       '<div class="ritual__stage">' +
       '<span class="ritual__aura" aria-hidden="true"></span>' +
-      '<span class="ritual__ring" aria-hidden="true"></span>' +
-      '<button type="button" class="ritual__tap" data-ritual="tap" aria-label="' + esc(tname) + ' — ' + esc(t.label) +
-      ' 부적 두드리기 (' + n + '/3)">' +
-      '<span class="ritual__char">' + (Chars ? Chars.svg(el, { stage: n }) : '') + '</span>' +
-      '<span class="ritual__fx" aria-hidden="true"></span>' +
+      '<button type="button" class="ritual__tap" data-ritual="tap"' + (done ? ' aria-disabled="true"' : '') +
+      ' aria-label="' + esc(tname) + ' — 1.5초 동안 지긋이 눌러 기운 열기"' +
+      (done ? '' : ' aria-describedby="' + hintId + '"') + '>' +
+      '<span class="ritual__char">' + (Chars ? Chars.svg(el, { stage: done ? 3 : 0 }) : '') + '</span>' +
       '</button>' +
-      '<span class="ritual__pop" aria-hidden="true"></span>' +
+      /* 가는 금빛 링 — 반지름 47(둘레 295.31)이라 dashoffset 하나로 '한 바퀴'를 그린다 */
+      '<svg class="ritual__hold" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
+      '<circle class="ritual__hold-track" cx="50" cy="50" r="47"/>' +
+      '<circle class="ritual__hold-bar" cx="50" cy="50" r="47"/>' +
+      '</svg>' +
       '</div>' +
-      '<p class="ritual__count">톡 · 톡 · 톡 <b>' + n + '/3</b></p>' +
+      '<p class="ritual__holdhint" id="' + hintId + '">부적을 1.5초 동안 지긋이 눌러 기운을 여세요</p>' +
       '<span class="talis-pad__seal" aria-hidden="true">' + seal + '</span>' +
       '<span class="talis-pad__shine" aria-hidden="true"></span>' +
       '</div>' +
       '</div>' +
-      '<p class="ritual__msg" aria-live="polite">' + msg + '</p>' +
+      /* 열린 기운 — 그날의 부적 문장 · 한 줄 처방 · 본인이 직접 누르는 붙이기 버튼 */
+      '<div class="ritual__open' + (done ? ' is-on' : '') + '"' + (done ? '' : ' hidden') +
+      ' role="status" aria-live="polite">' +
+      '<p class="ritual__verse">' + esc(lot.done) + '</p>' +
+      '<p class="ritual__rx">' + esc(lot.sub) + '</p>' +
+      '<button type="button" class="ritual__stick' + (done ? ' is-sealed' : '') + '" data-ritual="stick"' +
+      (done ? ' disabled' : '') + '>' +
+      (done ? '✓ ' + (today ? '오늘' : '이 날') + ' 달력에 새겼어요'
+        : '🔖 ' + (today ? '오늘' : '이 날') + ' 달력에 이 부적 붙이기') +
+      '</button>' +
+      '</div>' +
       '</div>';
   }
 
-  /* ── 손맛: 젤리 바운스 · 파문 · 파티클 폭발 · 화면 흔들림 ────── */
-  function jelly(btn, big) {
-    var char = btn.querySelector('.ritual__char');
-    if (!char) return;
-    char.classList.remove('is-jelly', 'is-jelly--big');
-    void char.offsetWidth;                       // 애니메이션 재시작
-    char.classList.add(big ? 'is-jelly--big' : 'is-jelly');
-    // 끝나면 클래스를 풀어 둥실둥실(idle) 애니메이션이 다시 이어지게
-    setTimeout(function () { char.classList.remove('is-jelly', 'is-jelly--big'); }, big ? 740 : 620);
+  /* ── 하루 부적 의식 — ① 1.5초 지긋이 눌러 기운 열기 · ② 본인이 직접 달력에 붙이기 ──
+     2026-11-22 전면 개편: 톡·톡·톡 연타 · 다다닥 진동 · 폭죽/입자 · 젤리 바운스 · 모달 덜컹을
+     모두 걷어 내고 두 단계의 조용한 의식으로 바꾼다.
+     ① 부적을 1.5초 지긋이 누르면 부적을 감싼 가는 금빛 링이 한 바퀴 차오른다.
+        중간에 손을 떼면 링이 부드럽게 원위치하고 아무 일도 일어나지 않는다.
+        1.5초가 차면 소리를 켜 둔 사람에게만 깊고 은은한 싱잉볼 저음 한 번,
+        그날의 부적 문장과 한 줄 처방이 아래에서 차분히 떠오른다.
+     ② 이때는 아직 달력에 붙지 않는다. 아래 '🔖 오늘 달력에 이 부적 붙이기'를 본인이 눌러야
+        금빛 인장이 찍히듯 조용히 달력 칸에 스티커가 새겨지고 저장된다. */
+  var HOLD_MS = 1500;    // 기운이 열리는 시간 — 1.5초
+  var HOLD_SLOP = 16;    // 손가락이 이만큼 움직이면 스크롤로 보고 접는다(px)
+  var HOLD_GRACE = 70;   // 링이 거의 다 찬 뒤 손을 떼도 열리게 하는 여유(ms)
+  var holdBtn = null;    // 지금 눌려 있는 부적 버튼
+
+  function ritualWrapOf(node) {
+    return node && node.closest ? node.closest('[data-ritual-wrap]') : null;
   }
 
-  function ripple(btn, ev) {                     // 터치 지점에서 퍼져 나가는 파동 링
-    var old = btn.querySelectorAll('.ritual__fx');
-    for (var i = 0; i < old.length; i++) { if (old[i].parentNode) old[i].parentNode.removeChild(old[i]); }
-    var s = document.createElement('span');
-    s.className = 'ritual__fx';
-    var r = btn.getBoundingClientRect();
-    var x = (ev && ev.clientX) ? ev.clientX - r.left : r.width / 2;
-    var y = (ev && ev.clientY) ? ev.clientY - r.top : r.height / 2;
-    s.style.left = Math.max(8, Math.min(r.width - 8, x)) + 'px';
-    s.style.top = Math.max(8, Math.min(r.height - 8, y)) + 'px';
-    btn.appendChild(s);
-    setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 860);
+  /** 링을 0에서 다시 그린다 — 두 번째로 눌러도 처음부터 차오르게 */
+  function holdRingReset(wrap) {
+    var bar = wrap ? wrap.querySelector('.ritual__hold-bar') : null;
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.strokeDashoffset = '295.31';
+    void bar.getBoundingClientRect();          // 빈 링(295.31)을 한 번 그려 두고
+    bar.style.transition = '';
+    bar.style.strokeDashoffset = '';           // 인라인 값을 지워 CSS(.is-holding → 0)가 이어받게
   }
 
-  function burst(wrap, el, stage) {              // 오행 기운 파티클 폭발
-    var st = wrap.querySelector('.ritual__stage');
-    if (!st) return;
-    var th = EL_THEME[el] || EL_THEME['화'];
-    var big = stage >= 3;
-    var count = big ? 30 : (stage === 2 ? 17 : 12);
-    var box = document.createElement('span');
-    box.className = 'ritual__parts';
-    for (var i = 0; i < count; i++) {
-      var p = document.createElement('span');
-      var ang = Math.random() * Math.PI * 2;
-      var dist = (big ? 76 : 44) + Math.random() * (big ? 104 : 52);
-      p.className = 'ritual__p' + (big ? ' ritual__p--big' : '');
-      p.textContent = th.parts[i % th.parts.length];
-      p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
-      p.style.setProperty('--dy', (Math.sin(ang) * dist - 12) + 'px');
-      p.style.setProperty('--rot', (Math.random() * 260 - 130) + 'deg');
-      p.style.setProperty('--dur', ((big ? 1.5 : 1.3) + Math.random() * 0.8) + 's');
-      p.style.setProperty('--dl', (Math.random() * 0.16) + 's');
-      p.style.setProperty('--sz', (big ? 16 : 13) + Math.round(Math.random() * 8) + 'px');
-      box.appendChild(p);
+  function ritualHoldStart(btn) {
+    var wrap = ritualWrapOf(btn);
+    if (!wrap || wrap.classList.contains('is-open') || holdBtn) return;
+    holdBtn = btn;
+    btn._heldAt = Date.now();
+    btn._holdX = btn._holdY = null;
+    holdRingReset(wrap);
+    wrap.classList.add('is-holding');
+    btn._holdT = setTimeout(function () { ritualOpen(wrap); }, HOLD_MS);
+  }
+
+  function ritualHoldMove(ev) {
+    if (!holdBtn) return;
+    if (holdBtn._holdX == null) { holdBtn._holdX = ev.clientX; holdBtn._holdY = ev.clientY; return; }
+    if (Math.abs(ev.clientX - holdBtn._holdX) > HOLD_SLOP || Math.abs(ev.clientY - holdBtn._holdY) > HOLD_SLOP) {
+      ritualHoldEnd(true);                 // 화면을 밀어 스크롤한 것 — 기운을 열지 않는다
     }
-    st.appendChild(box);
-    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 2200);
   }
 
-  function quake(big) {                          // 모달이 덜컹 — 손맛의 절반
-    if (!modalDialog) return;
-    modalDialog.classList.remove('is-quake', 'is-quake--big');
-    void modalDialog.offsetWidth;
-    modalDialog.classList.add(big ? 'is-quake--big' : 'is-quake');
-    setTimeout(function () {
-      if (modalDialog) modalDialog.classList.remove('is-quake', 'is-quake--big');
-    }, big ? 640 : 430);
+  function ritualHoldEnd(cancelled) {
+    var btn = holdBtn;
+    if (!btn) return;
+    holdBtn = null;
+    var wrap = ritualWrapOf(btn);
+    clearTimeout(btn._holdT);
+    btn._holdT = null;
+    if (wrap) wrap.classList.remove('is-holding');   // 링은 CSS가 부드럽게 되감는다
+    if (cancelled || !wrap) return;
+    var held = Date.now() - (btn._heldAt || 0);
+    if (held >= HOLD_MS - HOLD_GRACE) ritualOpen(wrap);   // 링이 다 찬 순간 손을 떼도 열린다
   }
 
-  function setStage(wrap, n) {                   // 0타 → 1타 → 2타 → 3타 표정·기운 교체
-    wrap.setAttribute('data-stage', String(n));
-    var ch = wrap.querySelector('.ch');
-    if (ch) ch.setAttribute('data-stage', String(n));
-    if (n >= 3) wrap.classList.add('is-done');
+  /** 1.5초가 차오른 순간 — 링은 금빛 한 바퀴로 남고 문장·처방이 조용히 올라온다 */
+  function ritualOpen(wrap) {
+    if (!wrap || wrap.classList.contains('is-open')) return;
+    if (holdBtn) { clearTimeout(holdBtn._holdT); holdBtn._holdT = null; holdBtn = null; }
+    wrap.classList.add('is-open');
+    wrap.classList.remove('is-holding');
+    setStage(wrap, 1);
+    var btn = wrap.querySelector('[data-ritual="tap"]');
+    if (btn) {
+      btn.setAttribute('aria-disabled', 'true');
+      btn.setAttribute('aria-label', (wrap.getAttribute('data-name') || '부적') + ' — 기운이 열렸어요');
+    }
+    sfxBowlDeep();                          // 소리 켠 사람에게만 — audioCtx() 가 무음이면 null
+    var open = wrap.querySelector('.ritual__open');
+    if (open && open.hidden) {
+      open.hidden = false;
+      void open.offsetWidth;                // 애니메이션을 처음부터
+      open.classList.add('is-on');
+    }
   }
 
-  function onRitualTap(btn, ev) {
-    var wrap = btn.closest('[data-ritual-wrap]');
+  /** ② 본인이 직접 누르는 '달력에 붙이기' — 이 순간에만 저장하고 금빛 인장이 조용히 번진다 */
+  function onRitualStick(btn) {
+    var wrap = ritualWrapOf(btn);
     if (!wrap) return;
     var iso = wrap.getAttribute('data-ritual-wrap');
     var el = wrap.getAttribute('data-el');
-    var t = TALIS[el];
-    if (!t) return;
-    var lot = lotOf(el, iso);
-    var n = stampOf(iso) ? 3 : (ritual[iso] || 0);
-    if (n >= 3) { jelly(btn, false); sfxTap(1); return; }   // 이미 찍힌 날 — 살짝 튀기기만
-    n += 1;
-    ritual[iso] = n;
+    if (!TALIS[el] || !iso || stampOf(iso)) return;       // 이미 새긴 날 — 그대로 둔다
+    var today = iso === state.todayISO;
+    saveStamp(iso, el);                                   // 누른 그 순간 달력 칸에 새긴다
+    if (modalEl && !modalEl.hidden) state.pendingStamp = iso;   // 팝업을 닫을 때 그 칸에 금빛 인장
+    else state.justStamped = iso;
+    renderCalendar();                                     // 팝업 뒤 달력 칸에도 바로 스티커가 붙는다
+    wrap.classList.add('is-done', 'is-open', 'is-sealing');
+    setStage(wrap, 3);
+    setTimeout(function () { wrap.classList.remove('is-sealing'); }, 1200);
 
-    setStage(wrap, n);
-    jelly(btn, n >= 3);
-    ripple(btn, ev);
-    burst(wrap, el, n);
-    quake(n >= 3);
-    if (n >= 3) sfxDone(); else sfxTap(n);
+    btn.disabled = true;
+    btn.classList.add('is-sealed');
+    btn.textContent = '✓ ' + (today ? '오늘' : '이 날') + ' 달력에 새겼어요';
 
-    var countEl = wrap.querySelector('.ritual__count b');
-    if (countEl) countEl.textContent = n + '/3';
-    btn.setAttribute('aria-label', esc(t.label) + ' 부적 두드리기 (' + n + '/3)');
-
-    var msgEl = wrap.querySelector('.ritual__msg');
-    if (n >= 3) {
-      saveStamp(iso, el);
-      if (msgEl) msgEl.innerHTML = esc(lot.done) + '<small>' + esc(lot.sub) + '</small>';
-      if (modalEl && !modalEl.hidden) {
-        // 팝업이 닫히는 순간 달력 칸에 그날의 부적 스티커가 착 붙도록 미뤄 둔다
-        state.pendingStamp = iso;
-        var note = modalBody && modalBody.querySelector('.modal__stamp-note');
-        if (note) note.hidden = false;
-      } else {
-        state.justStamped = iso;
-        renderCalendar();                     // 달력 칸에 부적 스티커가 착
-      }
-    } else if (msgEl) {
-      msgEl.textContent = lot.taps[n - 1] || ('한 번 더 — ' + (3 - n) + '번 남았어요.');
+    var note = modalBody && modalBody.querySelector('.modal__stamp-note');
+    if (note) {                                           // 팝업 안 새김 안내도 바로
+      note.innerHTML = '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(el) + '</span>' +
+        '금빛 인장이 찍혔어요 — 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 새겼어요.';
+      note.hidden = false;
     }
+    vibrate([55, 40, 85]);
+  }
+
+  function setStage(wrap, n) {                   // 캐릭터 표정 — 0(잠잠) · 1(기운 열림) · 3(새김)
+    wrap.setAttribute('data-stage', String(n));
+    var ch = wrap.querySelector('.ch');
+    if (ch) ch.setAttribute('data-stage', String(n));
   }
 
   /* ── 렌더 ──────────────────────────────────────────── */
@@ -2524,7 +2544,7 @@
     var open = isOpenDay(iso);
     var pastDay = iso < state.todayISO;
     var trialLocked = FREE_TRIAL_ENABLED && !state.unlocked;
-    if (badges.length) return true;                 // 부적 팝업·톡톡톡
+    if (badges.length) return true;                 // 부적 팝업·1.5초 의식
     if (trialLocked) return true;                   // 잠긴 날은 여는 방법을 알려 준다
     if (diaryAllowed()) return open;                // 성찰 다이어리는 열린 날만
     /* 코드로 열린 기기 — 딱지 없는 평범한 날도 눌러 '잔잔한 날' 한 줄 안내를 받는다 (2026-11-21) */
@@ -2895,7 +2915,7 @@
 
   function briefModalHTML(info) {
     var today = info.iso === state.todayISO;
-    // 부적 팝업은 캐릭터·이름표·톡톡톡·대사·스티커 완료 안내 → 그 아래 ✨ 오늘의 1줄 성찰 → 닫기 순서
+    // 부적 팝업은 캐릭터·이름표·1.5초 눌러 열기·문장·처방·직접 붙이기 → 그 아래 ✨ 오늘의 1줄 성찰 → 닫기 순서
     // (예전 맨 아래 '+ 이 날의 사주 풀이 보기' 접이식 풀이는 뺐다 — 2026-11-20)
     // ✍️ 오늘 1줄 성찰 쓰기 점프 버튼은 부적 패 위 — 모바일 첫 화면에 보이게 (2026-11-20 #8519)
     return modalHead(info) +
@@ -2904,7 +2924,7 @@
       ritualHTML(info) +
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
-      '✨ 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 착 붙였어요!</p>' +
+      '금빛 인장이 찍혀 있어요 — 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커가 새겨져 있어요.</p>' +
       diarySectionHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
@@ -6077,7 +6097,7 @@
   /* ── 2026-11-22 · 화면 전환·버튼 클릭의 효과음은 걷어 냈다 ──────────────────
      소리는 **의식**에만 남긴다: 대표 수호부적 톡(sfxBless) · 긴급 개운템 체험
      (대나무 뽑기·오브제 완료·싱잉볼) · 액운 태우기(구기기·불붙이기·정화).
-     팝업 열기·날짜 팝업·톡톡톡 두드림·탭 전환은 무음 — 진동으로만 조용히 알린다. */
+     팝업 열기·날짜 팝업·붙이기 버튼·탭 전환은 무음 — 의식의 소리만 남긴다. */
   function sfxOpen() { }                     // 팝업·화면 전환 — 무음
   function sfxBurnOpen() { }                 // 액운 태우기 팝업 열기 — 무음
   function sfxTap(step) { vibrate([45, 25, 55]); }          // 두드림 — 진동만
@@ -6098,6 +6118,21 @@
     bowlTone(ctx, 588.66, { gain: .009, dur: 2.6, attack: .06, tau: 1.0, at: .05 });  // 5배 — 은은한 금속감
     /* 부드러운 '웅' — 620Hz→170Hz 저역, 어택 0.07s, 짧고 낮게 */
     noise(ctx, { dur: .62, filter: 'lowpass', f0: 620, f1: 170, q: 0.6, gain: .028, attack: .07 });
+  }
+  /* 5) 하루 부적 — 1.5초 지긋이 눌러 기운이 열릴 때 **깊고 은은한 싱잉볼 저음 한 번** (2026-11-22)
+     · 대문 부적(sfxBless)과 같은 결이되 한 옥타브 낮게 — G2(98Hz) 몸통에 C3·G3 를 아주 얇게 얹어
+       종을 한 번 울린 잔향만 남긴다(6.6초).
+     · 폰 스피커에서도 들리도록 저음만 두지 않고 C3 를 살짝 키워 받쳤다.
+     · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 소리·진동 모두 나지 않는다. */
+  function sfxBowlDeep() {
+    vibrate([55, 40, 85]);            // 한 번, 차분하게
+    var ctx = audioCtx(); if (!ctx) return;
+    bowlTone(ctx, 98.00,  { gain: .15, dur: 6.6, attack: .16, tau: 2.6 });          // 몸통 G2
+    bowlTone(ctx, 98.45,  { gain: .045, dur: 6.2, attack: .2, tau: 2.3, at: .006 }); // 어긋난 쌍 → 맥놀이
+    bowlTone(ctx, 130.81, { gain: .085, dur: 5.8, attack: .13, tau: 2.1 });          // C3 — 옅게 받치는 배음
+    bowlTone(ctx, 196.00, { gain: .026, dur: 4.4, attack: .1, tau: 1.6, at: .02 });  // G3 — 아주 얇게
+    bowlTone(ctx, 392.44, { gain: .008, dur: 2.8, attack: .07, tau: 1.1, at: .04 }); // 은은한 금속감
+    noise(ctx, { dur: .72, filter: 'lowpass', f0: 520, f1: 140, q: 0.6, gain: .02, attack: .09 });
   }
   /* 노이즈원 — 바스락·불꽃·바람을 만드는 기본 재료 (음원 파일 없음) */
   function noise(ctx, o) {
@@ -6724,10 +6759,12 @@
       if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(e); }
     });
 
-    // 팝업 안: 부적 두드리기 / X·배경·닫기 버튼
+    // 팝업 안: 부적 1.5초 누르기(pointer) · 달력에 붙이기 · X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (tap) { onRitualTap(tap, e); return; }
+      if (tap) { e.preventDefault(); return; }        // 기운 열기는 1.5초 홀드가 맡는다 — 클릭은 조용히
+      var stick = e.target.closest ? e.target.closest('[data-ritual="stick"]') : null;
+      if (stick) { e.preventDefault(); onRitualStick(stick); return; }
       if (!e.target.closest) return;
       if (e.target.closest('[data-diary-jump]')) { e.preventDefault(); jumpToDiary(); return; }
       if (e.target.closest('[data-diary-again]')) { e.preventDefault(); onDiaryAgain(); return; }
@@ -6743,6 +6780,42 @@
       }
       if (e.target.closest('[data-diary-del]')) { e.preventDefault(); deleteDiaryFromModal(); return; }
       if (e.target.closest('[data-modal-close]')) closeDayModal();
+    });
+
+    /* ── 부적 1.5초 지긋이 누르기 ────────────────────────────────
+       pointerdown → 1.5초 뒤 기운이 열린다. 모바일에서 화면을 밀어 스크롤하면
+       포인터가 취소되거나(pointercancel) 16px 넘게 움직여 접히고, 길게 눌러도
+       글자 선택·이미지 저장 메뉴가 뜨지 않게 contextmenu·selectstart 를 막는다.
+       키보드만 쓰는 사람은 Space/Enter 를 1.5초 누르고 있으면 같은 의식이 열린다. */
+    modalEl.addEventListener('pointerdown', function (e) {
+      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (!tap || e.button > 0) return;
+      ritualHoldStart(tap);
+    });
+    document.addEventListener('pointermove', function (e) { ritualHoldMove(e); }, true);
+    document.addEventListener('pointerup', function () { if (holdBtn) ritualHoldEnd(false); }, true);
+    document.addEventListener('pointercancel', function () { if (holdBtn) ritualHoldEnd(true); }, true);
+    window.addEventListener('blur', function () { if (holdBtn) ritualHoldEnd(true); });
+    modalEl.addEventListener('keydown', function (e) {
+      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (!tap || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
+      e.preventDefault();                                  // Space 로 화면이 스크롤되지 않게
+      if (!e.repeat) ritualHoldStart(tap);
+    });
+    modalEl.addEventListener('keyup', function (e) {
+      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (!tap || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
+      e.preventDefault();
+      ritualHoldEnd(false);
+    });
+    modalEl.addEventListener('blur', function (e) {
+      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
+      if (tap && holdBtn === tap) ritualHoldEnd(true);
+    }, true);
+    ['contextmenu', 'selectstart', 'dragstart'].forEach(function (evt) {
+      modalEl.addEventListener(evt, function (e) {
+        if (e.target.closest && e.target.closest('[data-ritual="tap"]')) e.preventDefault();
+      });
     });
 
     // 구입 팝업 — 맨 아래 카드 3개 버튼과 잠금 카드의 입장 코드 버튼

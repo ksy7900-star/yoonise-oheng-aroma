@@ -734,6 +734,20 @@ a { color: inherit; }
 .chemi__role { margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
 .chemi__role b { color: var(--ink); font-weight: 700; }
 
+/* ── 결과 아래 두 갈래 — 채널 추가 · 친구 초대 (2026-11-22) ─────────
+   케미 링크 보내기 바로 밑, 카드 안에서 한눈에 보이게 세로 두 줄. */
+.chemi__more { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.chemi__more .btn { min-height: 48px; font-size: 14px; font-weight: 700; }
+.chemi__more .btn--gold { border-color: rgba(180, 83, 9, .38); }
+.chemi__more .btn--ghost { background: #FFF; }
+
+/* 초대 사다리로 올라간 직후 — 어디로 왔는지 한 번만 은은하게 (2026-11-22) */
+.card.is-jump { animation: cardJump 1.6s ease-out both; }
+@keyframes cardJump {
+  0% { box-shadow: 0 0 0 2px rgba(180, 83, 9, .45), 0 10px 26px -18px rgba(180, 83, 9, .5); }
+  100% { box-shadow: 0 0 0 0 rgba(180, 83, 9, 0), var(--shadow); }
+}
+
 /* 작은 오행 요약 바 */
 .els--mini { height: 42px; margin-top: 16px; gap: 10px; }
 .els--mini .el__pair {

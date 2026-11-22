@@ -58,6 +58,7 @@
   var LIVE_BASE = 'https://ksy7900-star.github.io' + MEMBER_PATH;      // 케미·사다리 화면 주소
   var CALENDAR_PATH = '/yoonise-oheng-aroma/calendar/';
   var CALENDAR_LIVE_BASE = 'https://ksy7900-star.github.io' + CALENDAR_PATH;   // 친구 초대 링크는 달력 메인으로 (2026-11-22)
+  var KAKAO_CHANNEL_ADD = 'https://pf.kakao.com/_hxfbCG/friend';   // 원터치 카카오 채널 추가 (2026-11-22)
   var REF_KEY = 'yoonise.member.ref.v1';
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
   var AUTOLOGIN_KEY = 'yoonise.member.autologin.tried.v1';   // 이 탭에서 카카오로 보낸 적 있는지 (무한 리다이렉트 방지)
@@ -1942,6 +1943,13 @@
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
       + '</div>';
+    /* 결과를 본 직후의 두 갈래 — ① 윤이세사주 채널 추가(원터치) ② 친구 초대 사다리로 (2026-11-22) */
+    html += '<div class="chemi__more">'
+      + '<a class="btn btn--gold" href="' + KAKAO_CHANNEL_ADD + '" target="_blank" rel="noopener">'
+      + '<span aria-hidden="true">💬</span> 윤이세사주 채널 추가하기</a>'
+      + '<button type="button" class="btn btn--ghost" data-invite-jump>'
+      + '<span aria-hidden="true">🎁</span> 친구 초대하고 혜택 받기</button>'
+      + '</div>';
     html += '<p class="note">보내는 링크에는 <b>내 사주 정보만</b>(생년월일·시각·성별) 담겨요. 상대방 사주는 담기지 않아요. '
       + '친구가 링크를 열고 자기 사주를 넣으면 같은 비교가 그쪽 화면에서 만들어집니다.</p>';
     html += '<div class="brandmark brandmark--card">'
@@ -1982,6 +1990,18 @@
 
     var sh = $('#shareChemiBtn');
     if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
+
+    /* 🎁 친구 초대하고 혜택 받기 — 결과에서 STEP 2 · 내 사다리 / STEP 3 · 초대 링크로 조용히 올라간다 */
+    var jump = box.querySelector('[data-invite-jump]');
+    if (jump) jump.addEventListener('click', function () {
+      var target = doc.getElementById('ladderCard') || doc.getElementById('inviteCard');
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.remove('is-jump');
+      void target.offsetWidth;
+      target.classList.add('is-jump');
+      setTimeout(function () { target.classList.remove('is-jump'); }, 1800);
+    });
 
     var ag = $('#againBtn');
     if (ag) ag.addEventListener('click', function () {
