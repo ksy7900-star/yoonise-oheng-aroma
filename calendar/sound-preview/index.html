@@ -220,11 +220,11 @@
     <button type="button" class="card" data-sfx="stampB">
       <span class="card__no">B</span>
       <span class="card__txt">
-        <b class="card__name">종이에 인주 스며드는 '착!'</b>
-        <span class="card__desc">짧고 경쾌한 종이 마찰음 '착'에 은은한 저음 울림을 얹었습니다.</span>
+        <b class="card__name">더 강한 '착!' — 인주가 탁</b>
+        <span class="card__desc">고른 B안을 어택·타격감만 키운 최종본. 종이 마찰 '착'에 단단한 나무 타격이 얹혀 속이 뚫립니다.</span>
       </span>
       <span class="card__meta">
-        <span class="card__dur">1.0초</span>
+        <span class="card__dur">0.4초</span>
         <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
       </span>
     </button>
@@ -425,21 +425,49 @@ function sfxStampWood(ctx, dest) {
   bowlTone(ctx, 98.0,  { gain: 0.055, dur: 0.78, attack: 0.006, tau: 0.26, dest: d });  /* 낮게 남는 잔향 G2 */
 }
 
-/* ── B · 종이에 인주 스며드는 '착!' (1.0초) ────────────────────────────
-   짧고 경쾌한 종이 마찰음 + 은은한 저음 울림.
-   · 5600→1500Hz 로 빠르게 내려오는 100ms 마찰이 '착'의 결.
-   · 4200Hz 대역의 50ms 알갱이가 종이 섬유가 눌리는 서걱임.
-   · 130.8Hz(C3) 울림을 0.85초 얇게 깔아 '스며드는' 여운. */
+/* ── B · 더 강한 '착!' (0.4초) ────────────────────────────────────
+   김나영 님이 고른 B안을 어택·타격감만 확실히 키운 최종본 — 달력 본체에 들어간 소리와 같은 코드다.
+   · 0ms   하이패스 마찰 트랜지언트 — 7kHz 대역 12ms 알갱이(attack 0.4ms). '착'의 첫 결.
+   · 0ms   6000→1700Hz 95ms 마찰 + 7ms·18ms 뒤 4600Hz·3300Hz 서걱임 두 겹.
+   · 0ms   단단한 나무 타격 바디 — 240→130Hz '툭' + 520Hz·780Hz·300Hz 짧은 통 울림.
+   · 0ms   96→54Hz 저역 '웅' 0.26초 — 속이 탁 뚫리는 무게.
+   · 마지막에 tanh 소프트 새추레이션 한 단 — peak 를 0.5~0.75 로 묶어 클리핑 없이 존재감을 살린다. */
+var SEAL_DRIVE = 1.2;        /* 새추레이션 세기 — 약하게 눌러 배음만 더한다 */
+var SEAL_TRIM = 0.70;        /* 최종 크기 — tanh 뒤에 곱해 peak 를 0.5~0.75 로 맞춘다 */
+function sealSoftCurve(drive) {
+  var n = 2048, c = new Float32Array(n), k = Math.tanh(drive);
+  for (var i = 0; i < n; i++) {
+    var x = (i / (n - 1)) * 2 - 1;
+    c[i] = Math.tanh(drive * x) / k;
+  }
+  return c;
+}
 function sfxStampInk(ctx, dest) {
   ctx = ctx || audioCtx(); if (!ctx) return;
   var d = dest || ctx.destination;
 
-  noise(ctx, { dur: 0.100, filter: 'bandpass', f0: 5600, f1: 1500, q: 0.9, gain: 0.155, attack: 0.002, decay: 1.8, dest: d });
-  noise(ctx, { dur: 0.050, filter: 'bandpass', f0: 4200, q: 1.2, gain: 0.075, attack: 0.002, at: 0.034, decay: 2.2, dest: d });
-  noise(ctx, { dur: 0.038, filter: 'highpass', f0: 6000, q: 0.7, gain: 0.040, attack: 0.002, at: 0.006, dest: d });
+  /* 새추레이션 버스 — 여러 겹이 겹쳐도 peak 가 1 을 넘지 않게 묶고, 속이 뚫리는 배음을 더한다 */
+  var bus = ctx.createGain(); bus.gain.value = 1;
+  var shaper = ctx.createWaveShaper();
+  shaper.curve = sealSoftCurve(SEAL_DRIVE);
+  shaper.oversample = '4x';
+  var trim = ctx.createGain(); trim.gain.value = SEAL_TRIM;
+  bus.connect(shaper); shaper.connect(trim); trim.connect(d);
 
-  bowlTone(ctx, 130.81, { gain: 0.075, dur: 0.86, attack: 0.008, tau: 0.26, dest: d }); /* C3 — 스며드는 저음 */
-  bowlTone(ctx, 98.0,   { gain: 0.030, dur: 1.00, attack: 0.012, tau: 0.32, dest: d }); /* G2 — 아주 옅게 */
+  /* ① 마찰 트랜지언트 — '착'의 첫 결. 하이패스 12ms + 밴드패스 95ms */
+  noise(ctx, { dur: .012, filter: 'highpass', f0: 7000, q: 0.7, gain: .40, attack: .0004, decay: 4.5, dest: bus });
+  noise(ctx, { dur: .095, filter: 'bandpass', f0: 6000, f1: 1700, q: 1.0, gain: .76, attack: .001, decay: 2.6, dest: bus });
+  /* ② 종이 섬유가 눌리는 서걱임 — 살짝 늦게 두 겹 */
+  noise(ctx, { dur: .050, filter: 'bandpass', f0: 4600, q: 1.3, gain: .27, attack: .001, at: .007, decay: 2.4, dest: bus });
+  noise(ctx, { dur: .036, filter: 'bandpass', f0: 3300, q: 1.1, gain: .16, attack: .001, at: .018, decay: 2.6, dest: bus });
+  /* ③ 단단한 나무 타격 바디 — 도장 몸통이 종이에 닿는 '툭' (520·780·300Hz 통 울림) */
+  tone(ctx, { from: 240, to: 130, type: 'triangle', gain: .31, dur: .12, attack: .0015, glide: .08, dest: bus });
+  bowlTone(ctx, 520.0, { gain: .18, dur: .22, attack: .0015, tau: .045, dest: bus });
+  bowlTone(ctx, 780.0, { gain: .09, dur: .16, attack: .0015, tau: .032, dest: bus });
+  bowlTone(ctx, 300.0, { gain: .14, dur: .30, attack: .0015, tau: .070, dest: bus });
+  /* ④ 저역 — 낮게 받치는 무게. 폰 스피커에서도 남도록 줄을 세웠다 */
+  tone(ctx, { from: 96, to: 54, type: 'sine', gain: .23, dur: .26, attack: .002, glide: .20, dest: bus });
+  bowlTone(ctx, 62.0, { gain: .045, dur: .45, attack: .004, tau: .14, dest: bus });
 }
 
 /* ==========================================================================
@@ -450,7 +478,7 @@ var SFX = {
   moktak: { name: '2번 · 단정한 목탁·죽비',    ms: 1280, fn: sfxMoktak },
   glass:  { name: '3번 · 맑은 유리종',         ms: 2080, fn: sfxGlassBell },
   stampA: { name: 'A · 묵직한 나무 도장 탁!',  ms: 880,  fn: sfxStampWood },
-  stampB: { name: 'B · 종이에 인주 스치는 착!', ms: 1080, fn: sfxStampInk }
+  stampB: { name: 'B · 더 강한 착! (최종)',     ms: 900,  fn: sfxStampInk }
 };
 var ORDER = ['chime', 'moktak', 'glass', 'stampA', 'stampB'];
 

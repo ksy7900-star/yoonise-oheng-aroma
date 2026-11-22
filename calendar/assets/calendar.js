@@ -2294,8 +2294,9 @@
 
   /** ② 한지 인주 패드 위의 붉은 낙관 도장(護) — 네모 버튼 자리를 대신한다 (2026-11-22)
       · 기본 경험: 아이보리 인주 패드 위의 도장을 손가락으로 잡아 위 부적 카드로 끌어다
-        놓으면 '탁' 찍히며 달력에 새겨진다. 부적 밖에서 놓으면 패드로 돌아온다.
-      · 보조: 드래그가 서툴러도 0.7초 지긋이 누르거나 키보드 Enter 로 찍힌다.
+        놓으면 '착!' 찍히며 달력에 새겨진다. 부적 밖에서 놓으면 패드로 돌아온다.
+      · 2026-11-22 확정: **끌어다 놓기 전용**. 제자리에서 아무리 오래 눌러도 찍히지 않는다
+        (0.7초 지긋이 누르기·인주 링 자동 찍기를 걷어 냈다). 키보드 Enter 만 보조 경로로 남는다.
       · 찍힌 뒤에는 같은 자리가 '✓ … 새겼어요' + 찍힌 낙관(✓) 상태로 남는다. */
   function sealPadHTML(done, isToday) {
     var word = isToday ? '오늘' : '이 날';
@@ -2307,17 +2308,12 @@
       '<button type="button" class="seal' + (done ? ' is-stamped' : '') + '" data-ritual="seal"' +
       (done ? ' disabled aria-disabled="true"' : '') +
       ' aria-label="' + (done ? word + ' 달력에 새겼어요'
-        : '도장을 부적 위로 끌어다 놓거나 지긋이 눌러 ' + word + ' 달력에 새기기') + '">' +
+        : '도장을 부적 위로 끌어다 놓아 ' + word + ' 달력에 새기기') + '">' +
       '<span class="seal__body" aria-hidden="true">' +
       '<span class="seal__frame"></span>' +
       '<span class="seal__char">護</span>' +
       '<span class="seal__check">✓</span>' +
       '</span>' +
-      /* 인주 링 — 반지름 46(둘레 289.03)이라 dashoffset 하나로 '한 바퀴'를 그린다 */
-      '<svg class="seal__ring" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
-      '<circle class="seal__ring-track" cx="50" cy="50" r="46"/>' +
-      '<circle class="seal__ring-bar" cx="50" cy="50" r="46"/>' +
-      '</svg>' +
       '</button>' +
       '<p class="seal-pad__hint' + (done ? ' is-done' : '') + '">' +
       (done ? '✓ ' + word + ' 달력에 새겼어요' : '도장을 끌어다 부적 위에 찍어 주세요') +
@@ -2388,22 +2384,22 @@
       '</div>';
   }
 
-  /* ── 하루 부적 의식 — ① 1.5초 지긋이 눌러 기운 열기 · ② 낙관 도장을 지긋이 눌러 새기기 ──
+  /* ── 하루 부적 의식 — ① 1.5초 지긋이 눌러 기운 열기 · ② 낙관 도장을 끌어다 놓아 새기기 ──
      2026-11-22 전면 개편: 톡·톡·톡 연타 · 다다닥 진동 · 폭죽/입자 · 젤리 바운스 · 모달 덜컹을
      모두 걷어 내고 두 단계의 조용한 의식으로 바꾼다.
      ① 부적을 1.5초 지긋이 누르면 부적을 감싼 가는 금빛 링이 한 바퀴 차오른다.
         중간에 손을 떼면 링이 부드럽게 원위치하고 아무 일도 일어나지 않는다.
-        1.5초가 차면 소리를 켜 둔 사람에게만 깊고 은은한 싱잉볼 저음 한 번,
+        1.5초가 차면 소리를 켜 둔 사람에게만 맑은 한옥 풍경 소리 한 번(sfxChimeHome),
         그날의 부적 문장과 한 줄 처방이 아래에서 차분히 떠오른다.
      ② 이때는 아직 달력에 붙지 않는다. 아래 한지 인주 패드 위의 붉은 낙관 도장(護)을
-        손가락으로 잡아 부적 카드 위로 끌어다 놓아야 '탁' 찍히며 달력 칸에 스티커가 새겨진다.
-        부적 밖에서 놓으면 도장이 패드로 돌아온다. (보조: 0.7초 지긋이 누르기 · Enter) */
+        손가락으로 잡아 부적 카드 위로 끌어다 놓아야 '착!' 찍히며 달력 칸에 스티커가 새겨진다.
+        부적 밖에서 놓으면 도장이 패드로 돌아온다.
+        **끌기 전용** — 제자리에서 지긋이 눌러도 자동으로 찍히지 않는다(김나영 님 확정). */
   var HOLD_MS = 1500;    // 기운이 열리는 시간 — 1.5초
-  var SEAL_MS = 700;     // 보조 — 도장을 그 자리에서 지긋이 누르는 시간 (0.7초)
   var SEAL_DRAG_SLOP = 7;  // 도장이 이만큼 움직이면 '끌기'로 보고 손가락을 따라 들린다(px)
-  var HOLD_SLOP = 16;    // 손가락이 이만큼 움직이면 스크롤로 보고 접는다(px)
+  var HOLD_SLOP = 16;    // 손가락이 이만큼 움직이면 스크롤로 보고 접힌다(px)
   var HOLD_GRACE = 70;   // 링이 거의 다 찬 뒤 손을 떼도 열리게 하는 여유(ms)
-  var holdBtn = null;    // 지금 눌려 있는 부적(1단계) · 도장(2단계) 버튼
+  var holdBtn = null;    // 지금 눌려 있는 버튼 — 부적(1단계) 또는 끌고 있는 도장
 
   function ritualWrapOf(node) {
     return node && node.closest ? node.closest('[data-ritual-wrap]') : null;
@@ -2420,18 +2416,7 @@
     bar.style.strokeDashoffset = '';           // 인라인 값을 지워 CSS(.is-holding → 0)가 이어받게
   }
 
-  /** 도장 둘레 인주 링을 0에서 다시 — 두 번째로 눌러도 처음부터 차오르게 */
-  function sealRingReset(btn) {
-    var bar = btn ? btn.querySelector('.seal__ring-bar') : null;
-    if (!bar) return;
-    bar.style.transition = 'none';
-    bar.style.strokeDashoffset = '289.03';
-    void bar.getBoundingClientRect();
-    bar.style.transition = '';
-    bar.style.strokeDashoffset = '';
-  }
-
-  /* ── ② 도장 끌기 — 잡은 도장이 손가락을 따라 들려 부적 위로 가고, 놓으면 '탁' (2026-11-22)
+  /* ── ② 도장 끌기 — 잡은 도장이 손가락을 따라 들려 부적 위로 가고, 놓으면 '착!' (2026-11-22)
      · 실제 도장은 제자리에 둔 채(투명), 같은 모양의 복제 도장을 position:fixed 로 띄운다.
        팝업 내용이 안에서 스크롤돼도 복제 도장은 잘리지 않고 손가락을 그대로 따라온다.
      · 목표는 위 부적 패(.talis-pad__sheet) 전체 — 그 위에 있으면 모서리 낙관 자리에
@@ -2548,11 +2533,11 @@
     btn._ghostDX = btn._ghostDY = 0;
     if (drop) {
       btn.classList.remove('is-dragged');
-      onRitualStick(btn);                 // 탁 — 달력에 새기고 찍힌 낙관으로
+      onRitualStick(btn);                 // 착! — 달력에 새기고 찍힌 낙관으로
     }
   }
 
-  /** 키보드 Enter — 도장을 바로 찍는다 (끌기·지긋이 누르기의 보조 경로) */
+  /** 키보드 Enter — 도장을 바로 찍는다 (끌어 놓기의 보조 경로) */
   function ritualSealNow(btn) {
     var wrap = ritualWrapOf(btn);
     if (!wrap || btn.disabled || wrap.classList.contains('is-done')) return;
@@ -2571,21 +2556,21 @@
     holdBtn = btn;
     btn._heldAt = Date.now();
     btn._holdKind = kind;
-    btn._holdMs = kind === 'seal' ? SEAL_MS : HOLD_MS;
     btn._holdX = btn._holdY = null;
     btn.classList.add('is-holding');
     if (kind === 'seal') {
-      sealRingReset(btn);
+      /* 도장 — 타이머를 걸지 않는다. 제자리에서 아무리 오래 눌러도 찍히지 않고,
+         손가락이 7px 넘게 움직이는 순간에만 끌기로 들어간다(끌기 전용). */
       var pad = wrap.querySelector('.seal-pad');
       if (pad) pad.classList.add('is-pressing');   // 누르는 동안 인주 자국이 조금씩 짙어진다
-    } else {
-      holdRingReset(wrap);
-      wrap.classList.add('is-holding');
+      return;
     }
+    holdRingReset(wrap);
+    wrap.classList.add('is-holding');
+    btn._holdMs = HOLD_MS;
     btn._holdT = setTimeout(function () {
-      if (btn._holdKind === 'seal') onRitualStick(btn);   // 탁 — 달력에 새긴다
-      else ritualOpen(wrap);                              // 기운이 열린다
-    }, btn._holdMs);
+      ritualOpen(wrap);                              // 1.5초 — 기운이 열린다
+    }, HOLD_MS);
   }
 
   function ritualHoldMove(ev) {
@@ -2594,7 +2579,7 @@
     if (btn._holdX == null) { btn._holdX = ev.clientX; btn._holdY = ev.clientY; return; }
     var dx = ev.clientX - btn._holdX, dy = ev.clientY - btn._holdY;
     if (btn._holdKind === 'seal') {
-      /* 도장 — 조금만 움직여도 '끌기'로 보고 손가락을 따라 들린다 (보조 홀드는 취소) */
+      /* 도장 — 조금만 움직여도 '끌기'로 보고 손가락을 따라 들린다 */
       if (btn._dragging) sealDragTo(ev);
       else if (Math.sqrt(dx * dx + dy * dy) > SEAL_DRAG_SLOP) sealDragBegin(btn, ev);
       return;
@@ -2618,14 +2603,15 @@
       var pad = wrap.querySelector('.seal-pad');
       if (pad) pad.classList.remove('is-pressing');
     }
-    if (cancelled || !wrap) return;
-    var held = Date.now() - (btn._heldAt || 0);
-    if (held < (btn._holdMs || HOLD_MS) - HOLD_GRACE) {         // 중간에 떼면 원위치
-      if (btn._holdKind === 'seal' && held < 320) sealNudge(btn);   // 톡 — 끌어 보라는 작은 안내
+    /* 도장은 여기서 끝 — 제자리에서 오래 눌러도 찍히지 않는다(끌기 전용).
+       짧게 톡 눌렀다 뗀 사람에게만 어디로 끌어야 하는지 '찍힐 자리'를 잠깐 비춰 준다. */
+    if (btn._holdKind === 'seal') {
+      if (!cancelled && wrap && Date.now() - (btn._heldAt || 0) < 320) sealNudge(btn);
       return;
     }
-    if (btn._holdKind === 'seal') onRitualStick(btn);           // 다 찬 순간 떼도 찍힌다
-    else ritualOpen(wrap);
+    if (cancelled || !wrap) return;
+    if (Date.now() - (btn._heldAt || 0) < HOLD_MS - HOLD_GRACE) return;   // 중간에 떼면 원위치
+    ritualOpen(wrap);
   }
 
   /** 도장을 그냥 톡 눌렀다 떼면 — 어디로 끌어야 하는지 부적 위 '찍힐 자리'를 잠깐 비춰 준다 */
@@ -2652,7 +2638,7 @@
       btn.setAttribute('aria-disabled', 'true');
       btn.setAttribute('aria-label', (wrap.getAttribute('data-name') || '부적') + ' — 기운이 열렸어요');
     }
-    sfxBowlDeep();                          // 소리 켠 사람에게만 — audioCtx() 가 무음이면 null
+    sfxChimeHome();                         // 소리 켠 사람에게만 — 1번 · 맑은 한옥 풍경 (audioCtx() 가 무음이면 null)
     var open = wrap.querySelector('.ritual__open');
     if (open && open.hidden) {
       open.hidden = false;
@@ -2672,7 +2658,7 @@
     }, 420);
   }
 
-  /** ② 본인이 직접 지긋이 누르는 낙관 도장 — 이 순간에만 저장하고 인장이 조용히 새겨진다 */
+  /** ② 본인이 직접 끌어다 놓는 낙관 도장 — 이 순간에만 저장하고 인장이 조용히 새겨진다 */
   function onRitualStick(btn) {
     var wrap = ritualWrapOf(btn);
     if (!wrap) return;
@@ -2687,7 +2673,7 @@
     renderCalendar();                                     // 팝업 뒤 달력 칸에도 바로 스티커가 붙는다
     wrap.classList.add('is-done', 'is-open', 'is-sealing');
     setStage(wrap, 3);
-    sfxSealPress();                                       // 소리 켠 사람에게만 — 묵직한 저음 한 번
+    sfxSealPress();                                       // 소리 켠 사람에게만 — 속이 탁 뚫리는 '착!' 한 방
     setTimeout(function () { wrap.classList.remove('is-sealing'); }, 1200);
 
     /* 도장은 찍힌 자리에 그대로 — 눌린 자리가 '✓ … 새겼어요' + 찍힌 낙관으로 남는다 */
@@ -6306,7 +6292,7 @@
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack || 0.01));
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
-    osc.connect(g); g.connect(ctx.destination);
+    osc.connect(g); g.connect(o.dest || ctx.destination);
     osc.start(t0); osc.stop(t0 + o.dur + 0.03);
   }
   /* 싱잉볼 한 음 — 부드러운 어택(0.06~0.16s) 뒤 6초 가까이 잦아드는 곡선 (2026-11-22)
@@ -6333,7 +6319,7 @@
       curve[i] = peak * rise * tail * close;
     }
     g.gain.setValueCurveAtTime(curve, t0, dur);
-    osc.connect(g); g.connect(ctx.destination);
+    osc.connect(g); g.connect(o.dest || ctx.destination);
     osc.start(t0); osc.stop(t0 + dur + 0.02);
   }
   /* 나무 타격의 '톡' — 아주 짧은 밴드패스 노이즈 */
@@ -6374,30 +6360,91 @@
     /* 부드러운 '웅' — 620Hz→170Hz 저역, 어택 0.07s, 짧고 낮게 */
     noise(ctx, { dur: .62, filter: 'lowpass', f0: 620, f1: 170, q: 0.6, gain: .028, attack: .07 });
   }
-  /* 5) 하루 부적 — 1.5초 지긋이 눌러 기운이 열릴 때 **깊고 은은한 싱잉볼 저음 한 번** (2026-11-22)
-     · 대문 부적(sfxBless)과 같은 결이되 한 옥타브 낮게 — G2(98Hz) 몸통에 C3·G3 를 아주 얇게 얹어
-       종을 한 번 울린 잔향만 남긴다(6.6초).
-     · 폰 스피커에서도 들리도록 저음만 두지 않고 C3 를 살짝 키워 받쳤다.
+  /* 5) 하루 부적 — 1.5초 지긋이 눌러 기운이 열릴 때 **1번 · 맑은 한옥 풍경** (2026-11-22 김나영 님 선택)
+     · `sound-preview/` 에서 셋 중 고른 1번(2.2초)을 그대로 달력에 붙였다. 6초 싱잉볼(sfxBless)은
+       대문·확대 1년 수호부적 자리에 그대로 두고, 날짜 팝업의 하루 부적에만 이 맑은 풍경을 쓴다.
+     · 처마 끝 풍경(風磬) 다섯 대 — 쇠관의 비화성 배음(1 : 2.76 : 5.40)을 얇게 썰어 올리고
+       배음마다 살짝 어긋난 쌍(±0.7Hz)으로 맥놀이를 만들어 바람에 흔들리는 여운을 낸다.
+       4.6Hz·깊이 22% 트레몰로로 전체를 은은하게 흔들고, 0s·0.42s·0.95s·1.5s 에 관을 하나씩 스친다.
      · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 소리·진동 모두 나지 않는다. */
-  function sfxBowlDeep() {
-    vibrate([55, 40, 85]);            // 한 번, 차분하게
+  function sfxChimeHome() {
+    vibrate([35, 30, 55]);            // 풍경이 스치는 결로 가볍게
     var ctx = audioCtx(); if (!ctx) return;
-    bowlTone(ctx, 98.00,  { gain: .15, dur: 6.6, attack: .16, tau: 2.6 });          // 몸통 G2
-    bowlTone(ctx, 98.45,  { gain: .045, dur: 6.2, attack: .2, tau: 2.3, at: .006 }); // 어긋난 쌍 → 맥놀이
-    bowlTone(ctx, 130.81, { gain: .085, dur: 5.8, attack: .13, tau: 2.1 });          // C3 — 옅게 받치는 배음
-    bowlTone(ctx, 196.00, { gain: .026, dur: 4.4, attack: .1, tau: 1.6, at: .02 });  // G3 — 아주 얇게
-    bowlTone(ctx, 392.44, { gain: .008, dur: 2.8, attack: .07, tau: 1.1, at: .04 }); // 은은한 금속감
-    noise(ctx, { dur: .72, filter: 'lowpass', f0: 520, f1: 140, q: 0.6, gain: .02, attack: .09 });
+    var d = ctx.destination;
+    var t = ctx.currentTime;
+
+    /* 흔들림 버스 — 풍경 전체가 바람에 흔들리는 느낌 */
+    var sway = ctx.createGain();
+    sway.gain.value = 0.78;
+    sway.connect(d);
+    var lfo = ctx.createOscillator(), lfoG = ctx.createGain();
+    lfo.frequency.value = 4.6; lfoG.gain.value = 0.22;
+    lfo.connect(lfoG); lfoG.connect(sway.gain);
+    lfo.start(t); lfo.stop(t + 2.3);
+
+    function tube(f, at, gain, dur) {
+      var R = [1, 2.76, 5.40], G = [1, 0.34, 0.13];
+      for (var i = 0; i < R.length; i++) {
+        var fr = f * R[i];
+        if (fr > 12000) continue;
+        bowlTone(ctx, fr, { gain: gain * G[i], dur: dur, attack: 0.004, tau: dur * 0.30, at: at, dest: sway });
+        bowlTone(ctx, fr * 1.0006, { gain: gain * G[i] * 0.55, dur: dur * 0.96, attack: 0.006, tau: dur * 0.28, at: at + 0.002, dest: sway });
+      }
+      /* 관을 때린 순간의 아주 짧은 금속 어택 */
+      noise(ctx, { dur: 0.026, filter: 'bandpass', f0: 6200, q: 1.8, gain: gain * 0.22, attack: 0.001, at: at, dest: sway });
+    }
+
+    tube(1318.51, 0.00, 0.105, 1.85);   /* E6 — 첫 타, 가장 크게 */
+    tube(1975.53, 0.42, 0.060, 1.30);   /* B6 — 바람에 스친 두 번째 */
+    tube(1567.98, 0.95, 0.045, 1.05);   /* G6 — 세 번째 */
+    tube(2093.00, 1.50, 0.026, 0.66);   /* C7 — 끝에 아주 여리게 */
   }
-  /* 6) 낙관 도장 — 0.65초 지긋이 눌러 '탁' 찍히는 순간, 차분하고 묵직한 저음 공명 한 번 (2026-11-22)
-     · 돌도장이 종이에 닿는 짧은 '툭'(132→64Hz) + 한 옥타브 낮은 공명(E2 82.4Hz) 한 번.
-     · 폭죽·타격음 없이 의식답게 낮게. 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 무음. */
+  /* 6) 낙관 도장 — 부적 위에 도장을 놓는 그 순간, **더 강하고 속이 탁 뚫리는 '착!'** (2026-11-22 확정)
+     김나영 님이 미리듣기에서 고른 B안을 어택·타격감만 확실히 키운 최종본.
+     · 0ms   하이패스 마찰 트랜지언트 — 7kHz 대역 12ms 알갱이(attack 0.4ms). '착'의 첫 결.
+     · 0ms   6000→1700Hz 95ms 마찰 — 종이가 눌리며 인주가 번지는 결.
+     · 7ms·18ms 뒤 4600Hz·3300Hz 서걱임 두 겹 — 종이 섬유가 눌리는 질감.
+     · 0ms   단단한 나무 타격 바디 — 240→130Hz '툭' + 520Hz·780Hz·300Hz 짧은 통 울림(도장 몸통).
+     · 0ms   96→54Hz 저역 '웅' 0.26초 — 속이 탁 뚫리는 무게.
+     · 마지막에 tanh 소프트 새추레이션 한 단 — 작은 폰 스피커에서도 존재감이 살고,
+       tanh 가 1 을 넘길 수 없으므로 peak 는 trim×1/tanh(drive)=0.72 아래로 묶인다
+       (오프라인 렌더 peak 0.60~0.65 · 클리핑 0 샘플 검증).
+     · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 무음. */
+  var SEAL_DRIVE = 1.2;        // 새추레이션 세기 — 약하게 눌러 배음만 더한다
+  var SEAL_TRIM = 0.70;        // 최종 크기 — tanh 뒤에 곱해 peak 를 0.5~0.75 로 맞춘다
+  function sealSoftCurve(drive) {
+    var n = 2048, c = new Float32Array(n), k = Math.tanh(drive);
+    for (var i = 0; i < n; i++) {
+      var x = (i / (n - 1)) * 2 - 1;
+      c[i] = Math.tanh(drive * x) / k;
+    }
+    return c;
+  }
   function sfxSealPress() {
-    vibrate([40, 30, 70]);            // 도장이 닿는 한 번
+    vibrate([55, 20, 95]);            // 도장이 닿는 한 번 — 묵직하게
     var ctx = audioCtx(); if (!ctx) return;
-    tone(ctx, { from: 132, to: 64, type: 'sine', gain: .12, dur: .30, attack: .006, glide: .24 });
-    bowlTone(ctx, 82.41, { gain: .07, dur: 2.6, attack: .03, tau: 1.0 });   // E2 — 낮게 한 번 잦아든다
-    noise(ctx, { dur: .22, filter: 'lowpass', f0: 480, f1: 120, q: 0.7, gain: .045, attack: .01 });
+    /* 새추레이션 버스 — 여러 겹이 겹쳐도 peak 가 1 을 넘지 않게 묶고, 속이 뚫리는 배음을 더한다 */
+    var bus = ctx.createGain(); bus.gain.value = 1;
+    var shaper = ctx.createWaveShaper();
+    shaper.curve = sealSoftCurve(SEAL_DRIVE);
+    shaper.oversample = '4x';
+    var trim = ctx.createGain(); trim.gain.value = SEAL_TRIM;
+    bus.connect(shaper); shaper.connect(trim); trim.connect(ctx.destination);
+
+    /* ① 마찰 트랜지언트 — '착'의 첫 결. 하이패스 12ms + 밴드패스 95ms */
+    noise(ctx, { dur: .012, filter: 'highpass', f0: 7000, q: 0.7, gain: .40, attack: .0004, decay: 4.5, dest: bus });
+    noise(ctx, { dur: .095, filter: 'bandpass', f0: 6000, f1: 1700, q: 1.0, gain: .76, attack: .001, decay: 2.6, dest: bus });
+    /* ② 종이 섬유가 눌리는 서걱임 — 살짝 늦게 두 겹 */
+    noise(ctx, { dur: .050, filter: 'bandpass', f0: 4600, q: 1.3, gain: .27, attack: .001, at: .007, decay: 2.4, dest: bus });
+    noise(ctx, { dur: .036, filter: 'bandpass', f0: 3300, q: 1.1, gain: .16, attack: .001, at: .018, decay: 2.6, dest: bus });
+    /* ③ 단단한 나무 타격 바디 — 도장 몸통이 종이에 닿는 '툭' (520·780·300Hz 통 울림) */
+    tone(ctx, { from: 240, to: 130, type: 'triangle', gain: .31, dur: .12, attack: .0015, glide: .08, dest: bus });
+    bowlTone(ctx, 520.0, { gain: .18, dur: .22, attack: .0015, tau: .045, dest: bus });
+    bowlTone(ctx, 780.0, { gain: .09, dur: .16, attack: .0015, tau: .032, dest: bus });
+    bowlTone(ctx, 300.0, { gain: .14, dur: .30, attack: .0015, tau: .070, dest: bus });
+    /* ④ 저역 '웅' — 속이 탁 뚫리는 무게. 폰 스피커에서도 남도록 줄을 세웠다 */
+    tone(ctx, { from: 96, to: 54, type: 'sine', gain: .23, dur: .26, attack: .002, glide: .20, dest: bus });
+    bowlTone(ctx, 62.0, { gain: .045, dur: .45, attack: .004, tau: .14, dest: bus });     /* 낮게 남는 잔향 */
   }
   /* 노이즈원 — 바스락·불꽃·바람을 만드는 기본 재료 (음원 파일 없음) */
   function noise(ctx, o) {
@@ -6405,7 +6452,8 @@
     var n = Math.floor(ctx.sampleRate * dur);
     if (n <= 0) return;
     var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
-    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    if (o.decay) { for (var k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, o.decay); }
+    else { for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }
     var src = ctx.createBufferSource(); src.buffer = buf;
     var f = ctx.createBiquadFilter();
     f.type = o.filter || 'bandpass';
@@ -6418,7 +6466,7 @@
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack || 0.02));
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    src.connect(f); f.connect(g); g.connect(ctx.destination);
+    src.connect(f); f.connect(g); g.connect(o.dest || ctx.destination);
     src.start(t0); src.stop(t0 + dur + 0.03);
   }
 
@@ -7024,12 +7072,12 @@
       if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(e); }
     });
 
-    // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 0.65초 누르기 · X·배경·닫기 버튼
+    // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 끌어다 놓기 · X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
       if (tap) { e.preventDefault(); return; }        // 기운 열기는 1.5초 홀드가 맡는다 — 클릭은 조용히
       var seal = e.target.closest ? e.target.closest('[data-ritual="seal"]') : null;
-      if (seal) { e.preventDefault(); return; }       // 도장은 0.65초 지긋이 눌러야 찍힌다 — 클릭은 조용히
+      if (seal) { e.preventDefault(); return; }       // 도장은 끌어다 놓아야 찍힌다 — 클릭은 조용히
       if (!e.target.closest) return;
       if (e.target.closest('[data-diary-jump]')) { e.preventDefault(); jumpToDiary(); return; }
       if (e.target.closest('[data-diary-again]')) { e.preventDefault(); onDiaryAgain(); return; }
