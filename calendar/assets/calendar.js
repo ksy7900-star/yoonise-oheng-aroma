@@ -86,6 +86,46 @@
     }
   }
 
+  /* ── 초대받은 친구 → 원터치 카카오 연결 (2026-11-22) ─────────────────────
+     초대 링크(?ref=)로 온 손님은 달력에서 바로 5일·액운 1회가 열린다. 하지만 서버에
+     '누가 누구를 초대했는지'가 남으려면 카카오 연결(로그인)이 한 번 필요하다. 그래서
+     안내 배너와 달력 맨 위 줄에 '카카오 3초 연결' 버튼을 두고, member 화면에 autologin=1 로
+     넘겨 로그인을 바로 시작한다(로그인 뒤 attach_referrer 가 추천 실적을 쌓는다).
+       · 이미 연결(로그인)된 손님에게는 버튼을 띄우지 않는다 — 다시 로그인하라고 하지 않는다.
+       · 세션은 있는데 붙일 초대 코드가 아직 남아 있으면(REF_KEY) 한 번 더 보여 준다. */
+  function inviteConnectHref() {
+    return './member/?ref=' + encodeURIComponent(inviteRef) + '&autologin=1';
+  }
+  function pendingRefCode() {
+    var v = '';
+    try { v = localStorage.getItem(REF_KEY) || ''; } catch (e) { v = ''; }
+    return validRef(v) ? String(v).trim().toUpperCase() : '';
+  }
+  /** 연결이 아직 필요한가 — 세션이 없거나, 세션은 있는데 붙일 초대 코드가 남아 있을 때 */
+  function inviteNeedsConnect() {
+    if (!invited || state.unlocked) return false;   // 이미 전체 이용 중이면 로그인하라고 하지 않는다
+    return !hasSbSession() || !!pendingRefCode();
+  }
+  /** 안내 배너·달력 맨 위 줄의 '카카오 3초 연결' 버튼을 연결 전/후에 맞춰 보이거나 숨긴다 */
+  function syncInviteConnect() {
+    var need = inviteNeedsConnect();
+    var bar = $('#inviteBar');
+    if (bar) bar.hidden = !need;
+    var go = $('#inviteBarGo');
+    if (go) go.setAttribute('href', inviteConnectHref());
+    var t = $('#inviteBarT');
+    if (t && need) {
+      t.textContent = trialOver()
+        ? '친구 초대 · 카카오 3초 연결'
+        : '초대 혜택 적용 중 · ' + FREE_DAYS + '일 무료';
+    }
+    var ngo = $('#inviteNoticeGo');
+    if (ngo) {
+      ngo.hidden = !need;
+      ngo.setAttribute('href', inviteConnectHref());
+    }
+  }
+
   /* ── 개인 전용 입장 코드 (1결제 = 1번호, 2026-11-21부터) ──────────────────
      결제한 손님의 **휴대폰 번호**(결제할 때 넣은 번호)에 비밀 salt 서명을 묶은 코드입니다.
      기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
@@ -697,19 +737,26 @@
         if (s) s.textContent = '이미 전체 이용 중이라 5일 체험은 필요 없어요 · 달력은 그대로예요';
       } else {
         var w = trialWindow(), l = burnLeft();
-        if (t) t.innerHTML = '🎁 친구 초대로 <b>' + FREE_DAYS + '일 무료 체험</b> + 액운 태우기 <b>' +
+        if (t) t.innerHTML = '🎁 친구 초대로 <b>' + FREE_DAYS + '일 무료</b> + 액운 태우기 <b>' +
           INVITE_BURN_BONUS + '회</b>가 적용됐어요!';
-        if (s) s.textContent = (inviteArrival.fresh ? '오늘부터 ' : '') +
-          (w ? mdOf(w.start) + '~' + mdOf(w.end) + ' 무료' : '') +
-          (w ? ' · ' : '') + (l > 0 ? '액운 태우기 무료 ' + l + '회 남음' : '액운 태우기는 다 썼어요');
+        if (s) {
+          s.textContent = w
+            ? (inviteArrival.fresh ? '오늘부터 ' : '') + mdOf(w.start) + '~' + mdOf(w.end) + ' 무료' +
+              (l > 0 ? ' · 액운 태우기 무료 ' + l + '회 남음' : ' · 액운 태우기는 다 썼어요')
+            : '사주를 넣으면 바로 열려요 · 연결하면 초대해 준 친구에게도 혜택이 쌓여요';
+        }
       }
+      syncInviteConnect();                                // 연결 전이면 배너 안에 '카카오 3초 연결' 버튼
+      var ngo = $('#inviteNoticeGo');
+      var withCta = !!(ngo && !ngo.hidden);
       el.hidden = false;
       void el.offsetWidth;
       el.classList.add('is-on');
       markInviteNotice(inviteArrival.ref);                // 이 코드로는 다시 띄우지 않는다
       inviteArrival = null;
       clearTimeout(inviteNoticeTimer);
-      inviteNoticeTimer = setTimeout(hideInviteNotice, 9000);
+      /* 연결 버튼이 들어 있으면 읽고 누를 시간을 조금 더 준다 (버튼이 없으면 지금처럼 9초) */
+      inviteNoticeTimer = setTimeout(hideInviteNotice, withCta ? 14000 : 9000);
     }, typeof delay === 'number' ? delay : 620);
   }
   function hideInviteNotice() {
@@ -6149,47 +6196,81 @@
   }
 
   /* ── ⚡ 긴급 개운템 바로가기의 자리 (2026-11-22) ──────────────────
-     달력 바로 아래 첫 자리를 누가 차지하느냐는 결제 여부로 갈린다.
+     달력 바로 아래 첫 자리를 누가 차지하느냐는 결제·체험 상태로 갈린다.
+       · 무료 체험 중   : #careJump 가 달력 바로 아래 첫 자리 (결제한 상태와 같은 모양).
+         🔑 입장 코드 입력(#lockBtn)과 입력칸은 맨 아래 결제 영역(#ctaSteps 아래)으로 내려
+         '이미 결제해서 코드를 받으셨나요?'로 둔다 — '결제해야 하나?' 하는 오해를 없앤다.
        · 결제로 열린 기기 : #careJump 가 달력 바로 아래 첫 자리.
          '성찰 에디션 적용됨' 박스(#lockBtn)와 010-****-7373 안내(#codeBindNote)는
          cal__note 아래로 내려 '내 성찰 기록 보기' 바로 위에 둔다.
-       · 미결제·잠금     : 🔑 입장 코드 입력(#lockBtn)이 먼저 눈에 들어와야 하므로
+       · 체험 끝·잠금  : 🔑 입장 코드 입력(#lockBtn)이 먼저 눈에 들어와야 하므로
          #careJump 는 그 바로 아래("이 캘린더 보는 법" 위).
      DOM 노드를 옮겨도 각 버튼에 걸린 클릭 리스너는 노드를 따라 그대로 살아 있다. */
+  /** 무료 체험 중(코드 없이 3·5일 쓰는 중)인가 — 이때는 코드 입력 바를 달력 아래에서 결제 영역으로 내린다
+     (2026-11-22 김나영 님 결정: '결제해야 하나?' 하는 오해를 없앤다) */
+  function trialCleanMode() {
+    return FREE_TRIAL_ENABLED && !state.unlocked && !trialOver();
+  }
   function arrangeCareJump() {
     var care = $('#careJump'), lockBtn = $('#lockBtn');
     if (!care || !lockBtn) return;
-    var parent = care.parentNode;
-    if (!parent || lockBtn.parentNode !== parent) return;
-    var panel = $('#lockPanel'), tie = $('#codeBindNote');
+    var parent = care.parentNode;                 // 달력 카드 안의 제자리
+    if (!parent) return;
+    var panel = $('#lockPanel'), tie = $('#codeBindNote'), ask = $('#lockAsk');
     var note = $('#calNote');
-
-    if (state.unlocked) {
-      /* 1) 바로가기를 달력 바로 아래로 — 모아보기 목록(#calFocus)이 열려 있으면 그 아래 */
+    /** ref 바로 뒤로 옮긴다 — 다른 부모에 있어도 그대로 따라온다 */
+    function put(el, ref) {
+      if (!el || !ref || !ref.parentNode) return ref;
+      ref.parentNode.insertBefore(el, ref.nextSibling);
+      return el;
+    }
+    /** 달력 바로 아래 첫 자리로 바로가기를 올린다 (모아보기 목록이 열려 있으면 그 아래) */
+    function careUnderCalendar() {
       var anchor = $('#calFocus');
       if (!anchor || anchor.parentNode !== parent) anchor = $('#calGrid');
       if (anchor && anchor.parentNode === parent && anchor.nextSibling !== care) {
         parent.insertBefore(care, anchor.nextSibling);
       }
-      /* 2) '적용됨' 박스·번호 안내는 cal__note 아래로 (내 성찰 기록 보기 위) */
-      if (note && note.parentNode === parent) {
-        var ref = note;
-        [lockBtn, panel, tie].forEach(function (el) {
-          if (!el || el.parentNode !== parent) return;
-          parent.insertBefore(el, ref.nextSibling);
-          ref = el;
-        });
-      }
-    } else {
-      /* 미결제 — 🔑 입장 코드 입력 맨 위, 그 바로 아래에 바로가기, 그 아래에 입력칸 */
-      parent.insertBefore(lockBtn, care);
-      var after = care;
-      [panel, tie].forEach(function (el) {
-        if (!el || el.parentNode !== parent) return;
-        parent.insertBefore(el, after.nextSibling);
-        after = el;
-      });
     }
+
+    if (trialCleanMode()) {
+      /* ① 달력 바로 아래 첫 자리 = ⚡ 긴급 개운템 바로가기만 (결제한 상태와 같은 모양)
+         ② 🔑 입장 코드 입력은 맨 아래 결제 영역의 상품 4개 아래로 — '이미 결제해서 코드를 받으셨나요?' */
+      careUnderCalendar();
+      var steps = $('#ctaSteps');
+      if (steps && steps.parentNode) {
+        var r0 = steps;
+        [ask, lockBtn, panel, tie].forEach(function (el) { r0 = put(el, r0); });
+      }
+      if (ask) ask.hidden = false;
+      lockBtn.classList.add('lockbar--cta');
+      if (panel) panel.classList.add('lockpanel--cta');
+      return;
+    }
+
+    if (ask) ask.hidden = true;
+    lockBtn.classList.remove('lockbar--cta');
+    if (panel) panel.classList.remove('lockpanel--cta');
+
+    if (state.unlocked) {
+      /* 결제로 열린 기기 — 바로가기는 달력 바로 아래, '적용됨' 박스·번호 안내는 cal__note 아래 */
+      careUnderCalendar();
+      if (note && note.parentNode === parent) {
+        var r1 = note;
+        [ask, lockBtn, panel, tie].forEach(function (el) { r1 = put(el, r1); });
+      }
+      return;
+    }
+
+    /* 미결제 + 체험 종료 — 🔑 입장 코드 입력 맨 위, 그 바로 아래에 바로가기, 그 아래에 입력칸 */
+    parent.insertBefore(lockBtn, care);
+    if (ask) parent.insertBefore(ask, lockBtn);
+    var after = care;
+    [panel, tie].forEach(function (el) {
+      if (!el) return;
+      parent.insertBefore(el, after.nextSibling);
+      after = el;
+    });
   }
 
   /* ── 입장 코드 UI (달력 카드의 🔑 입장 코드 입력) ─────────────────
@@ -6203,7 +6284,9 @@
       if (tEl) tEl.textContent = state.unlocked ? tierLabel + ' 적용됨' : '입장 코드 입력';
       if (sEl) sEl.textContent = state.unlocked
         ? '이 기기에서 달력 전체가 열려 있어요 · 눌러서 확인'
-        : '카톡으로 받은 6자리 코드로 열어요';
+        : (trialCleanMode()
+          ? '이미 결제해서 받으신 6자리 코드를 넣어 주세요'
+          : '카톡으로 받은 6자리 코드로 열어요');
       if (icEl) icEl.textContent = state.unlocked ? '🔓' : '🔑';
       /* 이미 코드가 열려 있어도 — 다른 상품 코드를 넣으면 그 상품으로 바뀌는 걸 알려 준다 */
       var swapEl = $('#lockSwap');
@@ -6286,7 +6369,8 @@
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
     renderChemiBanner();   // 케미·초대 배너 문구도 결제자/미결제자로 갈린다 (2026-11-22)
     syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
-    arrangeCareJump();     // ⚡ 긴급 개운템 바로가기 자리 — 결제 전엔 코드 입력 바로 아래, 결제 후엔 달력 바로 아래 (2026-11-22)
+    arrangeCareJump();     // ⚡ 긴급 개운템 바로가기 자리 — 무료 체험 중·결제 후엔 달력 바로 아래, 체험 종료엔 코드 입력 아래 (2026-11-22)
+    syncInviteConnect();   // 초대받은 친구 — 연결 전이면 '카카오 3초 연결' 줄 (결제로 열린 기기면 숨김)
   }
   /** 숫자 → '010-1234-5678' — 입력칸에서 부드럽게 끊어 보여 준다 */
   function phoneDisplay(v) {
@@ -6425,6 +6509,7 @@
     syncTrialState();
     syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
     syncMemberLinks();     // 초대 코드로 들어온 손님이 케미 화면으로 넘어갈 때 코드가 따라가게 (2026-11-22)
+    syncInviteConnect();   // 초대받은 친구 — 연결 전이면 달력 맨 위에 '카카오 3초 연결' 줄 (2026-11-22)
     var now = new Date();
     state.todayISO = T.isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
     state.terms = T.buildTerms(TERMS_FROM, RANGE_TO);
@@ -6901,11 +6986,13 @@
       inviteArrival = planInviteNotice(openedFromInvite);
       showInviteNotice(900);
     } else {
-      /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다.
-         초대 링크로 온 첫 접속은 웰컴 팝업의 보너스 줄이 안내를 맡으므로 따로 띄우지 않고,
-         이 코드는 '안내함'으로 적어 다음 재방문에 겹쳐 뜨지 않게 한다. */
+      /* 첫 접속 — 사주를 넣기 전이므로 콤팩트한 1차 웰컴 팝업을 한 번 띄운다. */
       maybeAutoWelcome(60);
-      if (invited) markInviteNotice(inviteRef);
+      /* 첫 접속이라도 초대 링크(?ref=)로 왔으면 — 5일·액운 1회가 적용됐다는 안내 + 원터치 연결 (2026-11-22)
+         웰컴 팝업이 떠 있으면 그 뒤에 뜨고(inviteNoticeBlocked), 아직 사주를 넣기 전이라 기간 문구 대신
+         '사주를 넣으면 바로 열려요'로 안내한다. */
+      inviteArrival = planInviteNotice(false);
+      showInviteNotice(1400);
     }
 
     /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21)

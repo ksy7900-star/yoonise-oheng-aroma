@@ -60,6 +60,8 @@
   var CALENDAR_LIVE_BASE = 'https://ksy7900-star.github.io' + CALENDAR_PATH;   // 친구 초대 링크는 달력 메인으로 (2026-11-22)
   var REF_KEY = 'yoonise.member.ref.v1';
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
+  var AUTOLOGIN_KEY = 'yoonise.member.autologin.tried.v1';   // 이 탭에서 카카오로 보낸 적 있는지 (무한 리다이렉트 방지)
+  var INVITE_FLOW_KEY = 'yoonise.member.invite.flow.v1';    // 초대 링크의 '카카오 3초 연결'로 넘어온 흐름 (카카오 다녀와도 같은 탭이면 남는다)
   var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 5일 무료·액운 +1회를 줄 때 본다
   var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
   var EL_ORDER = ['목', '화', '토', '금', '수'];
@@ -207,6 +209,40 @@
   /* ── 로그인 (Supabase) ──────────────────────────── */
   var sb = null;
 
+  /* 주소 파라미터 — ?ref= · ?autologin=1 등 */
+  function queryParam(name) {
+    try { return new URLSearchParams(location.search).get(name) || ''; } catch (e) { return ''; }
+  }
+  /* 방금 카카오에서 돌아온 주소인가 (?code= 는 PKCE 교환 직전, #access_token= 은 예전 흐름) */
+  function oauthBack() {
+    return !!queryParam('code') || !!queryParam('error') || /access_token=|error=/.test(location.hash);
+  }
+  /* 스크립트를 읽은 순간의 값 — supabase-js 가 주소의 ?code= 를 지워 버리기 전에 잡아 둔다 */
+  var OAUTH_BACK = oauthBack();
+  /** 초대 링크의 원터치 연결로 넘어온 흐름인가 — 카톡/카카오를 다녀와도 같은 탭이면 남는다 */
+  function inviteFlow() {
+    try { return sessionStorage.getItem(INVITE_FLOW_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  /* 초대 링크의 '카카오 3초 연결하기'로 넘어온 손님 — 로그인 화면을 거치지 않고 바로 카카오로 보낸다.
+     무한 리다이렉트를 막는 세 가지 문지기:
+       ① 이미 로그인된 손님이면 보내지 않는다(연결은 loadProfile→attachPendingRef 가 한다)
+       ② 방금 카카오에서 돌아온 참(?code=·?error=)이면 다시 보내지 않는다
+       ③ 이 탭에서 한 번 보냈으면 다시 보내지 않는다 — 실패해도 화면에 머물러 수동 버튼을 쓴다 */
+  function autoLoginWanted() {
+    if (queryParam('autologin') !== '1') return false;
+    if (state.user) return false;
+    if (OAUTH_BACK) return false;
+    try { if (sessionStorage.getItem(AUTOLOGIN_KEY)) return false; } catch (e) {}
+    return true;
+  }
+  function startAutoLogin() {
+    try { sessionStorage.setItem(AUTOLOGIN_KEY, String(Date.now())); } catch (e) {}
+    var hint = $('#loginHint');
+    if (hint) hint.textContent = '카카오로 연결하는 중이에요 — 잠시 뒤 카카오 화면으로 넘어가요.';
+    onLogin();
+  }
+
   function waitForSupabase(cb, tries) {
     tries = (tries == null) ? 24 : tries;
     if (global.supabase && global.supabase.createClient) return cb(global.supabase);
@@ -229,9 +265,13 @@
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       sb.auth.getSession().then(function (r) {
-        applySession(r && r.data ? r.data.session : null);
+        var ses = r && r.data ? r.data.session : null;
+        applySession(ses);
+        /* 초대 링크에서 원터치로 넘어온 손님 — 아직 로그인 전이면 바로 카카오로 (2026-11-22) */
+        if (!ses && autoLoginWanted()) setTimeout(startAutoLogin, 120);
       }, function () {
         applySession(null);
+        if (autoLoginWanted()) setTimeout(startAutoLogin, 120);
       });
       sb.auth.onAuthStateChange(function (ev, session) {
         if (ev === 'SIGNED_OUT') { applySession(null); return; }
@@ -363,6 +403,14 @@
     }
     renderAuth(); renderLadder(); renderInvite();
     loadProfile();
+    /* 카카오로 돌아왔는데 붙일 초대 코드가 없을 때(코드가 이미 비워졌거나 기억이 지워졌을 때)도
+       '연결은 끝났다'를 알린다 — 단, 이미 연결 완료 안내가 떠 있으면 겹쳐 보이지 않는다 */
+    if (OAUTH_BACK && inviteFlow()) {
+      setTimeout(function () {
+        var done = $('#inviteDone');
+        if (state.user && !state.refPending && done && done.hidden) showInviteDone('linked');
+      }, 1500);
+    }
     // 로그인하고 돌아왔으면 쟁여 둔 사주로 케미 결과를 바로 이어서 연다 (2026-11-21)
     setTimeout(function () { if (state.user && peekGate()) resumeGate(); }, 60);
   }
@@ -444,13 +492,43 @@
       var v = r.data;
       if (v === 'ok' || v === 'attached') {
         clearPendingRef();
-        toast('초대 코드가 내 계정에 연결됐어요.');
+        showInviteDone(v === 'ok' ? 'done' : 'again');
         loadInviteCount();
+      } else if (v === 'already') {
+        /* 이미 다른 사람 코드로 붙은 계정 — 한 계정에 한 번만 붙는다(어뷰징 방지) */
+        clearPendingRef();
+        showInviteDone('already');
       } else if (v === 'invalid' || v === 'self') {
         clearPendingRef();
-        if (v === 'self') toast('내 코드는 내가 쓸 수 없어요.');
+        toast(v === 'self' ? '내 코드는 내가 쓸 수 없어요.' : '초대 코드를 찾지 못했어요 — 달력은 그대로 쓰실 수 있어요.');
       }
     }, function () {});
+  }
+
+  /* ── ✅ 초대 연결 완료 안내 ────────────────────────────
+     달력의 '카카오 3초 연결'을 마치고 돌아온 손님에게, 결과보다 먼저 '연결됐다'를 보여 주고
+     달력으로 돌아갈 버튼을 준다. 숫자는 지어내지 않는다 — 보상은 서버(referral)가 준다. */
+  function showInviteDone(kind) {
+    var el = $('#inviteDone');
+    if (!el) return;
+    var t = $('#inviteDoneT'), s = $('#inviteDoneS');
+    if (kind === 'already') {
+      if (t) t.textContent = '이미 다른 초대 코드가 연결된 계정이에요';
+      if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 5일 체험은 그대로 쓰실 수 있어요.';
+    } else if (kind === 'again') {
+      if (t) t.textContent = '✅ 연결 완료!';
+      if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 5일 무료가 기다리고 있어요.';
+    } else if (kind === 'linked') {
+      if (t) t.textContent = '✅ 카카오 연결 완료!';
+      if (s) s.textContent = '이제 내 초대 코드와 사다리가 이 계정에 쌓여요.';
+    } else {
+      if (t) t.textContent = '✅ 연결 완료!';
+      if (s) s.textContent = '초대해 준 친구에게도 혜택이 쌓였어요 — 달력으로 돌아가면 5일 무료가 열려 있어요.';
+    }
+    el.hidden = false;
+    var rb = $('#refBanner');
+    if (rb) rb.hidden = true;                    // 같은 내용을 두 줄로 겹쳐 보이지 않게
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
   }
 
   function pendingRef() {
@@ -2821,6 +2899,11 @@
         localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: ref, at: new Date().toISOString() }));
       } catch (e) {}
     }
+    /* 초대 링크의 '카카오 3초 연결'로 넘어왔을 때 — 카카오를 다녀와도 같은 탭이면 이 흐름을 기억한다
+       (그냥 로그인하러 온 손님에게는 '연결 완료' 안내를 띄우지 않는다) */
+    if (q.get('autologin') === '1') {
+      try { sessionStorage.setItem(INVITE_FLOW_KEY, '1'); } catch (e) {}
+    }
     state.refPending = pendingRef();
     state.refFrom = state.refPending ? (storedRefFrom() || from) : from;
     /* 달력(/calendar/?ref=)에서 넘어온 코드 — 주소에 ?ref= 가 없어도 이미 저장돼 있으면 이어 쓴다.
@@ -2868,6 +2951,10 @@
     bindPerson('me');
     bindPerson('you');
     readParams();
+    if (OAUTH_BACK) {
+      var lh = $('#loginHint');
+      if (lh) lh.textContent = '카카오 연결을 확인하는 중이에요 — 잠시만 기다려 주세요.';
+    }
     renderRelChips();
     bindRelChips();
     prefillMe();

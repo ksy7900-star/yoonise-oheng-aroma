@@ -177,6 +177,33 @@ a { color: inherit; }
 .banner b { font-size: 14px; color: var(--gold-deep); }
 .banner span { font-size: 12.5px; color: var(--ink-2); }
 
+/* ✅ 초대 연결 완료 — 카카오 연결을 마치고 돌아온 손님에게 결과보다 먼저 보여 준다 (2026-11-22) */
+.banner--done {
+  margin-bottom: 14px;
+  background: linear-gradient(180deg, #ECFDF5, #F0FDF4);
+  border: 1px solid rgba(5, 150, 105, .32);
+}
+.banner--done b { color: #047857; }
+.banner__go {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 9px; padding: 11px 13px; border-radius: 12px;
+  background: #1E293B; color: #FFFFFF; text-decoration: none;
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.03em;
+  box-shadow: 0 10px 20px -14px rgba(15, 23, 42, .9);
+}
+.banner__go:active { transform: translateY(1px); filter: brightness(1.05); }
+
+/* 사다리 기준 한 줄 — '카카오 3초 연결까지 마쳐야 1명' (2026-11-22) */
+.ladder-how {
+  margin-top: 12px; padding: 10px 12px;
+  border-radius: 11px;
+  background: #FFFBEB;
+  border: 1px solid rgba(180, 83, 9, .28);
+  font-size: 12px; line-height: 1.55; letter-spacing: -.02em;
+  color: #7C2D12; word-break: keep-all;
+}
+.ladder-how b { color: #B45309; font-weight: 800; }
+
 /* ── 버튼 ──────────────────────────────────────────── */
 .btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;

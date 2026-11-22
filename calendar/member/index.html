@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261122l">
+<link rel="stylesheet" href="member.css?v=20261122o">
 </head>
 <body>
 
@@ -34,6 +34,13 @@
   <div class="banner" id="refBanner" hidden>
     <b id="refBannerTitle">초대 링크로 들어오셨어요</b>
     <span>친구 초대 혜택 · <b>5일 체험 + 액운 태우기 1회</b></span>
+  </div>
+
+  <!-- ✅ 초대 연결 완료 — 달력의 '카카오 3초 연결'을 마치고 돌아온 자리 (2026-11-22) -->
+  <div class="banner banner--done" id="inviteDone" hidden>
+    <b id="inviteDoneT">✅ 연결 완료!</b>
+    <span id="inviteDoneS">초대해 준 친구에게도 혜택이 쌓였어요</span>
+    <a class="banner__go" id="inviteDoneGo" href="../">📅 내 타이밍 달력으로 돌아가기</a>
   </div>
 
   <!-- ───────── STEP 1 · 로그인 ───────── -->
@@ -85,6 +92,9 @@
       <span class="count__u">명</span>
       <span class="count__next" id="cntNext">첫 칸까지 1명</span>
     </div>
+
+    <!-- 사다리가 오르는 기준 — 친구가 '카카오 3초 연결(로그인)'까지 마쳐야 1명으로 올라간다 (2026-11-22) -->
+    <p class="ladder-how" id="ladderHow">친구가 링크로 들어와 <b>카카오 3초 연결(로그인)</b>을 마치면 1명으로 올라가요.</p>
 
     <div class="rail" aria-hidden="true">
       <div class="rail__track"><span class="rail__fill" id="railFill" style="width:0%"></span></div>
@@ -335,11 +345,11 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- 계산 엔진(달력과 같은 파일) -->
-<script src="../vendor/lunar.js?v=20261122l"></script>
-<script src="../assets/manse.js?v=20261122l"></script>
-<script src="../assets/timing.js?v=20261122l"></script>
+<script src="../vendor/lunar.js?v=20261122o"></script>
+<script src="../assets/manse.js?v=20261122o"></script>
+<script src="../assets/timing.js?v=20261122o"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261122l"></script>
+<script src="member.js?v=20261122o"></script>
 </body>
 </html>
