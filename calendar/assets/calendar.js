@@ -2292,6 +2292,39 @@
       '</svg>';
   }
 
+  /** ② 한지 인주 패드 위의 붉은 낙관 도장(護) — 네모 버튼 자리를 대신한다 (2026-11-22)
+      · 기본 경험: 아이보리 인주 패드 위의 도장을 손가락으로 잡아 위 부적 카드로 끌어다
+        놓으면 '탁' 찍히며 달력에 새겨진다. 부적 밖에서 놓으면 패드로 돌아온다.
+      · 보조: 드래그가 서툴러도 0.7초 지긋이 누르거나 키보드 Enter 로 찍힌다.
+      · 찍힌 뒤에는 같은 자리가 '✓ … 새겼어요' + 찍힌 낙관(✓) 상태로 남는다. */
+  function sealPadHTML(done, isToday) {
+    var word = isToday ? '오늘' : '이 날';
+    return '<div class="seal-pad' + (done ? ' is-stamped' : '') + '">' +
+      '<span class="seal-pad__surface" aria-hidden="true">' +
+      '<span class="seal-pad__smudge"></span>' +
+      '<span class="seal-pad__bloom"></span>' +
+      '</span>' +
+      '<button type="button" class="seal' + (done ? ' is-stamped' : '') + '" data-ritual="seal"' +
+      (done ? ' disabled aria-disabled="true"' : '') +
+      ' aria-label="' + (done ? word + ' 달력에 새겼어요'
+        : '도장을 부적 위로 끌어다 놓거나 지긋이 눌러 ' + word + ' 달력에 새기기') + '">' +
+      '<span class="seal__body" aria-hidden="true">' +
+      '<span class="seal__frame"></span>' +
+      '<span class="seal__char">護</span>' +
+      '<span class="seal__check">✓</span>' +
+      '</span>' +
+      /* 인주 링 — 반지름 46(둘레 289.03)이라 dashoffset 하나로 '한 바퀴'를 그린다 */
+      '<svg class="seal__ring" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
+      '<circle class="seal__ring-track" cx="50" cy="50" r="46"/>' +
+      '<circle class="seal__ring-bar" cx="50" cy="50" r="46"/>' +
+      '</svg>' +
+      '</button>' +
+      '<p class="seal-pad__hint' + (done ? ' is-done' : '') + '">' +
+      (done ? '✓ ' + word + ' 달력에 새겼어요' : '도장을 끌어다 부적 위에 찍어 주세요') +
+      '</p>' +
+      '</div>';
+  }
+
   function ritualHTML(info) {
     var st = stampOf(info.iso);
     var auto = dayElement(info);
@@ -2309,11 +2342,11 @@
     var tname = tag ? (Chars ? Chars.name(el, tag, info.iso) : '수호 부적')
       : ((repType(el) || {}).n || (Chars ? Chars.name(el, '', '') : '수호 부적'));
     var ticon = Chars ? Chars.icon(el, tag) : th.badge;
-    var seal = tag === '소통' ? '吉' : '護';   // 새김에 찍히는 주홍 낙관
+    var seal = '護';   // 새김에 찍히는 주홍 낙관 — 김나영 님 확정(2026-11-22): 吉 대신 護(지킬 호)
     var hintId = 'ritualHint' + info.iso.replace(/-/g, '');
     /* 2026-11-22 개편 — 톡·톡·톡 연타 자리에 **1.5초 지긋이 누르기**.
        · 닫힌 상태: 금빛 가는 링(빈 원) + '1.5초 지긋이 눌러 기운을 여세요'
-       · 열린 상태: 링이 한 바퀴 차서 금빛 원으로 남고, 아래에 문장·처방·붙이기 버튼
+       · 열린 상태: 링이 한 바퀴 차서 금빛 원으로 남고, 아래에 문장·처방·낙관 도장
        · 붙인 상태: 낙관이 찍히고 버튼이 '✓ … 새겼어요' */
     return '<div class="ritual ritual--' + el + (done ? ' is-done is-open' : '') + '"' +
       ' data-ritual-wrap="' + info.iso + '" data-el="' + el + '" data-name="' + esc(tname) + '"' +
@@ -2341,36 +2374,36 @@
       '</div>' +
       '<p class="ritual__holdhint" id="' + hintId + '">부적을 1.5초 동안 지긋이 눌러 기운을 여세요</p>' +
       '<span class="talis-pad__seal" aria-hidden="true">' + seal + '</span>' +
+      '<span class="talis-pad__target" aria-hidden="true">護</span>' +
       '<span class="talis-pad__shine" aria-hidden="true"></span>' +
       '</div>' +
       '</div>' +
-      /* 열린 기운 — 그날의 부적 문장 · 한 줄 처방 · 본인이 직접 누르는 붙이기 버튼 */
+      /* 열린 기운 — 그날의 부적 문장 · 한 줄 처방 · 본인이 직접 눌러 찍는 낙관 도장 */
       '<div class="ritual__open' + (done ? ' is-on' : '') + '"' + (done ? '' : ' hidden') +
       ' role="status" aria-live="polite">' +
       '<p class="ritual__verse">' + esc(lot.done) + '</p>' +
       '<p class="ritual__rx">' + esc(lot.sub) + '</p>' +
-      '<button type="button" class="ritual__stick' + (done ? ' is-sealed' : '') + '" data-ritual="stick"' +
-      (done ? ' disabled' : '') + '>' +
-      (done ? '✓ ' + (today ? '오늘' : '이 날') + ' 달력에 새겼어요'
-        : '🔖 ' + (today ? '오늘' : '이 날') + ' 달력에 이 부적 붙이기') +
-      '</button>' +
+      sealPadHTML(done, today) +
       '</div>' +
       '</div>';
   }
 
-  /* ── 하루 부적 의식 — ① 1.5초 지긋이 눌러 기운 열기 · ② 본인이 직접 달력에 붙이기 ──
+  /* ── 하루 부적 의식 — ① 1.5초 지긋이 눌러 기운 열기 · ② 낙관 도장을 지긋이 눌러 새기기 ──
      2026-11-22 전면 개편: 톡·톡·톡 연타 · 다다닥 진동 · 폭죽/입자 · 젤리 바운스 · 모달 덜컹을
      모두 걷어 내고 두 단계의 조용한 의식으로 바꾼다.
      ① 부적을 1.5초 지긋이 누르면 부적을 감싼 가는 금빛 링이 한 바퀴 차오른다.
         중간에 손을 떼면 링이 부드럽게 원위치하고 아무 일도 일어나지 않는다.
         1.5초가 차면 소리를 켜 둔 사람에게만 깊고 은은한 싱잉볼 저음 한 번,
         그날의 부적 문장과 한 줄 처방이 아래에서 차분히 떠오른다.
-     ② 이때는 아직 달력에 붙지 않는다. 아래 '🔖 오늘 달력에 이 부적 붙이기'를 본인이 눌러야
-        금빛 인장이 찍히듯 조용히 달력 칸에 스티커가 새겨지고 저장된다. */
+     ② 이때는 아직 달력에 붙지 않는다. 아래 한지 인주 패드 위의 붉은 낙관 도장(護)을
+        손가락으로 잡아 부적 카드 위로 끌어다 놓아야 '탁' 찍히며 달력 칸에 스티커가 새겨진다.
+        부적 밖에서 놓으면 도장이 패드로 돌아온다. (보조: 0.7초 지긋이 누르기 · Enter) */
   var HOLD_MS = 1500;    // 기운이 열리는 시간 — 1.5초
+  var SEAL_MS = 700;     // 보조 — 도장을 그 자리에서 지긋이 누르는 시간 (0.7초)
+  var SEAL_DRAG_SLOP = 7;  // 도장이 이만큼 움직이면 '끌기'로 보고 손가락을 따라 들린다(px)
   var HOLD_SLOP = 16;    // 손가락이 이만큼 움직이면 스크롤로 보고 접는다(px)
   var HOLD_GRACE = 70;   // 링이 거의 다 찬 뒤 손을 떼도 열리게 하는 여유(ms)
-  var holdBtn = null;    // 지금 눌려 있는 부적 버튼
+  var holdBtn = null;    // 지금 눌려 있는 부적(1단계) · 도장(2단계) 버튼
 
   function ritualWrapOf(node) {
     return node && node.closest ? node.closest('[data-ritual-wrap]') : null;
@@ -2387,21 +2420,186 @@
     bar.style.strokeDashoffset = '';           // 인라인 값을 지워 CSS(.is-holding → 0)가 이어받게
   }
 
+  /** 도장 둘레 인주 링을 0에서 다시 — 두 번째로 눌러도 처음부터 차오르게 */
+  function sealRingReset(btn) {
+    var bar = btn ? btn.querySelector('.seal__ring-bar') : null;
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.strokeDashoffset = '289.03';
+    void bar.getBoundingClientRect();
+    bar.style.transition = '';
+    bar.style.strokeDashoffset = '';
+  }
+
+  /* ── ② 도장 끌기 — 잡은 도장이 손가락을 따라 들려 부적 위로 가고, 놓으면 '탁' (2026-11-22)
+     · 실제 도장은 제자리에 둔 채(투명), 같은 모양의 복제 도장을 position:fixed 로 띄운다.
+       팝업 내용이 안에서 스크롤돼도 복제 도장은 잘리지 않고 손가락을 그대로 따라온다.
+     · 목표는 위 부적 패(.talis-pad__sheet) 전체 — 그 위에 있으면 모서리 낙관 자리에
+       금빛·주홍빛 '찍힐 자리' 표시가 켜지고, 거기서 손을 떼면 찍힌다.
+     · 부적 밖에서 놓으면 도장이 패드 원위치로 부드럽게 돌아간다. */
+  function sealSheetOf(wrap) {
+    return wrap ? wrap.querySelector('.talis-pad__sheet') : null;
+  }
+  /** 찍힐 자리 — 부적 모서리 낙관(.talis-pad__seal)의 중심 */
+  function sealSpotOf(wrap) {
+    var hit = wrap ? wrap.querySelector('.talis-pad__seal') : null;
+    if (hit) {
+      var r = hit.getBoundingClientRect();
+      if (r.width) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    var s = sealSheetOf(wrap);
+    if (!s) return null;
+    var b = s.getBoundingClientRect();
+    return { x: b.right - 31, y: b.bottom - 31 };
+  }
+
+  /** 도장을 잡아 들고 복제 도장을 띄운다 */
+  function sealDragBegin(btn, ev) {
+    var wrap = ritualWrapOf(btn);
+    if (!wrap) return;
+    clearTimeout(btn._holdT);
+    btn._holdT = null;
+    btn.classList.remove('is-holding');
+    var pad = wrap.querySelector('.seal-pad');
+    if (pad) pad.classList.remove('is-pressing');
+    var r = btn.getBoundingClientRect();
+    var g = document.createElement('div');
+    g.className = 'seal seal--ghost';
+    g.setAttribute('aria-hidden', 'true');
+    var body = btn.querySelector('.seal__body');
+    g.innerHTML = body ? body.outerHTML : '';
+    g.style.width = r.width + 'px';
+    g.style.height = r.height + 'px';
+    g.style.left = r.left + 'px';
+    g.style.top = r.top + 'px';
+    document.body.appendChild(g);
+    btn._dragging = true;
+    btn._ghost = g;
+    btn._c0 = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    btn._grabDX = ev.clientX - btn._c0.x;
+    btn._grabDY = ev.clientY - btn._c0.y;
+    btn.classList.add('is-dragged');
+    wrap.classList.add('is-stamping');
+    document.documentElement.classList.add('is-seal-drag');
+    /* 부적 카드가 화면 밖으로 밀려 있으면 끄는 동안 보이게 올려 둔다 */
+    var sheet = sealSheetOf(wrap);
+    if (sheet && sheet.getBoundingClientRect) {
+      var s = sheet.getBoundingClientRect();
+      if ((s.top < 8 || s.bottom > window.innerHeight - 8) && sheet.scrollIntoView) {
+        try { sheet.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      }
+    }
+    sealDragTo(ev);
+  }
+
+  /** 손가락 아래로 복제 도장을 옮기고, 부적 위인지 살핀다 */
+  function sealDragTo(ev) {
+    var btn = holdBtn;
+    if (!btn || !btn._dragging || !btn._ghost) return;
+    var g = btn._ghost, wrap = ritualWrapOf(btn);
+    var tx = ev.clientX - btn._grabDX - btn._c0.x;
+    var ty = ev.clientY - btn._grabDY - btn._c0.y;
+    btn._ghostDX = tx;
+    btn._ghostDY = ty;
+    g.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+    var over = false;
+    var sheet = sealSheetOf(wrap);
+    if (sheet) {
+      var s = sheet.getBoundingClientRect();
+      over = ev.clientX >= s.left - 6 && ev.clientX <= s.right + 6 &&
+        ev.clientY >= s.top - 6 && ev.clientY <= s.bottom + 6;
+    }
+    btn._over = over;
+    if (wrap) wrap.classList.toggle('is-over-target', over);
+    g.classList.toggle('is-over', over);
+  }
+
+  /** 손을 뗀 순간 — 부적 위면 찍고, 아니면 패드로 되돌린다 */
+  function sealDragEnd(cancelled) {
+    var btn = holdBtn;
+    if (!btn || !btn._dragging) return;
+    var wrap = ritualWrapOf(btn);
+    var g = btn._ghost;
+    var drop = !cancelled && !!btn._over;
+    btn._dragging = false;
+    btn._ghost = null;
+    if (wrap) wrap.classList.remove('is-stamping', 'is-over-target');
+    document.documentElement.classList.remove('is-seal-drag');
+    if (g) {
+      g.style.transition = 'transform .26s cubic-bezier(.3, .9, .35, 1), opacity .26s ease';
+      if (drop) {
+        var spot = sealSpotOf(wrap);
+        if (spot) g.style.transform = 'translate(' + (spot.x - btn._c0.x) + 'px,' + (spot.y - btn._c0.y) + 'px) scale(.64)';
+        g.classList.add('is-dropping');
+      } else {
+        g.style.transform = 'translate(0, 0)';          // 패드 원위치로 미끄러져 돌아온다
+      }
+      var kill = g;
+      setTimeout(function () {
+        if (kill.parentNode) kill.parentNode.removeChild(kill);
+        btn.classList.remove('is-dragged');
+      }, drop ? 320 : 300);
+    } else {
+      btn.classList.remove('is-dragged');
+    }
+    btn._over = false;
+    btn._grabDX = btn._grabDY = 0;
+    btn._c0 = null;
+    btn._ghostDX = btn._ghostDY = 0;
+    if (drop) {
+      btn.classList.remove('is-dragged');
+      onRitualStick(btn);                 // 탁 — 달력에 새기고 찍힌 낙관으로
+    }
+  }
+
+  /** 키보드 Enter — 도장을 바로 찍는다 (끌기·지긋이 누르기의 보조 경로) */
+  function ritualSealNow(btn) {
+    var wrap = ritualWrapOf(btn);
+    if (!wrap || btn.disabled || wrap.classList.contains('is-done')) return;
+    onRitualStick(btn);
+  }
+
   function ritualHoldStart(btn) {
     var wrap = ritualWrapOf(btn);
-    if (!wrap || wrap.classList.contains('is-open') || holdBtn) return;
+    if (!wrap || holdBtn) return;
+    var kind = btn.getAttribute('data-ritual');
+    if (kind === 'seal') {
+      if (btn.disabled || wrap.classList.contains('is-done')) return;   // 이미 새긴 날
+    } else if (wrap.classList.contains('is-open')) {
+      return;                                                          // 기운은 이미 열렸다
+    }
     holdBtn = btn;
     btn._heldAt = Date.now();
+    btn._holdKind = kind;
+    btn._holdMs = kind === 'seal' ? SEAL_MS : HOLD_MS;
     btn._holdX = btn._holdY = null;
-    holdRingReset(wrap);
-    wrap.classList.add('is-holding');
-    btn._holdT = setTimeout(function () { ritualOpen(wrap); }, HOLD_MS);
+    btn.classList.add('is-holding');
+    if (kind === 'seal') {
+      sealRingReset(btn);
+      var pad = wrap.querySelector('.seal-pad');
+      if (pad) pad.classList.add('is-pressing');   // 누르는 동안 인주 자국이 조금씩 짙어진다
+    } else {
+      holdRingReset(wrap);
+      wrap.classList.add('is-holding');
+    }
+    btn._holdT = setTimeout(function () {
+      if (btn._holdKind === 'seal') onRitualStick(btn);   // 탁 — 달력에 새긴다
+      else ritualOpen(wrap);                              // 기운이 열린다
+    }, btn._holdMs);
   }
 
   function ritualHoldMove(ev) {
     if (!holdBtn) return;
-    if (holdBtn._holdX == null) { holdBtn._holdX = ev.clientX; holdBtn._holdY = ev.clientY; return; }
-    if (Math.abs(ev.clientX - holdBtn._holdX) > HOLD_SLOP || Math.abs(ev.clientY - holdBtn._holdY) > HOLD_SLOP) {
+    var btn = holdBtn;
+    if (btn._holdX == null) { btn._holdX = ev.clientX; btn._holdY = ev.clientY; return; }
+    var dx = ev.clientX - btn._holdX, dy = ev.clientY - btn._holdY;
+    if (btn._holdKind === 'seal') {
+      /* 도장 — 조금만 움직여도 '끌기'로 보고 손가락을 따라 들린다 (보조 홀드는 취소) */
+      if (btn._dragging) sealDragTo(ev);
+      else if (Math.sqrt(dx * dx + dy * dy) > SEAL_DRAG_SLOP) sealDragBegin(btn, ev);
+      return;
+    }
+    if (Math.abs(dx) > HOLD_SLOP || Math.abs(dy) > HOLD_SLOP) {
       ritualHoldEnd(true);                 // 화면을 밀어 스크롤한 것 — 기운을 열지 않는다
     }
   }
@@ -2409,14 +2607,36 @@
   function ritualHoldEnd(cancelled) {
     var btn = holdBtn;
     if (!btn) return;
+    if (btn._dragging) { sealDragEnd(cancelled); holdBtn = null; return; }
     holdBtn = null;
     var wrap = ritualWrapOf(btn);
     clearTimeout(btn._holdT);
     btn._holdT = null;
-    if (wrap) wrap.classList.remove('is-holding');   // 링은 CSS가 부드럽게 되감는다
+    btn.classList.remove('is-holding');              // 링은 CSS가 부드럽게 되감는다
+    if (wrap) {
+      wrap.classList.remove('is-holding');
+      var pad = wrap.querySelector('.seal-pad');
+      if (pad) pad.classList.remove('is-pressing');
+    }
     if (cancelled || !wrap) return;
     var held = Date.now() - (btn._heldAt || 0);
-    if (held >= HOLD_MS - HOLD_GRACE) ritualOpen(wrap);   // 링이 다 찬 순간 손을 떼도 열린다
+    if (held < (btn._holdMs || HOLD_MS) - HOLD_GRACE) {         // 중간에 떼면 원위치
+      if (btn._holdKind === 'seal' && held < 320) sealNudge(btn);   // 톡 — 끌어 보라는 작은 안내
+      return;
+    }
+    if (btn._holdKind === 'seal') onRitualStick(btn);           // 다 찬 순간 떼도 찍힌다
+    else ritualOpen(wrap);
+  }
+
+  /** 도장을 그냥 톡 눌렀다 떼면 — 어디로 끌어야 하는지 부적 위 '찍힐 자리'를 잠깐 비춰 준다 */
+  function sealNudge(btn) {
+    var wrap = ritualWrapOf(btn);
+    if (!wrap || wrap.classList.contains('is-done')) return;
+    wrap.classList.remove('is-nudge');
+    void wrap.offsetWidth;
+    wrap.classList.add('is-nudge');
+    btn.classList.add('is-nudged');
+    setTimeout(function () { wrap.classList.remove('is-nudge'); btn.classList.remove('is-nudged'); }, 1300);
   }
 
   /** 1.5초가 차오른 순간 — 링은 금빛 한 바퀴로 남고 문장·처방이 조용히 올라온다 */
@@ -2428,6 +2648,7 @@
     setStage(wrap, 1);
     var btn = wrap.querySelector('[data-ritual="tap"]');
     if (btn) {
+      btn.classList.remove('is-holding');
       btn.setAttribute('aria-disabled', 'true');
       btn.setAttribute('aria-label', (wrap.getAttribute('data-name') || '부적') + ' — 기운이 열렸어요');
     }
@@ -2440,25 +2661,37 @@
     }
   }
 
-  /** ② 본인이 직접 누르는 '달력에 붙이기' — 이 순간에만 저장하고 금빛 인장이 조용히 번진다 */
+  /** ② 본인이 직접 지긋이 누르는 낙관 도장 — 이 순간에만 저장하고 인장이 조용히 새겨진다 */
   function onRitualStick(btn) {
     var wrap = ritualWrapOf(btn);
     if (!wrap) return;
     var iso = wrap.getAttribute('data-ritual-wrap');
     var el = wrap.getAttribute('data-el');
     if (!TALIS[el] || !iso || stampOf(iso)) return;       // 이미 새긴 날 — 그대로 둔다
+    if (holdBtn === btn) { clearTimeout(btn._holdT); btn._holdT = null; holdBtn = null; }
     var today = iso === state.todayISO;
-    saveStamp(iso, el);                                   // 누른 그 순간 달력 칸에 새긴다
+    saveStamp(iso, el);                                   // 찍힌 그 순간 달력 칸에 새긴다
     if (modalEl && !modalEl.hidden) state.pendingStamp = iso;   // 팝업을 닫을 때 그 칸에 금빛 인장
     else state.justStamped = iso;
     renderCalendar();                                     // 팝업 뒤 달력 칸에도 바로 스티커가 붙는다
     wrap.classList.add('is-done', 'is-open', 'is-sealing');
     setStage(wrap, 3);
+    sfxSealPress();                                       // 소리 켠 사람에게만 — 묵직한 저음 한 번
     setTimeout(function () { wrap.classList.remove('is-sealing'); }, 1200);
 
+    /* 도장은 찍힌 자리에 그대로 — 눌린 자리가 '✓ … 새겼어요' + 찍힌 낙관으로 남는다 */
+    var pad = wrap.querySelector('.seal-pad');
+    var hint = wrap.querySelector('.seal-pad__hint');
+    btn.classList.remove('is-holding');
+    btn.classList.add('is-stamped');
     btn.disabled = true;
-    btn.classList.add('is-sealed');
-    btn.textContent = '✓ ' + (today ? '오늘' : '이 날') + ' 달력에 새겼어요';
+    btn.setAttribute('aria-disabled', 'true');
+    btn.setAttribute('aria-label', (today ? '오늘' : '이 날') + ' 달력에 새겼어요');
+    if (pad) { pad.classList.remove('is-pressing'); pad.classList.add('is-stamped'); }
+    if (hint) {
+      hint.textContent = '✓ ' + (today ? '오늘' : '이 날') + ' 달력에 새겼어요';
+      hint.classList.add('is-done');
+    }
 
     var note = modalBody && modalBody.querySelector('.modal__stamp-note');
     if (note) {                                           // 팝업 안 새김 안내도 바로
@@ -2466,7 +2699,6 @@
         '금빛 인장이 찍혔어요 — 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커를 새겼어요.';
       note.hidden = false;
     }
-    vibrate([55, 40, 85]);
   }
 
   function setStage(wrap, n) {                   // 캐릭터 표정 — 0(잠잠) · 1(기운 열림) · 3(새김)
@@ -6146,6 +6378,16 @@
     bowlTone(ctx, 392.44, { gain: .008, dur: 2.8, attack: .07, tau: 1.1, at: .04 }); // 은은한 금속감
     noise(ctx, { dur: .72, filter: 'lowpass', f0: 520, f1: 140, q: 0.6, gain: .02, attack: .09 });
   }
+  /* 6) 낙관 도장 — 0.65초 지긋이 눌러 '탁' 찍히는 순간, 차분하고 묵직한 저음 공명 한 번 (2026-11-22)
+     · 돌도장이 종이에 닿는 짧은 '툭'(132→64Hz) + 한 옥타브 낮은 공명(E2 82.4Hz) 한 번.
+     · 폭죽·타격음 없이 의식답게 낮게. 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 무음. */
+  function sfxSealPress() {
+    vibrate([40, 30, 70]);            // 도장이 닿는 한 번
+    var ctx = audioCtx(); if (!ctx) return;
+    tone(ctx, { from: 132, to: 64, type: 'sine', gain: .12, dur: .30, attack: .006, glide: .24 });
+    bowlTone(ctx, 82.41, { gain: .07, dur: 2.6, attack: .03, tau: 1.0 });   // E2 — 낮게 한 번 잦아든다
+    noise(ctx, { dur: .22, filter: 'lowpass', f0: 480, f1: 120, q: 0.7, gain: .045, attack: .01 });
+  }
   /* 노이즈원 — 바스락·불꽃·바람을 만드는 기본 재료 (음원 파일 없음) */
   function noise(ctx, o) {
     var dur = o.dur || 0.2;
@@ -6771,12 +7013,12 @@
       if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(e); }
     });
 
-    // 팝업 안: 부적 1.5초 누르기(pointer) · 달력에 붙이기 · X·배경·닫기 버튼
+    // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 0.65초 누르기 · X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
       if (tap) { e.preventDefault(); return; }        // 기운 열기는 1.5초 홀드가 맡는다 — 클릭은 조용히
-      var stick = e.target.closest ? e.target.closest('[data-ritual="stick"]') : null;
-      if (stick) { e.preventDefault(); onRitualStick(stick); return; }
+      var seal = e.target.closest ? e.target.closest('[data-ritual="seal"]') : null;
+      if (seal) { e.preventDefault(); return; }       // 도장은 0.65초 지긋이 눌러야 찍힌다 — 클릭은 조용히
       if (!e.target.closest) return;
       if (e.target.closest('[data-diary-jump]')) { e.preventDefault(); jumpToDiary(); return; }
       if (e.target.closest('[data-diary-again]')) { e.preventDefault(); onDiaryAgain(); return; }
@@ -6800,34 +7042,41 @@
        글자 선택·이미지 저장 메뉴가 뜨지 않게 contextmenu·selectstart 를 막는다.
        키보드만 쓰는 사람은 Space/Enter 를 1.5초 누르고 있으면 같은 의식이 열린다. */
     modalEl.addEventListener('pointerdown', function (e) {
-      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (!tap || e.button > 0) return;
-      ritualHoldStart(tap);
+      var hb = e.target.closest ? e.target.closest('[data-ritual="tap"],[data-ritual="seal"]') : null;
+      if (!hb || e.button > 0) return;
+      ritualHoldStart(hb);
     });
     document.addEventListener('pointermove', function (e) { ritualHoldMove(e); }, true);
     document.addEventListener('pointerup', function () { if (holdBtn) ritualHoldEnd(false); }, true);
     document.addEventListener('pointercancel', function () { if (holdBtn) ritualHoldEnd(true); }, true);
     window.addEventListener('blur', function () { if (holdBtn) ritualHoldEnd(true); });
     modalEl.addEventListener('keydown', function (e) {
-      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (!tap || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
+      var hb = e.target.closest ? e.target.closest('[data-ritual="tap"],[data-ritual="seal"]') : null;
+      if (!hb || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
       e.preventDefault();                                  // Space 로 화면이 스크롤되지 않게
-      if (!e.repeat) ritualHoldStart(tap);
+      if (e.repeat) return;
+      /* 키보드만 쓰는 사람 — 도장은 Enter 한 번이면 찍힌다 (끌어 놓기의 보조 경로) */
+      if (hb.getAttribute('data-ritual') === 'seal') { ritualSealNow(hb); return; }
+      ritualHoldStart(hb);
     });
     modalEl.addEventListener('keyup', function (e) {
-      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (!tap || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
+      var hb = e.target.closest ? e.target.closest('[data-ritual="tap"],[data-ritual="seal"]') : null;
+      if (!hb || (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter')) return;
       e.preventDefault();
       ritualHoldEnd(false);
     });
     modalEl.addEventListener('blur', function (e) {
-      var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
-      if (tap && holdBtn === tap) ritualHoldEnd(true);
+      var hb = e.target.closest ? e.target.closest('[data-ritual="tap"],[data-ritual="seal"]') : null;
+      if (hb && holdBtn === hb) ritualHoldEnd(true);
     }, true);
     ['contextmenu', 'selectstart', 'dragstart'].forEach(function (evt) {
       modalEl.addEventListener(evt, function (e) {
-        if (e.target.closest && e.target.closest('[data-ritual="tap"]')) e.preventDefault();
+        if (e.target.closest && e.target.closest('[data-ritual="tap"],[data-ritual="seal"]')) e.preventDefault();
       });
+    });
+    /* 길게 눌러도 폰의 '이미지 저장·복사' 메뉴가 뜨지 않게 도장·패드 전체에서도 단속 */
+    modalEl.addEventListener('contextmenu', function (e) {
+      if (e.target.closest && e.target.closest('.seal-pad')) e.preventDefault();
     });
 
     // 구입 팝업 — 맨 아래 카드 3개 버튼과 잠금 카드의 입장 코드 버튼
