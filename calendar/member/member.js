@@ -1822,6 +1822,121 @@
     };
   }
 
+  /* ── 2027 케미 점수 (2026-11-22 김나영 님 확정) ─────────────────
+     결과 맨 위 숫자 하나 — "친구/연인과 2027년 우리 케미 점수는?"의 답.
+     같은 두 사주 + 같은 관계면 몇 번을 봐도 같은 점수가 나온다(결정론).
+     재료: ① 일간(천간) 합·상생·상극 ② 일지 육합·삼합·충·형·해
+           ③ 서로의 빈 오행을 채워 주는가 ④ 정미년(丁未)과 각자 사주
+           ⑤ 관계 모드 — 우정은 '채워 줌', 사랑은 '합과 열기'에 무게
+     어떤 조합도 기분 상할 만큼 낮게 보이지 않도록 60~95 사이로 접는다.
+     2026-11-22 김나영 님 추가 확정: 폭을 60~95로 넓혀 낮은 조합(60~77)과
+     높은 조합(78~95)이 실제로 갈리게 한다. */
+  var Y2027_GAN_EL = '화';    // 丁
+  var Y2027_ZHI = 7;          // 未
+
+  /* 일간끼리 — 천간합(갑기·을경·병신·정임·무계 = 5 차이) · 같은 오행 · 상생 · 상극 */
+  function ganKey(a, b) {
+    var ga = a.natal.dayGanIndex, gb = b.natal.dayGanIndex;
+    if (Math.abs(ga - gb) === 5) return 'hap';
+    var ea = a.natal.element, eb = b.natal.element;
+    if (ea === eb) return 'same';
+    if (EL_MOTHER[ea] === eb || EL_MOTHER[eb] === ea) return 'saeng';
+    return 'geuk';
+  }
+
+  /* 그 사람 사주와 2027 정미년(丁·未)의 맞물림 — −4 ~ +5 */
+  function yearTilt(ch) {
+    var I = T._internal;
+    var e = ch.natal.element, z = ch.natal.dayZhiIndex;
+    var s = 0;
+    /* 丁(화) */
+    if (e === Y2027_GAN_EL) s += 1.0;                 // 같은 결 — 열기가 겹친다
+    else if (EL_MOTHER[e] === Y2027_GAN_EL) s += 1.5; // 화가 나를 살린다 (토)
+    else if (EL_MOTHER[Y2027_GAN_EL] === e) s += 0.5; // 내가 화를 살린다 (목) — 쓰는 해
+    else if (EL_OVER[e] === Y2027_GAN_EL) s += 0.5;   // 내가 화를 누른다 (수)
+    else s -= 1.5;                                    // 화가 나를 누른다 (금)
+    /* 未(토) — 일지 관계 */
+    if (z === Y2027_ZHI) s += 0.8;
+    else if (I.yukhapOf(Y2027_ZHI) === z) s += 2.0;
+    else if (I.samhapGroupOf(Y2027_ZHI) === I.samhapGroupOf(z) && I.samhapGroupOf(z) >= 0) s += 1.5;
+    else if (I.chungOf(Y2027_ZHI) === z) s -= 2.0;
+    else if (I.isHyeong(Y2027_ZHI, z)) s -= 1.5;
+    else if (I.haeOf(Y2027_ZHI) === z) s -= 1.0;
+    /* 2027이 이 사람의 빈 오행을 채우는가 (정=화 · 미=토) */
+    var fills = (ch.need && ch.need.fills) || [];
+    if (fills.indexOf('토') >= 0) s += 1.0;
+    if (fills.indexOf('화') >= 0) s += 0.5;
+    return Math.max(-4, Math.min(5, s));
+  }
+
+  function chemiScore(a, b, rel, info) {
+    var seed = pairSeed(a, b, rel);
+    var love = rel === 'love';
+    var s = 75.5;
+
+    /* ① 일간 */
+    var gp = { hap: 6, saeng: 4, same: 2, geuk: -4 }[ganKey(a, b)];
+    s += gp * (love ? 1.25 : 1);
+
+    /* ② 일지 — 육합·삼합이면 붙고, 충·형이면 부딪힌다 */
+    var zp = { hap: 5, samhap: 4, same: 2, plain: 0, hae: -2.5, hyeong: -3.5, chung: -5 }[info.zhiKey];
+    s += (zp == null ? 0 : zp) * (love ? 1.1 : 1);
+
+    /* ③ 서로의 빈 오행을 채워 주는가 — 우정은 이쪽에 무게 */
+    s += Math.min((info.gaps || []).length, 4) * (love ? 0.7 : 1.15);
+
+    /* ④ 2027 정미년과의 시너지 */
+    s += (yearTilt(a) + yearTilt(b)) * (love ? 1.0 : 0.85);
+
+    /* ⑤ 관계 모드 — 같은 사주라도 우정·사랑의 온도는 다르다 (±2, 관계별로 고정) */
+    s += (mix32(fnv32(seed + '#score')) % 41) / 10 - 2;
+
+    /* 원점수를 60~95 창으로 옮겨 자른다 — 낮은 조합과 높은 조합이 78점을 경계로 갈린다 */
+    return Math.max(60, Math.min(95, Math.round(s - 3)));
+  }
+
+  /* 낮은 조합 — 이 구간에만 상담 한 줄을 조용히 붙인다 (78점부터는 안 보임) */
+  function scoreIsLow(n) { return n <= 77; }
+
+  /* ── 2027년 둘이 조심할 달 (2026-11-22 김나영 님 추가 확정) ─────────
+     丁未년 12개월 월운이 두 사람의 일지와 총·형·해로 부딪히는 달,
+     월지끼리 부딪히는 달, 월간이 두 일간을 극하는 달을 세어 가장 센 1~2달.
+     점수와 상관없이 모든 결과에 한 줄 나가고, 같은 두 사주면 늘 같은 달이다.
+     결과 화면에 이미 '슬쩍 조심할 달' 카드가 있으면 그 달을 그대로 쓰고,
+     카드가 비어 있을 때만 이 계산으로 채운다(두 답이 갈리지 않게, 2026-11-22). */
+  function pairTenseMonths(a, b) {
+    var I = T._internal, rows = [];
+    for (var m = 1; m <= 12; m++) {
+      var gz = T.monthGzOf('2027-' + pad2(m) + '-15', terms());
+      if (!gz) continue;
+      var s = 0;
+      [a, b].forEach(function (ch) {
+        var dz = ch.natal.dayZhiIndex, mz = ch.natal.monthZhiIndex;
+        if (I.chungOf(gz.zhiIndex) === dz) s += 3.0;              // 월지가 내 일지와 총
+        else if (I.isHyeong(gz.zhiIndex, dz)) s += 2.2;            // 형
+        else if (I.haeOf(gz.zhiIndex) === dz) s += 1.4;            // 해
+        if (I.chungOf(gz.zhiIndex) === mz) s += 1.2;               // 월지끼리 총
+        if (EL_OVER[gz.ganEl] === ch.natal.element) s += 0.8;      // 그 달 천간이 내 일간을 극함
+      });
+      rows.push({ m: m, s: s });
+    }
+    rows.sort(function (x, y) { return y.s - x.s || x.m - y.m; });
+    var top = rows[0];
+    if (!top || top.s <= 0) {
+      /* 부딪히는 달이 아예 없으면 — 둘 다 가장 무리 없는 달로 */
+      var soft = a.months.map(function (x) {
+        return { m: x.m, s: x.chance + (b.months[x.m - 1] ? b.months[x.m - 1].chance : 0) };
+      }).sort(function (x, y) { return x.s - y.s || x.m - y.m; });
+      return [soft[0].m, soft[1].m].sort(function (x, y) { return x - y; });
+    }
+    var out = [top.m];
+    if (rows[1] && rows[1].s >= Math.max(2, top.s * 0.6)) out.push(rows[1].m);
+    return out.sort(function (x, y) { return x - y; });
+  }
+
+  /* 점수 막대 길이(%) — 60점도 바닥이 비지 않게 */
+  function scorePct(n) { return Math.max(6, Math.min(100, Math.round((n - 57) / 40 * 100))); }
+
   /* 오행 요약 바 — 작게, 오방색만 지키고 사람은 채움/빗금으로 */
   function elBars(chA, chB, opt) {
     opt = opt || {};
@@ -1893,10 +2008,16 @@
       .replace('{n}', esc(mName));
     care.push(mLine);
     care.push(esc(pickFrom(CARE[rel] || CARE.friend, seed, 'caretip')));
-
-    /* ④ 딱 맞는 달 · 조심할 달 */
-    var goodMs = bestMs.slice(0, 3);
+    /* 2027년에 둘이 부딪히기 쉬운 달 — 점수가 높아도 한 줄은 꼭 (2026-11-22)
+       아래 '슬쩍 조심할 달' 카드와 다른 달을 말하면 한 화면에서 두 답이 되어 헷갈린다.
+       카드와 같은 달을 쓰고, 카드가 '없어요'일 때만 정미년 월운 충돌로 채운다. */
     var warnMs = (info.warnBoth.length ? info.warnBoth : info.warnOne.map(function (x) { return x.n; })).slice(0, 2);
+    var tenseMs = warnMs.length ? warnMs : pairTenseMonths(a, b);
+    care.push('단, <b>' + tenseMs.map(function (n) { return n + '월'; }).join('·')
+      + '</b>엔 둘의 기운이 부딪히기 쉬우니 말 한마디만 아끼세요.');
+
+    /* ④ 딱 맞는 달 · 조심할 달 (warnMs 는 위에서 이미 골랐다) */
+    var goodMs = bestMs.slice(0, 3);
     var goodTx = goodMs.length ? goodMs.map(function (n) { return n + '월'; }).join(' · ') : '아직 없어요';
     var warnTx = warnMs.length ? warnMs.map(function (n) { return n + '월'; }).join(' · ') : '없어요';
     var tipSet = MONTH_TIP[rel] || MONTH_TIP.friend;
@@ -1906,12 +2027,20 @@
     /* ⑤ 부적 — 조합 해시로 14종 문양 중 하나 */
     var amul = amulOf(a, b, rel);
 
+    /* ⑥ 2027 케미 점수 — 제목 바로 아래, 결과를 여는 숫자 하나 */
+    var score = chemiScore(a, b, rel, info);
+
     var html = '';
     html += '<div class="chemi__hd">'
       + '<span class="chemi__badge">' + R.emoji + ' ' + esc(R.name) + '</span>'
       + '<span class="chemi__year">2027</span>'
       + '</div>';
     html += '<p class="chemi__names">' + esc(aName) + ' <i>·</i> ' + esc(bName) + '</p>';
+    html += '<div class="chemi__score" role="group" aria-label="2027 케미 점수 ' + score + '점">'
+      + '<span class="chemi__score-lb">2027 케미 점수</span>'
+      + '<span class="chemi__score-n"><b>' + score + '</b><i>점</i></span>'
+      + '<span class="chemi__score-bar" aria-hidden="true"><i style="width:' + scorePct(score) + '%"></i></span>'
+      + '</div>';
     html += '<h2 class="chemi__hook"><span class="chemi__yr">2027년엔</span>' + esc(hook) + '</h2>';
     html += '<p class="chemi__role">' + esc(role) + '</p>';
     html += elBars(a, b, { mini: true, legend: false });
@@ -1939,6 +2068,13 @@
       + '<button type="button" class="btn btn--ghost" id="againBtn">다시</button>'
       + '</div>';
     html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
+
+    /* 낮은 조합(60~77점)에만 — 부적 아래 조용한 상담 한 줄. 가격표·배너 없이 (2026-11-22) */
+    if (scoreIsLow(score)) {
+      html += '<p class="chemi__consult">'
+        + '<a href="../../apply/">부딪히는 지점, 내 사주 전체로 딱 한 가지만 짚어 보고 싶다면 '
+        + '→ <b>1:1 원포인트 상담 보기</b></a></p>';
+    }
 
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'

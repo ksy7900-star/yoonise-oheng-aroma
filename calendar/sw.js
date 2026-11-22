@@ -3,7 +3,7 @@
    network-first : 항상 최신을 먼저 받고, 끊기면 캐시로 연다.
    skipWaiting + clients.claim : 새 버전이 이전 버전에 막히지 않게.
    ========================================================== */
-var VERSION = '20261122v';
+var VERSION = '20261122w';
 var CACHE = 'yoonise-cal-' + VERSION;
 
 var SHELL = [

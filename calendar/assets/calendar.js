@@ -68,7 +68,7 @@
   }
 
   /* ── /calendar/ → /calendar/member/ 로 넘어갈 때 초대 코드 이어 주기 (2026-11-22)
-     친구 초대 링크는 이제 달력(/calendar/?ref=코드)으로 들어온다. 그 손님이 '친구 초대·케미'를
+     친구 초대 링크는 이제 달력(/calendar/?ref=코드)으로 들어온다. 그 손님이 '케미테스트'를
      눌러 케미 화면으로 넘어가도 내 초대 코드가 그대로 따라가야 로그인 뒤 attach_referrer 로 이어진다. */
   function memberHref() {
     return './member/' + (inviteRef ? '?ref=' + encodeURIComponent(inviteRef) : '');
@@ -3202,12 +3202,13 @@
   }
 
   /** 🎁 친구 초대 혜택 카드 — 결제를 망설이는 손님을 바로 초대 루프로 (2026-11-21 김나영 님 확정)
-      사다리: 1명 액운 태우기 3회 + 전 상품 할인 쿠폰 · 3명 1개월 · 5명 2개월 · 10명 3개월 패스 */
+      사다리: 1명 액운 태우기 3회 + 전 상품 할인 쿠폰 · 3명 1개월 · 5명 2개월 · 10명 3개월 패스
+      문구는 '초대·케미' 대신 무엇을 하는 곳인지 바로 보이게 (2026-11-22) */
   function inviteCardHTML(cls) {
     return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
       '<p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>' +
-      '<a class="invitecard__go" href="' + memberHref() + '">친구 초대·케미로 열기 →</a>' +
+      '<a class="invitecard__go" href="' + memberHref() + '">친구 초대하고 케미테스트 하러 가기 →</a>' +
       '</div>';
   }
   /** 잠금 팝업 하단 — 결제 버튼 아래, 부담 없는 친구 초대 링크 (2026-11-21) */
@@ -3390,15 +3391,13 @@
   var INVITE_PAID_TITLE = '🎁 친구 초대하면 <b>1:1 상담 최대 반값(50%)</b>';
   var INVITE_PAID_SUB = '1명만 초대해도 바로 5천원 할인 · 단계별 혜택 보기';
 
-  /** ✨ 케미·초대 배너 — 결제자에겐 '상담 최대 반값' 1안 문구, 미결제자는 지금 그대로 */
+  /** ✨ 케미테스트 배너 — "친구/연인과 2027년 우리 케미 점수는?" (2026-11-22 김나영 님 확정)
+      제목은 결제 여부와 상관없이 케미 점수 호기심 — 아래 한 줄만 결제자/미결제자로 갈린다. */
+  var CHEMI_BANNER_TITLE = '친구/연인과 2027년 우리 케미 점수는?';
   function renderChemiBanner() {
     var tier = state.unlocked && TIER_NAME[state.tier] ? state.tier : '';
     var t = $('#chemiBannerT'), d = $('#chemiBannerD');
-    if (t) {
-      t.innerHTML = tier
-        ? INVITE_PAID_TITLE
-        : '✨ 친구·연인과 2027년 케미 보고,<br>친구 초대하면 한 칸씩 열려요';
-    }
+    if (t) t.textContent = CHEMI_BANNER_TITLE;
     if (d) d.textContent = tier ? INVITE_PAID_SUB : LADDER_TEXT_FREE;
   }
 
@@ -7045,7 +7044,7 @@
       });
     }
 
-    // 🧭 4칸 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미·초대는 링크)
+    // 🧭 4칸 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미테스트는 링크)
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
       var jb = e.target.closest('[data-jump]');

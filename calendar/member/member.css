@@ -721,6 +721,38 @@ a { color: inherit; }
 .chemi__year { font-family: var(--serif); font-size: 26px; font-weight: 700; color: #B45309; line-height: 1; }
 .chemi__names { margin-top: 12px; font-size: 12.5px; font-weight: 700; color: var(--mute); }
 .chemi__names i { font-style: normal; color: #CBD5E1; margin: 0 3px; }
+
+/* ── 2027 케미 점수 — 결과 맨 위 숫자 하나 (2026-11-22) ────────
+   케미테스트를 누른 이유의 답이라, 훅 제목보다 위에 두되 크기는
+   제목(26px)보다 작게 잡아 시선이 제목으로 내려가게 한다. */
+.chemi__score {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  column-gap: 10px; margin-top: 13px; padding: 11px 14px 10px;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #FFFDF7 0%, #FEF8EA 100%);
+  border: 1px solid rgba(180, 83, 9, .16);
+}
+.chemi__score-lb {
+  font-size: 11px; font-weight: 800; letter-spacing: .02em;
+  color: #A16207; line-height: 1.3;
+}
+.chemi__score-n {
+  font-family: var(--serif); font-size: 30px; font-weight: 700;
+  line-height: 1; letter-spacing: -.03em; color: var(--gold-deep);
+  white-space: nowrap;
+}
+.chemi__score-n i {
+  font-family: var(--sans); font-style: normal;
+  font-size: 12px; font-weight: 800; margin-left: 2px; color: #A16207;
+}
+.chemi__score-bar {
+  grid-column: 1 / -1; display: block; height: 4px; margin-top: 9px;
+  border-radius: 99px; background: rgba(180, 83, 9, .12); overflow: hidden;
+}
+.chemi__score-bar i {
+  display: block; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, #F5C24B 0%, #B45309 100%);
+}
 .chemi__hook {
   margin-top: 4px; font-family: var(--serif);
   font-size: 26px; line-height: 1.44; font-weight: 700;
@@ -801,6 +833,20 @@ a { color: inherit; }
 }
 .amulimg { display: block; width: 100%; height: auto; }
 .story__cap { text-align: center; font-size: 11.5px; line-height: 1.6; color: var(--mute); margin-top: 10px; }
+
+/* ── 부적 아래 조용한 상담 한 줄 — 낮은 조합(60~77점)에만 (2026-11-22) ──
+   결제 유도가 아니라 '딱 한 가지만 짚어 볼까' 하는 제안이라
+   상자·가격표·배너 없이 본문과 같은 회색 한 줄로 눕힌다. */
+.chemi__consult {
+  margin-top: 12px; text-align: center;
+  font-size: 11.5px; line-height: 1.66; color: var(--mute);
+}
+.chemi__consult a {
+  color: inherit; text-decoration: none;
+  border-bottom: 1px solid rgba(180, 83, 9, .22);
+  padding-bottom: 1px;
+}
+.chemi__consult a b { font-weight: 800; color: #8A5A16; }
 
 /* ── 스토리 이벤트 안내 ─────────────────────────────── */
 .sub-h {
