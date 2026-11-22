@@ -1237,66 +1237,70 @@
   var DIARY_FREE_TRIES = 3;
   var DIARY_CATS = ['소통', '입단속', '결정', '머니', '리셋'];
   var DIARY_CAT_CLASS = { '소통': 'gold', '럭키': 'gold', '입단속': 'red', '결정': 'blue', '머니': 'blue', '리셋': 'gray' };
+  /* ── 성찰 질문 — 2026-11-22 전면 다듬기 (김나영 님 피드백)
+     "다음엔 이렇게 해 볼래요" 같은 숙제형·계획 세우기 질문은 모두 걷어내고,
+     **정답 없이 1초 만에 떠오르는 가벼운 질문**만 남겼다. 기운(소통·입단속·결정·머니·리셋) 결별 톤은 그대로.
+     막막하면 '다른 질문 ↻'으로 같은 결의 다른 질문으로 바꿀 수 있다. */
   var DIARY_Q = {
     '소통': [
-      '오늘 누군가에게 먼저 건넨 말 중, 가장 따뜻했던 한마디는?',
-      '오늘 대화에서 내 말이 잘 통했다고 느낀 순간은 언제였나요?',
-      '오늘 나를 웃게 한 사람은 누구였고, 그 사람에게 뭐라고 말해 주고 싶나요?',
-      '칭찬을 들었을 때 나는 뭐라고 대답했나요? 다음엔 이렇게 말해 보고 싶어요.',
-      '부탁을 해야 했는데 망설인 일이 있나요? 다음번엔 이렇게 꺼내 볼래요.',
-      '붙잡고 싶은 인연 하나, 이번 주에 먼저 보낼 한마디는?',
-      '오늘 도움을 받은 일 하나, 고맙다는 말은 전했나요?',
-      '오늘의 나를 축하해 줄 사람에게 들려주고 싶은 이야기는?',
-      '어색했던 대화 하나를 골라, 다음엔 이렇게 말해 볼 수 있겠다 싶은 문장은?',
-      '오늘 편하게 이야기 나눈 사람은 누구였고, 그 사람과 나는 어떤 사이인가요?'
+      '오늘 유독 신경 쓰였던 말 한마디, 여기다 흘려보낼까요?',
+      '오늘 내 편이 돼 준 순간 하나만 적는다면?',
+      '오늘 가장 고마웠던 사람이나 일, 가볍게 적어 볼까요?',
+      '오늘 웃음이 터진 순간, 옆에 누가 있었나요?',
+      '오늘 문득 안부가 궁금했던 사람은 누구였나요?',
+      '오늘 들은 말 중에 아직 마음에 남은 한마디는?',
+      '오늘 나를 편하게 해 준 사람은 누구였나요?',
+      '오늘 카톡에서 제일 먼저 답하고 싶었던 사람은?',
+      '오늘 괜히 고맙던 사람 하나, 이름만 적어 둘까요?',
+      '오늘 나를 웃게 한 사람에게 지금 한마디 보낸다면?'
     ],
     '입단속': [
-      '오늘 삼킨 말 중, 내일 다시 꺼낸다면 어떤 말투로 말하겠나요?',
-      '답장하기 전에 잠깐 멈춘 순간, 그 몇 초 동안 무슨 생각이 들었나요?',
-      '오늘 서운했던 일, 상대 입장에서 한 줄로 적어 본다면?',
-      '지금 가장 보내고 싶지 않은 카톡은 무엇이고, 왜인가요?',
-      '“네 말이 맞아”라고 먼저 말할 수 있었던 순간이 있었나요?',
-      '오늘 화가 난 이유를 “사실은 ~이 서운해서”로 다시 써 보세요.',
-      '기분이 상했을 때 내 몸은 어디가 먼저 아팠나요?',
-      '오늘 참은 말 한마디, 내일 아침에도 여전히 하고 싶은가요?',
-      '누군가와 부딪힌 뒤, 내가 지키고 싶었던 것은 무엇이었나요?',
-      '오늘의 감정을 날씨에 비유하면? 그 날씨에 우산을 하나 준다면 어떤 우산인가요?'
+      '오늘 삼킨 말 한마디, 여기다 조용히 내려놓을까요?',
+      '오늘 답장을 잠깐 미룬 순간, 마음은 어땠나요?',
+      '오늘 서운했던 일 하나, 한 줄로만 적어 볼까요?',
+      '보냈다가 지운 카톡이 있나요? 그 한마디만 적어 둘까요?',
+      '오늘 “괜찮아”라고 말한 순간, 사실은 어땠나요?',
+      '오늘 화가 났다면, 누구보다 나를 서운하게 한 건 뭐였을까요?',
+      '오늘 참은 말 중에 아직 목에 걸린 건 뭔가요?',
+      '오늘 기분이 상했을 때, 내 몸은 어디가 먼저 아팠나요?',
+      '오늘 부딪힌 사람과 나, 둘 다 뭘 지키고 싶었을까요?',
+      '오늘의 마음을 날씨로 적는다면? (예: 흐림, 소나기, 맑음)'
     ],
     '결정': [
-      '오늘 미뤄 둔 결정 하나, 작은 버전으로라면 무엇부터 할 수 있나요?',
-      '지금 정해야 할 일을 “하기 / 안 하기” 둘로만 적는다면?',
-      '이번 주에 꼭 끝내고 싶은 일 하나는 무엇인가요?',
-      '결정을 못 내리는 이유는 정보가 부족해서인가요, 두려워서인가요?',
-      '3년 뒤의 내가 오늘의 이 결정을 본다면 뭐라고 할까요?',
-      '오늘 정리한 것 중, 내일도 그대로 두고 싶은 것은?',
-      '“일단 보류”도 결정이라면, 오늘 무엇을 보류할까요?',
-      '오늘의 결정에서 내가 가장 아끼는 가치는 무엇인가요?',
-      '누군가에게 물어보고 싶은 결정 하나, 그 질문을 한 줄로 적어 보세요.',
-      '결정을 내린 뒤, 나에게 해 주고 싶은 한마디는?'
+      '오늘 제일 잘한 선택 하나는 뭐였나요?',
+      '오늘 “이건 나중에” 하고 미뤄 둔 일, 이름만 적어 둘까요?',
+      '오늘 마음이 살짝 기운 쪽은 어디였나요?',
+      '오늘 고르기 쉬웠던 일 하나는?',
+      '오늘 아무것도 안 정하고 넘어간 일이 있나요? 그냥 넘어가도 괜찮아요.',
+      '오늘 나를 제일 편하게 한 선택은?',
+      '오늘 하고 싶었는데 참은 일 하나, 적어만 둘까요?',
+      '오늘 “일단 보류”한 일이 있다면 뭐였나요?',
+      '오늘 결정 하나를 남에게 미룬 적 있나요? 그건 그걸로 충분해요.',
+      '오늘 하루를 한 단어로 정한다면?'
     ],
     '머니': [
-      '오늘 쓴 돈 중, 하나도 아깝지 않았던 지출은?',
-      '오늘 들어온 돈(또는 들어올 돈)의 쓸 곳을 한 줄로 정해 보세요.',
-      '이번 달에 줄이고 싶은 지출 하나는 무엇인가요?',
-      '받을 돈이 있다면, 오늘 한 줄로 물어볼 수 있는 문장을 적어 보세요.',
-      '돈 걱정이 올라올 때, 나를 안심시키는 한마디는?',
-      '오늘 산 것 중 한 달 뒤에도 고마울 것 하나는?',
-      '내가 돈을 쓸 때 가장 편안한 순간은 언제인가요?',
-      '저축하고 싶은 이유를 “누구를 위해서”로 한 줄 적어 보세요.',
-      '오늘의 지출을 세 단어로 요약한다면? (예: 필요·기분·사람)',
-      '다음 달의 나에게 써 주고 싶은 돈 한 가지는?'
+      '오늘 쓴 돈 중 하나도 안 아까웠던 건?',
+      '오늘 산 것 중에 기분 좋았던 하나는?',
+      '오늘 들어온 돈(또는 들어올 돈) 생각나나요?',
+      '오늘 돈 생각에 마음이 무거웠던 순간이 있나요?',
+      '오늘 아끼고 나서 뿌듯했던 일 하나?',
+      '오늘 나에게 써 준 작은 돈은?',
+      '오늘 커피·밥값 중에 기억나는 한 끼는?',
+      '오늘 지출을 세 단어로 적는다면? (예: 필요·사람·기분)',
+      '오늘 받고 싶었던 돈이 있다면 한 줄로만 적어 볼까요?',
+      '오늘 통장을 떠올리면 드는 기분은?'
     ],
     '리셋': [
-      '이번 달에 내려놓고 싶은 습관 하나는?',
-      '새로 시작하고 싶은 일 하나, 첫 10분은 무엇인가요?',
-      '지난달의 나에게 고맙다고 말한다면, 어떤 일 때문에인가요?',
-      '이번 달의 나를 한 단어로 정한다면?',
-      '지금 정리하고 싶은 공간 하나는 어디인가요?',
-      '이번 달에 꼭 비워 둘 하루는 언제인가요?',
-      '새 마음으로 정리하고 싶은 약속 하나는?',
-      '이번 달 나를 지켜 줄 한 가지 규칙은?',
-      '지난달에 배운 것 중, 이번 달에도 들고 갈 것은?',
-      '이번 달 마지막 날의 나에게 미리 한 줄 남긴다면?'
+      '오늘 내려놓고 싶었던 생각 하나, 여기다 두고 갈까요?',
+      '오늘 잠깐 쉬어 간 순간이 있었나요?',
+      '오늘 정리하고 싶은 서랍이나 가방이 떠오르나요?',
+      '오늘 나를 지치게 한 건 뭐였나요?',
+      '오늘 아무것도 안 한 시간이 있었나요? 그거면 충분해요.',
+      '오늘 버리고 싶은 말이나 감정 하나는?',
+      '오늘의 나에게 “수고했어” 한마디 적어 볼까요?',
+      '오늘 가장 조용했던 순간은 언제였나요?',
+      '오늘 내 몸이 먼저 보낸 신호는? (예: 어깨, 눈, 배)',
+      '오늘 하루를 마무리하며 지금 가장 하고 싶은 건?'
     ]
   };
   var diary = { entries: {} };
@@ -1356,7 +1360,37 @@
     var cat = diaryCatFor(iso, info);
     var pool = DIARY_Q[cat];
     var idx = Math.abs(diaryOrd(iso) * 3 + cat.length) % pool.length;
-    return { cat: cat, q: pool[idx] };
+    return { cat: cat, idx: idx, q: pool[idx] };
+  }
+  /* '다른 질문 ↻'으로 고른 질문 — 이 화면에 있는 동안 날짜별로 기억한다.
+     저장하면 그 질문이 기록(rec.q·rec.qi)에 같이 남아, 다시 열어도 적었을 때의 질문이 그대로 뜨다. */
+  var diaryShown = {};
+  /** 지금 이 날짜에 걸린 질문 — 저장된 기록이 있으면 그때 적은 질문, 없으면 날짜로 고른 기본 질문 */
+  function diaryPickFor(iso, info) {
+    if (diaryShown[iso]) return diaryShown[iso];
+    var rec = diaryOf(iso);
+    if (rec && rec.q) {
+      var cat = rec.cat || diaryCatFor(iso, info);
+      var pool = DIARY_Q[cat] || [];
+      var j = pool.indexOf(rec.q);
+      diaryShown[iso] = { cat: cat, idx: j, q: rec.q };
+      return diaryShown[iso];
+    }
+    diaryShown[iso] = diaryAsk(iso, info);
+    return diaryShown[iso];
+  }
+  /** 다음 질문으로 — 같은 기운(결) 안에서 한 칸씩 돌린다. 모자라지 않게 50개 전부 가벼운 질문 */
+  function rotateDiaryQ(iso) {
+    var info = infoFor(iso);
+    if (!info) return null;
+    var cur = diaryPickFor(iso, info);
+    var pool = DIARY_Q[cur.cat] || [];
+    if (pool.length < 2) return cur;
+    var next = (cur.idx >= 0)
+      ? (cur.idx + 1) % pool.length
+      : Math.floor(Math.random() * pool.length);
+    diaryShown[iso] = { cat: cur.cat, idx: next, q: pool[next] };
+    return diaryShown[iso];
   }
   function diaryStampOf(iso) {
     var rec = diaryOf(iso);
@@ -1393,12 +1427,12 @@
       '</section>';
   }
   function diaryBodyHTML(info, draft) {
-    var ask = diaryAsk(info.iso, info);
+    var ask = diaryPickFor(info.iso, info);
     var rec = diaryOf(info.iso);
     var editing = typeof draft === 'string';
     var hasBadge = !!((info.badges || []).length);
-    var cat = (rec && !editing) ? (rec.cat || ask.cat) : ask.cat;
-    var q = (rec && !editing && rec.q) ? rec.q : ask.q;
+    var cat = ask.cat;
+    var q = ask.q;
     var plainDay = (rec && !editing) ? !!rec.plain : !hasBadge;
     var tryStrip = !diaryTryEligible() ? '' :
       '<p class="diary__try">✨ 1줄 성찰 다이어리 <b>3회 무료 체험</b> · 남은 <b>' + diaryTryLeft() + '회</b>' +
@@ -1409,7 +1443,10 @@
         ? '<span class="badge badge--gray">잔잔한 날</span><span class="diary__tag">오늘의 결</span>'
         : '<span class="badge badge--' + (DIARY_CAT_CLASS[cat] || 'gray') + '">' + esc(cat) + '</span><span class="diary__tag">그날의 결</span>') +
       '</div>' +
-      '<p class="diary__q">' + esc(q) + '</p>';
+      '<p class="diary__q">' + esc(q) + '</p>' +
+      /* 막막하면 바로 다른 질문으로 — 정답 없이 1초에 떠오르는 질문만 (2026-11-22) */
+      ((rec && !editing) ? '' :
+        '<button type="button" class="diary__again" data-diary-again aria-label="다른 질문 보기">다른 질문 <span aria-hidden="true">↻</span></button>');
 
     if (rec && !editing) {
       return head +
@@ -1430,7 +1467,7 @@
     return head +
       '<div class="diary__form">' +
       '<textarea class="diary__input" id="diaryText" rows="2" maxlength="' + DIARY_MAX + '" ' +
-      'placeholder="한 줄이면 충분해요" aria-label="오늘의 1줄 성찰">' + esc(val) + '</textarea>' +
+      'placeholder="예) 오늘은 그냥 좀 피곤했다" aria-label="오늘의 1줄 성찰">' + esc(val) + '</textarea>' +
       '<div class="diary__foot">' +
       '<span class="diary__count" data-diary-count>' + String(val.length) + '/' + DIARY_MAX + '</span>' +
       '<button type="button" class="diary__save" data-diary-save>기록 남기기</button>' +
@@ -1475,14 +1512,14 @@
       return;
     }
     if (text.length > DIARY_MAX) text = text.slice(0, DIARY_MAX);
-    var ask = diaryAsk(iso, info);
+    var ask = diaryPickFor(iso, info);          // 화면에 걸린 질문 그대로 저장 (다른 질문으로 바꿨어도 그 질문으로)
     var isNew = !diary.entries[iso];
     /* 무료 체험 손님은 '새 기록'만 횟수를 센다 — 이미 쓴 날의 고치기는 세지 않는다 */
     if (isNew && !diaryTierOpen() && diaryTryLeft() <= 0) {
       toast('무료 3회를 다 썼어요 — 성찰 에디션에서 계속 쓸 수 있어요');
       return;
     }
-    diary.entries[iso] = { cat: ask.cat, q: ask.q, text: text, plain: !((info.badges || []).length), at: new Date().toISOString() };
+    diary.entries[iso] = { cat: ask.cat, q: ask.q, qi: ask.idx, text: text, plain: !((info.badges || []).length), at: new Date().toISOString() };
     saveDiary();
     if (isNew && !diaryTierOpen()) { diaryTry.used = Math.min(DIARY_FREE_TRIES, diaryTry.used + 1); saveDiaryTry(); }
     paintDiary(iso);
@@ -1497,6 +1534,17 @@
       toast('✍️ ' + fmtMD(iso) + ' 성찰 한 줄을 남겼어요 — 달력에 펜 점이 찍혔어요');
     }
   }
+  /** ✨ '다른 질문 ↻' — 지금 적던 한 줄은 그대로 두고 질문만 바꿔 준다 (소리 없음) */
+  function onDiaryAgain() {
+    var wrap = modalBody ? modalBody.querySelector('[data-diary]') : null;
+    if (!wrap) return;
+    var iso = wrap.getAttribute('data-diary');
+    if (!iso) return;
+    var ta = wrap.querySelector('#diaryText');
+    var draft = ta ? ta.value : '';
+    if (!rotateDiaryQ(iso)) return;
+    paintDiary(iso, draft);
+  }
   function deleteDiaryFromModal() {
     var wrap = modalBody ? modalBody.querySelector('[data-diary]') : null;
     if (!wrap) return;
@@ -1504,6 +1552,7 @@
     if (!diary.entries[iso]) return;
     delete diary.entries[iso];
     saveDiary();
+    delete diaryShown[iso];          // 질문도 그 날의 기본 질문으로 돌아간다
     paintDiary(iso);
     renderCalendar();
     sfxTap(1);
@@ -6681,6 +6730,7 @@
       if (tap) { onRitualTap(tap, e); return; }
       if (!e.target.closest) return;
       if (e.target.closest('[data-diary-jump]')) { e.preventDefault(); jumpToDiary(); return; }
+      if (e.target.closest('[data-diary-again]')) { e.preventDefault(); onDiaryAgain(); return; }
       if (e.target.closest('[data-diary-save]')) { e.preventDefault(); saveDiaryFromModal(); return; }
       var editBtn = e.target.closest('[data-diary-edit]');
       if (editBtn) {
