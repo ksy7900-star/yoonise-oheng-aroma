@@ -2069,6 +2069,9 @@
       plaqueHTML(r.el, { tag: true, action: 'talis-tap', fx: true, type: type }) +
       '</div>' +
       '<p class="talis-banner__name"><span aria-hidden="true">' + ticon + '</span> ' + esc(tname) + '</p>' +
+      /* 부적 이름 바로 아래 — 확대 팝업과 같은 오행별 두 줄 글귀를 대문에서도 바로 (2026-11-22) */
+      '<p class="talis-banner__verse">' +
+        (verse || []).map(function (v) { return esc(v); }).join('<br>') + '</p>' +
       '<p class="talis-banner__hint">부적을 톡 눌러 기운을 깨우세요</p>' +
       '<button type="button" class="talis-banner__more" data-talis-open aria-hidden="true">부적 크게 보기 <span aria-hidden="true">↗</span></button>' +
       '</div>';

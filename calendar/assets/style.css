@@ -867,6 +867,14 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   text-shadow: 0 1px 12px rgba(0, 0, 0, .5);
 }
 .talis-banner__name span { font-size: 12.5px; margin-right: 2px; }
+/* 부적 이름 바로 아래 두 줄 글귀 — 확대 팝업과 같은 문장을 대문에서도 은은하게 (2026-11-22) */
+.talis-banner__verse {
+  margin: 5px auto 0; max-width: 30em;
+  font-family: var(--serif); font-size: 12px; line-height: 1.6;
+  letter-spacing: -.012em; color: var(--tb-cream); opacity: .84;
+  word-break: keep-all; text-wrap: balance;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .5);
+}
 .talis-banner__hint {
   margin-top: 6px; font-size: 10.5px; letter-spacing: -.01em;
   color: var(--tb-sub);
@@ -3662,6 +3670,7 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
   .talis-banner__eyebrow { font-size: 7.2px; letter-spacing: .22em; }
   .talis-banner__title { font-size: 13px; margin-top: 3px; }
   .talis-banner__name { font-size: 12px; margin-top: 6px; }
+  .talis-banner__verse { margin-top: 4px; font-size: 11px; line-height: 1.55; }
   .talis-banner__hint { font-size: 9.5px; margin-top: 1px; }
   .talis-banner__reveal { font-size: 12.5px; margin-top: 4px; min-height: 2.55em; }
   .talis-banner__more { margin-top: 4px; padding: 4px 11px; font-size: 9.5px; }
@@ -3676,6 +3685,7 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
 
 @media (max-width: 360px) {
   .card--cal { margin-left: -16px; margin-right: -16px; padding: 14px 6px 14px; }
+  .talis-banner__verse { font-size: 10.2px; line-height: 1.52; }
   .day { min-height: 68px; padding: 7px 0 9px; }
   .day__num { width: 25px; height: 25px; font-size: 12.5px; }
   .day__badge { font-size: 8.8px; }
