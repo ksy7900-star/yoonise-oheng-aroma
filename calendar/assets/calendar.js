@@ -2659,6 +2659,17 @@
       void open.offsetWidth;                // 애니메이션을 처음부터
       open.classList.add('is-on');
     }
+    /* 문장·처방이 올라오면 아래 낙관 도장이 화면 밖에 반쯤 걸려 있는 경우가 있다.
+       (360·740 같은 작은 폰) — 도장 패드가 다 보이게만 살짝 올려 준다. */
+    setTimeout(function () {
+      var pad = wrap.querySelector('.seal-pad');
+      if (!pad || !modalBody || !pad.getBoundingClientRect) return;
+      var pr = pad.getBoundingClientRect(), cr = modalBody.getBoundingClientRect();
+      if (pr.bottom > cr.bottom - 8) {
+        try { pad.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        catch (e) { try { pad.scrollIntoView(); } catch (e2) {} }
+      }
+    }, 420);
   }
 
   /** ② 본인이 직접 지긋이 누르는 낙관 도장 — 이 순간에만 저장하고 인장이 조용히 새겨진다 */
