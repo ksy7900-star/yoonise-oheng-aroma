@@ -65,6 +65,10 @@
   var INVITE_FLOW_KEY = 'yoonise.member.invite.flow.v1';    // 초대 링크의 '카카오 3초 연결'로 넘어온 흐름 (카카오 다녀와도 같은 탭이면 남는다)
   var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 5일 무료·액운 +1회를 줄 때 본다
   var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
+  /* 달력의 '카톡 3초 연결 → 내 수호 부적' 카드로 들어온 손님 (2026-11-23 2차)
+     카카오OAuth 는 주소의 ?next= 를 지우고 돌아오므로, 이 탭에 표시를 남겨 두고
+     로그인이 끝나면 달력(#talis)으로 바로 돌려보낸다. */
+  var NEXT_TALIS_KEY = 'yoonise.member.next.talis.v1';
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var SAMHAP_EL = ['수', '목', '화', '금'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
@@ -220,6 +224,18 @@
   }
   /* 스크립트를 읽은 순간의 값 — supabase-js 가 주소의 ?code= 를 지워 버리기 전에 잡아 둔다 */
   var OAUTH_BACK = oauthBack();
+  /* 달력의 '카톡 3초 연결 → 수호 부적' 카드로 들어왔으면 이 탭에 표시해 둔다
+     (카카오는 주소의 ?next= 를 지우고 돌아오니까 — 2026-11-23 2차) */
+  try { if (queryParam('next') === 'talis') sessionStorage.setItem(NEXT_TALIS_KEY, '1'); } catch (e) {}
+  /** 연결이 끝났으면 달력으로 돌아가 내 수호 부적을 바로 연다 */
+  function returnToTalis() {
+    var want = false;
+    try { want = sessionStorage.getItem(NEXT_TALIS_KEY) === '1'; } catch (e) { want = false; }
+    if (!want || !state.user) return false;
+    try { sessionStorage.removeItem(NEXT_TALIS_KEY); } catch (e) {}
+    location.replace('../#talis');
+    return true;
+  }
   /** 초대 링크의 원터치 연결로 넘어온 흐름인가 — 카톡/카카오를 다녀와도 같은 탭이면 남는다 */
   function inviteFlow() {
     try { return sessionStorage.getItem(INVITE_FLOW_KEY) === '1'; } catch (e) { return false; }
@@ -402,6 +418,7 @@
       renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
       return;
     }
+    if (returnToTalis()) return;          // 카톡 연결 → 달력 #talis (수호 부적)
     renderAuth(); renderLadder(); renderInvite();
     loadProfile();
     /* 카카오로 돌아왔는데 붙일 초대 코드가 없을 때(코드가 이미 비워졌거나 기억이 지워졌을 때)도

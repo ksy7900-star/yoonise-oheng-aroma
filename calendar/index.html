@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123a">
+<link rel="stylesheet" href="assets/style.css?v=20261123b">
 </head>
 <body>
 
@@ -215,14 +215,23 @@
       </div>
     </div>
 
-    <!-- ──────── ✨ 3줄 후킹 — 명리 원국 기반 (2026-11-23 김나영 님 확정) ────────
-         ① 오늘 내 한 줄 ② 2027 내 급소 ③ 고정 문구.
+    <!-- ──────── ✨ 3줄 후킹 — 고대비 매거진 카드 (2026-11-23 2차 김나영 님 확정) ────────
+         ① TODAY ② 2027 고비 ③ 핵심. 라벨 배지 + 상담가 말투 2~3줄.
          문장은 calendar.js renderHook() 이 매번 내 사주·오늘 기운·조심할 달로 새로 만든다.
-         딱지("달력 보는 이유:") 같은 교과서식 제목은 달지 않는다. -->
+         한자는 쓰지 않고, "○ 기운이 하나도 없어요" 같은 결핍 단정도 쓰지 않는다. -->
     <section class="hook3" id="hook3" aria-label="내 사주로 본 오늘과 2027년" hidden>
-      <p class="hook3__p hook3__p--today" id="hookToday"></p>
-      <p class="hook3__p hook3__p--year" id="hookYear"></p>
-      <p class="hook3__p hook3__p--hook">일이 꼬이는 건 대개 <b class="hk-hl">딱 며칠 때문</b>입니다.<br>달력에 <b class="hk-mark">⚠️</b> 뜬 날만 피해도 <b class="hk-hl">2027년 큰 풍파는 비켜 가요.</b></p>
+      <article class="hk">
+        <p class="hk__label hk__label--today">TODAY · 오늘</p>
+        <p class="hk__text" id="hookToday"></p>
+      </article>
+      <article class="hk hk--year">
+        <p class="hk__label hk__label--year">2027 고비</p>
+        <p class="hk__text" id="hookYear"></p>
+      </article>
+      <article class="hk hk--core">
+        <p class="hk__label hk__label--core">핵심</p>
+        <p class="hk__text" id="hookCore">일이 꼬이는 건 대개 <b class="hk-hl">딱 며칠 때문</b>입니다.<br>달력에 <b class="hk-mark">⚠️</b> 뜬 날만 피해도 <b class="hk-hl">2027년 큰 풍파는 비켜 가요.</b></p>
+      </article>
     </section>
 
     <!-- ───────── 🧭 4칸 바로가기 바 — 사주를 넣은 뒤 어디서든 1초 만에 (2026-11-22) ─────────
@@ -276,6 +285,7 @@
       <p class="cal__saeun v2-parked" id="calSaeun"></p>
 
       <p class="cal__summary" id="calSummary"></p>
+      <p class="cal__nightrec" id="calNightRec" hidden></p>
 
       <!-- 모아보기 — 2.0 에서는 3색(조심·기운UP·실속)으로 (2026-11-23).
            예전 2분류(조심할 날·좋은 날) 버튼도 지우지 않고 감춰 둔다 — 바로 복구 가능 -->
@@ -416,6 +426,24 @@
       <button type="button" class="burn__cta" id="burnOpen">
         <span id="burnCtaSub">한 장에 적고 · 구기고 · 태우면 끝</span>
         <b id="burnCtaMain">🔥 지금 한 장 태우기</b>
+      </button>
+    </section>
+
+    <!-- ✨ 2026-11-23 2차 — 액운 태우기 아래 두 칸
+         ① 너랑나랑 케미테스트 (/calendar/member/)
+         ② 카톡 3초 연결 → 내 2027 수호 부적 (REP50 모달 재활용) -->
+    <section class="duo" id="duoCard" aria-label="케미테스트와 2027 수호 부적">
+      <a class="duo__card duo__card--chemi" href="./member/">
+        <span class="duo__eyebrow">CHEMI TEST</span>
+        <span class="duo__t">✨ 너랑나랑 케미테스트</span>
+        <span class="duo__d">2027년 우리 케미 점수 + 둘만의 케미 부적까지</span>
+        <span class="duo__go">케미 보러 가기 →</span>
+      </a>
+      <button type="button" class="duo__card duo__card--talis" id="talisGet">
+        <span class="duo__eyebrow">GUARDIAN TALISMAN · 2027</span>
+        <span class="duo__t">💎 카톡 3초 연결하고 내 2027 수호 부적 받기</span>
+        <span class="duo__d" id="talisGetSub">카톡으로 연결하면 내 사주에 맞는 수호 부적이 바로 열려요.</span>
+        <span class="duo__go" id="talisGetGo">카톡 3초 연결하고 받기 →</span>
       </button>
     </section>
 
@@ -657,8 +685,8 @@
   </div>
 </div>
 
-<!-- ───────── 2027 대표 부적 확대 팝업 ───────── -->
-<div class="modal modal--talis v2-parked" id="talisModal" hidden>
+<!-- ───────── 2027 대표 부적 확대 팝업 — 2026-11-23 2차부터 아래 '수호 부적' 카드가 바로 연다 -->
+<div class="modal modal--talis" id="talisModal" hidden>
   <div class="modal__backdrop" data-talis-close></div>
   <div class="modal__dialog modal__dialog--talis" id="talisDialog" role="dialog" aria-modal="true" aria-labelledby="talisModalTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -694,11 +722,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123a"></script>
-<script src="assets/manse.js?v=20261123a"></script>
-<script src="assets/timing.js?v=20261123a"></script>
-<script src="assets/chars.js?v=20261123a"></script>
-<script src="assets/calendar.js?v=20261123a"></script>
-<script src="assets/pwa.js?v=20261123a"></script>
+<script src="vendor/lunar.js?v=20261123b"></script>
+<script src="assets/manse.js?v=20261123b"></script>
+<script src="assets/timing.js?v=20261123b"></script>
+<script src="assets/chars.js?v=20261123b"></script>
+<script src="assets/calendar.js?v=20261123b"></script>
+<script src="assets/pwa.js?v=20261123b"></script>
 </body>
 </html>

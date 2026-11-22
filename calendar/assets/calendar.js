@@ -1374,6 +1374,72 @@
     for (var k in diary.entries) if (Object.prototype.hasOwnProperty.call(diary.entries, k)) n++;
     return n;
   }
+
+  /* ── 🌙 저녁 1초 체크 (2026-11-23 2차) ─────────────────────────────
+     날짜 팝업 아래 버튼 3개 + 1줄 메모. 버튼만 눌러도 저장되고,
+     체크한 날은 달력 날짜 칸 귀퉁이에 작은 점이 찍힌다.
+     저장 위치: 이 기기(localStorage) — 서버로 보내지 않는다. */
+  var NIGHT_KEY = 'yoonise.nightcheck.v1';
+  var night = { entries: {} };
+  var NIGHT_MOODS = { ok: '😌 잘 넘겼다', did: '⚡ 해냈다', shaky: '🌀 흔들렸다' };
+
+  function loadNight() {
+    var o = null;
+    try { o = JSON.parse(localStorage.getItem(NIGHT_KEY)); } catch (e) { o = null; }
+    night.entries = (o && o.entries && typeof o.entries === 'object') ? o.entries : {};
+  }
+  function saveNight() {
+    try { localStorage.setItem(NIGHT_KEY, JSON.stringify({ v: 1, entries: night.entries })); } catch (e) {}
+  }
+  function nightOf(iso) { return night.entries[iso] || null; }
+  function nightSet(iso, mood, memo) {
+    if (!iso) return null;
+    var prev = night.entries[iso] || {};
+    var rec = {
+      mood: typeof mood === 'string' ? mood : (prev.mood || ''),
+      memo: typeof memo === 'string' ? memo.slice(0, 60) : (prev.memo || ''),
+      at: Date.now()
+    };
+    if (!rec.mood && !rec.memo) delete night.entries[iso];
+    else night.entries[iso] = rec;
+    saveNight();
+    return rec.mood || rec.memo ? rec : null;
+  }
+  /** 이 달에 기록을 남긴 날 수 */
+  function nightCountOf(y, m) {
+    var n = 0, head = y + '-' + (m < 10 ? '0' + m : m) + '-';
+    for (var k in night.entries) {
+      if (!Object.prototype.hasOwnProperty.call(night.entries, k)) continue;
+      if (k.indexOf(head) === 0) n++;
+    }
+    return n;
+  }
+  /** 달력 위 '🌙 이번 달 기록 N일' */
+  function renderNightRec(v) {
+    var el = $('#calNightRec');
+    if (!el) return;
+    var n = nightCountOf(v.y, v.m);
+    el.hidden = !n;
+    el.textContent = n ? '🌙 이번 달 기록 ' + n + '일' : '';
+  }
+  /** 체크 직후 달력 칸에 점을 바로 찍고(다시 그리지 않고) 기록 일수를 맞춘다 */
+  function paintNightCell(iso) {
+    var cell = $('#calGrid .day[data-iso="' + iso + '"]');
+    if (cell) {
+      var has = !!nightOf(iso);
+      cell.classList.toggle('day--checked', has);
+      var dot = cell.querySelector('.day__night');
+      if (has && !dot) {
+        dot = document.createElement('span');
+        dot.className = 'day__night';
+        dot.setAttribute('aria-hidden', 'true');
+        cell.appendChild(dot);
+      } else if (!has && dot) {
+        dot.parentNode.removeChild(dot);
+      }
+    }
+    renderNightRec(state.view);
+  }
   /** 날짜 → 며칠째인지(1970-01-01 기준 일수) — 같은 날짜는 항상 같은 질문이 되게 하는 숫자 */
   function diaryOrd(iso) {
     var p = T.parseISO(iso);
@@ -2736,23 +2802,152 @@
        "○ 기운이 하나도 없어요" 같은 결핍 단정도 쓰지 않는다(2026-11-22 김나영 님 기준).
      ══════════════════════════════════════════════════════════════════ */
   var LITE_TAG = {
-    red:  { key: 'warn', label: '조심',     emoji: '⚠️', short: '⚠️ 조심' },
-    gold: { key: 'up',   label: '기운 UP',  emoji: '⚡', short: '⚡ 기운UP' },
-    blue: { key: 'up',   label: '기운 UP',  emoji: '⚡', short: '⚡ 기운UP' },
-    gray: { key: 'real', label: '실속·정리', emoji: '🌿', short: '🌿 실속' }
+    red:  { key: 'warn', label: '조심',     emoji: '⚠️' },
+    gold: { key: 'up',   label: '기운 UP',  emoji: '⚡' },
+    blue: { key: 'real', label: '실속·정리', emoji: '🌿' },
+    gray: { key: 'real', label: '실속·정리', emoji: '🌿' }
   };
   var LITE_FULL = { warn: '⚠️ 조심', up: '⚡ 기운 UP', real: '🌿 실속·정리' };
 
-  /** 오늘의 배지(최대 2개)를 3색으로 접는다 — 같은 색이 둘이면 하나만 남긴다 */
-  function liteTagsOf(badges) {
-    var out = [], seen = {};
-    (badges || []).forEach(function (b) {
-      var t = LITE_TAG[b.cat];
-      if (!t || seen[t.key]) return;
-      seen[t.key] = 1;
-      out.push({ key: t.key, cat: b.cat, short: t.short, label: t.label, emoji: t.emoji });
+  /* ── 3색 희소성 엔진 (2026-11-23 2차 확정) ───────────────────────────
+     한 달에 색을 다 칠하면 어떤 색도 눈에 안 들어온다 (⚡ 기운UP 11일 도배 지적).
+     그날의 실제 힘(marks 의 weight)을 재서 **가장 센 날만** 남긴다:
+       ⚠️ 조심 4~5일 · ⚡ 기운 UP 3~5일 · 🌿 실속·정리 2~3일 → 한 달 9~13일.
+     나머지 날은 '잔잔한 날'이 되어, 색이 붙은 날이 진짜로 눈에 띈다.
+     · 무게가 같으면 서로 떨어진 날을 고른다(달 앞뒤로 몰리지 않게).
+     · 하루에 색은 하나만 — 조심이 있으면 그날은 조심이다. */
+  var LITE_CAP = { warn: 5, up: 4, real: 3 };
+  var _planCache = {};
+
+  /** 그날 marks 중 그 색에서 가장 센 신호 (약한 신호·다른 색은 보지 않는다) */
+  function markOf(info, cat, withMinor) {
+    var w = 0, kind = '', lbl = '';
+    ((info && info.marks) || []).forEach(function (mk) {
+      if (mk.cat !== cat) return;
+      if (mk.minor && !withMinor) return;
+      if (mk.weight > w) { w = mk.weight; kind = mk.kind; lbl = mk.label || ''; }
     });
+    return { w: w, kind: kind, lbl: lbl };
+  }
+
+  /** 센 날부터 cap 개 — 같은 무게면 이미 고른 날에서 먼 날,
+      같은 키워드가 반복되면 다른 키워드 날을 앞세워 칸 안 글자가 무감각해지지 않게 */
+  function pickSpread(cands, cap, used) {
+    var out = [], pool = cands.slice(), seen = {};
+    while (out.length < cap && pool.length) {
+      var at = 0, best = -1e9;
+      for (var i = 0; i < pool.length; i++) {
+        var gap = 99, d = pool[i].d;
+        for (var j = 0; j < used.length; j++) gap = Math.min(gap, Math.abs(used[j] - d));
+        var lbl = pool[i].short || pool[i].kind || '';
+        var score = pool[i].w * 10 + Math.min(gap, 12) - (seen[lbl] || 0) * 60;
+        if (score > best) { best = score; at = i; }
+      }
+      var pick = pool.splice(at, 1)[0];
+      var k = pick.short || pick.kind || '';
+      seen[k] = (seen[k] || 0) + 1;
+      out.push(pick); used.push(pick.d);
+    }
     return out;
+  }
+
+  /** 칸 안에 들어갈 짧은 키워드 — 같은 3단어 반복 대신 그날의 이유로 변주한다 */
+  function liteShortOf(key, kind, lbl) {
+    if (key === 'warn') {
+      if (kind === 'hyeong') return '⚠️ 계약·돈';
+      if (kind === 'chung') return lbl === '월지 충' ? '⚠️ 말조심' : '⚠️ 충돌';
+      return '⚠️ 말조심';
+    }
+    if (key === 'up') {
+      if (kind === 'gwiyin') return '⚡ 귀인';
+      if (kind === 'hap') return /삼합/.test(lbl) ? '⚡ 기회' : '⚡ 추진';
+      return '⚡ 추진';
+    }
+    if (kind === 'wealth') return '🌿 실속';
+    return '🌿 정리';
+  }
+
+  /** 한 달치 3색 배치 — { map: { iso: {key, cat, short, kind, lbl} }, counts } */
+  function litePlan(y, m) {
+    var ck = y + '-' + m;
+    if (_planCache[ck]) return _planCache[ck];
+    var dim = T.daysInMonth(y, m);
+    if (T.isoOf(y, m, dim) > RANGE_TO) dim = T.parseISO(RANGE_TO).d;
+    var rows = [], reds = [], golds = [], blues = [], bluesSoft = [];
+    for (var d = 1; d <= dim; d++) {
+      var iso = T.isoOf(y, m, d);
+      var info = infoFor(iso);
+      if (!info) continue;
+      var row = {
+        iso: iso, d: d,
+        red: markOf(info, 'red'), gold: markOf(info, 'gold'), blue: markOf(info, 'blue'),
+        jie: false
+      };
+      (info.marks || []).forEach(function (mk) {
+        if (!mk.minor && mk.cat === 'gray' && mk.kind === 'jie') row.jie = true;
+      });
+      rows.push(row);
+      if (row.red.w) reds.push({ d: d, w: row.red.w, kind: row.red.kind, lbl: row.red.lbl, row: row, short: liteShortOf('warn', row.red.kind, row.red.lbl) });
+      if (row.gold.w) golds.push({ d: d, w: row.gold.w, kind: row.gold.kind, lbl: row.gold.lbl, row: row, short: liteShortOf('up', row.gold.kind, row.gold.lbl) });
+      if (row.blue.w) blues.push({ d: d, w: row.blue.w, kind: row.blue.kind, lbl: row.blue.lbl, row: row, short: liteShortOf('real', row.blue.kind, row.blue.lbl) });
+      if (!row.blue.w) {
+        /* 지지가 받쳐 주지 않은 결정·머니 날 — 강조는 안 되지만 '실속·정리' 자리가 비면 이 날로 채운다 */
+        var softBlue = markOf(info, 'blue', true);
+        if (softBlue.w) bluesSoft.push({ d: d, w: softBlue.w, kind: softBlue.kind, lbl: softBlue.lbl, row: row, short: liteShortOf('real', softBlue.kind, softBlue.lbl) });
+      }
+    }
+
+    var used = [], map = {}, counts = { warn: 0, up: 0, real: 0 };
+    function put(c) {
+      var key = c.key;
+      map[c.row.iso] = {
+        key: key, cat: key === 'warn' ? 'red' : (key === 'up' ? 'gold' : 'gray'),
+        key_raw: key, kind: c.kind, lbl: c.lbl,
+        short: liteShortOf(key, c.kind, c.lbl)
+      };
+      counts[key]++;
+    }
+
+    pickSpread(reds, LITE_CAP.warn, used).forEach(function (c) {
+      c.key = 'warn'; put(c);
+    });
+    pickSpread(golds.filter(function (c) { return !map[c.row.iso]; }), LITE_CAP.up, used).forEach(function (c) {
+      c.key = 'up'; put(c);
+    });
+
+    /* 🌿 실속·정리 — 달의 기준이 바뀌는 날(절입)은 늘 넣고, 남는 자리는
+       서류·돈을 챙기는 날(결정·머니) 중 센 날로 채운다.
+       센 후보가 모자라 2일을 못 채울 때만 약한 후보로 2일을 맞춘다. */
+    var realCands = [];
+    rows.forEach(function (r) {
+      if (!r.jie || map[r.iso]) return;
+      realCands.push({ d: r.d, w: 99, kind: 'jie', lbl: '절입', row: r, short: '🌿 정리' });
+    });
+    blues.sort(function (a, b) { return b.w - a.w; });
+    blues.forEach(function (c) { if (!map[c.row.iso]) realCands.push(c); });
+    var realPick = pickSpread(realCands, LITE_CAP.real, used);
+    if (realPick.length < 2) {
+      var fill = [];
+      bluesSoft.forEach(function (c) {
+        if (map[c.row.iso]) return;
+        for (var i = 0; i < realPick.length; i++) if (realPick[i].d === c.d) return;
+        fill.push(c);
+      });
+      realPick = realPick.concat(pickSpread(fill, 2 - realPick.length, used));
+    }
+    realPick.forEach(function (c) {
+      c.key = 'real'; put(c);
+    });
+
+    var plan = { map: map, counts: counts };
+    _planCache[ck] = plan;
+    return plan;
+  }
+
+  /** 그날이 이 달의 3색 중 하나로 뽑혔는가 */
+  function liteEntry(info) {
+    if (!info) return null;
+    return litePlan(info.y, info.m).map[info.iso] || null;
   }
 
   /* ── 날짜 상세 — 왜 이런 날인지 + 피할 것 / 챙길 것 (표에서 고른다) ──
@@ -2813,20 +3008,48 @@
       keep: '밀린 정리 하나만 끝내기'
     }
   };
-  /** 그날의 대표 색과 세부 이유 — 색은 배지 순서(조심 → 기운UP → 실속)를 따른다 */
+  /** 그날의 대표 색과 세부 이유 — 이 달에 뽑힌 날만 색을 갖고, 나머지는 잔잔한 날 */
   function litePrimary(info) {
-    var tags = liteTagsOf(info && info.badges);
-    var key = tags.length ? tags[0].key : 'calm';
-    var best = null;
-    ((info && info.marks) || []).forEach(function (mk) {
-      if (mk.minor) return;
-      var t = LITE_TAG[mk.cat];
-      if (!t || t.key !== key) return;
-      if (!best || mk.weight > best.weight) best = mk;
-    });
-    var kind = best && LITE_DAY[best.kind] ? best.kind
-      : (key === 'warn' ? 'chung' : (key === 'up' ? 'hap' : (key === 'real' ? 'jie' : 'calm')));
-    return { key: key, kind: kind };
+    var e = liteEntry(info);
+    if (!e) {
+      /* 강한 신호가 있었는데 이 달의 '센 날'에서 빠진 날 — 색은 안 붙지만
+         잔잔한 날과 똑같이 말하지는 않는다(살짝 어긋나는 구석이 있다는 정도만) */
+      var soft = ((info && info.marks) || []).some(function (mk) {
+        return !mk.minor && mk.cat !== 'gray';
+      });
+      return { key: 'calm', kind: 'calm', soft: soft, entry: null };
+    }
+    var kind = (e.kind && LITE_DAY[e.kind]) ? e.kind
+      : (e.key === 'warn' ? 'chung' : (e.key === 'up' ? 'hap' : 'jie'));
+    return { key: e.key, kind: kind, soft: false, entry: e };
+  }
+
+  /* ── 잔잔한 날의 두 줄 — 일진의 천간·지지 오행에 따라 매번 다른 말 ────
+     같은 "잔잔한 날" 고정 멘트가 반복되면 눌러 볼 이유가 사라진다.
+     천간 5 × 지지 5 = 25가지 조합에, 이 달 강조에서 빠진 날은 앞줄만 바꾼다. */
+  var CALM_GAN = {
+    '목': '나무 기운이 도는 날이라, 하던 일을 매만지면 잘 자라요.',
+    '화': '불 기운이 도는 날이라, 마음이 먼저 달아올라요. 순서만 챙기세요.',
+    '토': '흙 기운이 도는 날이라, 자리를 잡고 정리하기에 맞아요.',
+    '금': '쇠 기운이 도는 날이라, 군더더기를 덜어 내면 일이 반듯해져요.',
+    '수': '물 기운이 도는 날이라, 붙들지 말고 흐르듯 넘기면 편해요.'
+  };
+  var CALM_ZHI = {
+    '목': '아래에서 자라나는 기운이 받쳐 줘요 — 미뤄 둔 일 하나는 끝낼 만해요.',
+    '화': '아래에서 열기가 올라와요 — 오늘은 혼자 정리하는 쪽이 편해요.',
+    '토': '아래가 든든히 받쳐 줘서, 돈과 일정 점검이 잘 되는 날이에요.',
+    '금': '아래에서 가지를 쳐 주니, 안 쓰는 것 덜어 내기 좋아요.',
+    '수': '아래로 물이 흘러요 — 감정은 흘려보내고 몸을 먼저 쉬게 해 주세요.'
+  };
+  /** 잔잔한 날 팝업의 '왜 이런 날인지' 두 줄 (배열) */
+  function calmLines(info, soft) {
+    var gan = (info && info.ganEl) || '';
+    var zhi = (info && info.zhiEl) || '';
+    var first = soft
+      ? '살짝 어긋나는 구석은 있지만, 크게 흔들리는 날은 아니에요.'
+      : (CALM_GAN[gan] || '오늘은 크게 부딪히는 기운이 없이 잔잔하게 흐르는 날이에요.');
+    var second = CALM_ZHI[zhi] || '이런 날일수록 밀린 정리 하나만 끝내면 충분해요.';
+    return [first, second];
   }
 
   /* ── 오늘 내 한 줄 — 오늘 일진 × 내 사주 ── */
@@ -2862,6 +3085,24 @@
     '정재': 'money', '편재': 'money', '정관': 'work', '편관': 'work',
     '정인': 'people', '편인': 'people', '식신': 'talk', '상관': 'talk',
     '비견': 'people', '겁재': 'people'
+  };
+  /* 2027년이 내 중심 글자를 어떻게 건드리는지 — 한자 없이 한 줄로 */
+  var YEAR_REL_LINE = {
+    chung: '내 중심 글자를 정면으로 건드리는 해예요',
+    hyeong: '내 중심 글자와 살짝 틀어지는 해예요',
+    hae: '내 중심 글자와 엇갈리는 해예요',
+    bokkeum: '내 중심 글자와 똑같은 기운이 한 번 더 오는 해예요',
+    yukhap: '내 중심 글자와 묶이는 해예요',
+    '': '내 사주 가운데로 기운이 들어오는 해예요'
+  };
+  /* 가려운 곳 — 영역별로 "그래서 어디서 아픈지"를 구체적으로 */
+  var YEAR_AREA_ITCH = {
+    money: '큰 지출이나 서명 앞에서 한 번 멈칫하게 돼요. 금액보다 타이밍이 문제예요.',
+    people: '가까운 사이라 대충 넘긴 말이 문제가 돼요. 상처는 대개 한마디에서 시작돼요.',
+    work: '일이 겹쳐서 혼자 다 떠안게 돼요. 책임이 커지는 자리에서 흔들려요.',
+    docs: '기한과 금액, 구두로 넘긴 약속이 발목을 잡아요. 서류에서 한 번 끊겨요.',
+    talk: '내가 한 말이 크게 돌아와요. 남 얘기와 단정하는 말이 특히 탈이 돼요.',
+    body: '잠과 체력이 먼저 흔들려요. 밤 일정부터 줄이는 게 순서예요.'
   };
 
   function hookYearData() {
@@ -2899,7 +3140,7 @@
       }
     }
     months = months.slice(0, 2).sort(function (a, b) { return a - b; });   // 1월·7월처럼 오름차순
-    return { area: area, months: months };
+    return { area: area, areaKey: areaKey, months: months, rel: relDay || relMonth || '' };
   }
 
   /** 받침에 따라 '이에요/예요'를 고른다 — "사람·관계예요"처럼 읽히게 */
@@ -2909,6 +3150,28 @@
     if (!ch || ch < 0xAC00 || ch > 0xD7A3) return '이에요';
     return ((ch - 0xAC00) % 28) ? '이에요' : '예요';
   }
+
+  /* 오늘 하루 — 그날 기운을 상담가 말투로 두 줄 (한자 용어 없이) */
+  var HOOK_TODAY = {
+    chung: ['오늘은 내 중심 자리와 정면으로 부딪히는 기운이 들어와요.',
+            '말 한마디, 답장 하나가 평소보다 크게 튀는 날이에요. 급한 결정은 하루만 미뤄 두세요.'],
+    hyeong: ['서류와 일정이 한 번씩 엉키는 기운이에요. 큰일은 없는데 잔실수가 겹쳐요.',
+             '오늘은 확인을 두 번, 서명은 내일로 미루는 게 안전해요.'],
+    hae: ['내 말이 상대에게 다르게 닿기 쉬운 날이에요.',
+          '악의가 없어도 오해가 생기니, 전달은 직접, 부탁은 한 문장으로 짧게 하세요.'],
+    gwiyin: ['나를 도와줄 사람의 기운이 들어오는 날이에요.',
+             '혼자 붙들지 말고 미뤄 둔 부탁 하나를 꺼내 보세요. 생각보다 일이 가벼워져요.'],
+    hap: ['사람과 일이 붙는 기운이 도는 날이에요.',
+          '오래 미뤄 둔 연락이나 제안을 오늘 꺼내면 쉽게 이어져요.'],
+    wealth: ['돈이 오가는 기운이 들어오는 날이에요.',
+             '들어오는 돈보다 나가는 돈에서 새기 쉬운 날 — 결제 전에 한 번 멈추세요.'],
+    doc: ['적고 정리하는 일에 힘이 붙는 날이에요.',
+          '미뤄 둔 서류를 오늘 손대면 오래 남아요. 초안만이라도 잡아 두세요.'],
+    jie: ['달의 기준이 새로 서는 날이에요.',
+          '새로 벌이기보다 이번 달 목표 한 줄만 정리해 두면 한 달이 가벼워져요.'],
+    calm: ['오늘은 크게 부딪히는 날이 아니에요.',
+           '이런 조용한 날에 하나만 정리해 두면, 기운 센 날에 그게 무기가 돼요.']
+  };
 
   /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 */
   function renderHook() {
@@ -2925,11 +3188,11 @@
     if (todayBox) {
       var info = infoFor(state.todayISO);
       var p = info ? litePrimary(info) : { kind: 'calm' };
-      var line = LITE_TODAY[p.kind] || LITE_TODAY.calm;
-      todayBox.innerHTML = (name ? '<b class="hk-name">' + esc(name) + ' 님</b>, ' : '') + line;
+      var lines = HOOK_TODAY[p.kind] || HOOK_TODAY.calm;
+      todayBox.innerHTML = (name ? '<b class="hk-name">' + esc(name) + ' 님</b>, ' : '') + lines.join('<br>');
     }
 
-    // ② 2027 내 급소 경고
+    // ② 2027 내 급소 — 내 원국이 2027년 기운과 어떻게 만나는지부터
     var yearBox = $('#hookYear');
     if (yearBox) {
       var d = hookYearData();
@@ -2938,24 +3201,30 @@
         var ms = d.months.length
           ? d.months.map(function (m) { return m + '월'; }).join('·')
           : '';
-        yearBox.innerHTML = '2027년 <b class="hk-hl">정미년</b>이 오면, ' + owner +
-          ' 사주에서 제일 크게 흔들리는 건 <b class="hk-hl">' + d.area.t + '</b>' + josaIeyo(d.area.t) + '.' +
-          (ms ? ' 특히 <b class="hk-hl">' + ms + '</b>엔 ' + d.area.do : ' 그해엔 ' + d.area.do);
+        var rel = YEAR_REL_LINE[d.rel] || YEAR_REL_LINE[''];
+        var itch = YEAR_AREA_ITCH[d.areaKey] || '';
+        yearBox.innerHTML =
+          '2027년은 ' + rel + '. ' + owner + ' 사주에서 제일 크게 흔들리는 건 ' +
+          '<b class="hk-hl">' + d.area.t + '</b>' + josaIeyo(d.area.t) + '.' +
+          (itch ? '<br>' + itch : '') +
+          (ms ? '<br>특히 <b class="hk-hl">' + ms + '</b>엔 ' + d.area.do : '');
       }
     }
   }
 
-  /** 맨 위 내 사주 카드 안 미니 원국 1줄 — 누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다 */
+  /** 맨 위 내 사주 카드 안 미니 원국 1줄 — 누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다
+      전통 만세력 순서: 왼쪽 시주 → 오른쪽 년주 (시 · 일 · 월 · 년) */
   function renderNatalMini() {
     var box = $('#natalMini'), row = $('#natalMiniRow');
     if (!box || !row) return;
     if (!LITE_MODE || !state.res) { box.hidden = true; return; }
     box.hidden = false;
     var p = state.res.pillars;
-    var order = [['year', '년주'], ['month', '월주'], ['day', '일주'], ['time', '시주']];
+    var order = [['time', '시주'], ['day', '일주'], ['month', '월주'], ['year', '년주']];
+    row.setAttribute('aria-label', '사주 여덟 글자 — 시주 · 일주 · 월주 · 년주 순');
     row.innerHTML = order.map(function (o) {
       var pil = p[o[0]];
-      if (!pil) return '<span class="natalmini__p is-none" title="시간 모름">—</span>';
+      if (!pil) return '<span class="natalmini__p is-none" title="시주 · 시간 모름">—</span>';
       var me = o[0] === 'day' ? ' is-me' : '';
       return '<span class="natalmini__p' + me + '" title="' + o[1] + '">' +
         esc(pil.gan) + ' ' + esc(pil.zhi) + '</span>';
@@ -2986,6 +3255,18 @@
     renderYearSummary();
     renderCalendar();
     renderBurnCard();
+    renderDuo();
+  }
+
+  /** 🔥 액운 태우기 아래 두 칸 — ① 케미테스트 ② 카톡 3초 연결 → 2027 수호 부적 */
+  function renderDuo() {
+    var go = $('#talisGetGo'), sub = $('#talisGetSub');
+    if (!go) return;
+    var linked = hasSbSession();
+    go.textContent = linked ? '내 수호 부적 열기 →' : '카톡 3초 연결하고 받기 →';
+    if (sub) sub.textContent = linked
+      ? '연결돼 있어요 — 내 사주에 맞는 부적을 바로 열어 보세요.'
+      : '카톡으로 연결하면 내 사주에 맞는 수호 부적이 바로 열려요.';
   }
 
   function renderSavedBar() {
@@ -3095,6 +3376,7 @@
 
   function renderCalendar() {
     var v = state.view;
+    _planCache = {};                 // 사주·달이 바뀌면 그 달의 3색 배치를 다시 잡는다
     $('#calYear').textContent = v.y;
     $('#calTitle').textContent = v.m + '월';
 
@@ -3112,7 +3394,8 @@
       var info = infoFor(iso);
       if (!info) continue;
       var badges = info.badges || [];
-      var liteTags = LITE_MODE ? liteTagsOf(badges) : null;
+      var liteEntryNow = LITE_MODE ? liteEntry(info) : null;
+      var liteTags = liteEntryNow ? [liteEntryNow] : [];
       var cls = ['day'];
       if (info.dow === 0) cls.push('day--sun');
       if (info.dow === 6) cls.push('day--sat');
@@ -3126,7 +3409,7 @@
       //  2.0 에서는 그 위에 3색(조심 · 기운UP · 실속) 바탕을 한 겹 더 입혀,
       //  색이 뭉개지지 않게 셋만 또렷하게 구분한다 (2026-11-23 김나영 님 지시).
       var lead = badges.length ? badges[0].cat : '';
-      if (lead) cls.push('day--t-' + lead);
+      if (lead && !LITE_MODE) cls.push('day--t-' + lead);   // 2.0 — 예전 5색 파스텔 바탕은 칠하지 않는다(3색만 또렷하게)
       if (liteTags && liteTags.length) cls.push('day--lite-' + liteTags[0].key);
 
       if (LITE_MODE) {
@@ -3164,6 +3447,8 @@
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
       // 체험 중에는 잔잔한 날·지난 날도 눌러 안내를 받는다 (2026-11-21 QA M3)
       var clickable = dayClickable(iso, info);
+      // 2.0 — 저녁 1초 체크를 남긴 날은 날짜 칸 귀퉁이에 작은 점
+      var night = !!nightOf(iso);
       // 2.0 — 스크린리더에도 한자 용어 대신 그날의 쉬운 한 줄을 읽어 준다
       var label = LITE_MODE
         ? v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + LITE_DAY[litePrimary(info).kind].head
@@ -3182,6 +3467,10 @@
         cls.push('day--noted');
         label += ', 성찰 기록 있음';
       }
+      if (night) {
+        cls.push('day--checked');
+        label += ', 저녁 체크 기록 있음';
+      }
 
       var cellInner = '<span class="day__top">' +
         '<span class="day__num">' + d + '</span>' +
@@ -3191,7 +3480,8 @@
           : '') +
         '</span>' +
         '<span class="day__badges">' + badgeHtml + '</span>' +
-        (noted ? diaryDotHTML() : '');
+        (noted ? diaryDotHTML() : '') +
+        (night ? '<span class="day__night" aria-hidden="true"></span>' : '');
 
       /* 첫 부적 말풍선 — 이 칸 위로 '눌러서 부적 붙이기 👆' */
       if (hintIso && iso === hintIso) {
@@ -3254,7 +3544,13 @@
     } else {
       noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     }
-    $('#calNote').textContent = noteText;
+    if (LITE_MODE) {
+      $('#calNote').innerHTML = '색이 붙은 날을 누르면 그날 왜 그런지, 무엇을 피하고 무엇을 챙기면 되는지 바로 나와요.' +
+        '<br>저녁마다 오늘 하루를 <b>1초 체크</b>해 보세요. 내 흐름이 기록으로 남아요.';
+    } else {
+      $('#calNote').textContent = noteText;
+    }
+    renderNightRec(v);
 
     // 📖 내 성찰 기록 보기 버튼의 일수
     var bk = $('#diaryBookCount');
@@ -3328,11 +3624,9 @@
       var iso = T.isoOf(v.y, v.m, d);
       var info = infoFor(iso);
       if (!info) continue;
-      var tags = liteTagsOf(info.badges);
-      for (var i = 0; i < tags.length; i++) {
-        if (tags[i].key !== want) continue;
+      var e = liteEntry(info);
+      if (e && e.key === want) {
         list.push({ iso: iso, d: d, dow: info.dow, kind: litePrimary(info).kind });
-        break;
       }
     }
     var TITLE = {
@@ -3497,12 +3791,17 @@
   function liteDayModalHTML(info) {
     var p = litePrimary(info);
     var d = LITE_DAY[p.kind] || LITE_DAY.calm;
-    var tags = liteTagsOf(info.badges);
-    var tagHtml = tags.length
-      ? tags.map(function (t) {
-          return '<span class="litemodal__tag litemodal__tag--' + t.key + '">' + LITE_FULL[t.key] + '</span>';
-        }).join('')
-      : '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
+    var tagHtml;
+    if (p.entry) {
+      tagHtml = '<span class="litemodal__tag litemodal__tag--' + p.key + '">' +
+        LITE_FULL[p.key] + ' · ' + esc(String(p.entry.short).replace(/^[^\s]+\s/, '')) + '</span>';
+    } else {
+      tagHtml = '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
+    }
+    /* 잔잔한 날은 고정 멘트 대신 일진의 천간·지지 오행으로 매번 다른 두 줄 */
+    var why = p.kind === 'calm'
+      ? calmLines(info, p.soft).map(function (s) { return esc(s); }).join('<br>')
+      : esc(d.why);
     return '<div class="litemodal">' +
       '<p class="modal__eyebrow">' + (info.iso === state.todayISO ? 'TODAY · 오늘의 타이밍' : 'DAY · 이 날의 타이밍') + '</p>' +
       '<p class="litemodal__date" id="modalTitle">' + fmtMD(info.iso) +
@@ -3510,7 +3809,7 @@
       '<div class="litemodal__tags">' + tagHtml + '</div>' +
       '<h3 class="litemodal__head">' + esc(d.head) + '</h3>' +
       '<div class="litemodal__body">' +
-        '<p class="litemodal__why">' + esc(d.why) + '</p>' +
+        '<p class="litemodal__why">' + why + '</p>' +
         '<div class="litemodal__act litemodal__act--avoid">' +
           '<span class="litemodal__k" aria-hidden="true">🚫</span>' +
           '<p class="litemodal__actp"><b>오늘 피할 것</b><span>' + esc(d.avoid) + '</span></p>' +
@@ -3520,9 +3819,57 @@
           '<p class="litemodal__actp"><b>오늘 챙길 것</b><span>' + esc(d.keep) + '</span></p>' +
         '</div>' +
       '</div>' +
+      nightCheckHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>' +
       '</div>';
   }
+
+  /* ── 🌙 오늘 밤 1초 체크 — 버튼 3개 + 선택 메모 (2026-11-23 2차) ──── */
+  function nightCheckHTML(info) {
+    var rec = nightOf(info.iso) || {};
+    var memo = rec.memo || '';
+    var on = rec.mood || '';
+    var btns = ['ok', 'did', 'shaky'].map(function (k) {
+      var parts = NIGHT_MOODS[k].split(' ');
+      return '<button type="button" class="ncbtn' + (on === k ? ' is-on' : '') + '" data-night-mood="' + k + '"' +
+        ' aria-pressed="' + (on === k ? 'true' : 'false') + '"><span aria-hidden="true">' + parts[0] + '</span>' + parts.slice(1).join(' ') + '</button>';
+    }).join('');
+    return '<section class="nightcheck" data-night="' + esc(info.iso) + '">' +
+      '<p class="nightcheck__t"><span aria-hidden="true">🌙</span> 오늘 밤 1초 체크</p>' +
+      '<p class="nightcheck__d">버튼 하나만 눌러도 저장돼요. 내 흐름이 이 기기에 기록으로 남아요.</p>' +
+      '<div class="nightcheck__row">' + btns + '</div>' +
+      '<input class="nightcheck__memo" id="nightMemo" type="text" maxlength="60" autocomplete="off"' +
+        ' placeholder="한 줄 메모 (선택)" value="' + esc(memo) + '" aria-label="오늘 하루 한 줄 메모 (선택)">' +
+      '<p class="nightcheck__saved"' + (on || memo ? '' : ' hidden') + '>오늘 기록 남았어요 ✓</p>' +
+      '</section>';
+  }
+
+  /** 체크 버튼 상태를 맞춘다 — 같은 버튼을 다시 누르면 취소 */
+  function syncNightBtns(wrap, mood) {
+    if (!wrap) return;
+    $$('[data-night-mood]', wrap).forEach(function (b) {
+      var on = b.getAttribute('data-night-mood') === mood;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var memoEl = wrap.querySelector('#nightMemo');
+    var saved = wrap.querySelector('.nightcheck__saved');
+    if (saved) saved.hidden = !(mood || (memoEl && memoEl.value));
+  }
+  function onNightMood(btn) {
+    var wrap = btn.closest('[data-night]');
+    var iso = wrap ? wrap.getAttribute('data-night') : '';
+    if (!iso) return;
+    var mood = btn.getAttribute('data-night-mood') || '';
+    var memoEl = wrap.querySelector('#nightMemo');
+    var prev = nightOf(iso) || {};
+    var next = prev.mood === mood ? '' : mood;        // 다시 누르면 스스로 취소
+    nightSet(iso, next, memoEl ? memoEl.value : (prev.memo || ''));
+    syncNightBtns(wrap, next);
+    paintNightCell(iso);
+    if (next) sfxTap(1);
+  }
+  var nightMemoT = null;
 
   /** 날짜 팝업 안 상단 점프 버튼 — 모바일에서 성찰 입력칸이 화면 밖으로 밀려"어떻게 작성하니" 하던 문제
      부적 패 바로 위, 첫 화면 안에 두어 누르면 성찰 카드로 내려가며 입력칸에 커서가 간다. */
@@ -7323,6 +7670,7 @@
     loadStamps();
     loadUnlock();
     loadDiary();
+    loadNight();
     syncLockUI();
     if (state.unlocked) syncPaidTier(state.tier);   // 이미 열린 기기 — 로그인한 회원이면 등급만 맞춰 둔다 (조용히)
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
@@ -7486,6 +7834,16 @@
       if (e.target.closest('[data-talis-bless]')) { e.preventDefault(); onTalisBless(e); }
     });
 
+    /* 💎 액운 태우기 아래 '카톡 3초 연결하고 내 2027 수호 부적 받기' (2026-11-23 2차)
+       · 이미 카톡으로 연결된 손님 → 그 자리에서 내 수호 부적 팝업을 크게 연다
+       · 아직 연결 전 → /calendar/member/ 로 보내 카카오 로그인 후 달력으로 돌아온다 */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('#talisGet')) return;
+      e.preventDefault();
+      if (state.repTalis && hasSbSession()) { openTalisModal(); return; }
+      location.href = './member/?autologin=1&next=talis';
+    });
+
     // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 끌어다 놓기 · X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;
@@ -7507,6 +7865,26 @@
       }
       if (e.target.closest('[data-diary-del]')) { e.preventDefault(); deleteDiaryFromModal(); return; }
       if (e.target.closest('[data-modal-close]')) closeDayModal();
+    });
+
+    /* 🌙 오늘 밤 1초 체크 — 버튼 · 선택 메모 (2026-11-23 2차) */
+    modalEl.addEventListener('click', function (e) {
+      var nb = e.target.closest ? e.target.closest('[data-night-mood]') : null;
+      if (nb) { e.preventDefault(); onNightMood(nb); }
+    });
+    modalEl.addEventListener('input', function (e) {
+      if (!e.target || e.target.id !== 'nightMemo') return;
+      var wrap = e.target.closest('[data-night]');
+      var iso = wrap ? wrap.getAttribute('data-night') : '';
+      if (!iso) return;
+      clearTimeout(nightMemoT);
+      var val = e.target.value;
+      nightMemoT = setTimeout(function () {
+        var prev = nightOf(iso) || {};
+        nightSet(iso, prev.mood || '', val);
+        syncNightBtns(wrap, prev.mood || '');
+        paintNightCell(iso);
+      }, 450);
     });
 
     /* ── 부적 1.5초 지긋이 누르기 ────────────────────────────────
@@ -7850,6 +8228,13 @@
          '사주를 넣으면 바로 열려요'로 안내한다. */
       inviteArrival = planInviteNotice(false);
       showInviteNotice(1400);
+    }
+
+    /* 💎 카톡 3초 연결하고 돌아온 손님 — member 화면이 ../#talis 로 보낸다.
+       돌아오는 즉시 내 2027 수호 부적 팝업을 크게 열어 준다 (2026-11-23 2차). */
+    if (location.hash === '#talis' && state.res) {
+      setTimeout(function () { openTalisModal(); }, 500);
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     }
 
     /* 💳 결제하러 다녀온 손님 — 결과 맨 위에 '카톡으로 코드 받기' 한 줄 (2026-11-21)

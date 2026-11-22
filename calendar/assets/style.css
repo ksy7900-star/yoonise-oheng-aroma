@@ -5025,29 +5025,35 @@ body.is-lite #natalCard.is-collapsed { display: none; }
 
 /* ── ② 3줄 후킹 — 책 한 페이지처럼 ─────────────────────────── */
 .hook3 {
-  margin-top: 14px; padding: 23px 21px 20px;
-  background: var(--paper-hanji);
-  border: 1px solid var(--paper-line);
-  border-radius: 20px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, var(--shadow);
+  margin-top: 14px; padding: 20px 19px 6px;
+  background: #18191f;
+  background-image: radial-gradient(130% 100% at 100% 0%, rgba(122, 136, 186, .17), rgba(24, 25, 31, 0) 62%);
+  border: 1px solid rgba(255, 255, 255, .075);
+  border-radius: 22px;
+  box-shadow: 0 12px 28px rgba(18, 19, 25, .20);
+  color: #F4F2EE;
 }
-.hook3__p {
-  margin: 0; font-family: var(--serif);
-  color: var(--ink-book); letter-spacing: -.01em;
-  word-break: keep-all;
+.hk {
+  margin: 0 0 15px; padding: 1px 0 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
-.hook3__p + .hook3__p { margin-top: 17px; }
-.hook3__p--today, .hook3__p--year { font-size: 16px; line-height: 1.72; }
-.hook3__p--hook {
-  font-size: 14.5px; line-height: 1.72; color: var(--ink-book-2);
-  padding-top: 16px; border-top: 1px solid var(--paper-line);
+.hk:last-child { margin-bottom: 0; padding-bottom: 13px; border-bottom: 0; }
+.hk__label {
+  display: inline-block; margin: 0 0 8px;
+  padding: 3px 9px; border-radius: 6px;
+  font-family: var(--sans); font-size: 9.5px; font-weight: 800;
+  letter-spacing: .12em; line-height: 1.5;
 }
-.hk-name { font-weight: 700; color: var(--lite-warn-ink); }
-.hk-hl {
-  font-weight: 700; color: var(--ink-book);
-  background: linear-gradient(transparent 56%, rgba(240, 200, 112, .52) 56%);
-  padding: 0 1px;
+.hk__label--today { background: rgba(240, 200, 112, .16); color: #F5C871; }
+.hk__label--year  { background: rgba(255, 142, 122, .15); color: #FF9C88; }
+.hk__label--core  { background: rgba(255, 255, 255, .10); color: #D9D6CF; }
+.hk__text {
+  margin: 0; font-family: var(--sans);
+  font-size: 14.5px; line-height: 1.78; letter-spacing: -.01em;
+  color: #EFEDE8; word-break: keep-all;
 }
+.hk-name { font-weight: 800; color: #FF9C88; }
+.hk-hl { font-weight: 800; color: #F5C871; background: none; padding: 0; }
 .hk-mark { font-weight: 700; }
 
 /* ── ③ 3색 달력 — 색 셋만 또렷하게, 평범한 날은 종이 바탕 ──────── */
@@ -5182,9 +5188,8 @@ body.is-lite .modal__dialog--lite .modal__topbar { background: transparent; }
 body.is-lite .modal__dialog--lite .modal__done-btn { margin-top: 16px; }
 
 @media (max-width: 360px) {
-  .hook3 { padding: 20px 17px 18px; }
-  .hook3__p--today, .hook3__p--year { font-size: 15px; }
-  .hook3__p--hook { font-size: 13.5px; }
+  .hook3 { padding: 18px 16px 4px; }
+  .hk__text { font-size: 13.8px; }
   body.is-lite .day { min-height: 60px; }
   body.is-lite .day__badge--lite { font-size: 7.5px; }
 }
@@ -5209,3 +5214,108 @@ body.is-lite .cal__note {
   border-radius: 14px; padding: 12px 14px;
   font-size: 11.5px; line-height: 1.65;
 }
+
+/* ==========================================================
+   2026-11-23 2차 — 저녁 1초 체크 · 액운 태우기 아래 두 칸
+   ========================================================== */
+
+/* ── 셀 귀퉁이 기록 점 + 이번 달 기록 ─────────────────── */
+.day__night {
+  position: absolute; right: 6px; bottom: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #5F6FBF;
+  box-shadow: 0 0 0 1.5px #FFFDFA;
+}
+.cal__nightrec {
+  margin: 9px 0 0; font-family: var(--sans);
+  font-size: 11px; font-weight: 800; letter-spacing: -.01em;
+  color: #6B62A8;
+}
+.cal__nightrec[hidden] { display: none !important; }
+
+/* ── 날짜 팝업 아래 '🌙 오늘 밤 1초 체크' ─────────────────── */
+.nightcheck {
+  margin-top: 16px; padding: 15px 14px 13px;
+  background: #F4F1FB; border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(95, 111, 191, .14);
+}
+.nightcheck__t {
+  margin: 0; font-family: var(--serif);
+  font-size: 15px; font-weight: 700; letter-spacing: -.02em; color: #2B2A44;
+}
+.nightcheck__d {
+  margin: 5px 0 0; font-size: 11.5px; line-height: 1.6;
+  color: #726E8C; letter-spacing: -.01em; word-break: keep-all;
+}
+.nightcheck__row { display: flex; gap: 6px; margin-top: 11px; }
+.ncbtn {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 2px; border: 1px solid rgba(95, 111, 191, .18);
+  border-radius: 12px; background: #FFFDFA; color: #4A4768;
+  font-family: var(--sans); font-size: 10.5px; font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.25; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ncbtn span { font-size: 16px; line-height: 1; }
+.ncbtn.is-on {
+  background: #2B2A44; color: #FFF; border-color: #2B2A44;
+  box-shadow: 0 4px 10px rgba(43, 42, 68, .20);
+}
+.ncbtn:active { transform: scale(.97); }
+.nightcheck__memo {
+  width: 100%; margin-top: 9px; padding: 10px 12px;
+  border: 1px solid rgba(95, 111, 191, .18); border-radius: 11px;
+  background: #FFFDFA; font-family: var(--sans);
+  font-size: 12px; color: #2B2A44;
+}
+.nightcheck__memo::placeholder { color: #A6A2BC; }
+.nightcheck__saved {
+  margin: 8px 0 0; font-size: 10.5px; font-weight: 700; color: #5F6FBF;
+}
+.nightcheck__saved[hidden] { display: none !important; }
+
+/* ── 액운 태우기 아래 ① 케미 ② 수호 부적 ─────────────────── */
+.duo { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.duo__card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  width: 100%; text-align: left; padding: 17px 17px 15px;
+  border-radius: 20px; border: 1px solid var(--hair-soft);
+  background: var(--paper); box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.duo__eyebrow {
+  font-family: var(--sans); font-size: 9.5px; font-weight: 800;
+  letter-spacing: .14em; color: #A79C88;
+}
+.duo__t {
+  font-family: var(--serif); font-size: 15.5px; font-weight: 700;
+  line-height: 1.45; letter-spacing: -.02em; color: var(--ink-book);
+  word-break: keep-all;
+}
+.duo__d {
+  font-size: 11.5px; line-height: 1.6; color: var(--ink-mute);
+  letter-spacing: -.01em; word-break: keep-all;
+}
+.duo__go { margin-top: 6px; font-size: 11.5px; font-weight: 800; color: #8A5A16; }
+.duo__card--chemi {
+  background: linear-gradient(160deg, #FFF6F2, #FFFDF9 72%);
+  border-color: rgba(180, 96, 90, .16);
+}
+.duo__card--chemi .duo__eyebrow { color: #B4706A; }
+.duo__card--chemi .duo__go { color: #B4706A; }
+.duo__card--talis {
+  background: #1E1F27;
+  background-image: radial-gradient(125% 95% at 0% 0%, rgba(212, 175, 95, .20), rgba(30, 31, 39, 0) 62%);
+  border-color: rgba(240, 200, 112, .28);
+  color: #F4F2EE;
+}
+.duo__card--talis .duo__eyebrow { color: #D9B461; }
+.duo__card--talis .duo__t { color: #FFF8E8; }
+.duo__card--talis .duo__d { color: #C9C3B4; }
+.duo__card--talis .duo__go { color: #F5C871; }
+.duo__card:active { transform: scale(.99); }
+
+/* 달력 칸 배지 — 새 키워드(계약·돈 등)가 칸을 넘지 않게 */
+body.is-lite .day__badge--lite { white-space: nowrap; overflow: hidden; }
