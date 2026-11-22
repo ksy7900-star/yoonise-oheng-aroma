@@ -293,6 +293,18 @@
     }
   };
 
+  /* ── 2026-11-22 김나영 님 최종 문구 ─────────────────────────────
+     대표 수호 부적 팝업의 설명은 **오행 해설 없이 두 줄**만.
+     ("수(水) 기운이…", "8글자에…", "곁에 두어…" 같은 해설·결핍 언급은 쓰지 않는다.
+      그림과 부적 이름에서 이미 오행이 보이므로, 마음에 남는 두 문장만 남긴다.) */
+  var TALIS_VERSE = {
+    목: ['조급해하지 않아도 뿌리는 자랍니다.', '흔들리는 날에도 내 속도로 뻗어 나가는 한 해가 됩니다.'],
+    화: ['스스로 빛나되 태우지 않는 온기.', '내 안의 열정이 제자리를 찾아 사람을 모읍니다.'],
+    토: ['소란한 날에도 중심은 무너지지 않습니다.', '묵묵히 쌓아 온 것들이 단단한 터전이 됩니다.'],
+    금: ['덜어낼수록 본질이 선명해집니다.', '휘둘리지 않는 기준 하나로 내 한 해를 바로 세웁니다.'],
+    수: ['고요히 흘러도 쉽게 꺾이지 않는 힘.', '말과 마음을 다스리며 나답게 한 해를 지켜 갑니다.']
+  };
+
   // 날짜 문자열 → 고정된 정수 시드(같은 날 = 같은 멘트, 날마다 다른 멘트)
   function seedOf(iso) {
     var n = 0;
@@ -2032,17 +2044,14 @@
     if (!box) return;
     if (!state.res) { box.className = 'talis-banner'; box.innerHTML = ''; return; }
     var r = repElement(), t = TALIS[r.el], type = repType(r.el, r.gan);
-    var total = state.res.total || 8;
     var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
-    var lack = (r.count === 0
-      ? total + '글자에 ' + t.label + ' 기운이 하나도 없어요.'
-      : total + '글자 중 ' + t.label + ' 기운이 ' + r.count + '개로 가장 적어요.');
-    var why = lack + ' ' + t.why;
+    /* 설명은 두 줄뿐 — 부족·결핍도, 오행 해설도 쓰지 않는다 (2026-11-22). */
+    var verse = TALIS_VERSE[r.el] || TALIS_VERSE['토'];
     var tname = type ? type.n : (Chars ? Chars.name(r.el, '', '') : t.label);
     var ticon = type ? type.icon : (Chars ? Chars.icon(r.el, '') : '✨');
     state.repTalis = {
-      el: r.el, gan: r.gan, name: tname, icon: ticon, who: who, why: why, ties: r.ties,
-      hanja: type ? type.h : '', mantra: type ? type.m : '', line: type ? type.d : ''
+      el: r.el, gan: r.gan, name: tname, icon: ticon, who: who, verse: verse, ties: r.ties,
+      hanja: type ? type.h : '', mantra: type ? type.m : ''
     };
     /* 대문 히어로 — 부적이 배너 한가운데, 글은 위아래로만 (2026-11-22 개편)
        2026-11-22 2차: 톡 눌렀을 때 뜨는 문구를 **부적 위(타이틀 아래 예약 자리)**로 올린다.
@@ -2132,8 +2141,8 @@
       (d.mantra
         ? '<p class="talis-modal__mantra"><b>' + esc(d.hanja) + '</b> · ' + esc(d.mantra) + '</p>'
         : '') +
-      '<p class="talis-modal__why">' + esc(d.line || '') +
-        '<small>' + esc(d.why) + '</small></p>' +
+      '<p class="talis-modal__why talis-modal__why--verse">' +
+        (d.verse || []).map(function (v) { return esc(v); }).join('<br>') + '</p>' +
       '<button type="button" class="btn talis-bless-btn" data-talis-bless>오늘 기운 받기</button>' +
       '<p class="talis-phrase" id="talisPhrase" role="status" aria-live="polite"></p>' +
       '<p class="talis-bless__note">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
@@ -4434,7 +4443,7 @@
       '<section class="care care--obj' + (lockedObjet ? ' is-locked' : '') + '">' +
       '<p class="care__no">02</p>' +
       '<div class="care__head"><p class="care__title">내 디지털 개운 오브제</p>' + trialChipHTML('objet') + '</div>' +
-      '<p class="care__desc">내게 부족한 기운은 <b>' + esc(TALIS[el].label) + '</b> — ' + esc(c.name) + esc(c.josa) + ' 손가락으로 문질러 기운을 채워 보세요.</p>' +
+      '<p class="care__desc">2027년 곁에 두면 좋은 <b>' + esc(TALIS[el].label) + '</b> 기운 — ' + esc(c.name) + esc(c.josa) + ' 손가락으로 문질러 기운을 채워 보세요.</p>' +
       '<div class="care-obj' + (care.lit ? ' is-awake' : '') + (lockedObjet ? ' is-locked' : '') + '" data-care="obj" role="button" tabindex="0" ' +
       'style="--obj-glow:' + thr.color + '; --charge:' + care.charge + '" ' +
       'aria-label="' + esc(c.name) + ' 문질러 기운 충전">' +
@@ -5516,7 +5525,7 @@
       '<span class="burn__wave" aria-hidden="true"></span>' +
       '<span class="burn__sky" aria-hidden="true">' + burnDustHTML(16) + '</span>' +
       '<p class="burn__purify-name">' + esc(p.name) + '</p>' +
-      '<p class="burn__purify-el">내 원국에서 가장 적은 기운 · ' + esc(tal.label) + '</p>' +
+      '<p class="burn__purify-el">2027년 곁에 두면 좋은 기운 · ' + esc(tal.label) + '</p>' +
       '</div>' +
       '<p class="burn__done-sub">' + esc(p.why) + '<br>그 빈자리는 <b>' + esc(p.name) + '</b> 기운으로 채웠습니다.</p>' +
       '<p class="burn__rx"><b>오늘의 한 줄 처방</b>' + esc(p.line) + '</p>' +

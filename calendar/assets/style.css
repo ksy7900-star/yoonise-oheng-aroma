@@ -1448,6 +1448,13 @@ body.is-modal-open { overflow: hidden; }
   margin: 9px auto 0; max-width: 300px; text-align: center;
   font-size: 11.5px; line-height: 1.8; color: var(--ink-2);
 }
+/* 두 줄 문장 — 오행 해설 대신 마음에 남는 문장만 (2026-11-22) */
+.talis-modal__why--verse {
+  margin-top: 12px; max-width: 312px;
+  font-family: var(--serif);
+  font-size: 14.5px; line-height: 1.85; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--ink-2); word-break: keep-all;
+}
 .talis-modal__why small {
   display: block; margin-top: 6px;
   font-size: 10.5px; line-height: 1.7; color: var(--mute);
