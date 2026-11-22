@@ -1458,3 +1458,49 @@ python3 -m http.server 8000
 ### 5. 남은 것
 - 카카오 로그인 **완주 후** `✅ 연결 완료` 배너는 실제 계정 인증이 필요해 실기기 1회 확인이 남아 있다(코드 경로는 `attach_referrer` 응답별로 나뉘어 있음).
 - 초대 링크로 들어온 손님이 **배너를 끄고** 다시 방문했을 때도 `#inviteBar` 는 계속 보인다(연결 전까지). 연결이 끝나면 `REF_KEY` 가 비워져 자동으로 사라진다.
+
+## 74. 2026-11-22 — 하루 부적을 **1.5초 지긋이 눌러 열기 → 본인이 직접 달력에 붙이기** 두 단계 의식으로 · 케미 결과에 채널 추가·초대 버튼 · 캐시 `20261122q`
+
+커밋 `8e4b188` · 라이브 최종 캐시 **`20261122q`**.
+
+### 1. 날짜 팝업의 하루 부적 — 연타·폭죽을 걷어 내고 조용한 두 단계 (`calendar/assets/calendar.js` · `assets/style.css` · `index.html`)
+- **1단계: 1.5초 지긋이 누르기.**
+  - `톡 · 톡 · 톡 0/3` 연타 카운터, 3타 진동(`sfxTap`/`sfxDone`), 터치 파문(`ripple`), 오행 입자 폭발(`burst`), 젤리 바운스(`jelly`), 모달 덜컹(`quake`), 잔불 반짝임(`orbitSpark`)을 **JS·CSS 모두 삭제**.
+  - 부적을 감싼 **가는 금빛 링**(`.ritual__hold`, r=47·둘레 295.31)이 `stroke-dashoffset` 295.31→0 으로 **1.5초에 한 바퀴** 차오른다. 중간에 손을 떼면 0.42s 곡선으로 부드럽게 되감기고 아무 일도 일어나지 않는다(`is-holding` 해제).
+  - `pointerdown` → 1.5초 타이머, `pointerup`/`pointercancel`/`pointermove`(16px 초과 = 스크롤로 보고 접기)/`blur` 로 취소. `contextmenu`·`selectstart`·`dragstart` 를 막고 `-webkit-touch-callout:none`, `user-select:none` 으로 길게 눌러도 글자 선택·이미지 저장 메뉴가 뜨지 않는다. **Space/Enter 를 1.5초 누르고 있어도** 같은 의식이 열린다.
+  - 1.5초가 차면 소리를 켜 둔 사람에게만 **깊고 은은한 싱잉볼 저음 한 번**(`sfxBowlDeep` — G2 몸통 6.6s + C3·G3 얇은 배음 + 저역 '웅'), 그날의 **부적 문장(`lot.done`)과 한 줄 처방(`lot.sub`)** 이 아래에서 1초에 걸쳐 차분히 떠오른다(`verseRise`, 0.34s·0.66s 시차). **이 시점엔 아직 달력에 붙지 않고 저장도 하지 않는다.**
+- **2단계: 본인이 직접 붙이기.**
+  - 열린 영역 아래 **`🔖 오늘 달력에 이 부적 붙이기`**(`.ritual__stick`) — 본인이 누른 그 순간 `saveStamp()` 로 저장하고 `renderCalendar()` 로 달력 칸에 스티커가 붙는다. 패 위로는 **금빛 인장이 눌린 듯한 빛번짐**(`.is-sealing` → `sealBloom`)만 조용히 번지고 낙관(吉/護)이 찍힌다.
+  - 버튼은 **`✓ 오늘 달력에 새겼어요`**(다른 날은 `이 날`)로 바뀌고 `disabled`. 팝업 안 완료 안내도 `금빛 인장이 찍혔어요 — 달력에 … 새겼어요.` 로 즉시 갱신.
+  - 이미 붙인 날을 다시 열면 처음부터 `is-done is-open` 상태 — 링·문장·처방·`✓` 버튼이 그대로 보이고 `1.5초` 안내는 숨는다(`.ritual.is-open .ritual__holdhint{display:none}`).
+- 달력 칸 스티커 등장도 `stickerIn`(rotate -30° scale 2.5 튕김) → **`sealIn`**(금빛 테두리가 번지며 scale 1.3→1, blur 2.2px→0)로 교체.
+- 캐릭터 등장 `charIn`·`floaty` 도 팡 튀는 바운스에서 12px 떠오르기·4px 부유로 낮춤. 링 굵기는 화면 크기마다 `--hold-w` 로 1.4px 유지(부적 146/158/176/228/276px ↔ 링 164/176/194/246/294px).
+- 안내 문구 교체: 달력 사용법 `부적을 팝업에서 1.5초 동안 지긋이 누르면 금빛 링이 한 바퀴 차며 기운이 열리고, 🔖 오늘 달력에 이 부적 붙이기를 직접 누르면 … 조용히 새겨져요.` · 첫 방문 3단계 2번 `부적 1.5초 지긋이 누르기` / 3번 `내가 직접 달력에 붙이기`.
+
+### 2. 2027 케미 — 제목·부제 + 결과 아래 두 버튼 (`calendar/member/`)
+- `member/index.html` 제목 `누구와의 케미인가요?` → **`어떤 관계인가요?`**, 부제 → **`관계에 따라 결과와 부적이 달라져요.`**
+- `member/member.js` 결과 카드의 `내 2027년 케미 링크 보내기` 바로 아래 `.chemi__more` 두 줄:
+  - **`💬 윤이세사주 채널 추가하기`** — `KAKAO_CHANNEL_ADD = https://pf.kakao.com/_hxfbCG/friend` (원터치 채널 추가, `target="_blank" rel="noopener"`).
+  - **`🎁 친구 초대하고 혜택 받기`** — `[data-invite-jump]`, `#ladderCard`(STEP 2 · 내 사다리)로 `scrollIntoView({behavior:'smooth'})` 후 1.8초 `is-jump` 금빛 테두리로 위치를 알려 준다(STEP 3 초대 링크가 바로 아래에 이어진다).
+- `member.css` — `.chemi__more`(세로 8px 간격·48px 높이) · `.card.is-jump`/`cardJump`.
+
+### 3. 검증
+| 항목 | 결과 |
+|---|---|
+| 라이브 자원 | `style.css?v=20261122q` · `calendar.js?v=20261122q` · `member.js?v=20261122q` · `sw.js VERSION=20261122q` (`.ritual__hold`·`.chemi__more` 실제 반영 확인) |
+| 닫힌 상태 | 안내 `부적을 1.5초 동안 지긋이 눌러 기운을 여세요` · `톡·톡·톡` 카운터 없음 · 열린 영역 hidden · 링 164px(390) / 294px(1280) |
+| 0.65초에 떼기 | 링 295.31→170.6px(약 42%) 차오른 뒤 **되감겨 295.31px** · `is-open` 아님 |
+| 1.5초 지긋이 | `is-open` · 링 `0px` · 문장 `✨ 소통 순조! 오늘은 모르는 척보다 아는 척이 이득!` · 처방 `오늘 새로 인사한 한 명이 다음 달 기회.` · **스티커 없음 · localStorage 저장 없음** |
+| 붙이기 클릭 | 저장(`{"2026-11-22":{"el":"목"}}`) + 달력 칸 스티커 즉시 부착 · 버튼 `✓ 오늘 달력에 새겼어요`(disabled) · 안내 `금빛 인장이 찍혔어요 …` |
+| 팝업 닫은 뒤 | 11/22 칸 스티커 + `aria-label … 부적 스티커 붙음` · `is-new` 금빛 인장 연출 |
+| 다시 열기 | `is-done is-open` · 문장·처방·`✓` 그대로 · 1.5초 안내 `display:none` · 낙관 opacity 1 |
+| 뷰포트 | 360 / 390 / 430 / 1280 모두 링이 부적을 감싸고 `scrollWidth == clientWidth`(가로 넘침 0px) |
+| 콘솔 | 오류 0건 (라이브 390×844) |
+| 케미(라이브) | 제목 `어떤 관계인가요?` · 부제 `관계에 따라 결과와 부적이 달라져요.` · `member.js`/`member.css` 에 `chemi__more`·`_hxfbCG/friend`·`data-invite-jump` 반영 |
+| 케미(로컬·로그인 게이트 우회 복사본) | 링크 보내기 바로 아래(간격 10px) 두 버튼 · 채널 href `https://pf.kakao.com/_hxfbCG/friend`·`target=_blank`·`rel=noopener` · 초대 클릭 시 scrollY 4535→639, `#ladderCard` top 0 + `is-jump` · 콘솔 오류 0건 |
+
+스크린샷: `work/qa-talis-hold-open.png`(문장 열림 + 붙이기 버튼, 라이브) · `work/qa-talis-stick-seal.png`(새김 완료, 라이브) · `work/qa-talis-calendar-stamped-live.png` · `work/qa-member-result-buttons.png` · `work/qa-member-jump-ladder.png` · `work/zoom-ring-mid.png`(링이 차오르는 중)
+
+### 4. 남은 것
+- 케미 결과 화면은 **카카오 로그인 뒤에만** 열려서, 새 두 버튼의 라이브 화면은 로그인 완주 후 실기기에서 한 번 더 눈으로 확인하는 게 좋다(마크업·CSS·JS 는 라이브 반영 확인).
+- 부적 문장(`lot.done`)은 기존 3타 완료 멘트를 그대로 쓴다 — 의식은 조용해졌지만 문장에는 여전히 이모지가 앞에 붙는다(바꾸면 20개 문장 톤을 함께 손봐야 함).
