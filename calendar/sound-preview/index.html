@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>효과음 미리듣기 · 2027 타이밍달력 | 윤이세사주</title>
+<meta name="theme-color" content="#FAFBFD">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#FAFBFD; --paper:#FFFFFF; --ink:#0F172A; --ink-2:#334155; --mute:#64748B;
+    --navy:#1E293B; --hair:rgba(15,23,42,.10); --hair-soft:#E2E8F0;
+    --gold:#B45309; --gold-soft:#FEF3C7; --good-bg:#E6F7F1; --good-ink:#047857;
+    --serif:"Nanum Myeongjo","Noto Serif KR","Apple SD Gothic Neo","Malgun Gothic",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(120% 60% at 50% 0%, #FFFDF7 0%, rgba(255,253,247,0) 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans);
+    -webkit-text-size-adjust:100%;
+    -webkit-tap-highlight-color:transparent;
+    padding:0 0 34px;
+  }
+  .wrap{max-width:520px; margin:0 auto; padding:0 16px}
+
+  /* ── 머리 ── */
+  .head{padding:16px 0 4px; text-align:center}
+  .head__brand{
+    font-size:11px; letter-spacing:.16em; color:var(--gold); font-weight:600;
+  }
+  .head__title{
+    font-family:var(--serif); font-size:23px; line-height:1.36; font-weight:600;
+    margin:7px 0 0; word-break:keep-all;
+  }
+  .head__sub{
+    font-size:12.5px; line-height:1.72; color:var(--ink-2); margin:6px 0 0;
+    word-break:keep-all;
+  }
+  .head__sub b{color:var(--navy); font-weight:600}
+
+  /* ── 묶음 ── */
+  .sec{margin-top:20px}
+  .sec__head{display:flex; align-items:baseline; gap:8px; margin:0 2px 10px}
+  .sec__title{font-family:var(--serif); font-size:16px; font-weight:600; margin:0}
+  .sec__count{
+    font-size:11px; color:var(--mute); font-weight:600;
+    border:1px solid var(--hair-soft); border-radius:999px; padding:2px 8px;
+  }
+  .sec__note{
+    font-size:11.5px; line-height:1.6; color:var(--mute); margin:0 2px 11px;
+    word-break:keep-all;
+  }
+
+  /* ── 카드 = 버튼 ── */
+  .card{
+    display:flex; align-items:center; gap:12px; width:100%;
+    text-align:left; font-family:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--hair); border-radius:16px;
+    padding:13px 13px; margin:0 0 9px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    touch-action:manipulation; cursor:pointer;
+  }
+  .card:active{transform:scale(.985)}
+  .card__no{
+    flex:0 0 auto; width:34px; height:34px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--navy); color:#FFF; font-family:var(--serif);
+    font-size:15px; font-weight:600;
+  }
+  .sec--seal .card__no{background:var(--gold)}
+  .card__txt{flex:1 1 auto; min-width:0}
+  .card__name{
+    display:block; font-family:var(--serif); font-size:15px; font-weight:600;
+    line-height:1.35; word-break:keep-all;
+  }
+  .card__desc{
+    display:block; font-size:12px; line-height:1.6; color:var(--ink-2);
+    margin-top:4px; word-break:keep-all;
+  }
+  .card__meta{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:5px;
+    width:56px;
+  }
+  .card__dur{
+    font-size:10.5px; color:var(--mute); font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+  }
+  .card__go{
+    width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold-soft); color:var(--gold);
+    font-size:13px; line-height:1; padding-left:2px;
+  }
+
+  /* 재생 중 */
+  .card.is-playing{border-color:rgba(4,120,87,.42); box-shadow:0 0 0 3px var(--good-bg)}
+  .card.is-playing .card__no{background:var(--good-ink)}
+  .card.is-playing .card__go{background:var(--good-ink); color:#FFF; padding-left:0}
+  .card.is-playing .card__dur{color:var(--good-ink); font-weight:600}
+
+  /* 막대 3개 = 재생 중 표시 */
+  .eq{display:none; align-items:flex-end; gap:2px; height:14px}
+  .card.is-playing .eq{display:flex}
+  .eq i{display:block; width:2.5px; background:#FFF; border-radius:2px; animation:eq .62s ease-in-out infinite}
+  .eq i:nth-child(1){height:7px; animation-delay:0s}
+  .eq i:nth-child(2){height:13px; animation-delay:.16s}
+  .eq i:nth-child(3){height:9px; animation-delay:.32s}
+  @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+  @media (prefers-reduced-motion:reduce){ .eq i{animation:none} }
+
+  /* ── 전체 이어 듣기 ── */
+  .allbtn{
+    display:block; width:100%; margin:16px 0 0;
+    background:var(--navy); color:#FFF; font-family:var(--serif);
+    font-size:14.5px; font-weight:600; letter-spacing:.01em;
+    border:0; border-radius:14px; padding:14px 16px; cursor:pointer;
+    touch-action:manipulation;
+  }
+  .allbtn:disabled{opacity:.62}
+  .allbtn__hint{font-size:11.5px; color:var(--mute); text-align:center; margin:8px 0 0}
+
+  /* ── 안내 ── */
+  .tips{
+    margin:22px 0 0; padding:14px 15px;
+    background:var(--paper); border:1px solid var(--hair); border-radius:14px;
+  }
+  .tips p{
+    margin:0; font-size:11.5px; line-height:1.72; color:var(--ink-2); word-break:keep-all;
+  }
+  .tips p + p{margin-top:6px}
+  .tips b{color:var(--navy); font-weight:600}
+  .foot{
+    text-align:center; font-size:10.5px; color:var(--mute); margin:20px 0 0; line-height:1.7;
+  }
+
+  .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <p class="head__brand">윤이세사주 · 2027 타이밍달력</p>
+    <h1 class="head__title">효과음 미리듣기</h1>
+    <p class="head__sub">
+      부적이 <b>열릴 때</b> 3가지, 도장이 <b>찍힐 때</b> 2가지.<br>
+      폰에서 직접 눌러 듣고 마음에 드는 걸 골라 주세요.
+    </p>
+  </header>
+
+  <section class="sec sec--open">
+    <div class="sec__head">
+      <h2 class="sec__title">날짜 부적이 열릴 때</h2>
+      <span class="sec__count">3가지</span>
+    </div>
+    <p class="sec__note">맑고 가볍게 — 대문 1년 부적의 6초 싱잉볼과 겹치지 않는 소리</p>
+
+    <button type="button" class="card" data-sfx="chime">
+      <span class="card__no">1</span>
+      <span class="card__txt">
+        <b class="card__name">맑은 한옥 풍경</b>
+        <span class="card__desc">처마 끝 풍경이 바람에 잔잔히 흔들리는 소리. 가벼운 고음이 은은하게 번집니다.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">2.2초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+
+    <button type="button" class="card" data-sfx="moktak">
+      <span class="card__no">2</span>
+      <span class="card__txt">
+        <b class="card__name">단정한 목탁·죽비</b>
+        <span class="card__desc">따뜻하고 단단한 나무 공명 한 번. 마음을 가라앉히는 '톡'.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">1.2초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+
+    <button type="button" class="card" data-sfx="glass">
+      <span class="card__no">3</span>
+      <span class="card__txt">
+        <b class="card__name">맑은 유리종</b>
+        <span class="card__desc">영롱하고 투명한 종소리. 유리잔을 가볍게 건드렸을 때의 그 소리.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">2.0초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+  </section>
+
+  <section class="sec sec--seal">
+    <div class="sec__head">
+      <h2 class="sec__title">도장이 찍힐 때</h2>
+      <span class="sec__count">2가지</span>
+    </div>
+    <p class="sec__note">부적 위에 낙관을 찍는 그 순간의 한 방</p>
+
+    <button type="button" class="card" data-sfx="stampA">
+      <span class="card__no">A</span>
+      <span class="card__txt">
+        <b class="card__name">묵직한 나무 도장 '탁!'</b>
+        <span class="card__desc">단단한 나무 낙관이 종이 패드에 내리찍히는 묵직한 한 방. 낮게 울립니다.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">0.8초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+
+    <button type="button" class="card" data-sfx="stampB">
+      <span class="card__no">B</span>
+      <span class="card__txt">
+        <b class="card__name">종이에 인주 스며드는 '착!'</b>
+        <span class="card__desc">짧고 경쾌한 종이 마찰음 '착'에 은은한 저음 울림을 얹었습니다.</span>
+      </span>
+      <span class="card__meta">
+        <span class="card__dur">1.0초</span>
+        <span class="card__go"><span class="golbl">▶</span><span class="eq"><i></i><i></i><i></i></span></span>
+      </span>
+    </button>
+  </section>
+
+  <button type="button" class="allbtn" id="allBtn">5가지 차례로 듣기</button>
+  <p class="allbtn__hint" id="allHint">1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요</p>
+
+  <div class="tips">
+    <p><b>소리가 안 들리면</b> 폰의 무음 모드를 풀고 볼륨을 올려 주세요. 아이폰은 첫 번째 터치에서 소리가 켜집니다.</p>
+    <p><b>이어폰보다 폰 스피커</b>로 들어 보시면 실제 손님들이 듣는 소리와 가장 가깝습니다.</p>
+  </div>
+
+  <p class="foot">미리듣기 전용 페이지 · 여기서 고른 소리만 달력에 넣습니다<br>윤이세사주</p>
+  <p class="sr" id="live" role="status" aria-live="polite"></p>
+</div>
+
+<script>
+/* ==========================================================================
+   효과음 5종 — 순수 Web Audio 합성 (음원 파일 없음)
+   · 아래 사운드 모듈은 calendar.js 에 그대로 붙일 수 있는 형태입니다.
+     calendar.js 에서는 sfxChimeHome() 처럼 인자 없이 호출하면
+     audioCtx() 로 컨텍스트를 잡아 ctx.destination 으로 바로 나갑니다.
+   · 이 페이지는 미리듣기용이라 '이전 소리 끊기(bus)'만 페이지 쪽에 따로 둡니다.
+   ========================================================================== */
+/* 이 페이지는 미리듣기용이라 달력의 '소리 끔' 설정(SOUND_KEY)을 따르지 않는다.
+   calendar.js 쪽에는 이미 loadSoundPref() 가 있으니 그대로 두면 된다. */
+var sound = { on: true, ctx: null };
+/* AudioContext는 반드시 사용자 제스처(버튼 터치) 안에서 만든다
+   — 모바일 iOS Safari / Android Chrome 자동재생 정책 통과용 */
+function audioCtx() {
+  if (!sound.on) return null;
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!sound.ctx) sound.ctx = new AC();
+    if (sound.ctx.state === 'suspended' && sound.ctx.resume) sound.ctx.resume();
+    return sound.ctx;
+  } catch (e) { return null; }
+}
+
+/* 출력 지점 — o.dest 가 있으면 그 버스로, 없으면 스피커로 */
+function outOf(ctx, o) { return (o && o.dest) || ctx.destination; }
+
+/* 짧은 음 한 개 — 주파수 글라이드 + 지수 감쇠 */
+function tone(ctx, o) {
+  var t0 = ctx.currentTime + (o.at || 0);
+  var osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = o.type || 'sine';
+  osc.frequency.setValueAtTime(o.from, t0);
+  if (o.to && o.to !== o.from) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + (o.glide || o.dur));
+  var peak = o.gain == null ? 0.14 : o.gain;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack || 0.01));
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
+  osc.connect(g); g.connect(outOf(ctx, o));
+  osc.start(t0); osc.stop(t0 + o.dur + 0.03);
+}
+
+/* 울림 한 음 — 몸통 + 긴 잔향 두 단계 감쇠를 곡선으로 그린다 (끊긴 소리 없이 사라짐) */
+function bowlTone(ctx, f, o) {
+  o = o || {};
+  var t0 = ctx.currentTime + (o.at || 0);
+  var dur = o.dur || 6;
+  var atk = o.attack == null ? 0.12 : o.attack;
+  var peak = o.gain == null ? 0.12 : o.gain;
+  var tau = o.tau || 1.9;
+  var osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = o.type || 'sine';
+  osc.frequency.setValueAtTime(f, t0);
+  if (o.bend) osc.frequency.exponentialRampToValueAtTime(o.bend, t0 + dur);
+  var N = 200, curve = new Float32Array(N);
+  for (var i = 0; i < N; i++) {
+    var t = (i / (N - 1)) * dur;
+    var rise = t < atk ? Math.sin((t / atk) * Math.PI / 2) : 1;
+    var tail = 0.78 * Math.exp(-t / tau) + 0.22 * Math.exp(-t / (tau * 2.6));
+    var close = t > dur - 0.16 ? Math.max(0, (dur - t) / 0.16) : 1;
+    curve[i] = peak * rise * tail * close;
+  }
+  g.gain.setValueCurveAtTime(curve, t0, dur);
+  osc.connect(g); g.connect(outOf(ctx, o));
+  osc.start(t0); osc.stop(t0 + dur + 0.02);
+}
+
+/* 노이즈 — 바스락·타격·종이 마찰을 만드는 기본 재료 */
+function noise(ctx, o) {
+  var dur = o.dur || 0.2;
+  var n = Math.floor(ctx.sampleRate * dur);
+  if (n <= 0) return;
+  var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+  if (o.decay) { for (var k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, o.decay); }
+  else { for (var j = 0; j < n; j++) d[j] = Math.random() * 2 - 1; }
+  var src = ctx.createBufferSource(); src.buffer = buf;
+  var f = ctx.createBiquadFilter();
+  f.type = o.filter || 'bandpass';
+  var t0 = ctx.currentTime + (o.at || 0);
+  f.frequency.setValueAtTime(o.f0 || 1200, t0);
+  if (o.f1) f.frequency.exponentialRampToValueAtTime(o.f1, t0 + dur);
+  f.Q.value = o.q == null ? 0.9 : o.q;
+  var g = ctx.createGain();
+  var peak = o.gain == null ? 0.08 : o.gain;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak, t0 + (o.attack || 0.02));
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f); f.connect(g); g.connect(outOf(ctx, o));
+  src.start(t0); src.stop(t0 + dur + 0.03);
+}
+
+/* ── 1번 · 맑은 한옥 풍경 (2.2초) ───────────────────────────────────────
+   처마 끝 풍경(風磬) 다섯 대가 바람에 잔잔히 부딪히는 소리.
+   · 쇠관 특유의 비화성 배음(1 : 2.76 : 5.40)을 얇게 쌓아 '유리'가 아닌 '금속'의 맑음.
+   · 각 배음마다 살짝 어긋난 쌍(±0.7Hz)을 붙여 맥놀이 = 바람에 흔들리는 여운.
+   · 4.6Hz 저깊이 트레몰로로 전체를 은은하게 흔든다(흔들림 22%).
+   · 관 하나를 세게 치고, 뒤이어 0.42s·0.95s·1.5s 에 다른 관이 가볍게 스친다. */
+function sfxChimeHome(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+  var t = ctx.currentTime;
+
+  /* 흔들림 버스 — 풍경 전체가 바람에 흔들리는 느낌 */
+  var sway = ctx.createGain();
+  sway.gain.value = 0.78;
+  sway.connect(d);
+  var lfo = ctx.createOscillator(), lfoG = ctx.createGain();
+  lfo.frequency.value = 4.6; lfoG.gain.value = 0.22;
+  lfo.connect(lfoG); lfoG.connect(sway.gain);
+  lfo.start(t); lfo.stop(t + 2.3);
+
+  function tube(f, at, gain, dur) {
+    var R = [1, 2.76, 5.40], G = [1, 0.34, 0.13];
+    for (var i = 0; i < R.length; i++) {
+      var fr = f * R[i];
+      if (fr > 12000) continue;
+      bowlTone(ctx, fr, { gain: gain * G[i], dur: dur, attack: 0.004, tau: dur * 0.30, at: at, dest: sway });
+      bowlTone(ctx, fr * 1.0006, { gain: gain * G[i] * 0.55, dur: dur * 0.96, attack: 0.006, tau: dur * 0.28, at: at + 0.002, dest: sway });
+    }
+    /* 관을 때린 순간의 아주 짧은 금속 어택 */
+    noise(ctx, { dur: 0.026, filter: 'bandpass', f0: 6200, q: 1.8, gain: gain * 0.22, attack: 0.001, at: at, dest: sway });
+  }
+
+  tube(1318.51, 0.00, 0.105, 1.85);   /* E6 — 첫 타, 가장 크게 */
+  tube(1975.53, 0.42, 0.060, 1.30);   /* B6 — 바람에 스친 두 번째 */
+  tube(1567.98, 0.95, 0.045, 1.05);   /* G6 — 세 번째 */
+  tube(2093.00, 1.50, 0.026, 0.66);   /* C7 — 끝에 아주 여리게 */
+}
+
+/* ── 2번 · 단정한 목탁·죽비 (1.2초) ────────────────────────────────────
+   나무를 한 번 '톡' — 단단한 어택 뒤 따뜻한 나무 몸통이 짧게 울리고 사라진다.
+   · 속이 빈 나무의 공명: 330Hz(E4) 몸통 + 495Hz(1.5배, 통 울림) + 165Hz(반, 저역).
+   · 620→300Hz 로 떨어지는 아주 짧은 '톡'이 나무가 눌리는 질감을 만든다.
+   · 두 번의 나무 마찰 알갱이(0s·0.012s)로 '딱'이 아니라 '톡'이 되게. */
+function sfxMoktak(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+
+  tone(ctx, { from: 620, to: 300, type: 'triangle', gain: 0.11, dur: 0.17, attack: 0.002, glide: 0.12, dest: d });
+  noise(ctx, { dur: 0.028, filter: 'bandpass', f0: 1900, q: 1.5, gain: 0.075, attack: 0.001, decay: 3, dest: d });
+  noise(ctx, { dur: 0.02, filter: 'bandpass', f0: 2600, q: 1.8, gain: 0.03, attack: 0.001, at: 0.012, decay: 3, dest: d });
+
+  bowlTone(ctx, 330.0, { gain: 0.105, dur: 1.12, attack: 0.004, tau: 0.30, dest: d });  /* 몸통 E4 */
+  bowlTone(ctx, 331.2, { gain: 0.035, dur: 1.04, attack: 0.006, tau: 0.28, dest: d });  /* 살짝 어긋난 쌍 */
+  bowlTone(ctx, 495.0, { gain: 0.042, dur: 0.82, attack: 0.005, tau: 0.20, dest: d });  /* 1.5배 — 통 울림 */
+  bowlTone(ctx, 165.0, { gain: 0.055, dur: 0.60, attack: 0.006, tau: 0.18, dest: d });  /* 저역 받침 */
+}
+
+/* ── 3번 · 맑은 유리종 (2.0초) ─────────────────────────────────────────
+   유리를 가볍게 건드렸을 때의 영롱한 종소리.
+   · 유리 고유의 비화성 배음(1 : 2.32 : 4.25 : 6.63) — 쇠보다 밝고 투명하다.
+   · 어택 2ms 로 '팅' 하고 바로 열리고, 0.55s 시간상수로 길게 잦아든다.
+   · 베이스는 한 옥타브 아래를 아주 얇게(0.016)만 깔아 폰 스피커에서도 몸통이 있게. */
+function sfxGlassBell(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+  bowlTone(ctx, 1046.50, { gain: 0.115, dur: 2.0, attack: 0.002, tau: 0.55, dest: d });  /* C6 몸통 */
+  bowlTone(ctx, 1047.30, { gain: 0.030, dur: 1.95, attack: 0.003, tau: 0.52, dest: d }); /* 맥놀이 — 유리의 미세한 떨림 */
+  bowlTone(ctx, 2428.0,  { gain: 0.045, dur: 1.55, attack: 0.002, tau: 0.40, dest: d, at: 0.002 });
+  bowlTone(ctx, 4448.0,  { gain: 0.020, dur: 1.05, attack: 0.002, tau: 0.26, dest: d, at: 0.004 });
+  bowlTone(ctx, 6940.0,  { gain: 0.007, dur: 0.60, attack: 0.002, tau: 0.16, dest: d, at: 0.006 });
+  bowlTone(ctx, 523.25,  { gain: 0.016, dur: 1.70, attack: 0.004, tau: 0.48, dest: d }); /* 옅은 옥타브 아래 */
+  noise(ctx, { dur: 0.018, filter: 'highpass', f0: 5200, q: 0.7, gain: 0.016, attack: 0.001, dest: d });
+}
+
+/* ── A · 묵직한 나무 도장 '탁!' (0.8초) ────────────────────────────────
+   단단한 나무 낙관을 종이 패드에 내리찍는 한 방. 폭죽처럼 튀지 않게 낮게.
+   · 110→46Hz 로 떨어지는 '툭'이 종이가 눌리며 받아 주는 무게.
+   · 196Hz(G3)·294Hz 나무 몸통 + 98Hz(G2) 잔향이 아주 짧게 남는다.
+   · 1400Hz 대역 노이즈 35ms 가 나무와 종이가 맞닿는 '탁'의 질감. */
+function sfxStampWood(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+
+  tone(ctx, { from: 110, to: 46, type: 'sine', gain: 0.20, dur: 0.22, attack: 0.003, glide: 0.16, dest: d });
+  noise(ctx, { dur: 0.035, filter: 'bandpass', f0: 1400, q: 1.1, gain: 0.10, attack: 0.001, decay: 2.6, dest: d });
+  noise(ctx, { dur: 0.075, filter: 'lowpass', f0: 2600, f1: 620, q: 0.8, gain: 0.05, attack: 0.002, dest: d });
+
+  bowlTone(ctx, 196.0, { gain: 0.10, dur: 0.50, attack: 0.003, tau: 0.12, dest: d });  /* 나무 몸통 G3 */
+  bowlTone(ctx, 294.0, { gain: 0.045, dur: 0.34, attack: 0.003, tau: 0.09, dest: d });
+  bowlTone(ctx, 98.0,  { gain: 0.055, dur: 0.78, attack: 0.006, tau: 0.26, dest: d });  /* 낮게 남는 잔향 G2 */
+}
+
+/* ── B · 종이에 인주 스며드는 '착!' (1.0초) ────────────────────────────
+   짧고 경쾌한 종이 마찰음 + 은은한 저음 울림.
+   · 5600→1500Hz 로 빠르게 내려오는 100ms 마찰이 '착'의 결.
+   · 4200Hz 대역의 50ms 알갱이가 종이 섬유가 눌리는 서걱임.
+   · 130.8Hz(C3) 울림을 0.85초 얇게 깔아 '스며드는' 여운. */
+function sfxStampInk(ctx, dest) {
+  ctx = ctx || audioCtx(); if (!ctx) return;
+  var d = dest || ctx.destination;
+
+  noise(ctx, { dur: 0.100, filter: 'bandpass', f0: 5600, f1: 1500, q: 0.9, gain: 0.155, attack: 0.002, decay: 1.8, dest: d });
+  noise(ctx, { dur: 0.050, filter: 'bandpass', f0: 4200, q: 1.2, gain: 0.075, attack: 0.002, at: 0.034, decay: 2.2, dest: d });
+  noise(ctx, { dur: 0.038, filter: 'highpass', f0: 6000, q: 0.7, gain: 0.040, attack: 0.002, at: 0.006, dest: d });
+
+  bowlTone(ctx, 130.81, { gain: 0.075, dur: 0.86, attack: 0.008, tau: 0.26, dest: d }); /* C3 — 스며드는 저음 */
+  bowlTone(ctx, 98.0,   { gain: 0.030, dur: 1.00, attack: 0.012, tau: 0.32, dest: d }); /* G2 — 아주 옅게 */
+}
+
+/* ==========================================================================
+   미리듣기 페이지 — 버튼 · 재생 중 표시
+   ========================================================================== */
+var SFX = {
+  chime:  { name: '1번 · 맑은 한옥 풍경',      ms: 2280, fn: sfxChimeHome },
+  moktak: { name: '2번 · 단정한 목탁·죽비',    ms: 1280, fn: sfxMoktak },
+  glass:  { name: '3번 · 맑은 유리종',         ms: 2080, fn: sfxGlassBell },
+  stampA: { name: 'A · 묵직한 나무 도장 탁!',  ms: 880,  fn: sfxStampWood },
+  stampB: { name: 'B · 종이에 인주 스치는 착!', ms: 1080, fn: sfxStampInk }
+};
+var ORDER = ['chime', 'moktak', 'glass', 'stampA', 'stampB'];
+
+var liveEl = document.getElementById('live');
+var allBtn = document.getElementById('allBtn');
+var allHint = document.getElementById('allHint');
+var cur = null;            /* { id, bus, timer } — 이전 소리를 끊기 위한 버스 */
+var allTimers = [];
+
+function cardOf(id) { return document.querySelector('.card[data-sfx="' + id + '"]'); }
+
+function mark(id, on) {
+  var c = cardOf(id); if (!c) return;
+  c.classList.toggle('is-playing', !!on);
+  var lbl = c.querySelector('.golbl');
+  if (lbl) lbl.textContent = on ? '' : '▶';
+  if (on) {
+    var dur = c.querySelector('.card__dur'), txt = dur.textContent;
+    dur.dataset.base = txt;
+    dur.textContent = '재생 중';
+  } else {
+    var d2 = c.querySelector('.card__dur');
+    if (d2 && d2.dataset.base) d2.textContent = d2.dataset.base;
+  }
+}
+
+function clearAllMarks() {
+  for (var i = 0; i < ORDER.length; i++) mark(ORDER[i], false);
+}
+
+/* 미리듣기 전용 — 새 소리를 누르면 이전 소리는 40ms 만에 잦아들며 끊긴다 */
+function stopCurrent() {
+  if (!cur) return;
+  var c = cur; cur = null;
+  clearTimeout(c.timer);
+  try {
+    var now = sound.ctx ? sound.ctx.currentTime : 0;
+    c.bus.gain.cancelScheduledValues(now);
+    c.bus.gain.setValueAtTime(c.bus.gain.value, now);
+    c.bus.gain.linearRampToValueAtTime(0.0001, now + 0.04);
+  } catch (e) {}
+  setTimeout(function () { try { c.bus.disconnect(); } catch (e) {} }, 120);
+  mark(c.id, false);
+}
+
+function play(id, keepBus) {
+  var item = SFX[id]; if (!item) return;
+  stopCurrent();
+  var ctx = audioCtx();
+  if (!ctx) { if (liveEl) liveEl.textContent = '이 브라우저에서는 소리를 낼 수 없어요'; return; }
+  if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch (e) {} }
+
+  var bus = ctx.createGain();
+  bus.gain.value = 1;
+  bus.connect(ctx.destination);
+  item.fn(ctx, bus);
+
+  var timer = setTimeout(function () {
+    if (cur && cur.bus === bus) { cur = null; }
+    mark(id, false);
+    try { bus.disconnect(); } catch (e) {}
+  }, item.ms);
+  cur = { id: id, bus: bus, timer: timer };
+  mark(id, true);
+  if (liveEl) liveEl.textContent = item.name + ' 재생';
+  return bus;
+}
+
+/* 첫 터치에서 AudioContext 를 미리 깨워 둔다 (아이폰 첫 소리 지연 방지) */
+document.addEventListener('pointerdown', function () { audioCtx(); }, { passive: true });
+document.addEventListener('touchstart', function () { audioCtx(); }, { passive: true });
+
+Array.prototype.forEach.call(document.querySelectorAll('.card'), function (card) {
+  card.addEventListener('click', function (e) {
+    e.preventDefault();
+    stopAllSequence();
+    play(card.getAttribute('data-sfx'));
+  });
+});
+
+/* 5가지 차례로 듣기 */
+function stopAllSequence() {
+  for (var i = 0; i < allTimers.length; i++) clearTimeout(allTimers[i]);
+  allTimers = [];
+  allBtn.disabled = false;
+  allBtn.textContent = '5가지 차례로 듣기';
+  allHint.textContent = '1 → 2 → 3 → A → B, 하나씩 이어서 들려드려요';
+}
+allBtn.addEventListener('click', function () {
+  stopAllSequence();
+  allBtn.disabled = true;
+  audioCtx();
+  var gap = 460, at = 0;
+  for (var i = 0; i < ORDER.length; i++) {
+    (function (id, delay) {
+      allTimers.push(setTimeout(function () { play(id); }, delay));
+    })(ORDER[i], at);
+    allHint.textContent = (i + 1) + ' / 5 — ' + SFX[ORDER[i]].name;
+    at += SFX[ORDER[i]].ms + gap;
+  }
+  allTimers.push(setTimeout(function () {
+    stopAllSequence();
+    if (liveEl) liveEl.textContent = '5가지 모두 들었습니다';
+  }, at + 120));
+});
+</script>
+</body>
+</html>
