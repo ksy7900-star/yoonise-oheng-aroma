@@ -32,12 +32,13 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261122w">
+<link rel="stylesheet" href="assets/style.css?v=20261123a">
 </head>
 <body>
 
-<!-- 🎁 친구 초대 링크(?ref=)로 들어온 방문자 — 5일·액운 1회가 적용됐다는 안내 + 원터치 카카오 연결 (2026-11-22) -->
-<div class="invitenotice" id="inviteNotice" role="status" aria-live="polite" hidden>
+<!-- 🎁 친구 초대 링크(?ref=)로 들어온 방문자 — 5일·액운 1회가 적용됐다는 안내 + 원터치 카카오 연결 (2026-11-22)
+     2.0 (2026-11-23): 첫 화면 간략화 — 코드는 그대로 두고 .v2-parked 로 화면에서만 감춤 -->
+<div class="invitenotice v2-parked" id="inviteNotice" role="status" aria-live="polite" hidden>
   <span class="invitenotice__body">
     <span class="invitenotice__t" id="inviteNoticeT"></span>
     <span class="invitenotice__s" id="inviteNoticeS"></span>
@@ -50,7 +51,7 @@
   <div class="hero__inner">
     <p class="hero__eyebrow">YOONISE · TIMING CALENDAR</p>
     <h1 class="hero__title">내 인생 <br><em>타이밍 캘린더</em></h1>
-    <p class="hero__sub">생년월일 한 번이면, 내 사주에 2026년 11월부터 2027년 12월까지<br>하루씩 짚어 드려요.<br>좋은 날은 밀고, 조심할 날은 하루 미뤄요.</p>
+    <p class="hero__sub">생년월일 한 번이면, 내 사주로 <b>2027년 하루하루를 색으로</b> 찍어 드려요.<br>⚠️ 조심할 날은 하루 미루고, ⚡ 기운 받는 날은 밀어붙이세요.</p>
     <ul class="hero__facts">
       <li>절기 시각까지 반영</li>
       <li class="js-trial">3일 무료</li>
@@ -67,7 +68,7 @@
        · 초대 링크(?ref=)로 왔고 아직 연결(로그인) 전일 때만 보인다 → calendar.js syncInviteConnect
        · 이미 로그인·연결된 손님에게는 뜨지 않는다. 누르면 /calendar/member/?ref=코드&autologin=1 로 가서
          카카오 로그인을 바로 시작하고, 돌아오면 attach_referrer 로 추천 실적이 쌓인다. -->
-  <div class="invitebar" id="inviteBar" hidden>
+  <div class="invitebar v2-parked" id="inviteBar" hidden>
     <span class="invitebar__ic" aria-hidden="true">🎁</span>
     <span class="invitebar__b">
       <b class="invitebar__t" id="inviteBarT">초대 혜택 적용 중 · 5일 무료</b>
@@ -77,7 +78,7 @@
   </div>
 
   <!-- ───────── 📲 홈 화면 앱 설치 (브라우저로 열었을 때만 · 앱으로 열면 JS가 숨김) ───────── -->
-  <div class="installbar" id="installBar" hidden>
+  <div class="installbar v2-parked" id="installBar" hidden>
     <button type="button" class="installbar__main" id="installGo">
       <span class="installbar__ic" aria-hidden="true">📲</span>
       <span class="installbar__txt">
@@ -188,8 +189,9 @@
   <!-- ───────── 결과 ───────── -->
   <div id="result" hidden>
 
-    <!-- 💳 결제하러 다녀온 손님 — 결제 후 '카톡으로 코드 받기' 한 걸음을 잃지 않게 (2026-11-21) -->
-    <div class="payback" id="payBack" hidden>
+    <!-- 💳 결제하러 다녀온 손님 — 결제 후 '카톡으로 코드 받기' 한 걸음을 잃지 않게 (2026-11-21)
+         2.0 (2026-11-23): 결제·코드 화면은 화면에서만 감춤(.v2-parked). 코드는 그대로 보존 -->
+    <div class="payback v2-parked" id="payBack" hidden>
       <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat"></span></p>
       <div class="payback__row">
         <button type="button" class="payback__go" id="payBackGo">💬 카톡으로 입장 코드 받기</button>
@@ -206,10 +208,26 @@
         <span class="savedbar__lock" id="savedBarLock" hidden></span>
       </div>
       <button type="button" class="savedbar__btn" id="editBtn">수정</button>
+      <!-- 2.0 — 내 사주 카드 안 미니 원국 1줄 (2026-11-23). 누르면 아래 원국표 카드가 펼쳐진다 -->
+      <div class="natalmini" id="natalMini" hidden>
+        <span class="natalmini__row" id="natalMiniRow"></span>
+        <button type="button" class="natalmini__tog" id="natalMiniTog" aria-expanded="false" aria-controls="natalCard">원국표 보기 <span aria-hidden="true">▾</span></button>
+      </div>
     </div>
 
-    <!-- ───────── 🧭 4칸 바로가기 바 — 사주를 넣은 뒤 어디서든 1초 만에 (2026-11-22) ───────── -->
-    <nav class="quickbar" id="quickBar" aria-label="빠른 이동">
+    <!-- ──────── ✨ 3줄 후킹 — 명리 원국 기반 (2026-11-23 김나영 님 확정) ────────
+         ① 오늘 내 한 줄 ② 2027 내 급소 ③ 고정 문구.
+         문장은 calendar.js renderHook() 이 매번 내 사주·오늘 기운·조심할 달로 새로 만든다.
+         딱지("달력 보는 이유:") 같은 교과서식 제목은 달지 않는다. -->
+    <section class="hook3" id="hook3" aria-label="내 사주로 본 오늘과 2027년" hidden>
+      <p class="hook3__p hook3__p--today" id="hookToday"></p>
+      <p class="hook3__p hook3__p--year" id="hookYear"></p>
+      <p class="hook3__p hook3__p--hook">일이 꼬이는 건 대개 <b class="hk-hl">딱 며칠 때문</b>입니다.<br>달력에 <b class="hk-mark">⚠️</b> 뜬 날만 피해도 <b class="hk-hl">2027년 큰 풍파는 비켜 가요.</b></p>
+    </section>
+
+    <!-- ───────── 🧭 4칸 바로가기 바 — 사주를 넣은 뒤 어디서든 1초 만에 (2026-11-22) ─────────
+         2.0 (2026-11-23): 첫 화면을 4덩어리로 줄이며 화면에서만 감춤(.v2-parked). 코드 보존 -->
+    <nav class="quickbar v2-parked" id="quickBar" aria-label="빠른 이동">
       <button type="button" class="quickbar__b" data-jump="cal">
         <span class="quickbar__ic" aria-hidden="true">📅</span><span class="quickbar__t">달력</span>
       </button>
@@ -224,8 +242,8 @@
       </button>
     </nav>
 
-    <!-- 원국 -->
-    <section class="card card--natal" aria-labelledby="natalTitle">
+    <!-- 원국 — 2.0 에서는 기본 접힘(#natalCard.is-collapsed). 맨 위 미니 원국 1줄의 토글로 펼친다 -->
+    <section class="card card--natal" id="natalCard" aria-labelledby="natalTitle">
       <div class="sec__head">
         <h2 class="sec__title" id="natalTitle">내 사주</h2>
         <p class="sec__meta" id="natalMeta"></p>
@@ -234,13 +252,14 @@
       <p class="micro" id="natalNote"></p>
     </section>
 
-    <!-- 2027 1년 대표 수호 부적 -->
-    <section class="talis-banner" id="talisBanner" aria-label="2027 나의 1년 대표 수호 부적"></section>
+    <!-- 2027 1년 대표 수호 부적 — 2.0 에서는 화면에서만 감춤(.v2-parked) -->
+    <section class="talis-banner v2-parked" id="talisBanner" aria-label="2027 나의 1년 대표 수호 부적"></section>
 
     <!-- 월간 타이밍 캘린더 — 이 페이지의 주인공 -->
     <section class="card card--cal" aria-labelledby="calTitle">
-      <!-- 사용법 다시 보기 — 첫 방문 팝업을 닫은 뒤에도 여기서 언제든 (2026-11-21) -->
-      <div class="cal__toolbar">
+      <!-- 사용법 다시 보기 — 첫 방문 팝업을 닫은 뒤에도 여기서 언제든 (2026-11-21)
+           2.0 (2026-11-23): 5색 사용법·케미 링크는 감춤 -->
+      <div class="cal__toolbar v2-parked">
         <button type="button" class="cal__help" id="calHelp" aria-haspopup="dialog"><span class="cal__help-q" aria-hidden="true">?</span> 사용법</button>
         <a class="cal__chemi" href="./member/"><span class="cal__chemi-ic" aria-hidden="true">✨</span> 너랑나랑 케미테스트</a>
       </div>
@@ -254,19 +273,23 @@
         <button type="button" class="navbtn" id="nextMonth" aria-label="다음 달">›</button>
       </div>
 
-      <p class="cal__saeun" id="calSaeun"></p>
+      <p class="cal__saeun v2-parked" id="calSaeun"></p>
 
       <p class="cal__summary" id="calSummary"></p>
 
-      <!-- 모아보기 — 조심할 날만 · 좋은 날만 -->
+      <!-- 모아보기 — 2.0 에서는 3색(조심·기운UP·실속)으로 (2026-11-23).
+           예전 2분류(조심할 날·좋은 날) 버튼도 지우지 않고 감춰 둔다 — 바로 복구 가능 -->
       <div class="calfilter" id="calFilter" role="group" aria-label="달력에서 모아보기">
         <button type="button" class="calfilter__btn is-on" data-filter="all" aria-pressed="true">전체</button>
-        <button type="button" class="calfilter__btn" data-filter="bad" aria-pressed="false">⚠️ 조심할 날</button>
-        <button type="button" class="calfilter__btn" data-filter="good" aria-pressed="false">🍀 좋은 날</button>
+        <button type="button" class="calfilter__btn calfilter__btn--warn" data-filter="warn" aria-pressed="false">⚠️ 조심</button>
+        <button type="button" class="calfilter__btn calfilter__btn--up" data-filter="up" aria-pressed="false">⚡ 기운 UP</button>
+        <button type="button" class="calfilter__btn calfilter__btn--real" data-filter="real" aria-pressed="false">🌿 실속·정리</button>
+        <button type="button" class="calfilter__btn v2-parked" data-filter="bad" aria-pressed="false">⚠️ 조심할 날</button>
+        <button type="button" class="calfilter__btn v2-parked" data-filter="good" aria-pressed="false">🍀 좋은 날</button>
       </div>
 
       <!-- 무료 3일을 다 쓴 기기 — 달력 바로 위에 잠금 안내 한 줄 (2026-11-21) -->
-      <button type="button" class="cal__trialover" id="calTrialOver" hidden>
+      <button type="button" class="cal__trialover v2-parked" id="calTrialOver" hidden>
         <span class="cal__trialover-t">🔒 무료 3일 체험이 끝났어요</span>
         <span class="cal__trialover-s">입장 코드를 넣으면 2026년 11월~2027년 12월 전체가 열려요 <b>· 눌러서 코드 넣기</b></span>
       </button>
@@ -279,10 +302,10 @@
       <div class="calfocus" id="calFocus" hidden></div>
 
       <!-- 이미 결제해서 코드를 받으신 분께 — 무료 체험 중에는 이 줄과 아래 바가 맨 아래 결제 영역으로 내려간다 (2026-11-22) -->
-      <p class="lockask" id="lockAsk" hidden>이미 결제해서 코드를 받으셨나요?</p>
+      <p class="lockask v2-parked" id="lockAsk" hidden>이미 결제해서 코드를 받으셨나요?</p>
 
       <!-- 🔑 입장 코드 — 달력 바로 아래 큰 버튼. 미해제면 금빛으로 강조, 열려 있으면 차분한 초록 (2026-11-21) -->
-      <button type="button" class="lockbar" id="lockBtn" aria-expanded="false" aria-controls="lockPanel">
+      <button type="button" class="lockbar v2-parked" id="lockBtn" aria-expanded="false" aria-controls="lockPanel">
         <span class="lockbar__ic" id="lockBtnIc" aria-hidden="true">🔑</span>
         <span class="lockbar__txt">
           <span class="lockbar__t" id="lockBtnT">입장 코드 입력</span>
@@ -296,19 +319,19 @@
            · 결제로 열린 기기: 달력 바로 아래 첫 자리 — '적용됨' 박스·번호 안내는 cal__note 아래로 내려 간다
              (자리 바꾸기는 calendar.js 의 arrangeCareJump 한 곳에서 한다)
            누르면 #careCard 로 부드럽게 이동 + 그 자리 한 번 반짝 (data-jump · 달력 위 4칸 바로가기와 같은 동작, 소리 없음) -->
-      <button type="button" class="carejump" id="careJump" data-jump="care">
+      <button type="button" class="carejump v2-parked" id="careJump" data-jump="care">
         <span class="carejump__ic" aria-hidden="true">⚡</span>
         <span class="carejump__txt">부적을 붙여도 유독 막히는 날 <span class="carejump__ar" aria-hidden="true">→</span> <b>긴급 개운템 열기</b></span>
         <span class="carejump__go" aria-hidden="true">↓</span>
       </button>
 
       <div class="cal__tools">
-        <button type="button" class="soundbtn installbtn" id="installCal"><span aria-hidden="true">📲</span> 앱 설치</button>
+        <button type="button" class="soundbtn installbtn v2-parked" id="installCal"><span aria-hidden="true">📲</span> 앱 설치</button>
         <button type="button" class="soundbtn js-sound" aria-pressed="true" aria-label="효과음과 진동 켜짐 — 끄기">🔊 소리</button>
       </div>
 
       <!-- 입장 코드 — 결제할 때 넣은 휴대폰 번호 + 카톡으로 받은 6자리를 넣으면 열린다 -->
-      <div class="lockpanel" id="lockPanel" hidden>
+      <div class="lockpanel v2-parked" id="lockPanel" hidden>
         <p class="lockpanel__title">🔑 입장 코드 입력</p>
         <p class="lockpanel__guide">결제하신 번호와 카톡으로 받은 6자리 코드를 넣어 주세요.</p>
         <p class="lockpanel__tier" id="lockTier" hidden></p>
@@ -331,10 +354,10 @@
       </div>
 
       <!-- 코드 주인과 지금 사주가 다를 때 · 전용으로 열렸을 때의 안내 -->
-      <p class="codetie" id="codeBindNote" hidden></p>
+      <p class="codetie v2-parked" id="codeBindNote" hidden></p>
 
       <!-- 이 캘린더 보는 법 — 달력 아래 접이식 -->
-      <details class="howto" id="howto">
+      <details class="howto v2-parked" id="howto">
         <summary class="howto__sum">
           <span class="howto__title">이 캘린더 보는 법</span>
           <span class="howto__hint">소통 · 입단속 · 결정 · 머니 · 리셋</span>
@@ -373,7 +396,7 @@
       <p class="cal__note" id="calNote">기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
 
       <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
-      <button type="button" class="diarybook" id="diaryBookBtn">
+      <button type="button" class="diarybook v2-parked" id="diaryBookBtn">
         <span class="diarybook__ico" aria-hidden="true">📖</span>
         <span class="diarybook__txt">내 성찰 기록 보기</span>
         <span class="diarybook__n" id="diaryBookCount" hidden></span>
@@ -396,8 +419,8 @@
       </button>
     </section>
 
-    <!-- ⚡ 긴급 개운템 — 부적을 붙여도 유독 막히는 날, 바로 꺼내 쓰는 3종 (2026-11-22) -->
-    <section class="card card--care" id="careCard" aria-labelledby="careTitle">
+    <!-- ⚡ 긴급 개운템 — 2.0 에서는 화면에서만 감춤(.v2-parked) -->
+    <section class="card card--care v2-parked" id="careCard" aria-labelledby="careTitle">
       <div class="carecard__top">
         <div>
           <p class="carecard__eyebrow">QUICK CARE</p>
@@ -417,7 +440,7 @@
     </section>
 
     <!-- ✨ 케미테스트 배너 — "친구/연인과 우리 케미 점수는?" 호기심으로 누르게 (2026-11-22) -->
-    <section class="chemibanner" id="chemiBanner" aria-labelledby="chemiBannerT">
+    <section class="chemibanner v2-parked" id="chemiBanner" aria-labelledby="chemiBannerT">
       <div class="chemibanner__b">
         <p class="chemibanner__eyebrow">CHEMI TEST</p>
         <p class="chemibanner__t" id="chemiBannerT">친구/연인과 2027년 우리 케미 점수는?</p>
@@ -427,7 +450,7 @@
     </section>
 
     <!-- 2027 한 해 한눈에 — 조심할 달 · 치고 나갈 달 (달력 바로 아래, 기본 펼침) -->
-    <details class="card card--year yearfold" id="yearAlertSummary" open hidden>
+    <details class="card card--year yearfold v2-parked" id="yearAlertSummary" open hidden>
       <summary class="yearfold__sum">
         <span class="yearfold__t">2027년 한눈에</span>
         <span class="yearfold__meta" id="yearMeta">조심할 달 · 좋은 달</span>
@@ -455,7 +478,7 @@
     </details>
 
     <!-- CTA — 1. 1년 패스 · 2. 올인원 · 3. 성찰 에디션 (모두 앱 안 결제 안내 팝업) -->
-    <section class="cta" aria-label="1년 패스 · 올인원 · 성찰 에디션 · 긴급 개운템">
+    <section class="cta v2-parked" aria-label="1년 패스 · 올인원 · 성찰 에디션 · 긴급 개운템">
       <p class="cta__eyebrow">2027 정미년 · 2026년 11월부터 2027년 12월까지</p>
       <h2 class="cta__title" id="ctaTitle">2027년 한 해,<br>지금 시작하는 네 가지 방법</h2>
       <p class="cta__sub js-trial">첫 방문일부터 <b>3일</b>을 무료로 써 보세요. 입장 코드를 넣으면 2026년 11월부터 2027년 12월까지 내 사주로 전부 열려요.</p>
@@ -509,7 +532,7 @@
 
   <!-- 📲 앱 설치 — 설치 배너를 닫았거나 기록이 남아도 언제든 다시 (2026-11-21)
        달력이 열린 뒤에는 달력 하단 `📲 앱 설치` 가 맡는다 -->
-  <div class="appshelf" id="appShelf">
+  <div class="appshelf v2-parked" id="appShelf">
     <button type="button" class="appshelf__btn" id="installFoot">
       <span aria-hidden="true">📲</span> 앱 설치
     </button>
@@ -521,7 +544,7 @@
 <!-- ───────── 1차 · 첫 접속 웰컴 팝업 (사주 입력 전 · 1회 자동)
       역할: '이게 뭔지' 콤팩트 소개 → 내 사주 입력하기.
       사용법 1~4단계는 여기 넣지 않는다 (사주 입력 뒤 달력이 열릴 때 뜨는 2차 #guideModal 역할). -->
-<div class="modal modal--welcome" id="welcomeModal" hidden>
+<div class="modal modal--welcome v2-parked" id="welcomeModal" hidden>
   <div class="modal__backdrop" data-welcome-close></div>
   <div class="modal__dialog modal__dialog--welcome" id="welcomeDialog" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -541,7 +564,7 @@
 </div>
 
 <!-- ───────── 2차 · 달력 사용법 팝업 (달력이 처음 열릴 때 1회 · ? 사용법 버튼으로 다시 보기) ───────── -->
-<div class="modal modal--guide" id="guideModal" hidden>
+<div class="modal modal--guide v2-parked" id="guideModal" hidden>
   <div class="modal__backdrop" data-guide-close></div>
   <div class="modal__dialog modal__dialog--guide" id="guideDialog" role="dialog" aria-modal="true" aria-labelledby="guideTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -613,7 +636,7 @@
 </div>
 
 <!-- ───────── 구입 안내 팝업 (패스 · 아이템 · 1:1 상담 원포인트/시그니처) ───────── -->
-<div class="modal modal--shop" id="shopModal" hidden>
+<div class="modal modal--shop v2-parked" id="shopModal" hidden>
   <div class="modal__backdrop" data-shop-close></div>
   <div class="modal__dialog modal__dialog--shop" id="shopDialog" role="dialog" aria-modal="true" aria-labelledby="shopTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -624,7 +647,7 @@
 </div>
 
 <!-- ───────── 📖 내 성찰 기록 모아보기 · 백업 ───────── -->
-<div class="modal modal--dbook" id="diaryBookModal" hidden>
+<div class="modal modal--dbook v2-parked" id="diaryBookModal" hidden>
   <div class="modal__backdrop" data-dbook-close></div>
   <div class="modal__dialog modal__dialog--dbook" id="diaryBookDialog" role="dialog" aria-modal="true" aria-labelledby="dbookTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -635,7 +658,7 @@
 </div>
 
 <!-- ───────── 2027 대표 부적 확대 팝업 ───────── -->
-<div class="modal modal--talis" id="talisModal" hidden>
+<div class="modal modal--talis v2-parked" id="talisModal" hidden>
   <div class="modal__backdrop" data-talis-close></div>
   <div class="modal__dialog modal__dialog--talis" id="talisDialog" role="dialog" aria-modal="true" aria-labelledby="talisModalTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -646,7 +669,7 @@
 </div>
 
 <!-- ───────── 📲 홈 화면 앱 설치 안내 (카톡·네이버 인앱 / iOS / 크롬·삼성) ───────── -->
-<div class="modal modal--install" id="installModal" hidden>
+<div class="modal modal--install v2-parked" id="installModal" hidden>
   <div class="modal__backdrop" data-install-close></div>
   <div class="modal__dialog modal__dialog--install" id="installDialog" role="dialog" aria-modal="true" aria-labelledby="installTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -671,11 +694,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261122w"></script>
-<script src="assets/manse.js?v=20261122w"></script>
-<script src="assets/timing.js?v=20261122w"></script>
-<script src="assets/chars.js?v=20261122w"></script>
-<script src="assets/calendar.js?v=20261122w"></script>
-<script src="assets/pwa.js?v=20261122w"></script>
+<script src="vendor/lunar.js?v=20261123a"></script>
+<script src="assets/manse.js?v=20261123a"></script>
+<script src="assets/timing.js?v=20261123a"></script>
+<script src="assets/chars.js?v=20261123a"></script>
+<script src="assets/calendar.js?v=20261123a"></script>
+<script src="assets/pwa.js?v=20261123a"></script>
 </body>
 </html>

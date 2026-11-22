@@ -19,6 +19,19 @@
      → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
   var FREE_DAYS_BASE = 3;   // 그냥 들어온 손님 — 첫 방문일 포함 3일(D+0·D+1·D+2)
+  /* ── 2.0 첫 화면 (2026-11-23 김나영 님 확정) ────────────────────────────
+     "3초 만에 이해되는 첫 화면" — ① 미니 원국 1줄 ② 명리 원국 기반 3줄 후킹
+     ③ 3색 달력(⚠️ 조심 · ⚡ 기운 UP · 🌿 실속·정리) ④ 🔥 오늘 액운 태우기.
+     · 기존 기능(수호 부적·도장·개운템·케미·성찰·결제·코드)은 **지우지 않고**
+       index.html 에서 `.v2-parked` 클래스로 화면에서만 감춰 둔다 — 클래스를 떼면 그대로 복구된다.
+     · LITE_MODE = false 로 되돌리면 3색 표시·후킹 카드·간단 팝업이 물러나고
+       예전 5색 달력과 부적 팝업이 그대로 돌아온다(코드 보존). */
+  var LITE_MODE = true;
+  /* ── 지인 테스트용 우회 플래그 (2026-11-23) ─────────────────────────────
+     무료 체험 계산·잠금 함수는 그대로 두고, 화면에서만 전부 열어 준다.
+     → 달력의 어떤 날짜를 눌러도 잠금 팝업 없이 그날 설명이 열린다.
+     · false 로 바꾸면 3일 체험 + 잠금 + 결제·코드 흐름이 예전 그대로 돌아온다. */
+  var TEST_OPEN_ALL = true;
   /* ── 친구 초대(?ref=) 보너스 ───────────────────────────────────────────────
      /calendar/member/ 의 초대 링크(?ref=코드)로 들어온 손님은 '초대받은 손님'으로 보고
      무료 체험을 3일 → 5일, 액운 태우기를 무료 5회 → 6회로 늘린다. (2026-11-21)
@@ -643,6 +656,7 @@
   }
   /** 무료 3일을 다 썼는가 — 코드를 넣지 않은 채 4일째가 되면 참 */
   function trialOver() {
+    if (TEST_OPEN_ALL) return false;          // 지인 테스트 — 잠금 없이 전부 열림
     if (!FREE_TRIAL_ENABLED || state.unlocked) return false;
     var w = trialWindow();
     return !!w && state.todayISO > w.end;
@@ -654,7 +668,10 @@
   }
   /** index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over) 전환 */
   function syncTrialState() {
-    var mode = (!FREE_TRIAL_ENABLED || state.unlocked) ? 'off' : (trialOver() ? 'over' : 'on');
+    // 지인 테스트(TEST_OPEN_ALL)는 "체험 중"이 아니라 "전체 오픈" 상태로 보여 준다 —
+    // '3일 무료' 문구가 뜨면 실제로는 다 열려 있는데 잠긴 줄 알아서다 (2026-11-23)
+    var mode = TEST_OPEN_ALL ? 'off'
+      : ((!FREE_TRIAL_ENABLED || state.unlocked) ? 'off' : (trialOver() ? 'over' : 'on'));
     document.body.setAttribute('data-trial', mode);
     var strip = $('#calTrialOver');
     if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
@@ -779,6 +796,7 @@
 
   /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
   function inFree(iso) {
+    if (TEST_OPEN_ALL) return iso >= RANGE_FROM && iso <= RANGE_TO;   // 지인 테스트 — 전 구간 열림
     if (state.unlocked) return iso >= RANGE_FROM && iso <= RANGE_TO;
     if (!FREE_TRIAL_ENABLED) return iso >= RANGE_FROM && iso <= RANGE_TO;
     var w = trialWindow();
@@ -787,6 +805,7 @@
   /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다)
       무료 3일을 다 쓴 뒤에는 오늘도 포함해 전부 잠긴다. */
   function isOpenDay(iso) {
+    if (TEST_OPEN_ALL) return true;           // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
     if (state.unlocked) return true;
     if (!FREE_TRIAL_ENABLED) return true;
     if (trialOver()) return false;
@@ -911,7 +930,7 @@
   }
 
   function setFilter(f) {
-    if (['all', 'bad', 'good'].indexOf(f) < 0) return;
+    if (['all', 'bad', 'good', 'warn', 'up', 'real'].indexOf(f) < 0) return;
     if (state.filter === f) return;
     state.filter = f;
     renderCalendar();
@@ -1727,6 +1746,7 @@
   }
   /** 첫 접속 한 번 — 사주를 넣기 전(달력이 아직 안 열린 상태)에만. 이미 본 기기면 조용히. */
   function maybeAutoWelcome(delay) {
+    if (LITE_MODE) return;                 // 2.0 — 첫 화면을 가리지 않도록 자동 팝업을 띄우지 않는다 (2026-11-23)
     if (welcomeShown || welcomeSeen() || state.res) return;
     welcomeShown = true;
     setTimeout(function () { openWelcome(true); }, typeof delay === 'number' ? delay : 360);
@@ -1830,6 +1850,7 @@
   /** 달력이 열린 뒤 한 번 — 사주를 넣기 전에는 띄우지 않는다(그 자리는 1차 웰컴 팝업).
       이미 본 기기면 아무 것도 하지 않는다. delay 는 화면이 한 번 그려진 뒤 뜨게 하는 여유. */
   function maybeAutoGuide(delay) {
+    if (LITE_MODE) return;                 // 2.0 — 3초 안내는 3줄 후킹 카드가 대신한다 (2026-11-23)
     if (guideShown || guideSeen() || !state.res) return;
     guideShown = true;
     setTimeout(function () { openGuide(true); }, typeof delay === 'number' ? delay : 520);
@@ -2042,7 +2063,9 @@
   function renderTalisman() {
     var box = $('#talisBanner');
     if (!box) return;
-    if (!state.res) { box.className = 'talis-banner'; box.innerHTML = ''; return; }
+    /* className 을 통째로 다시 쓰므로, 2.0 에서 화면에서 띄워 둔 .v2-parked 를 여기서도 함께 붙인다 */
+    var parked = LITE_MODE ? ' v2-parked' : '';
+    if (!state.res) { box.className = 'talis-banner' + parked; box.innerHTML = ''; return; }
     var r = repElement(), t = TALIS[r.el], type = repType(r.el, r.gan);
     var who = state.res.input.name ? state.res.input.name + ' 님' : '나';
     /* 설명은 두 줄뿐 — 부족·결핍도, 오행 해설도 쓰지 않는다 (2026-11-22). */
@@ -2057,7 +2080,7 @@
        2026-11-22 2차: 톡 눌렀을 때 뜨는 문구를 **부적 위(타이틀 아래 예약 자리)**로 올린다.
        · 예약 자리는 늘 같은 높이로 비어 있어서 배너가 들썩이지 않는다.
        · 부적 아래 힌트는 자리 그대로 — 문구가 바뀌어도 힌트가 밀리지 않는다. */
-    box.className = 'talis-banner talis-banner--' + r.el;
+    box.className = 'talis-banner talis-banner--' + r.el + parked;
     box.setAttribute('aria-label', who + '의 2027 수호 부적 — ' + tname);
     box.innerHTML =
       '<div class="talis-hero">' +
@@ -2704,11 +2727,261 @@
     if (ch) ch.setAttribute('data-stage', String(n));
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+     2.0 첫 화면 (2026-11-23 김나영 님 확정)
+     · 3색 딱지 — 다섯 기운(소통·입단속·결정·머니·리셋)을 일반인이 1초에 읽는
+       세 가지로 묶는다. 계산(cat·marks)은 그대로 두고 화면 표시만 바꾼다.
+     · 날짜 설명 문장은 미리 써 둔 표에서 고른다 — 같은 사주면 같은 날은 늘 같은 말.
+     · 쓰는 말: 일상 한국어만. 비겁·식상·재성·관성·인성·세운·원국 같은 한자는 쓰지 않고,
+       "○ 기운이 하나도 없어요" 같은 결핍 단정도 쓰지 않는다(2026-11-22 김나영 님 기준).
+     ══════════════════════════════════════════════════════════════════ */
+  var LITE_TAG = {
+    red:  { key: 'warn', label: '조심',     emoji: '⚠️', short: '⚠️ 조심' },
+    gold: { key: 'up',   label: '기운 UP',  emoji: '⚡', short: '⚡ 기운UP' },
+    blue: { key: 'up',   label: '기운 UP',  emoji: '⚡', short: '⚡ 기운UP' },
+    gray: { key: 'real', label: '실속·정리', emoji: '🌿', short: '🌿 실속' }
+  };
+  var LITE_FULL = { warn: '⚠️ 조심', up: '⚡ 기운 UP', real: '🌿 실속·정리' };
+
+  /** 오늘의 배지(최대 2개)를 3색으로 접는다 — 같은 색이 둘이면 하나만 남긴다 */
+  function liteTagsOf(badges) {
+    var out = [], seen = {};
+    (badges || []).forEach(function (b) {
+      var t = LITE_TAG[b.cat];
+      if (!t || seen[t.key]) return;
+      seen[t.key] = 1;
+      out.push({ key: t.key, cat: b.cat, short: t.short, label: t.label, emoji: t.emoji });
+    });
+    return out;
+  }
+
+  /* ── 날짜 상세 — 왜 이런 날인지 + 피할 것 / 챙길 것 (표에서 고른다) ──
+     key : 그날의 세부 이유(명리 관계) — 말은 전부 일상어로 푼다. */
+  var LITE_DAY = {
+    chung: {
+      head: '말 한마디로 손해 보기 쉬운 날',
+      why: '오늘 들어오는 기운이 내 사주의 중심 자리와 정면으로 부딪혀요. 평소 잘 맞던 것도 오늘은 한 번씩 어긋나기 쉬워서, 마음이 급할수록 손해가 커지는 날이에요.',
+      avoid: '계약·서명, 중요한 답장, 감정이 실린 말',
+      keep: '이미 잡힌 일정 다시 확인하기, 사실 관계 체크'
+    },
+    hyeong: {
+      head: '서류·일정이 한 번씩 엉키는 날',
+      why: '오늘 기운이 내 사주와 살짝 틀어지는 날이에요. 큰일이 나기보다 잔실수가 겹쳐서, 꼼꼼함이 필요한 일에서 시간을 잡아먹기 쉬워요.',
+      avoid: '급하게 처리하는 서류, 구두로 넘긴 약속',
+      keep: '계좌·기한·금액 한 번 더 확인하기'
+    },
+    hae: {
+      head: '말이 엇갈리기 쉬운 날',
+      why: '오늘은 내 말이 상대에게 다르게 닿기 쉬워요. 악의가 없어도 오해가 생기는 날이라, 중간에 누구를 거치지 말고 직접 확인하는 게 안전해요.',
+      avoid: '단톡방에서 길게 설명하기, 남을 통해 전달하기',
+      keep: '중요한 이야기는 직접, 부탁은 한 문장으로'
+    },
+    gwiyin: {
+      head: '먼저 손 내미는 쪽이 이기는 날',
+      why: '오늘은 나를 도와줄 사람의 기운이 들어와요. 혼자 붙들고 씨름하기보다 한 사람에게라도 먼저 말을 꺼내면 일이 가벼워지는 날이에요.',
+      avoid: '혼자 결정하고 혼자 책임지기',
+      keep: '미뤄 둔 부탁·안부 연락 하나 보내기'
+    },
+    hap: {
+      head: '사람과 일이 붙는 날',
+      why: '오늘은 사람과 사람, 사람과 일이 이어지는 기운이 들어와요. 오래 미뤄 둔 연락이나 제안을 꺼내기 좋은 날이에요.',
+      avoid: '조건을 말하지 않고 넘어가기',
+      keep: '미팅·제안·소개 한 건 꺼내고 조건은 글로 남기기'
+    },
+    wealth: {
+      head: '돈이 오가는 날 · 나가는 돈부터',
+      why: '오늘은 돈이 움직이는 기운이 들어와요. 들어오는 돈보다 나가는 돈에서 새기 쉬운 날이라, 결제하기 전에 한 번 멈추는 게 좋아요.',
+      avoid: '충동 결제, 구두로 정한 금액',
+      keep: '정산·수금 확인, 지출 내역 한 번 훑기'
+    },
+    doc: {
+      head: '문서·정리에 힘이 실리는 날',
+      why: '오늘은 적고 정리하는 일에 힘이 붙어요. 미뤄 둔 서류나 기록을 오늘 손대면 오래 남는 날이에요.',
+      avoid: '초안 없이 바로 서명하기',
+      keep: '신청서·계약서 초안 잡기, 기록 남기기'
+    },
+    jie: {
+      head: '달의 기준이 바뀌는 날',
+      why: '오늘을 기점으로 달의 흐름이 새로 서요. 새 일을 벌이기보다 지난달을 정리하고 이번 달 기준을 잡기 좋은 날이에요.',
+      avoid: '이번 달 첫 결정을 오늘 바로 확정하기',
+      keep: '이번 달 목표 한 줄 적기, 지난 일 정리'
+    },
+    calm: {
+      head: '잔잔하게 흘러가는 날',
+      why: '오늘은 크게 부딪히는 기운이 없는 날이에요. 이런 날은 아무 일도 일어나지 않으니까, 미뤄 둔 정리 하나를 끝내기에 가장 좋아요.',
+      avoid: '없는 일을 만들어 확인하기',
+      keep: '밀린 정리 하나만 끝내기'
+    }
+  };
+  /** 그날의 대표 색과 세부 이유 — 색은 배지 순서(조심 → 기운UP → 실속)를 따른다 */
+  function litePrimary(info) {
+    var tags = liteTagsOf(info && info.badges);
+    var key = tags.length ? tags[0].key : 'calm';
+    var best = null;
+    ((info && info.marks) || []).forEach(function (mk) {
+      if (mk.minor) return;
+      var t = LITE_TAG[mk.cat];
+      if (!t || t.key !== key) return;
+      if (!best || mk.weight > best.weight) best = mk;
+    });
+    var kind = best && LITE_DAY[best.kind] ? best.kind
+      : (key === 'warn' ? 'chung' : (key === 'up' ? 'hap' : (key === 'real' ? 'jie' : 'calm')));
+    return { key: key, kind: kind };
+  }
+
+  /* ── 오늘 내 한 줄 — 오늘 일진 × 내 사주 ── */
+  var LITE_TODAY = {
+    chung:  '오늘은 <b class="hk-hl">말 한마디로 손해 보기 쉬운 날</b>이에요. 중요한 결정·답장은 하루만 미루세요.',
+    hyeong: '오늘은 <b class="hk-hl">서류·일정이 한 번씩 엉키는 날</b>이에요. 확인을 두 번, 서명은 내일로 미루세요.',
+    hae:    '오늘은 <b class="hk-hl">말이 뜻과 다르게 전달되기 쉬운 날</b>이에요. 문자보다 직접, 부탁은 짧고 분명하게 하세요.',
+    gwiyin: '오늘은 <b class="hk-hl">나를 도와줄 사람의 기운이 들어오는 날</b>이에요. 혼자 하지 말고 먼저 손을 내밀어 보세요.',
+    hap:    '오늘은 <b class="hk-hl">미뤄 둔 연락·제안을 꺼내기 좋은 날</b>이에요. 먼저 말을 걸면 일이 가벼워져요.',
+    wealth: '오늘은 <b class="hk-hl">돈이 오가는 날</b>이에요. 나가는 돈부터 확인하고, 금액은 글로 남기세요.',
+    doc:    '오늘은 <b class="hk-hl">문서·정리에 힘이 실리는 날</b>이에요. 미뤄 둔 서류를 오늘 한 번 정리해 두세요.',
+    jie:    '오늘은 <b class="hk-hl">달의 기준이 바뀌는 날</b>이에요. 새로 벌이기보다 이번 달 목표만 한 줄 정리하세요.',
+    calm:   '오늘은 <b class="hk-hl">크게 부딪히는 일이 없는 잔잔한 날</b>이에요. 밀린 정리 하나만 끝내도 충분해요.'
+  };
+
+  /* ── 2027 내 급소 — 정미년(丁未) × 내 원국 ──
+     어느 쪽이 가장 크게 흔들리는지는 실제 관계로만 고른다:
+       ① 2027년 지지 未가 내 일지와 부딪히는가(충·형·해·겹침·묶임)
+       ② 2027년 천간 丁이 내게 어떤 자리로 오는가(돈·일·사람·말)
+       ③ 그것도 없으면 내 일지·월지와의 관계, 마지막으로 기운 과열
+     조심할 달은 달력과 같은 계산(yearInfo)의 결과를 그대로 쓴다. */
+  var SAEUN_2027 = { label: '정미년', gan: 3, zhi: 7 };   // 丁未
+  var LITE_AREA = {
+    money:  { t: '돈·계약',   do: '큰 지출·보증·동업 서명은 하루 두고 결정하세요.' },
+    people: { t: '사람·관계', do: '감정이 실린 말은 한 번 접었다가 보내세요.' },
+    work:   { t: '일·책임',   do: '혼자 떠안지 말고 일정은 절반만 잡으세요.' },
+    docs:   { t: '서류·절차', do: '기한과 금액을 두 번 확인하고 구두 약속은 피하세요.' },
+    talk:   { t: '말·소문',   do: '남 얘기와 단정하는 말을 아끼세요.' },
+    body:   { t: '건강·체력', do: '늦은 밤 일정을 줄이고 잠부터 챙기세요.' }
+  };
+  var LITE_REL_AREA = { chung: 'people', hyeong: 'docs', hae: 'talk', bokkeum: 'work', yukhap: 'work' };
+  var LITE_TEN_AREA = {
+    '정재': 'money', '편재': 'money', '정관': 'work', '편관': 'work',
+    '정인': 'people', '편인': 'people', '식신': 'talk', '상관': 'talk',
+    '비견': 'people', '겁재': 'people'
+  };
+
+  function hookYearData() {
+    var natal = state.natal, res = state.res;
+    if (!natal || !res) return null;
+    var I = T._internal;
+    var dg = natal.dayGanIndex, dz = natal.dayZhiIndex, mz = natal.monthZhiIndex;
+    var z = SAEUN_2027.zhi;   // 2027년 지지 未
+
+    function relOf(zhi) {
+      if (I.chungOf(z) === zhi) return 'chung';
+      if (I.isHyeong(z, zhi)) return 'hyeong';
+      if (I.haeOf(z) === zhi) return 'hae';
+      if (z === zhi) return 'bokkeum';
+      if (I.yukhapOf(z) === zhi) return 'yukhap';
+      return '';
+    }
+    var relDay = relOf(dz), relMonth = relOf(mz);
+    var tg = M.tenGodOf(dg, SAEUN_2027.gan);
+    var counts = res.counts || {};
+    var hot = ((counts['화'] || 0) + (counts['토'] || 0)) >= 5;   // 원국이 이미 뜨거운 편
+
+    var areaKey = LITE_REL_AREA[relDay] || LITE_TEN_AREA[tg] || LITE_REL_AREA[relMonth] || (hot ? 'body' : 'people');
+    var area = LITE_AREA[areaKey] || LITE_AREA.people;
+
+    // 조심할 달 — 달력·2027 한눈에와 같은 계산 결과 (yearInfo)
+    var yd = yearInfo();
+    var months = [];
+    if (yd) {
+      months = (yd.warn || []).map(function (m) { return m.m; });
+      if (months.length < 2) {
+        var rest = (yd.months || []).filter(function (m) { return months.indexOf(m.m) < 0; })
+          .sort(function (a, b) { return b.caution - a.caution; });
+        months = months.concat(rest.map(function (m) { return m.m; }));
+      }
+    }
+    months = months.slice(0, 2).sort(function (a, b) { return a - b; });   // 1월·7월처럼 오름차순
+    return { area: area, months: months };
+  }
+
+  /** 받침에 따라 '이에요/예요'를 고른다 — "사람·관계예요"처럼 읽히게 */
+  function josaIeyo(word) {
+    var s = String(word || '');
+    var ch = s.charCodeAt(s.length - 1);
+    if (!ch || ch < 0xAC00 || ch > 0xD7A3) return '이에요';
+    return ((ch - 0xAC00) % 28) ? '이에요' : '예요';
+  }
+
+  /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 */
+  function renderHook() {
+    var box = $('#hook3');
+    if (!box) return;
+    if (!LITE_MODE || !state.res) { box.hidden = true; return; }
+    box.hidden = false;
+
+    var name = String((state.res.input && state.res.input.name) || '').trim();
+    var owner = name ? esc(name) + ' 님' : '내';
+
+    // ① 오늘 내 한 줄
+    var todayBox = $('#hookToday');
+    if (todayBox) {
+      var info = infoFor(state.todayISO);
+      var p = info ? litePrimary(info) : { kind: 'calm' };
+      var line = LITE_TODAY[p.kind] || LITE_TODAY.calm;
+      todayBox.innerHTML = (name ? '<b class="hk-name">' + esc(name) + ' 님</b>, ' : '') + line;
+    }
+
+    // ② 2027 내 급소 경고
+    var yearBox = $('#hookYear');
+    if (yearBox) {
+      var d = hookYearData();
+      if (!d) { yearBox.innerHTML = ''; }
+      else {
+        var ms = d.months.length
+          ? d.months.map(function (m) { return m + '월'; }).join('·')
+          : '';
+        yearBox.innerHTML = '2027년 <b class="hk-hl">정미년</b>이 오면, ' + owner +
+          ' 사주에서 제일 크게 흔들리는 건 <b class="hk-hl">' + d.area.t + '</b>' + josaIeyo(d.area.t) + '.' +
+          (ms ? ' 특히 <b class="hk-hl">' + ms + '</b>엔 ' + d.area.do : ' 그해엔 ' + d.area.do);
+      }
+    }
+  }
+
+  /** 맨 위 내 사주 카드 안 미니 원국 1줄 — 누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다 */
+  function renderNatalMini() {
+    var box = $('#natalMini'), row = $('#natalMiniRow');
+    if (!box || !row) return;
+    if (!LITE_MODE || !state.res) { box.hidden = true; return; }
+    box.hidden = false;
+    var p = state.res.pillars;
+    var order = [['year', '년주'], ['month', '월주'], ['day', '일주'], ['time', '시주']];
+    row.innerHTML = order.map(function (o) {
+      var pil = p[o[0]];
+      if (!pil) return '<span class="natalmini__p is-none" title="시간 모름">—</span>';
+      var me = o[0] === 'day' ? ' is-me' : '';
+      return '<span class="natalmini__p' + me + '" title="' + o[1] + '">' +
+        esc(pil.gan) + ' ' + esc(pil.zhi) + '</span>';
+    }).join('<span class="natalmini__sep" aria-hidden="true">·</span>');
+  }
+
+  /** 원국표 접기/펼치기 — 접힌 기본 상태에서는 카드 자체를 감춘다(빈 상자가 남지 않게) */
+  function toggleNatal(open) {
+    var card = $('#natalCard'), tog = $('#natalMiniTog');
+    if (!card) return;
+    if (typeof open !== 'boolean') open = card.classList.contains('is-collapsed');
+    card.classList.toggle('is-collapsed', !open);
+    if (tog) {
+      tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+      tog.innerHTML = (open ? '원국표 접기' : '원국표 보기') +
+        ' <span aria-hidden="true">' + (open ? '▴' : '▾') + '</span>';
+    }
+  }
+
   /* ── 렌더 ──────────────────────────────────────────── */
   function render() {
     syncLockUI();          // 🔒 전용 배지·입력 잠금은 사주가 정해진 뒤에야 맞춰진다
     renderSavedBar();
     renderNatal();
+    renderNatalMini();     // 2.0 — 맨 위 카드 안 미니 원국 1줄 (2026-11-23)
+    renderHook();          // 2.0 — 명리 원국 기반 3줄 후킹
     renderTalisman();
     renderYearSummary();
     renderCalendar();
@@ -2793,6 +3066,7 @@
   }
   /** 말풍선을 띄울 날 — 이번 달 안에서만. 없으면 '' */
   function hintIsoFor(v, dim) {
+    if (LITE_MODE) return '';                          // 2.0 — 부적 말풍선 대신 3색 달력이 안내을 맡는다
     if (state.hintOff || !state.res) return '';
     if (trialOver()) return '';                        // 체험이 끝나면 붙일 수 있는 날이 없다
     if (stampCount()) return '';                       // 부적을 한 번이라도 붙였으면 안내 끝
@@ -2831,12 +3105,14 @@
     for (var i = 0; i < first; i++) html += '<span aria-hidden="true"></span>';
 
     var stat = { red: 0, gold: 0, blue: 0, gray: 0 };
+    var stat3 = { warn: 0, up: 0, real: 0 };
     var hintIso = hintIsoFor(v, dim);
     for (var d = 1; d <= dim; d++) {
       var iso = T.isoOf(v.y, v.m, d);
       var info = infoFor(iso);
       if (!info) continue;
       var badges = info.badges || [];
+      var liteTags = LITE_MODE ? liteTagsOf(badges) : null;
       var cls = ['day'];
       if (info.dow === 0) cls.push('day--sun');
       if (info.dow === 6) cls.push('day--sat');
@@ -2847,21 +3123,37 @@
       if (iso === state.sel) cls.push('is-sel');
 
       // 다섯 기운 모두 은은한 파스텔 바탕으로 구분한다 (2026-11-20 여백 개편)
+      //  2.0 에서는 그 위에 3색(조심 · 기운UP · 실속) 바탕을 한 겹 더 입혀,
+      //  색이 뭉개지지 않게 셋만 또렷하게 구분한다 (2026-11-23 김나영 님 지시).
       var lead = badges.length ? badges[0].cat : '';
       if (lead) cls.push('day--t-' + lead);
+      if (liteTags && liteTags.length) cls.push('day--lite-' + liteTags[0].key);
 
-      badges.forEach(function (b) { if (stat[b.cat] != null) stat[b.cat]++; });
+      if (LITE_MODE) {
+        liteTags.forEach(function (t) { stat3[t.key]++; });
+      } else {
+        badges.forEach(function (b) { if (stat[b.cat] != null) stat[b.cat]++; });
+      }
 
-      var badgeHtml = badges.map(function (b) {
-        return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
-      }).join('');
+      // 칸 안에는 긴 글자를 구기지 않는다 — 색 + 짧은 이름표 하나만 (두 번째 색은 팝업에서)
+      var badgeHtml = LITE_MODE
+        ? liteTags.slice(0, 1).map(function (t) {
+            return '<span class="badge badge--' + t.cat + ' day__badge day__badge--lite day__badge--' + t.key + '">' +
+              t.short + '</span>';
+          }).join('')
+        : badges.map(function (b) {
+            return '<span class="badge badge--' + b.cat + ' day__badge">' + esc(b.text) + '</span>';
+          }).join('');
 
       // 모아보기 — 조심할 날(입단속) / 좋은 날(소통·결정·머니)
       //  리셋(12절)은 달의 기준만 바꾸는 중립 신호라 어느 쪽에도 넣지 않는다(#9029 새 기준)
       var isBad = badges.some(function (b) { return b.cat === 'red'; });
       var isGood = badges.some(function (b) { return b.cat === 'gold' || b.cat === 'blue'; });
       var pick = '';
-      if (state.filter === 'bad' && isBad) {
+      if (LITE_MODE) {
+        var keys = liteTags.map(function (t) { return t.key; });
+        if (state.filter !== 'all' && keys.indexOf(state.filter) >= 0) pick = state.filter;
+      } else if (state.filter === 'bad' && isBad) {
         pick = 'red';
       } else if (state.filter === 'good' && isGood) {
         pick = badges.some(function (b) { return b.cat === 'gold'; }) ? 'gold' : 'blue';
@@ -2872,17 +3164,20 @@
       // 평범한 날(배지 없음)은 눌러도 팝업이 없다 — 잠긴 날은 여는 방법을 알려 주려고 계속 연다
       // 체험 중에는 잔잔한 날·지난 날도 눌러 안내를 받는다 (2026-11-21 QA M3)
       var clickable = dayClickable(iso, info);
-      var label = v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
+      // 2.0 — 스크린리더에도 한자 용어 대신 그날의 쉬운 한 줄을 읽어 준다
+      var label = LITE_MODE
+        ? v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + LITE_DAY[litePrimary(info).kind].head
+        : v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
-      var stamp = stampOf(iso);
+      var stamp = LITE_MODE ? null : stampOf(iso);   // 2.0 에서는 도장 부적을 감추므로 스티커도 그리지 않는다
       if (stamp && !badges.length) stamp = null;   // 부적은 기운이 흔들리는 날·경고등 켜진 날에만 남는다
       if (stamp) {
         cls.push('day--stamped');
         if (iso >= state.todayISO) label += ', 부적 스티커 붙음';
       }
       var stampEl = stamp ? stampElement(info) : '';
-      // 내가 성찰 한 줄을 남긴 날 — 달력 칸에 작은 잉크 펜 점
-      var noted = !!diaryOf(iso);
+      // 내가 성찰 한 줄을 남긴 날 — 달력 칸에 작은 잉크 펜 점 (2.0 에서는 성찰 다이어리를 감춰 그리지 않는다)
+      var noted = LITE_MODE ? false : !!diaryOf(iso);
       if (noted) {
         cls.push('day--noted');
         label += ', 성찰 기록 있음';
@@ -2924,12 +3219,22 @@
     renderFilter();
     renderFocusList(v);
 
-    var bits = [];
-    if (stat.gold) bits.push('소통 ' + stat.gold);
-    if (stat.red) bits.push('입단속 ' + stat.red);
-    if (stat.blue) bits.push('결정·머니 ' + stat.blue);
-    if (stat.gray) bits.push('리셋 ' + stat.gray);
-    $('#calSummary').textContent = bits.length ? bits.join('  ·  ') : '이 달은 표시할 신호가 적은 달이에요';
+    if (LITE_MODE) {
+      var bits3 = [];
+      if (stat3.warn) bits3.push('<b class="sum sum--warn">⚠️ 조심 ' + stat3.warn + '일</b>');
+      if (stat3.up) bits3.push('<b class="sum sum--up">⚡ 기운 UP ' + stat3.up + '일</b>');
+      if (stat3.real) bits3.push('<b class="sum sum--real">🌿 실속·정리 ' + stat3.real + '일</b>');
+      $('#calSummary').innerHTML = bits3.length
+        ? bits3.join('<span class="sum__dot" aria-hidden="true">·</span>')
+        : '이 달은 색이 붙은 날이 적어요 — 잔잔하게 흐르는 달이에요';
+    } else {
+      var bits = [];
+      if (stat.gold) bits.push('소통 ' + stat.gold);
+      if (stat.red) bits.push('입단속 ' + stat.red);
+      if (stat.blue) bits.push('결정·머니 ' + stat.blue);
+      if (stat.gray) bits.push('리셋 ' + stat.gray);
+      $('#calSummary').textContent = bits.length ? bits.join('  ·  ') : '이 달은 표시할 신호가 적은 달이에요';
+    }
 
     $('#prevMonth').disabled = (v.y === 2026 && v.m === 11);
     $('#nextMonth').disabled = (v.y === 2027 && v.m === 12);
@@ -2940,7 +3245,9 @@
     var tw = trialWindow();
     var freeEnd = tw ? T.parseISO(tw.end) : null;
     var noteText;
-    if (!FREE_TRIAL_ENABLED || state.unlocked) {
+    if (LITE_MODE) {
+      noteText = '색이 붙은 날을 누르면 그날 왜 그런지, 무엇을 피하고 무엇을 챙기면 되는지 바로 나와요.';
+    } else if (!FREE_TRIAL_ENABLED || state.unlocked) {
       noteText = '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.';
     } else if (trialOver() || !freeEnd) {
       noteText = '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 입장 코드를 넣으면 2026년 11월부터 2027년 12월까지 전체가 열려요.';
@@ -2978,6 +3285,7 @@
       box.innerHTML = '';
       return;
     }
+    if (LITE_MODE) { renderFocusListLite(v, box); return; }
     var isBad = state.filter === 'bad';
     var d = monthInfo(v.y, v.m);
     var list = isBad ? d.badDays : d.goodDays;
@@ -3008,6 +3316,54 @@
         }).join('') +
       '</div>' +
       '<p class="calfocus__hint">날짜를 누르면 그날의 부적이 바로 열려요.</p>';
+  }
+
+  /* ── 2.0 모아보기 — 그 색의 날만 위에서부터 날짜로 나열 (2026-11-23) ── */
+  function renderFocusListLite(v, box) {
+    var want = state.filter;
+    var dim = T.daysInMonth(v.y, v.m);
+    if (T.isoOf(v.y, v.m, dim) > RANGE_TO) dim = T.parseISO(RANGE_TO).d;
+    var list = [];
+    for (var d = 1; d <= dim; d++) {
+      var iso = T.isoOf(v.y, v.m, d);
+      var info = infoFor(iso);
+      if (!info) continue;
+      var tags = liteTagsOf(info.badges);
+      for (var i = 0; i < tags.length; i++) {
+        if (tags[i].key !== want) continue;
+        list.push({ iso: iso, d: d, dow: info.dow, kind: litePrimary(info).kind });
+        break;
+      }
+    }
+    var TITLE = {
+      warn: '이 달, ⚠️ 조심할 날',
+      up: '이 달, ⚡ 기운 UP 날',
+      real: '이 달, 🌿 실속·정리 날'
+    };
+    var EMPTY = {
+      warn: '이 달은 유난히 부딪히는 날이 없어요. 흐름이 고른 달입니다.',
+      up: '이 달은 밀어붙일 날이 따로 없어요. 잔잔하게 정리하기 좋은 달입니다.',
+      real: '이 달은 새 달이 시작되는 날 말고는 눈에 띄는 날이 없어요.'
+    };
+    box.hidden = false;
+    if (!list.length) {
+      box.innerHTML = '<p class="calfocus__empty">' + (EMPTY[want] || '') + '</p>';
+      return;
+    }
+    box.innerHTML =
+      '<div class="calfocus__head"><p class="calfocus__title">' + (TITLE[want] || '') + '</p></div>' +
+      '<div class="calfocus__list calfocus__list--lite">' +
+        list.map(function (x) {
+          return '<button type="button" class="fday fday--lite fday--' + want +
+            (x.iso === state.todayISO ? ' is-today' : '') + '" data-iso="' + x.iso + '"' +
+            ' aria-label="' + v.m + '월 ' + x.d + '일 ' + DOW_KO[x.dow] + '요일 — ' +
+            esc(LITE_DAY[x.kind].head) + ' · 자세히 보기">' +
+            '<span class="fday__date">' + x.d + '일<em>(' + DOW_KO[x.dow] + ')</em></span>' +
+            '<span class="fday__line">' + esc(LITE_DAY[x.kind].head) + '</span>' +
+            '</button>';
+        }).join('') +
+      '</div>' +
+      '<p class="calfocus__hint">날짜를 누르면 그날 설명이 바로 열려요.</p>';
   }
 
   /* ── 세운 줄: 입춘에서 해가 바뀐다 ─────────────────── */
@@ -3056,6 +3412,23 @@
   function openDayModal(iso) {
     var info = infoFor(iso);
     if (!info || !modalEl) return;
+    /* 2.0 — 날짜를 누르면 잠금·부적 없이 "그날이 왜 이런 날인지 + 피할 것/챙길 것"만 보여 준다.
+       기존 잠금·부적 로직(아래)은 하나도 지우지 않고 이 길로만 안 간다. */
+    if (LITE_MODE) {
+      lastFocus = document.activeElement;
+      state.sel = iso;
+      renderCalendar();
+      modalBody.innerHTML = liteDayModalHTML(info);
+      modalDialog.classList.remove('modal__dialog--lock');
+      modalDialog.classList.add('modal__dialog--lite');
+      modalEl.hidden = false;
+      document.body.classList.add('is-modal-open');
+      modalBody.scrollTop = 0;
+      sfxOpen();
+      try { modalDialog.focus({ preventScroll: true }); } catch (e) { modalDialog.focus(); }
+      requestAnimationFrame(function () { if (!modalEl.hidden) modalBody.scrollTop = 0; });
+      return;
+    }
     var hasBadges = !!(info.badges && info.badges.length);
     var lock = FREE_TRIAL_ENABLED && !inFree(iso);
     /* 체험 중 지난 날 — '지난 날'이라고 알려 주고 여는 방법을 보여 준다 (2026-11-21 QA M3) */
@@ -3093,6 +3466,7 @@
     setTimeout(function () {
       modalEl.classList.remove('is-closing');
       modalEl.hidden = true;
+      if (LITE_MODE) modalDialog.classList.remove('modal__dialog--lite');
       document.body.classList.remove('is-modal-open');
       modalBody.innerHTML = '';
       modalClosing = false;
@@ -3115,6 +3489,39 @@
       '<p class="modal__date" id="modalTitle">' + fmtMD(info.iso) +
       '<span>' + DOW_KO[info.dow] + '요일 · ' + esc(info.gz.textKo) + '일</span></p>' +
       '<p class="modal__sub">' + esc(fmtKoDate(info.iso)) + ' · 음력 ' + esc(info.lunarText) + '</p>';
+  }
+
+  /** 2.0 날짜 상세 — 책 한 페이지처럼: 이 날이 왜 이런지 → 피할 것 → 챙길 것
+     (2026-11-23 김나영 님: "날짜를 누르면 왜 그런 날인지 + 피할 행동·챙길 행동이 명확히")
+     도장 찍기·상담·결제 유도는 여기에 넣지 않고 본문 3단만 둔다. */
+  function liteDayModalHTML(info) {
+    var p = litePrimary(info);
+    var d = LITE_DAY[p.kind] || LITE_DAY.calm;
+    var tags = liteTagsOf(info.badges);
+    var tagHtml = tags.length
+      ? tags.map(function (t) {
+          return '<span class="litemodal__tag litemodal__tag--' + t.key + '">' + LITE_FULL[t.key] + '</span>';
+        }).join('')
+      : '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
+    return '<div class="litemodal">' +
+      '<p class="modal__eyebrow">' + (info.iso === state.todayISO ? 'TODAY · 오늘의 타이밍' : 'DAY · 이 날의 타이밍') + '</p>' +
+      '<p class="litemodal__date" id="modalTitle">' + fmtMD(info.iso) +
+        '<span>' + esc(fmtKoDate(info.iso)) + ' ' + DOW_KO[info.dow] + '요일 · 음력 ' + esc(info.lunarText) + '</span></p>' +
+      '<div class="litemodal__tags">' + tagHtml + '</div>' +
+      '<h3 class="litemodal__head">' + esc(d.head) + '</h3>' +
+      '<div class="litemodal__body">' +
+        '<p class="litemodal__why">' + esc(d.why) + '</p>' +
+        '<div class="litemodal__act litemodal__act--avoid">' +
+          '<span class="litemodal__k" aria-hidden="true">🚫</span>' +
+          '<p class="litemodal__actp"><b>오늘 피할 것</b><span>' + esc(d.avoid) + '</span></p>' +
+        '</div>' +
+        '<div class="litemodal__act litemodal__act--keep">' +
+          '<span class="litemodal__k" aria-hidden="true">✅</span>' +
+          '<p class="litemodal__actp"><b>오늘 챙길 것</b><span>' + esc(d.keep) + '</span></p>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>' +
+      '</div>';
   }
 
   /** 날짜 팝업 안 상단 점프 버튼 — 모바일에서 성찰 입력칸이 화면 밖으로 밀려"어떻게 작성하니" 하던 문제
@@ -6894,6 +7301,12 @@
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
+    if (LITE_MODE) { document.body.classList.add('is-lite'); toggleNatal(false); }   // 2.0 첫 화면 — 원국표는 접힌 채로 시작
+    else {
+      $$('.v2-parked').forEach(function (el) { el.classList.remove('v2-parked'); });   // LITE_MODE=false → 감춰 둔 기능 전부 제자리로
+      // 3색 모아보기 버튼은 2.0 전용 — 예전 5색 화면에서는 다시 감춘다
+      $$('.calfilter__btn--warn, .calfilter__btn--up, .calfilter__btn--real').forEach(function (el) { el.classList.add('v2-parked'); });
+    }
     syncTrialState();
     syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
     syncMemberLinks();     // 초대 코드로 들어온 손님이 케미 화면으로 넘어갈 때 코드가 따라가게 (2026-11-22)
@@ -6908,6 +7321,10 @@
     if (state.unlocked) syncPaidTier(state.tier);   // 이미 열린 기기 — 로그인한 회원이면 등급만 맞춰 둔다 (조용히)
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
+
+    // 2.0 — 맨 위 미니 원국 1줄의 토글로 기존 원국표(#natal·#natalNote)를 펼친다 (2026-11-23)
+    var miniTog = $('#natalMiniTog');
+    if (miniTog) miniTog.addEventListener('click', function (e) { e.preventDefault(); toggleNatal(); });
 
     modalEl = $('#dayModal');
     modalBody = $('#modalBody');

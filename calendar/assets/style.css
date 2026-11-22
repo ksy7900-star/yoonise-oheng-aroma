@@ -4960,3 +4960,252 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
 @media (prefers-reduced-motion: reduce) {
   .talis-phrase.is-on { animation: none; opacity: 1; transform: none; filter: none; }
 }
+
+/* ==========================================================
+   2.0 첫 화면 — 미니 원국 1줄 · 3줄 후킹 · 3색 달력 · 🔥 액운 태우기
+   (2026-11-23 김나영 님 확정)
+   · "3초 만에 이해" — 화면은 4덩어리만, 색은 3가지로
+   · "책이라면 가독성 있게" — 한지 톤 종이 + 진한 먹색 + 넉넉한 줄간격
+   · 기존 기능은 지우지 않고 .v2-parked 로 화면에서만 감춘다.
+     (클래스를 떼면 그 자리에서 그대로 복구된다)
+   ========================================================== */
+.v2-parked { display: none !important; }
+
+body.is-lite {
+  --paper-hanji: #FFFCF4;
+  --paper-line: #EAE2D1;
+  --ink-book: #201C16;
+  --ink-book-2: #4A4238;
+  --ink-mute: #7A7164;
+  --lite-warn-bg: #FBE9E4;
+  --lite-warn-ink: #8C3A2A;
+  --lite-up-bg: #FBF0D9;
+  --lite-up-ink: #8A5A16;
+  --lite-real-bg: #E9F1E2;
+  --lite-real-ink: #35603F;
+}
+
+/* ── ① 맨 위 · 내 사주 카드 (생년월일 · 수정 + 미니 원국 1줄) ───────── */
+body.is-lite .savedbar {
+  flex-wrap: wrap; align-items: flex-start;
+  margin-top: 16px; padding: 15px 17px 14px;
+  background: var(--paper);
+  border: 1px solid var(--hair-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+body.is-lite .savedbar__who { flex: 1 1 auto; min-width: 0; }
+body.is-lite .savedbar__name { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+body.is-lite .savedbar__meta { font-size: 11px; line-height: 1.55; margin-top: 4px; }
+
+.natalmini {
+  flex: 0 0 100%; display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-top: 11px;
+  padding-top: 10px; border-top: 1px dashed var(--hair-soft);
+}
+.natalmini[hidden] { display: none !important; }
+.natalmini__row {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.4;
+  letter-spacing: .02em; color: var(--ink-book);
+}
+.natalmini__p.is-me { font-weight: 700; color: var(--lite-warn-ink); }
+.natalmini__p.is-none { color: #C7BFB0; }
+.natalmini__sep { color: #C7BFB0; font-size: 11px; }
+.natalmini__tog {
+  margin-left: auto; appearance: none; border: 0; cursor: pointer;
+  background: #F5F1E7; color: #6B6152;
+  border-radius: 999px; padding: 5px 10px;
+  font-family: var(--sans); font-size: 10.5px; font-weight: 600; letter-spacing: -.02em;
+}
+.natalmini__tog:active { transform: scale(.97); }
+
+body.is-lite #natalCard { margin-top: 12px; }
+body.is-lite #natalCard.is-collapsed { display: none; }
+
+/* ── ② 3줄 후킹 — 책 한 페이지처럼 ─────────────────────────── */
+.hook3 {
+  margin-top: 14px; padding: 23px 21px 20px;
+  background: var(--paper-hanji);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, var(--shadow);
+}
+.hook3__p {
+  margin: 0; font-family: var(--serif);
+  color: var(--ink-book); letter-spacing: -.01em;
+  word-break: keep-all;
+}
+.hook3__p + .hook3__p { margin-top: 17px; }
+.hook3__p--today, .hook3__p--year { font-size: 16px; line-height: 1.72; }
+.hook3__p--hook {
+  font-size: 14.5px; line-height: 1.72; color: var(--ink-book-2);
+  padding-top: 16px; border-top: 1px solid var(--paper-line);
+}
+.hk-name { font-weight: 700; color: var(--lite-warn-ink); }
+.hk-hl {
+  font-weight: 700; color: var(--ink-book);
+  background: linear-gradient(transparent 56%, rgba(240, 200, 112, .52) 56%);
+  padding: 0 1px;
+}
+.hk-mark { font-weight: 700; }
+
+/* ── ③ 3색 달력 — 색 셋만 또렷하게, 평범한 날은 종이 바탕 ──────── */
+body.is-lite .cal { row-gap: 6px; column-gap: 4px; padding-top: 12px; }
+body.is-lite .day {
+  min-height: 64px; padding: 7px 1px 8px; gap: 3px;
+  border-radius: 13px;
+  background: #FFFDFA;
+  box-shadow: inset 0 0 0 1px rgba(31, 27, 22, .055);
+}
+body.is-lite .day__num { font-size: 13px; }
+body.is-lite .day__badges { gap: 1px; min-height: 13px; }
+body.is-lite .day__badge--lite {
+  display: block; width: 100%;
+  padding: 2px 1px; line-height: 1.15; border-radius: 4px;
+  font-size: 8px; font-weight: 700; letter-spacing: -.05em;
+  text-align: center;
+}
+
+/* ⚠️ 조심 — 연분홍/살구 틴트 + 테라코타 포인트 */
+body.is-lite .cal .day.day--lite-warn {
+  background: var(--lite-warn-bg);
+  box-shadow: inset 0 0 0 1px rgba(140, 58, 42, .22);
+}
+body.is-lite .day--lite-warn .day__num { color: var(--lite-warn-ink); }
+body.is-lite .day__badge--warn {
+  background: rgba(140, 58, 42, .10); color: #7E3325;
+  box-shadow: inset 0 0 0 1px rgba(140, 58, 42, .20);
+}
+
+/* ⚡ 기운 UP — 앰버/크림골드 틴트 + 오커 포인트 */
+body.is-lite .cal .day.day--lite-up {
+  background: var(--lite-up-bg);
+  box-shadow: inset 0 0 0 1px rgba(169, 112, 42, .24);
+}
+body.is-lite .day--lite-up .day__num { color: var(--lite-up-ink); }
+body.is-lite .day__badge--up {
+  background: rgba(169, 112, 42, .13); color: #7E5310;
+  box-shadow: inset 0 0 0 1px rgba(169, 112, 42, .24);
+}
+
+/* 🌿 실속·정리 — 세이지/연그린 틴트 + 포레스트 그린 포인트 */
+body.is-lite .cal .day.day--lite-real {
+  background: var(--lite-real-bg);
+  box-shadow: inset 0 0 0 1px rgba(63, 107, 74, .24);
+}
+body.is-lite .day--lite-real .day__num { color: var(--lite-real-ink); }
+body.is-lite .day__badge--real {
+  background: rgba(63, 107, 74, .11); color: #2F5838;
+  box-shadow: inset 0 0 0 1px rgba(63, 107, 74, .22);
+}
+
+/* 오늘·고른 날 표시는 색 위에서도 보이게 */
+body.is-lite .day.is-today .day__num { box-shadow: inset 0 0 0 1.5px rgba(31, 27, 22, .55); }
+body.is-lite .day.is-sel .day__num { box-shadow: none; }
+body.is-lite .cal .day.day--pick { box-shadow: inset 0 0 0 2px rgba(31, 27, 22, .34); }
+body.is-lite .day--dim { opacity: .34; }
+
+/* ── 달력 위 요약·필터 ─────────────────────────────── */
+body.is-lite .cal__summary { font-size: 11.5px; color: var(--ink-mute); margin-top: 10px; }
+body.is-lite .sum { font-weight: 700; }
+body.is-lite .sum--warn { color: var(--lite-warn-ink); }
+body.is-lite .sum--up { color: var(--lite-up-ink); }
+body.is-lite .sum--real { color: var(--lite-real-ink); }
+body.is-lite .sum__dot { color: #CFC7B7; margin: 0 5px; }
+
+body.is-lite .calfilter { margin: 12px 2px 4px; padding: 3px; gap: 3px; background: #F4F0E6; }
+body.is-lite .calfilter__btn { font-size: 10px; padding: 8px 2px; color: var(--ink-mute); letter-spacing: -.04em; }
+body.is-lite .calfilter__btn.is-on { background: #FFFDF7; color: var(--ink-book); box-shadow: 0 1px 3px rgba(31, 27, 22, .10); }
+body.is-lite .calfilter__btn--warn.is-on { color: var(--lite-warn-ink); }
+body.is-lite .calfilter__btn--up.is-on { color: var(--lite-up-ink); }
+body.is-lite .calfilter__btn--real.is-on { color: var(--lite-real-ink); }
+
+/* 모아보기 목록 — 3색 중 고른 색만 */
+body.is-lite .calfocus { margin: 10px 2px 0; padding: 13px 13px 11px; background: #FBF7EE; border-radius: 16px; }
+body.is-lite .calfocus__list--lite { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; }
+body.is-lite .fday--lite {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  width: 100%; text-align: left; padding: 9px 12px;
+  background: #FFFDF7; border: 1px solid var(--paper-line); border-radius: 12px;
+}
+body.is-lite .fday--lite .fday__date { font-size: 11.5px; font-weight: 700; color: var(--ink-book); }
+body.is-lite .fday--lite .fday__line { font-family: var(--serif); font-size: 12.5px; line-height: 1.5; color: #5C5346; }
+body.is-lite .fday--warn { border-color: rgba(140, 58, 42, .26); }
+body.is-lite .fday--up { border-color: rgba(169, 112, 42, .28); }
+body.is-lite .fday--real { border-color: rgba(63, 107, 74, .26); }
+
+/* ── ④ 날짜 상세 팝업 — 책 한 페이지 ─────────────────────── */
+body.is-lite .modal__dialog--lite { background: var(--paper-hanji); }
+body.is-lite .modal__dialog--lite .modal__topbar { background: transparent; }
+.litemodal__date {
+  font-family: var(--serif); font-size: 27px; line-height: 1.2;
+  margin-top: 6px; padding-right: 100px; letter-spacing: -.02em;
+  color: var(--ink-book);
+}
+.litemodal__date span {
+  display: block; font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: 0; color: var(--ink-mute); margin-top: 4px;
+}
+.litemodal__tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 13px; }
+.litemodal__tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 4px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: -.02em;
+}
+.litemodal__tag--warn { background: var(--lite-warn-bg); color: #7E3325; box-shadow: inset 0 0 0 1px rgba(140, 58, 42, .22); }
+.litemodal__tag--up { background: var(--lite-up-bg); color: #7E5310; box-shadow: inset 0 0 0 1px rgba(169, 112, 42, .24); }
+.litemodal__tag--real { background: var(--lite-real-bg); color: #2F5838; box-shadow: inset 0 0 0 1px rgba(63, 107, 74, .22); }
+.litemodal__tag--calm { background: #F2EFE7; color: var(--ink-mute); box-shadow: inset 0 0 0 1px rgba(31, 27, 22, .08); }
+
+.litemodal__head {
+  margin: 15px 0 0; font-family: var(--serif);
+  font-size: 19px; line-height: 1.45; letter-spacing: -.02em;
+  color: var(--ink-book);
+}
+.litemodal__body { margin-top: 12px; }
+.litemodal__why {
+  margin: 0; font-size: 14px; line-height: 1.78; color: var(--ink-book-2);
+  letter-spacing: -.01em; word-break: keep-all;
+}
+.litemodal__act {
+  display: flex; align-items: flex-start; gap: 9px;
+  margin-top: 11px; padding: 12px 13px; border-radius: 14px;
+}
+.litemodal__act--avoid { background: #FBF0ED; }
+.litemodal__act--keep { background: #EFF4EA; }
+.litemodal__k { font-size: 13px; line-height: 1.55; }
+.litemodal__actp { margin: 0; flex: 1; font-size: 13px; line-height: 1.65; color: var(--ink-book-2); }
+.litemodal__actp b { display: block; font-size: 10.5px; letter-spacing: .02em; color: var(--ink-mute); margin-bottom: 2px; }
+.litemodal__actp span { display: block; }
+.litemodal__foot { margin: 16px 0 0; font-size: 10.5px; color: #A79C88; letter-spacing: .02em; }
+body.is-lite .modal__dialog--lite .modal__done-btn { margin-top: 16px; }
+
+@media (max-width: 360px) {
+  .hook3 { padding: 20px 17px 18px; }
+  .hook3__p--today, .hook3__p--year { font-size: 15px; }
+  .hook3__p--hook { font-size: 13.5px; }
+  body.is-lite .day { min-height: 60px; }
+  body.is-lite .day__badge--lite { font-size: 7.5px; }
+}
+
+/* 2.0 날짜 팝업 — 본문 세 단에만 집중 (소리 토글은 달력 아래 것 하나로) */
+body.is-lite .modal__sound { display: none; }
+
+/* 2.0 — 지난 날도 같은 세기로 (테스트 기간엔 모두 열려 있다). 무료구간 링도 걷어 낸다 */
+body.is-lite .day--past { opacity: 1; }
+body.is-lite .day--past .day__badges { visibility: visible; }
+body.is-lite .day--free { box-shadow: inset 0 0 0 1px rgba(31, 27, 22, .055); }
+/* 소리 토글은 달력 아래 조용한 글자 하나로 */
+body.is-lite .cal__tools { margin: 2px 2px 0; }
+body.is-lite .soundbtn {
+  border-color: transparent; background: transparent;
+  color: #A79C88; font-size: 10px; padding: 4px 7px;
+}
+
+/* 달력 아래 한 줄 안내도 같은 종이 톤으로 */
+body.is-lite .cal__note {
+  background: #FBF7EE; color: #7A7164;
+  border-radius: 14px; padding: 12px 14px;
+  font-size: 11.5px; line-height: 1.65;
+}
