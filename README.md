@@ -1573,3 +1573,21 @@ python3 -m http.server 8000
 | 콘솔·레이아웃 | 콘솔 오류 0건, `scrollWidth == clientWidth`(가로 넘침 0px) |
 
 스크린샷: `work/qa-talis-modal-verse-live.png` · `work/qa-talis-hold-open.png` · `work/qa-talis-stick-seal.png`
+
+## 76. 2026-11-22 — 대문 수호부적 배너에 **두 줄 글귀를 바로** (팝업 열지 않아도) · 캐시 `20261122s`
+
+### 1. 배너에 두 줄 글귀 (`calendar/assets/calendar.js` · `calendar/assets/style.css`)
+- `renderTalisman()` 이 `TALIS_VERSE[r.el]`(확대 팝업과 **같은 데이터**)를 `.talis-banner__verse` 로 찍는다 — `부적 이름`(`.talis-banner__name`) **바로 아래**, 힌트(`부적을 톡 눌러 기운을 깨우세요`) **바로 위**.
+- 스타일: 세리프 · 오행별 `--tb-cream` · `opacity .84` (배경에 은은하게, 읽기는 되게) · `word-break: keep-all` · `text-wrap: balance`.
+- 콤팩트: 데스크톱 12px/1.6 · 모바일(≤640) 11px/1.55 · 좁은 화면(≤360) 10.2px/1.52, 위 여백 4~5px. 배너 높이는 334px → **372px**(+38px)만 늘었다.
+
+### 2. 라이브 검증 (390×844 · `?v=20261122s`)
+| 항목 | 결과 |
+|---|---|
+| 배너 글귀 | `스스로 빛나되 태우지 않는 온기. / 내 안의 열정이 제자리를 찾도록 밝혀 줍니다.` — 누르기 전부터 표시, 정확히 2줄 |
+| 순서 | 부적 이름 → 두 줄 글귀 → 작은 힌트 (`orderOk: true`, 힌트 폰트 < 글귀 폰트) |
+| 팝업 일치 | `[부적 크게 보기 ↗]` 팝업의 `.talis-modal__why--verse` 와 문구 완전 일치 |
+| 오행 5종 줄바꿈 | 목·화·토·금·수 모두 390·360 폭에서 **2줄 고정** (긴 금·토 문장도 넘침 없음, 글자 크기만 축소) |
+| 콘솔·레이아웃 | 콘솔 오류 0건, `scrollWidth == clientWidth`(가로 넘침 0px) |
+
+스크린샷: `work/qa-talis-banner-verse-live.png` · `work/qa-talis-banner-verse-live-box.png` · `work/qa-talis-banner-verse-modal.png`
