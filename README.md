@@ -1408,3 +1408,53 @@ python3 -m http.server 8000
 - 같은 코드 재방문: 배너 0회, 5일·6회 유지.
 - 첫 방문일 8일 전(`2026-11-13`)으로 돌린 기기 + 초대: `오늘부터 …` 배너와 함께 오늘부터 5일이 실제로 열림(무료일 5일).
 - 콘솔 오류 0건, 실패 리소스 0건, 가로 넘침 0px. 스크린샷 `work/qa-returning-invite-banner.png`(라이브) · `work/qa-returning-invite-banner-stale-live.png`(체험 종료 기기)
+
+## 73. 2026-11-22 — 초대받은 친구 **원터치 카카오 연결** · 무료 체험 중 `입장 코드` 바를 결제 영역으로 · 성찰 질문 가볍게 + `다른 질문 ↻` · 캐시 `20261122p`
+
+커밋 `5f612dd`(초대 원터치 + 체험 중 코드 바) · `5b9dd44`(성찰 질문·다른 질문) · 라이브 최종 캐시 **`20261122p`**.
+
+### 1. 초대받은 친구 원터치 연결 (`/calendar/` → `/calendar/member/`)
+- 초대 링크(`?ref=`)로 온 손님은 5일·액운 1회가 **기기에서만** 열려서 서버에 '누가 초대했는지'가 남지 않았다.
+  → 안내 배너와 달력 맨 위 줄에 **`💬 카카오 3초 연결하기`** 를 두고 `/calendar/member/?ref=코드&autologin=1` 로 넘긴다.
+- `calendar/index.html` · `assets/calendar.js` · `assets/style.css`
+  - `#inviteNotice` 안 `#inviteNoticeGo`(버튼), `<main>` 맨 위 `#inviteBar`(안내를 닫아도 남는 줄 — `#inviteBarGo`).
+  - `syncInviteConnect()` — `inviteNeedsConnect()` 가 참일 때만 보인다: 초대받은 기기이고, ①Supabase 세션이 없거나 ②세션은 있어도 붙일 초대 코드(`REF_KEY`)가 남아 있을 때. **결제로 열린 기기·연결 끝난 기기에는 뜨지 않는다.**
+  - 첫 접속(사주 넣기 전)에도 배너가 뜨고, 그때 설명은 `사주를 넣으면 바로 열려요 · 연결하면 초대해 준 친구에게도 혜택이 쌓여요`. 버튼이 들어 있으면 배너는 14초(버튼 없으면 그대로 9초).
+- `calendar/member/member.js`
+  - `?autologin=1` 이면 `signInWithOAuth({provider:'kakao'})` 를 바로 시작(리다이렉트 방식). **무한 리다이렉트 문지기 3중**: ①이미 로그인 상태면 보내지 않음 ②`?code=`·`?error=` 로 막 돌아온 참이면 보내지 않음(스크립트 로드 시점 값을 `OAUTH_BACK` 으로 잡아 둠) ③이 탭에서 한 번 보냈으면(`sessionStorage yoonise.member.autologin.tried.v1`) 보내지 않음.
+  - 돌아오면 기존 `attachPendingRef()` → `attach_referrer` 결과별 안내: `ok`/`attached` → **`✅ 연결 완료! 초대해 준 친구에게도 혜택이 쌓였어요` + `[📅 내 타이밍 달력으로 돌아가기]`**(`#inviteDone`), `already` → `이미 다른 초대 코드가 연결된 계정이에요`(이제까지는 계속 재시도하던 구멍), `self`/`invalid` → 토스트.
+  - `from=invite` 파라미터는 **쓰지 않았다** — member 화면의 `from=` 은 '보낸 사람 이름'(예: `나영님이 보낸 초대 링크예요`)으로 이미 쓰이고 있어 `invite` 가 이름처럼 보인다. 흐름 표시는 `sessionStorage yoonise.member.invite.flow.v1`.
+  - `member/index.html` STEP 2 · 내 사다리 — `0명 · 다음 칸까지 1명` 바로 아래 `친구가 링크로 들어와 카카오 3초 연결(로그인)을 마치면 1명으로 올라가요.`(`.ladder-how`)
+
+### 2. 무료 체험 중 '입장 코드 입력' 바의 자리 (김나영 님 결정)
+- 문제: 체험 중인데 달력 바로 아래 노란 `🔑 입장 코드 입력` 이 보여 **"결제해야 하나?"** 로 읽혔다.
+- `arrangeCareJump()` 3분기로 정리:
+  - **무료 체험 중**(`trialCleanMode()` = `FREE_TRIAL_ENABLED && !unlocked && !trialOver()`) → 달력 그리드 바로 아래 첫 자리는 `#careJump`(긴급 개운템) 하나. `#lockAsk`(`이미 결제해서 코드를 받으셨나요?`)·`#lockBtn`·`#lockPanel`·`#codeBindNote` 는 **맨 아래 결제 섹션 `.cta` 의 `#ctaSteps`(상품 4개) 아래**로 이동. 코드 바 설명도 `이미 결제해서 받으신 6자리 코드를 넣어 주세요`.
+  - **결제로 열린 기기** → 기존과 같음(개운템이 달력 아래 첫 자리, `적용됨` 박스는 `#calNote` 아래).
+  - **체험 종료(잠금)** → 기존과 같음(`#lockBtn` 이 먼저, 그 아래 `#careJump`).
+- 노드를 옮겨도 클릭 리스너는 그대로 따라간다. 상태가 바뀌면 `syncLockUI()` → `arrangeCareJump()` 가 매번 제자리를 다시 잡는다.
+
+### 3. ✨ 1줄 성찰 질문 전면 교체 + `다른 질문 ↻`
+- `DIARY_Q` 5결 × 10 = **50개 전부** 숙제형("다음엔 이렇게 해 볼래요"·"무엇을 바꿀까요")을 걷어내고 가벼운 질문으로 교체. 예: `오늘 유독 신경 쓰였던 말 한마디, 여기다 흘려보낼까요?` · `오늘 내 편이 돼 준 순간 하나만 적는다면?` · `오늘 가장 고마웠던 사람이나 일, 가볍게 적어 볼까요?`
+- placeholder `한 줄이면 충분해요` → `예) 오늘은 그냥 좀 피곤했다`.
+- 질문 아래 작은 **`다른 질문 ↻`**(`[data-diary-again]`) — 같은 기운 안에서 다음 질문으로. `diaryShown[iso]` 로 날짜별 기억, `rotateDiaryQ()` 가 한 칸씩 돌린다. **적던 한 줄은 그대로 남는다**(`paintDiary(iso, draft)`). 클릭 소리 없음.
+- 저장하면 그때 화면에 걸린 질문과 번호가 기록에 함께 남는다(`entries[iso] = {cat, q, qi, text, plain, at}`). 다시 열면 `diaryPickFor()` 가 `rec.q` 를 그대로 써서 **적었을 때의 질문**이 뜬다. 지우면 그 날의 기본 질문으로 돌아간다.
+
+### 4. 검증 (라이브 · 390×844 · 최종 `20261122p`)
+| 항목 | 결과 |
+|---|---|
+| `?ref=92820D1C` 배너·버튼 | `🎁 친구 초대로 5일 무료 + 액운 태우기 1회가 적용됐어요!` + `💬 카카오 3초 연결하기`(299×38) · href `./member/?ref=92820D1C&autologin=1` |
+| 버튼 클릭 | `/member/` → `supabase.co/auth/v1/authorize` → `kauth.kakao.com` → `accounts.kakao.com/login` 까지 정상 이동(실제 로그인은 하지 않음) |
+| 자동 로그인 횟수 | 로컬에서 authorize 요청 **정확히 1회**(새로고침·복귀 시 재발생 0) |
+| 안내 닫은 뒤 | `#inviteBar` 유지(`초대 혜택 적용 중 · 5일 무료`) |
+| 사다리 안내 | `/calendar/member/` 에서 문구 노출 |
+| 체험 중 자리 | `#calGrid` 아래 10px 에 `#careJump` · `#lockBtn` 은 `.cta` 안(`#ctaSteps` 아래) · `이미 결제해서 코드를 받으셨나요?` 노출 · 달력 근처 코드 바 없음 |
+| 결제/체험종료 상태 | 결제: 개운템 먼저 + `적용됨` 아래 · 체험 종료: 코드 바 먼저 + 개운템 아래 (로컬 390×844) |
+| 성찰 | 질문 4회 연속 `다른 질문` → 모두 다른 질문 · 적던 글 유지 · 저장값 `q`/`qi` 일치 · 다시 열면 같은 질문 |
+| 콘솔·레이아웃 | 콘솔 오류 0건, 가로 넘침 0px |
+
+스크린샷: `work/qa-invite-onetap-live.png` · `work/qa-invite-bar-live.png` · `work/qa-trial-clean-cal.png` · `work/qa-trial-clean-cta.png` · `work/qa-member-ladder-live.png` · `work/qa-diary-refresh-btn.png`
+
+### 5. 남은 것
+- 카카오 로그인 **완주 후** `✅ 연결 완료` 배너는 실제 계정 인증이 필요해 실기기 1회 확인이 남아 있다(코드 경로는 `attach_referrer` 응답별로 나뉘어 있음).
+- 초대 링크로 들어온 손님이 **배너를 끄고** 다시 방문했을 때도 `#inviteBar` 는 계속 보인다(연결 전까지). 연결이 끝나면 `REF_KEY` 가 비워져 자동으로 사라진다.
