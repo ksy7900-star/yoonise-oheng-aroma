@@ -5864,6 +5864,12 @@
   }
 
   function openShop(kind) {
+    /* 2.0 테스트 기간 — 결제·코드 팝업은 화면에서 감춰 뒀다. 열리지 않는 팝업을 대신 열어
+       화면이 잠기는 일이 없게 여기서 막고, 부드럽게 안내만 한다 (2026-11-23). */
+    if (LITE_MODE) {
+      toast('지금은 무료 체험 기간이에요 — 결제·코드 화면은 잠시 감춰 두었어요');
+      return;
+    }
     if (!shopEl) return;
     if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
@@ -5965,11 +5971,11 @@
   }
   /** 오늘 이미 1회 태웠는가 — 등급과 무관하게 하루 1회 */
   function burnBurnedToday() { return !!burn.day && burn.day === burnTodayKey(); }
-  function burnUnlimited() { return tierAtLeast('allinone'); }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
+  function burnUnlimited() { return TEST_OPEN_ALL || tierAtLeast('allinone'); }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
   function burnTierName() { return state.tier === 'diary' ? '성찰 에디션' : '올인원'; }
   function burnLeftText() {
     var done = burnBurnedToday();
-    if (burnUnlimited()) return burnTierName() + (done ? ' · 오늘 마침' : ' · 매일 1회');
+    if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnTierName()) + (done ? ' · 오늘 마침' : ' · 매일 1회');
     var l = burnLeft();
     if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
     return l > 0 ? '남은 무료 ' + l + '회' : '무료 ' + BURN_FREE + '회를 다 썼어요';
