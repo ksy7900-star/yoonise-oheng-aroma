@@ -2673,7 +2673,7 @@
     renderCalendar();                                     // 팝업 뒤 달력 칸에도 바로 스티커가 붙는다
     wrap.classList.add('is-done', 'is-open', 'is-sealing');
     setStage(wrap, 3);
-    sfxSealPress();                                       // 소리 켠 사람에게만 — 속이 탁 뚫리는 '착!' 한 방
+    sfxSealPress();                                       // 소리 켠 사람에게만 — 큰 북 한 번 '둥—' (약 3초 여운)
     setTimeout(function () { wrap.classList.remove('is-sealing'); }, 1200);
 
     /* 도장은 찍힌 자리에 그대로 — 눌린 자리가 '✓ … 새겼어요' + 찍힌 낙관으로 남는다 */
@@ -6399,52 +6399,44 @@
     tube(1567.98, 0.95, 0.045, 1.05);   /* G6 — 세 번째 */
     tube(2093.00, 1.50, 0.026, 0.66);   /* C7 — 끝에 아주 여리게 */
   }
-  /* 6) 낙관 도장 — 부적 위에 도장을 놓는 그 순간, **더 강하고 속이 탁 뚫리는 '착!'** (2026-11-22 확정)
-     김나영 님이 미리듣기에서 고른 B안을 어택·타격감만 확실히 키운 최종본.
-     · 0ms   하이패스 마찰 트랜지언트 — 7kHz 대역 12ms 알갱이(attack 0.4ms). '착'의 첫 결.
-     · 0ms   6000→1700Hz 95ms 마찰 — 종이가 눌리며 인주가 번지는 결.
-     · 7ms·18ms 뒤 4600Hz·3300Hz 서걱임 두 겹 — 종이 섬유가 눌리는 질감.
-     · 0ms   단단한 나무 타격 바디 — 240→130Hz '툭' + 520Hz·780Hz·300Hz 짧은 통 울림(도장 몸통).
-     · 0ms   96→54Hz 저역 '웅' 0.26초 — 속이 탁 뚫리는 무게.
-     · 마지막에 tanh 소프트 새추레이션 한 단 — 작은 폰 스피커에서도 존재감이 살고,
-       tanh 가 1 을 넘길 수 없으므로 peak 는 trim×1/tanh(drive)=0.72 아래로 묶인다
-       (오프라인 렌더 peak 0.60~0.65 · 클리핑 0 샘플 검증).
-     · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 무음. */
-  var SEAL_DRIVE = 1.2;        // 새추레이션 세기 — 약하게 눌러 배음만 더한다
-  var SEAL_TRIM = 0.70;        // 최종 크기 — tanh 뒤에 곱해 peak 를 0.5~0.75 로 맞춘다
-  function sealSoftCurve(drive) {
-    var n = 2048, c = new Float32Array(n), k = Math.tanh(drive);
-    for (var i = 0; i < n; i++) {
-      var x = (i / (n - 1)) * 2 - 1;
-      c[i] = Math.tanh(drive * x) / k;
-    }
-    return c;
-  }
+  /* 6) 낙관 도장 — 부적 위에 도장을 놓는 그 순간, **큰 북 한 번 '둥—'** (2026-11-22 김나영 님 선택)
+     `sound-preview/` 의 C안(큰 북 한 번 '둥—', 약 3초 긴 여운)을 그대로 달력에 붙였다.
+     · 0ms 어택: 92→54Hz 미끄러지는 북가죽 타격('둥!') + 저역으로 떨어지는 채 소리(700→260Hz).
+     · 몸통: 북통 기본음 55Hz·82Hz 두 겹씩 — 살짝 어긋난 쌍(±0.7Hz)은 진폭을 낮게 두어
+       여운이 출렁이지 않고 단조 감쇠로 잦아든다. 시간상수 1.0~1.3초로 2.96초까지 앉힌다.
+     · 폰 스피커 보강: 55Hz 는 작은 스피커에서 거의 안 나오므로 110·137.5·165Hz 배음을 따로 얹어
+       '둥'의 몸통을 만들었다.
+     · 220·330Hz 가죽 테두리의 얇은 배음이 먼저 사라지며 저음만 남는다 — 여운이 '둥—'으로 끝난다.
+     · 묵직해서 겹치면 뭉개지므로 내부 trim 으로 peak 를 0.5 근처에 맞춘다(오프라인 렌더 peak 0.493 · 클리핑 0).
+     · 🔊 토글이 꺼져 있으면 audioCtx() 가 null 이라 소리·진동 모두 나지 않는다. */
+  var DRUM_TRIM = 0.72;        // 최종 크기 — offline 렌더 peak 0.45~0.75 안으로 맞춘 값
   function sfxSealPress() {
     vibrate([55, 20, 95]);            // 도장이 닿는 한 번 — 묵직하게
     var ctx = audioCtx(); if (!ctx) return;
-    /* 새추레이션 버스 — 여러 겹이 겹쳐도 peak 가 1 을 넘지 않게 묶고, 속이 뚫리는 배음을 더한다 */
     var bus = ctx.createGain(); bus.gain.value = 1;
-    var shaper = ctx.createWaveShaper();
-    shaper.curve = sealSoftCurve(SEAL_DRIVE);
-    shaper.oversample = '4x';
-    var trim = ctx.createGain(); trim.gain.value = SEAL_TRIM;
-    bus.connect(shaper); shaper.connect(trim); trim.connect(ctx.destination);
+    var trim = ctx.createGain(); trim.gain.value = DRUM_TRIM;
+    bus.connect(trim); trim.connect(ctx.destination);
+    var DUR = 2.96;
 
-    /* ① 마찰 트랜지언트 — '착'의 첫 결. 하이패스 12ms + 밴드패스 95ms */
-    noise(ctx, { dur: .012, filter: 'highpass', f0: 7000, q: 0.7, gain: .40, attack: .0004, decay: 4.5, dest: bus });
-    noise(ctx, { dur: .095, filter: 'bandpass', f0: 6000, f1: 1700, q: 1.0, gain: .76, attack: .001, decay: 2.6, dest: bus });
-    /* ② 종이 섬유가 눌리는 서걱임 — 살짝 늦게 두 겹 */
-    noise(ctx, { dur: .050, filter: 'bandpass', f0: 4600, q: 1.3, gain: .27, attack: .001, at: .007, decay: 2.4, dest: bus });
-    noise(ctx, { dur: .036, filter: 'bandpass', f0: 3300, q: 1.1, gain: .16, attack: .001, at: .018, decay: 2.6, dest: bus });
-    /* ③ 단단한 나무 타격 바디 — 도장 몸통이 종이에 닿는 '툭' (520·780·300Hz 통 울림) */
-    tone(ctx, { from: 240, to: 130, type: 'triangle', gain: .31, dur: .12, attack: .0015, glide: .08, dest: bus });
-    bowlTone(ctx, 520.0, { gain: .18, dur: .22, attack: .0015, tau: .045, dest: bus });
-    bowlTone(ctx, 780.0, { gain: .09, dur: .16, attack: .0015, tau: .032, dest: bus });
-    bowlTone(ctx, 300.0, { gain: .14, dur: .30, attack: .0015, tau: .070, dest: bus });
-    /* ④ 저역 '웅' — 속이 탁 뚫리는 무게. 폰 스피커에서도 남도록 줄을 세웠다 */
-    tone(ctx, { from: 96, to: 54, type: 'sine', gain: .23, dur: .26, attack: .002, glide: .20, dest: bus });
-    bowlTone(ctx, 62.0, { gain: .045, dur: .45, attack: .004, tau: .14, dest: bus });     /* 낮게 남는 잔향 */
+    /* ① 가죽을 때리는 순간 — '둥!' */
+    tone(ctx, { from: 92, to: 54, type: 'sine', gain: .26, dur: .32, attack: .004, glide: .24, dest: bus });
+    noise(ctx, { dur: .070, filter: 'lowpass', f0: 700, f1: 260, q: .75, gain: .115, attack: .001, decay: 2.2, dest: bus });
+    noise(ctx, { dur: .024, filter: 'bandpass', f0: 1600, q: 1.1, gain: .032, attack: .0008, decay: 3, dest: bus });
+
+    /* ② 북통의 깊은 울림 — 55~82Hz, 길게. 어긋난 쌍은 진폭을 낮게 — 여운이 출렁이지 않고 잦아들게 */
+    bowlTone(ctx, 55.0,  { gain: .255, dur: DUR,        attack: .014, tau: 1.30, dest: bus });
+    bowlTone(ctx, 55.7,  { gain: .035, dur: DUR * .98,  attack: .020, tau: 1.10, dest: bus });
+    bowlTone(ctx, 82.0,  { gain: .195, dur: DUR * .94,  attack: .010, tau: 1.02, dest: bus });
+    bowlTone(ctx, 82.7,  { gain: .030, dur: DUR * .92,  attack: .014, tau: .92,  dest: bus });
+
+    /* ③ 폰 스피커에서도 들리는 몸통 — 110·137.5·165Hz */
+    bowlTone(ctx, 110.0, { gain: .145, dur: DUR * .82, attack: .008, tau: .86, dest: bus });
+    bowlTone(ctx, 137.5, { gain: .072, dur: DUR * .66, attack: .008, tau: .64, dest: bus });
+    bowlTone(ctx, 165.0, { gain: .052, dur: DUR * .56, attack: .006, tau: .50, dest: bus });
+
+    /* ④ 가죽 테두리 — 먼저 사라지는 얇은 배음 */
+    bowlTone(ctx, 220.0, { gain: .026, dur: 1.55, attack: .010, tau: .42, dest: bus });
+    bowlTone(ctx, 330.0, { gain: .011, dur: .95, attack: .008, tau: .25, dest: bus });
   }
   /* 노이즈원 — 바스락·불꽃·바람을 만드는 기본 재료 (음원 파일 없음) */
   function noise(ctx, o) {
