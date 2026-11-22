@@ -1870,8 +1870,15 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 ### 5. 날짜 상세 팝업 (잠금·결제·도장 없음)
 날짜를 누르면 **날짜 → 색 딱지 → 쉬운 한 줄 제목 → 왜 이런 날인지(2~3줄) → 🚫 오늘 피할 것 / ✅ 오늘 챙길 것** 만. 문장은 표(`LITE_DAY`)에서 고른다(같은 날은 늘 같은 말). `충·형·해·귀인·합·재성·인성·세운·원국` 같은 한자는 쓰지 않고, `"○ 기운이 하나도 없어요"` 같은 결핍 단정도 쓰지 않는다.
 
-### 6. 검증 — 로컬 `repo/calendar` · 390×844 / 360×740 / 320×700 · Playwright
-| 항목 | 결과 |
+### 6. 검증 — 로컬 `repo/calendar` + 라이브 `.../calendar/?v=20261123a` · 390×844 · Playwright
+| 항목 | 로컬(390/360/320) | 라이브 |
+|---|---|---|
+| 로드된 자산 | — | `calendar.js?v=20261123a` · `timing.js?v=20261123a` · `style.css?v=20261123a` |
+| 첫 화면 | 4덩어리 + 하단 안내 | 동일 · `visibleParked` 0 |
+| 3줄 후킹 문장 | `제일 크게 흔들리는 건 사람·관계예요. 특히 1월·7월엔 …` | 동일 |
+| 날짜 팝업 | 4색 모두 · 결제·의식 0 | 동일(`[data-shop]` 0 · 의식 0) |
+| 액운 태우기 | 열림 | 팝업 열림 확인 |
+
 |---|---|
 | 첫 화면 덩어리 | `savedBar → hook3 → card--cal → burnCard → foot` (5, 안내 포함) |
 | 감춘 요소가 보이는가 | `.v2-parked` 중 `display≠none` **0개** |
@@ -1880,11 +1887,11 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 원국표 토글 | `none → block`, 버튼 문구 `원국표 보기 ▾ ↔ 원국표 접기 ▴` |
 | 날짜 팝업 | 조심/기운UP/실속/잔잔 4종 모두 열림 · `[data-shop]` 0 · 의식(도장) 0 · 소리 버튼 숨김 |
 | 모아보기 | `⚠️ 조심` 8일 목록 · 제목 `이 달, ⚠️ 조심할 날` |
-| 콘솔 | error 0건 |
-| `LITE_MODE=false` | 5색 배지·수호 부적·빠른 이동·결제 CTA·원국표 전부 복귀 · 콘솔 0건 |
+| 콘솔 | error 0건 | error 0건 |
+| `LITE_MODE=false` | 5색 배지·수호 부적·빠른 이동·결제 CTA·원국표 전부 복귀 · 콘솔 0건 | — |
 
-스크린샷: `work/qa-lite-local-top.png`(첫 화면) · `work/qa-lite-local-modal-up.png`(날짜 팝업) · `work/qa-lite-cal-390.png`(3색 달력) · `work/qa-lite-natal-390.png`(원국표 펼침) · `work/qa-lite-local-burn.png`(액운 태우기)
-검증 스크립트: `work/qa-lite-local.py` · `work/qa-lite-local2.py` · `work/qa-lite-sweep.py`(13개월 × 3폭)
+스크린샷(라이브): `work/qa-lite-live-first.png`(첫 화면) · `work/qa-lite-live-natal.png`(원국표 펼침) · `work/qa-lite-live-cal.png`(3색 달력) · `work/qa-lite-live-modal.png`(날짜 팝업) · `work/qa-lite-live-burn.png`(액운 태우기)
+검증 스크립트: `work/qa-lite-live.py`(라이브) · `work/qa-lite-local.py` · `work/qa-lite-local2.py` · `work/qa-lite-sweep.py`(13개월 × 3폭)
 
 ### 남은 일
 - 대표님 결정: ① 상담 버튼 위치(지금은 감춤) ② 예전 기능 중 다시 살릴 것 ③ 테스트 반응 본 뒤 `TEST_OPEN_ALL`/`LITE_MODE` 전환 시점.
