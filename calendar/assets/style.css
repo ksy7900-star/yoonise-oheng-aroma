@@ -1246,7 +1246,8 @@ html.is-seal-drag { cursor: grabbing; -webkit-user-select: none; user-select: no
   transform: rotate(-90deg);
   transition: opacity .3s ease;
 }
-.seal__ring-track { fill: none; stroke: rgba(176, 52, 41, .16); stroke-width: 1.6; }
+.seal__ring-track { fill: none; stroke: rgba(176, 52, 41, .16); stroke-width: 1.6; opacity: 0; transition: opacity .25s ease; }
+.seal.is-holding .seal__ring-track { opacity: 1; }
 .seal__ring-bar {
   fill: none; stroke: #C0392B; stroke-width: 2.4; stroke-linecap: round;
   stroke-dasharray: 289.03; stroke-dashoffset: 289.03;
