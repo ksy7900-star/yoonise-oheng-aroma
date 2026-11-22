@@ -1623,3 +1623,55 @@ python3 -m http.server 8000
 | 콘솔·레이아웃 | 콘솔 오류 0건, `scrollWidth == clientWidth`(가로 넘침 0px) |
 
 스크린샷: `work/qa-seal-btn-ready.png` · `work/qa-seal-drag-over.png` · `work/qa-seal-btn-stamped.png` · `work/qa-seal-calendar.png` · `work/qa-seal-reopen.png`
+
+## 78. 2026-11-22 — 🔊 효과음 미리듣기 페이지 — 부적 열기 3종 · 도장 2종 **후보를 폰에서 직접 듣고 고르기** (`calendar/sound-preview/`)
+
+김나영 님이 폰에서 눌러 듣고 고를 수 있는 **미리듣기 전용 페이지**를 새로 띄웠다. 달력앱은 아직 건드리지 않았다 — 고른 소리만 나중에 붙인다.
+`<meta name="robots" content="noindex,nofollow">` · 검색에 잡히지 않게.
+
+**https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/sound-preview/**
+
+### 1. 소리 5종 — 순수 Web Audio 합성 (음원 파일 없음)
+| 번호 | 이름 | 길이 | 만든 방식 |
+|---|---|---|---|
+| 1 | 맑은 한옥 풍경 | 2.2초 | 쇠관 비화성 배음 `1 : 2.76 : 5.40` 을 얇게 쌓고, 배음마다 살짝 어긋난 쌍(±0.7Hz)으로 맥놀이. 4.6Hz·깊이 22% 트레몰로로 처마의 흔들림. 관을 0s·0.42s·0.95s·1.5s 에 하나씩 스친다 |
+| 2 | 단정한 목탁·죽비 | 1.2초 | 620→300Hz 짧은 '톡' + 빈 나무 공명 330Hz·495Hz(1.5배 통 울림)·165Hz + 1900/2600Hz 나무 마찰 알갱이 2회 |
+| 3 | 맑은 유리종 | 2.0초 | 유리 고유 비화성 배음 `1 : 2.32 : 4.25 : 6.63`(C6 기준), 어택 2ms · 시간상수 0.55s. 옥타브 아래 C5 를 0.016 로만 얹어 폰 스피커에서도 몸통이 있게 |
+| A | 묵직한 나무 도장 '탁!' | 0.8초 | 110→46Hz '툭' + 1400Hz 대역 35ms 접촉 + 2600→620Hz 종이 눌림 + 196Hz·294Hz 나무 몸통, 98Hz 잔향이 0.78초 남는다 |
+| B | 종이에 인주 스며드는 '착!' | 1.0초 | 5600→1500Hz 100ms 마찰('착') + 4200Hz 50ms 서걱임 + 6000Hz 이상 짧은 결 + 130.8Hz(C3)·98Hz 얇은 울림('스며드는' 여운) |
+
+- 대문 1년 부적의 6초 싱잉볼(C3–G3–C4)과 **겹치지 않게** 부적 열림 3종은 전부 2.2초 이하의 밝은 고역 — 겹쳐도 뭉개지지 않는다.
+- 코드는 `calendar.js` 사운드 모듈과 같은 `audioCtx()` · `tone()` · `bowlTone()` · `noise()` 위에 얹었고, 함수는 `sfxChimeHome(ctx, dest)` 처럼 **인자를 비우면 `ctx.destination` 으로 나가므로 달력에 그대로 붙일 수 있다**.
+
+### 2. 페이지 (`calendar/sound-preview/index.html` · 한 파일)
+- **카드 전체가 버튼** — 번호 배지 · 이름 · 설명 · 길이가 한 카드에, 오른쪽 동그란 ▶. 390px 에서 5개 모두 스크롤 없이 보인다(마지막 카드 790px).
+- **재생 중 표시**: 초록 테두리 + 번호 배지 초록 + ▶ 자리에 3막대 이퀄라이저 + 길이 자리에 `재생 중`. 길이가 끝나면 원래대로 돌아온다.
+- **이전 소리 끊기**: 새로 누르면 앞 소리는 40ms 페이드로 잦아들고 버스가 끊긴다(겹쳐 뭉개지지 않게). 미리듣기 전용 처리라 사운드 함수 안에는 넣지 않았다.
+- **5가지 차례로 듣기**: 1 → 2 → 3 → A → B, 사이 0.46초. 진행 중 `3 / 5 — …` 표시, 끝나면 버튼·힌트 원복.
+- **아이폰 첫 소리**: `pointerdown`·`touchstart` 에서 `audioCtx()` 를 미리 깨우고, 재생 직전 `resume()` 을 한 번 더. (헤드리스 클릭 후 `AudioContext.state === 'running'` 확인)
+- **달력의 🔊 끔 설정을 따르지 않는다** — 같은 `yoonise.timing.sound.v1` 를 읽으면 소리를 꺼 둔 분에게 미리듣기가 무음으로 보인다. 이 페이지는 항상 소리 낸다.
+- 안내: 무음 모드·볼륨, 이어폰보다 폰 스피커로 들을 것.
+
+### 3. 검증
+**오프라인 렌더(OfflineAudioContext · 44.1kHz)** — 클리핑 없이 실제로 소리가 나는지, 길이가 이름값인지
+| 소리 | peak | 클리핑 샘플 | 들리는 길이 |
+|---|---|---|---|
+| 1 풍경 | 0.157 | 0 | 2.08초 |
+| 2 목탁 | 0.269 | 0 | 1.08초 |
+| 3 유리종 | 0.212 | 0 | 1.96초 |
+| A 탁 | 0.309 | 0 | 0.73초 |
+| B 착 | 0.134 | 0 | 0.91초 |
+
+**라이브 (390×844 · Playwright Chromium)**
+| 항목 | 결과 |
+|---|---|
+| HTTP | **200** (`…/calendar/sound-preview/`) · `robots` = `noindex,nofollow` |
+| 5개 버튼 | 전부 클릭 → `is-playing` · `재생 중` · 이퀄라이저 `flex` · `AudioContext running` · 콘솔 오류 0건 |
+| 차례로 듣기 | `chime → moktak → glass → stampA → stampB` 순서로 표시, 끝나면 버튼 활성·힌트·길이 원복 |
+| 소리 끔 저장 후 | `localStorage` 에 `0` 을 넣고 새로 열어도 `running` (미리듣기는 무음이 되지 않음) |
+| 레이아웃 | `scrollWidth == clientWidth` 390 · 360 · 320 모두 0px 넘침, 겹치는 요소 0 |
+
+스크린샷: `work/qa-sound-preview-live-2026-11-22.png` · `work/qa-sound-preview-playing-2026-11-22.png` · `work/qa-sound-preview-bottom-2026-11-22.png` · `work/qa-sound-preview-360.png`
+
+### 4. 남은 일
+- 김나영 님이 고른 번호를 받아 `calendar.js` 의 날짜 부적 열림·낙관 도장 지점에 연결한다(현재 `sfxBless`=대문 6초 싱잉볼, `sfxSealPress`=돌도장 저음). 미리듣기 페이지는 그때도 그대로 두고 비교용으로 쓸 수 있다.
