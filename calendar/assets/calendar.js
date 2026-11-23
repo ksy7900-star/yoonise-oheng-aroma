@@ -1381,7 +1381,31 @@
      저장 위치: 이 기기(localStorage) — 서버로 보내지 않는다. */
   var NIGHT_KEY = 'yoonise.nightcheck.v1';
   var night = { entries: {} };
-  var NIGHT_MOODS = { ok: '😌 잘 넘겼다', did: '⚡ 해냈다', shaky: '🌀 흔들렸다' };
+  /* 🌙 1초 체크 버튼 문구 — 그날 성격에 맞춰 다르게 (2026-11-23 3차 김나영 님)
+     저장 키(ok·did·shaky)는 그대로 두어 예전에 남긴 기록도 그대로 살아난다.
+       ⚠️ 조심 날      : 잘 참았다 · 선 지켰다 · 흔들렸다
+       ⚡ 기운 UP 날    : 밀어붙였다 · 먼저 움직였다 · 놓쳤다
+       🌿 실속·보통 날  : 정리 끝냈다 · 무난했다 · 흔들렸다 */
+  var NIGHT_MOODS = {
+    warn: { ok: '😌 잘 참았다', did: '🛡️ 선 지켰다', shaky: '🌀 흔들렸다' },
+    up: { ok: '⚡ 밀어붙였다', did: '🤝 먼저 움직였다', shaky: '😶 놓쳤다' },
+    calm: { ok: '🌿 정리 끝냈다', did: '😌 무난했다', shaky: '🌀 흔들렸다' }
+  };
+  /** 그날이 어느 무리인가 — 달력에 붙은 색 그대로(조심/기운UP/실속·보통) */
+  function nightMoodSet(info) {
+    var k = '';
+    if (LITE_MODE) {
+      try { k = litePrimary(info).kind; } catch (e) { k = ''; }
+    } else {
+      var mk = (info && info.marks) || [];
+      var red = mk.some(function (m) { return m.cat === 'red' && !m.minor; });
+      var gold = mk.some(function (m) { return m.cat === 'gold' && !m.minor; });
+      k = red ? 'chung' : (gold ? 'hap' : 'calm');
+    }
+    if (k === 'chung' || k === 'hyeong' || k === 'hae') return NIGHT_MOODS.warn;
+    if (k === 'gwiyin' || k === 'hap') return NIGHT_MOODS.up;
+    return NIGHT_MOODS.calm;
+  }
 
   function loadNight() {
     var o = null;
@@ -3925,8 +3949,9 @@
     var rec = nightOf(info.iso) || {};
     var memo = rec.memo || '';
     var on = rec.mood || '';
+    var moods = nightMoodSet(info);
     var btns = ['ok', 'did', 'shaky'].map(function (k) {
-      var parts = NIGHT_MOODS[k].split(' ');
+      var parts = moods[k].split(' ');
       return '<button type="button" class="ncbtn' + (on === k ? ' is-on' : '') + '" data-night-mood="' + k + '"' +
         ' aria-pressed="' + (on === k ? 'true' : 'false') + '"><span aria-hidden="true">' + parts[0] + '</span>' + parts.slice(1).join(' ') + '</button>';
     }).join('');
