@@ -2630,3 +2630,31 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 지난 날 칸 22개(11/1~22) 모두 버튼·불투명도 1·3색 딱지 그대로 — 눌러 볼 수 있다는 게 보인다.
 - 콘솔 오류 0 · pageerror 0 · `/calendar/member/?v=20261123y` 오류 0.
 - 스크립트: `work/qa-pastday/test_pastday.py`(체험 1일차·체험 종료 두 상황) · `work/qa-pastday/check_grid.py`(칸 상태·추가 날짜) · 캡처 `work/qa-pastday/live-*.png`
+
+## §106. 🔗 케미 [친구에게 보내기] — 카톡에 링크가 가게 · 공유 URL 중복 제거 · 초대 혜택 문구 7일 통일 (2026-11-23)
+
+자산: `calendar/member/member.js` · `calendar/member/member.css` · `calendar/member/index.html` · `calendar/assets/calendar.js` · `calendar/index.html` · `calendar/sw.js` · 버전 **`20261123z3`**
+(김나영 님 실기기 제보 `#17252` → 추가 지적 `#17281`(캡처 6960) → 확정 `#17292`)
+
+### 1. 무엇이 문제였나
+- `[친구에게 보내기]`(`shareAmul`)가 `navigator.share({ files: [부적 PNG], text })`로 **그림과 글을 같이** 넘겼다. 안드로이드·iOS 카톡은 `files`가 있으면 그림만 받고 `text`(내 `?ref=` 초대 링크 + 케미 링크)를 잘라 버려서, 친구에게 링크가 가지 않았다.
+- `[내 링크 바로 보내기]`(`onShareMyLink`)는 `text` 끝에도 주소를 넣고 `url`로도 넘겨서, 안드로이드 크롬이 `text + ' ' + url`로 합치는 특성 때문에 **같은 긴 URL이 두 번** 찍혔다(캡처 6960).
+- 제목이 옛 이름 `윤이세 2027 타이밍 캘린더`였고, 초대 혜택 문구가 `9일 체험`(기본 7일 + 초대 2일)으로 갈라져 있었다.
+
+### 2. 어떻게 고쳤나
+- **`shareAmul(ch)` — 그림 없이 링크만**: `{ title: '내 사주 타이밍 달력', text: 한 줄 문구, url: chemiLink(ch) }`. 그림 저장은 바로 옆 `[이미지로 저장]`이 전담. `toBlob` 비동기가 빠져 공유가 클릭 제스처 안에서 바로 시작된다.
+- **주소는 `url` 한 곳에만**: `text`에는 문구만 넣고, 클립보드로 떨어질 때(`copyText` fallback)만 `문구 + '\n' + url`로 합쳐 복사한다. `onShareMyLink`도 같은 규칙.
+- **로그인 전에는 막지 않는다**: 그대로 보내지고(케미는 열린다) `?ref=`만 빠진다. 버튼 아래 한 줄(`#shareAmulNote`, `.share-note`)이 "카카오로 연결하면 보내는 링크에 내 초대 코드도 함께 담겨요 — 지금 보내도 우리 둘 케미는 그대로 열려요"로 미리 알린다(로그인 상태면 이 줄 없음).
+- **이름·혜택 문구 통일**: 공유 제목 `'내 사주 타이밍 달력'`, `FRIEND_GIFT` = `7일 무료 체험과 액운 태우기 1회`, 카톡 공유 문구 "내 링크로 들어오면 7일 무료 체험과 액운 태우기 1회가 열리고, 우리 둘 2027년 케미도 볼 수 있어."
+- **`9일` 전면 폐기(확정 #17292)**: `INVITE_DAYS_BONUS = 2 → 0`(초대 보너스는 액운 태우기 `+1회`만), member 배너·gift 카드·로그인 안내 3줄·달력 초대 배너(`inviteBarT`)·웰컴 팝업까지 `7일`로 정리. 달력 쪽 문구는 원래 `FREE_DAYS` 변수를 쓰므로 보너스 0으로 두면 자동으로 7일이 된다.
+
+### 3. 검증 (라이브 `?v=20261123z3` · Playwright 390×844 · Android UA · `navigator.share` 가로채 payload 확인)
+| 상황 | `text` | `url` | `files` | 결과 |
+| --- | --- | --- | --- | --- |
+| 로그인 · `[친구에게 보내기]` | 케미 한 줄(주소 없음) | `…/member/?chemi=199005120000-F0&from=나&rel=friend&ref=P12345` | 없음(키 자체 없음) | 통과 |
+| 로그인 · `[내 링크 바로 보내기]` | 사다리 문구 2줄(주소 없음) | 같은 통합 링크 `…&ref=P12345` | 없음 | 통과 |
+| 로그인 전 · `[친구에게 보내기]` | 케미 한 줄 | `…&rel=friend` (`ref` 없음) | 없음 | 통과 · `#shareAmulNote` 보임 |
+- 콘솔 오류 0 · pageerror 0 · `window.__errs` 0 (두 경우 모두). 캡처 `work/qa-share/live-in-buttons.png` · `live-out-buttons.png`.
+- 초대 링크로 들어온 달력(`/calendar/?ref=P12345&v=20261123z3`): `초대 혜택 적용 중 · 7일 무료` · 웰컴 팝업 `🎁 친구 초대 링크로 오셨어요 · 7일 무료 + 액운 태우기 1회 더` · `data-trial="on"` · 오류 0. `9일`은 날짜 표기(9일·19일·29일)뿐. 캡처 `work/qa-share/live-cal-invited.png`.
+- 스크립트: `work/qa-share/test_share.py`(로그인 목 세션 + Supabase REST 목으로 `invite_code=P12345`) · `work/qa-share/test_cal7.py`
+- 남긴 것: 부적 카드 하단 각인은 `윤이세사주 · 2027 타이밍 캘린더` 그대로(제품명 통일은 별건 — `내 타이밍 캘린더 열기` 버튼 등과 함께 결정 필요).
