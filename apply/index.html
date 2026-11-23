@@ -146,16 +146,8 @@ a { color: inherit; }
   margin-top: 5px; font-family: var(--serif); font-size: 19px;
   line-height: 1.4; font-weight: 600; letter-spacing: -.03em;
 }
-.prod__desc { margin-top: 5px; font-size: 12px; line-height: 1.75; color: var(--ink-2); }
+.prod__desc { margin-top: 7px; font-size: 12.5px; line-height: 1.85; color: var(--ink-2); }
 .prod__desc b { color: var(--ink); }
-.prod__list { margin-top: 9px; display: flex; flex-direction: column; gap: 3px; }
-.prod__list li {
-  position: relative; padding-left: 13px; font-size: 11.5px; line-height: 1.6; color: var(--ink-2);
-}
-.prod__list li::before {
-  content: ""; position: absolute; left: 2px; top: 7px;
-  width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
-}
 
 /* ── 신청 양식 ───────────────────────────── */
 .cform {
@@ -168,6 +160,32 @@ a { color: inherit; }
   font-size: 12px; font-weight: 700; color: #475569; letter-spacing: -.01em;
 }
 .cform__head span { font-size: 9.5px; font-weight: 400; color: var(--mute); letter-spacing: 0; line-height: 1.55; }
+
+/* ── [개명] / [신생아 작명] 토글 (개명·작명 상품에서만) ──── */
+.namemode {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+  margin-top: 10px; padding: 5px; border-radius: 15px;
+  background: #FFFFFF; border: 1px solid rgba(15, 23, 42, .14);
+}
+.namemode__btn {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 9px 6px 8px; border-radius: 11px; border: 1px solid transparent;
+  background: #F1F5F9; color: var(--ink-2); font-family: inherit;
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1.4;
+  transition: background .18s ease, color .18s ease;
+}
+.namemode__btn em { font-style: normal; font-size: 9px; font-weight: 600; opacity: .62; letter-spacing: -.01em; }
+.namemode__btn.is-on { background: #1E293B; color: #F8FAFC; box-shadow: 0 10px 18px -14px rgba(15, 23, 42, .9); }
+.namemode__btn.is-on em { opacity: .78; }
+.namemode__btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* ── 부모님 사주 묶음 ─────────────────── */
+.cform__sub {
+  margin-top: 6px; padding: 11px 11px 12px; border-radius: 14px;
+  background: #FFFFFF; border: 1px dashed rgba(15, 23, 42, .18);
+}
+.cform__sub .cform__row { margin-top: 10px; }
+.cform__sub .cform__row:first-child { margin-top: 0; }
 .cform__row { display: block; margin-top: 12px; }
 .cform__row:first-of-type { margin-top: 11px; }
 .cform__row--chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -207,6 +225,7 @@ a { color: inherit; }
 .chip:active { transform: scale(.97); }
 .chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .cform__note { margin-top: 5px; font-size: 9.5px; line-height: 1.6; color: var(--mute); }
+.checks { display: flex; flex-direction: column; }
 .check {
   display: inline-flex; align-items: center; gap: 7px; margin-top: 7px;
   font-size: 11px; font-weight: 600; color: #475569;
@@ -409,7 +428,6 @@ a { color: inherit; }
     <p class="prod__eyebrow" id="prodEyebrow">1:1 POINT READING</p>
     <h2 class="prod__title" id="prodTitle">🔎 원포인트 리딩</h2>
     <p class="prod__desc" id="prodDesc"></p>
-    <ul class="prod__list" id="prodList"></ul>
   </section>
 
   <section class="pay" aria-label="결제">
@@ -439,34 +457,105 @@ a { color: inherit; }
   <section class="cform" aria-labelledby="formHead">
     <p class="cform__head" id="formHead">📝 상담 신청서 <span id="formHint">여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요</span></p>
 
-    <label class="cform__row"><span class="cform__lb"><b id="noName">①</b> 성함</span>
-      <input type="text" class="cform__input" id="fName" placeholder="예: 김나영" autocomplete="name" maxlength="30"></label>
+    <!-- 개명·작명 상품에서만 — [개명] / [신생아 작명] 가르는 토글 (기본: 개명) -->
+    <div class="namemode" id="nameMode" role="group" aria-label="신청 종류" hidden>
+      <button type="button" class="namemode__btn is-on" data-namemode="rename" aria-pressed="true">개명<em>지금 쓰는 이름</em></button>
+      <button type="button" class="namemode__btn" data-namemode="baby" aria-pressed="false">신생아 작명<em>태어날 아기 이름</em></button>
+    </div>
 
-    <label class="cform__row" id="rowHanja" hidden><span class="cform__lb"><b id="noHanja">②</b> 현재 사용하는 주민등록상 한자</span>
-      <input type="text" class="cform__input" id="fHanja" placeholder="예: 金娜榮 (모르시면 '모름')" autocomplete="off" maxlength="40">
-      <span class="cform__note">신생아 작명은 성씨 한자만 적어 주세요. (예: 金)</span></label>
+    <!-- ── 나(개명)·일반 상담가 공통 ─────────────────────────── -->
+    <div id="partMe">
+      <label class="cform__row"><span class="cform__lb"><b id="noName">①</b> 성함</span>
+        <input type="text" class="cform__input" id="fName" placeholder="예: 김나영" autocomplete="name" maxlength="30"></label>
 
-    <label class="cform__row"><span class="cform__lb"><b id="noBirth">②</b> 생년월일시</span>
-      <input type="text" class="cform__input" id="fBirth" placeholder="예: 1979-08-08 08:30" inputmode="numeric" autocomplete="off" maxlength="20">
-      <span class="check"><input type="checkbox" id="fTimeUnknown"> 태어난 시간은 몰라요 (날짜만 적어도 돼요)</span></label>
+      <label class="cform__row" id="rowHanja" hidden><span class="cform__lb"><b id="noHanja">②</b> 현재 사용하는 주민등록상 한자</span>
+        <input type="text" class="cform__input" id="fHanja" placeholder="예: 金娜榮 (모르시면 '모름')" autocomplete="off" maxlength="40"></label>
 
-    <div class="cform__row cform__row--chips"><span class="cform__lb"><b id="noCal">③</b>&nbsp;양력·음력·윤달</span>
-      <span class="chips" role="group" aria-label="양력 음력 윤달">
-        <button type="button" class="chip is-on" data-cal="solar" aria-pressed="true">양력</button>
-        <button type="button" class="chip" data-cal="lunar" aria-pressed="false">음력</button>
-        <button type="button" class="chip" data-cal="leap" aria-pressed="false">음력 윤달</button>
-      </span></div>
+      <label class="cform__row"><span class="cform__lb"><b id="noBirth">②</b> 생년월일시</span>
+        <input type="text" class="cform__input" id="fBirth" placeholder="예: 1979-08-08 08:30" inputmode="numeric" autocomplete="off" maxlength="20">
+        <span class="check"><input type="checkbox" id="fTimeUnknown"> 태어난 시간은 몰라요 (날짜만 적어도 돼요)</span></label>
 
-    <div class="cform__row cform__row--chips"><span class="cform__lb"><b id="noGender">④</b>&nbsp;성별</span>
-      <span class="chips" role="group" aria-label="성별" id="genderGroup">
-        <button type="button" class="chip" data-gender="F" aria-pressed="false">여성</button>
-        <button type="button" class="chip" data-gender="M" aria-pressed="false">남성</button>
-      </span></div>
+      <div class="cform__row cform__row--chips"><span class="cform__lb"><b id="noCal">③</b>&nbsp;양력·음력·윤달</span>
+        <span class="chips" role="group" aria-label="양력 음력 윤달">
+          <button type="button" class="chip is-on" data-chip="cal" data-g="calMe" data-v="solar" aria-pressed="true">양력</button>
+          <button type="button" class="chip" data-chip="cal" data-g="calMe" data-v="lunar" aria-pressed="false">음력</button>
+          <button type="button" class="chip" data-chip="cal" data-g="calMe" data-v="leap" aria-pressed="false">음력 윤달</button>
+        </span></div>
+
+      <div class="cform__row cform__row--chips"><span class="cform__lb"><b id="noGender">④</b>&nbsp;성별</span>
+        <span class="chips" role="group" aria-label="성별">
+          <button type="button" class="chip" data-chip="gender" data-g="genderMe" data-v="F" aria-pressed="false">여성</button>
+          <button type="button" class="chip" data-chip="gender" data-g="genderMe" data-v="M" aria-pressed="false">남성</button>
+        </span></div>
+    </div>
+
+    <!-- ── 신생아 작명 ─────────────────────────────────────── -->
+    <div id="partBaby" hidden>
+      <div class="cform__row">
+        <span class="cform__lb"><b id="noBaby">①</b> 아기 생년월일시</span>
+        <input type="text" class="cform__input" id="fBabyBirth" placeholder="예: 2026-12-01 14:20 (출산 예정일도 가능)" inputmode="numeric" autocomplete="off" maxlength="24">
+        <span class="checks">
+          <label class="check"><input type="checkbox" id="fBabyTimeUnknown"> 태어난 시간은 몰라요</label>
+          <label class="check"><input type="checkbox" id="fBabyDue"> 출산 예정일이에요</label>
+        </span>
+      </div>
+
+      <div class="cform__row"><span class="cform__lb">아기 양력·음력·윤달</span>
+        <span class="chips" role="group" aria-label="아기 양력 음력 윤달">
+          <button type="button" class="chip is-on" data-chip="cal" data-g="calBaby" data-v="solar" aria-pressed="true">양력</button>
+          <button type="button" class="chip" data-chip="cal" data-g="calBaby" data-v="lunar" aria-pressed="false">음력</button>
+          <button type="button" class="chip" data-chip="cal" data-g="calBaby" data-v="leap" aria-pressed="false">음력 윤달</button>
+        </span></div>
+
+      <div class="cform__row"><span class="cform__lb">아기 성별</span>
+        <span class="chips" role="group" aria-label="아기 성별">
+          <button type="button" class="chip" data-chip="gender" data-g="genderBaby" data-v="F" aria-pressed="false">여성</button>
+          <button type="button" class="chip" data-chip="gender" data-g="genderBaby" data-v="M" aria-pressed="false">남성</button>
+          <button type="button" class="chip" data-chip="gender" data-g="genderBaby" data-v="U" aria-pressed="false">미정</button>
+        </span></div>
+
+      <label class="cform__row"><span class="cform__lb"><b id="noBabySur">②</b> 아버지 한자 성(姓)</span>
+        <input type="text" class="cform__input" id="fBabySur" placeholder="예: 金" autocomplete="off" maxlength="20"></label>
+
+      <div class="cform__row">
+        <span class="cform__lb"><b id="noParents">③</b> 부모님 사주</span>
+        <div class="cform__sub">
+          <label class="cform__row"><span class="cform__lb">아버지(부) 생년월일시 <i>시간 모르면 날짜만</i></span>
+            <input type="text" class="cform__input" id="fDadBirth" placeholder="예: 1975-04-12 06:30" inputmode="numeric" autocomplete="off" maxlength="20"></label>
+          <div class="cform__row"><span class="cform__lb">아버지 양력·음력</span>
+            <span class="chips" role="group" aria-label="아버지 양력 음력">
+              <button type="button" class="chip is-on" data-chip="cal" data-g="calDad" data-v="solar" aria-pressed="true">양력</button>
+              <button type="button" class="chip" data-chip="cal" data-g="calDad" data-v="lunar" aria-pressed="false">음력</button>
+              <button type="button" class="chip" data-chip="cal" data-g="calDad" data-v="leap" aria-pressed="false">음력 윤달</button>
+            </span></div>
+          <label class="cform__row"><span class="cform__lb">어머니(모) 생년월일시 <i>시간 모르면 날짜만</i></span>
+            <input type="text" class="cform__input" id="fMomBirth" placeholder="예: 1978-09-03 11:10" inputmode="numeric" autocomplete="off" maxlength="20"></label>
+          <div class="cform__row"><span class="cform__lb">어머니 양력·음력</span>
+            <span class="chips" role="group" aria-label="어머니 양력 음력">
+              <button type="button" class="chip is-on" data-chip="cal" data-g="calMom" data-v="solar" aria-pressed="true">양력</button>
+              <button type="button" class="chip" data-chip="cal" data-g="calMom" data-v="lunar" aria-pressed="false">음력</button>
+              <button type="button" class="chip" data-chip="cal" data-g="calMom" data-v="leap" aria-pressed="false">음력 윤달</button>
+            </span></div>
+        </div>
+      </div>
+
+      <div class="cform__row cform__row--chips"><span class="cform__lb"><b id="noDol">④</b>&nbsp;돌림자</span>
+        <span class="chips" role="group" aria-label="돌림자 사용 여부">
+          <button type="button" class="chip is-on" data-chip="dol" data-g="dol" data-v="no" aria-pressed="true">사용 안 함</button>
+          <button type="button" class="chip" data-chip="dol" data-g="dol" data-v="yes" aria-pressed="false">사용함</button>
+        </span></div>
+
+      <label class="cform__row" id="rowDol" hidden><span class="cform__lb">돌림자 글자</span>
+        <input type="text" class="cform__input" id="fDol" placeholder="예: 洙 (돌림자 한 글자)" autocomplete="off" maxlength="10"></label>
+
+      <label class="cform__row"><span class="cform__lb"><b id="noSib">⑤</b> 다른 자녀가 있다면 자녀 이름 <i>선택</i></span>
+        <input type="text" class="cform__input" id="fSib" placeholder="있으면 이름 / 한자 적기" autocomplete="off" maxlength="60"></label>
+    </div>
 
     <label class="cform__row"><span class="cform__lb"><b id="noWho">⑤</b> 연락처 또는 입금자명 <i>결제 확인용</i></span>
       <input type="text" class="cform__input" id="fWho" placeholder="카드결제는 휴대폰 번호 · 계좌이체는 입금자명" autocomplete="off" maxlength="40"></label>
 
-    <label class="cform__row"><span class="cform__lb"><b id="noQ">⑥</b> <span id="qLabel">가장 궁금한 점</span> <i id="qHint">· 1가지면 충분해요</i></span>
+    <label class="cform__row" id="rowQ"><span class="cform__lb"><b id="noQ">⑥</b> <span id="qLabel">가장 궁금한 점</span> <i id="qHint">· 1가지면 충분해요</i></span>
       <input type="text" class="cform__input" id="fQ" placeholder="예: 지금 이직을 해도 될까요?" autocomplete="off" maxlength="120"></label>
 
     <label class="privacy" id="privacyRow">
@@ -512,7 +601,7 @@ a { color: inherit; }
   var BANK = '504-20-454146';
 
   /* 상품 3종 — 탭을 고르면 아래 문구·금액·결제 링크·질문 칸 이름이 함께 바뀐다
-     (2026-11-22: 대표 상담 상품명을 '시그니처 리딩'으로 통일) */
+     (2026-11-23 §97: 불릿 3줄을 걷어 내고 김나영 님 확정 문구 한 문단만 남겼다) */
   var PRODUCTS = {
     onepoint: {
       key: 'onepoint',
@@ -522,8 +611,7 @@ a { color: inherit; }
       priceNum: 49000,
       payName: '원포인트 고민해결',
       eyebrow: '1:1 POINT READING',
-      desc: '지금 걸리는 <b>딱 1가지 고민</b>만 놓고, 지금 움직일지 기다릴지 명쾌하게 짚어 드려요.',
-      list: ['가장 급한 질문 하나에 집중', '지금 할 일 · 미룰 일 정리', '카톡으로 정리해 전달'],
+      desc: '지금 가장 신경 쓰이는 딱 한 가지 고민, 움직일지 기다릴지 명쾌하게 짚어 드려요.',
       pay: 'https://www.payapp.kr/L/z4ovI1',
       order: '[윤이세 원포인트 리딩 신청] 49,000원',
       qLabel: '가장 궁금한 점',
@@ -539,8 +627,7 @@ a { color: inherit; }
       priceNum: 100000,
       payName: '시그니처 리딩',
       eyebrow: 'SIGNATURE READING',
-      desc: '타고난 기질부터 재물·관계·일의 흐름, <b>대운의 큰 방향</b>까지 한 번에 보는 대표 상담이에요.',
-      list: ['타고난 기질과 강점', '재물 · 관계 · 일의 흐름', '대운·세운으로 보는 방향'],
+      desc: '내 사주의 타고난 구조와 지금 들어온 운의 흐름을 짚어, 얽혀 있는 고민과 앞으로의 방향을 깊이 있게 풀어 드려요.',
       pay: 'https://www.payapp.kr/L/z4ovJ1',
       order: '[윤이세 시그니처 리딩 신청] 100,000원',
       qLabel: '중점 상담 분야',
@@ -556,18 +643,28 @@ a { color: inherit; }
       priceNum: 200000,
       payName: '개명.작명',
       eyebrow: 'NAME READING',
-      desc: '사주에 부족한 기운을 채우는 <b>평생 쓸 이름</b>을 설계해 드려요. 개명도, 신생아 작명도.',
-      list: ['이름 후보 3~5개 + 이름 풀이', '선명장(한자·획수·소리) 정리', '신생아 작명은 성씨(예: 金) 한자만 알려주시면 돼요'],
+      desc: '사주에 모자란 기운을 채우고 부를수록 좋은 평생 이름, 맞춤 풀이를 담은 PDF 파일로 정성껏 전달해 드려요. (개명 · 신생아 작명 선택 가능)',
       pay: 'https://www.payapp.kr/L/z4ovK8',
-      order: '[윤이세 개명·작명 신청] 200,000원',
-      qLabel: '원하는 느낌 · 피하고 싶은 글자',
-      qHint: '· 선택',
-      qPh: '예: 부드러운 느낌 / 돌림자 피하고 싶어요',
-      qRequired: false
+      order: '[윤이세 개명·작명 신청] 200,000원'
     }
   };
 
-  var state = { type: 'onepoint', cal: 'solar', gender: '' };
+  /* 신청서 칸 — 상품과 신청 종류에 따라 보이는 칸이 달라진다
+     개명·작명 안에서만 nameMode: 'rename'(개명) / 'baby'(신생아 작명) */
+  var state = {
+    type: 'onepoint',
+    nameMode: 'rename',
+    chips: {
+      calMe: 'solar', calBaby: 'solar', calDad: 'solar', calMom: 'solar',
+      genderMe: '', genderBaby: '', dol: 'no'
+    }
+  };
+
+  var PH_ME_FULL = '예: 1979-08-08 08:30';
+  var PH_ME_DATE = '예: 1979-08-08';
+  var PH_BABY_FULL = '예: 2026-12-01 14:20 (출산 예정일도 가능)';
+  var PH_BABY_DATE = '예: 2026-12-01 (출산 예정일도 가능)';
+
   var $ = function (id) { return document.getElementById(id); };
   var shakeTimer = null;
   var lastPhoneMirror = '';
@@ -580,23 +677,19 @@ a { color: inherit; }
      sessionStorage 에 잠깐 적어 두고, 돌아와 한 번만 되살린 뒤 바로 지운다. */
   var STORE_KEY = 'yoonise.apply.v1';
   var storeOk = true;
+  var TEXT_FIELDS = ['fPhone', 'fName', 'fHanja', 'fBirth', 'fWho', 'fQ',
+                     'fBabyBirth', 'fBabySur', 'fDadBirth', 'fMomBirth', 'fDol', 'fSib'];
+  var FORM_FIELDS = ['fName', 'fHanja', 'fBirth', 'fWho', 'fQ',
+                     'fBabyBirth', 'fBabySur', 'fDadBirth', 'fMomBirth', 'fDol', 'fSib'];
+  var CHECK_FIELDS = ['fTimeUnknown', 'fBabyTimeUnknown', 'fBabyDue', 'fPrivacy'];
+
   function storeSave() {
     if (!storeOk) return;
     try {
-      sessionStorage.setItem(STORE_KEY, JSON.stringify({
-        fromPay: true,          /* 결제 다녀온 복귀용 — 이 표시가 있을 때만 되살린다 */
-        type: state.type,
-        fPhone: $('fPhone').value,
-        fName: $('fName').value,
-        fHanja: $('fHanja').value,
-        fBirth: $('fBirth').value,
-        fTimeUnknown: $('fTimeUnknown').checked,
-        cal: state.cal,
-        gender: state.gender,
-        fWho: $('fWho').value,
-        fQ: $('fQ').value,
-        fPrivacy: $('fPrivacy').checked
-      }));
+      var o = { fromPay: true, type: state.type, nameMode: state.nameMode, chips: state.chips };
+      TEXT_FIELDS.forEach(function (id) { var el = $(id); if (el) o[id] = el.value; });
+      CHECK_FIELDS.forEach(function (id) { var el = $(id); if (el) o[id] = el.checked; });
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(o));
     } catch (e) { storeOk = false; }
   }
   function storeLoad() {
@@ -642,14 +735,24 @@ a { color: inherit; }
     }
     bar.hidden = false;
   }
-  function setChips(attr, val) {
-    Array.prototype.forEach.call(document.querySelectorAll('[' + attr + ']'), function (x) {
-      var on = x.getAttribute(attr) === val;
+
+  /* ── 칩 (양력·음력·윤달 / 성별 / 돌림자) ─────────── */
+  function chipSet(g, v) {
+    if (!(g in state.chips)) return;
+    state.chips[g] = v;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-chip]'), function (x) {
+      if (x.getAttribute('data-g') !== g) return;
+      var on = x.getAttribute('data-v') === v;
       x.classList.toggle('is-on', on);
       x.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    if (g === 'dol') $('rowDol').hidden = v !== 'yes';
   }
-  /* 결제창에 적은 휴대폰 번호를 신청서 '연락처' 칸에도 그대로 — 두 번 적지 않게 */
+  function chipFirst(g) {
+    return document.querySelector('[data-chip][data-g="' + g + '"]');
+  }
+
+  /* 신청서 '연락처' 칸에 결제용 번호를 그대로 — 두 번 적지 않게 */
   function mirrorPhone() {
     var v = $('fPhone').value.trim();
     var w = $('fWho').value.trim();
@@ -658,42 +761,83 @@ a { color: inherit; }
       lastPhoneMirror = v;
     }
   }
+
+  /* ── 칸 배치 — 상품·신청 종류에 따라 보이는 칸과 번호가 바뀐다 ── */
+  function num(id, t) { var el = $(id); if (el) el.textContent = t; }
+  function layout() {
+    var naming = state.type === 'naming';
+    var baby = naming && state.nameMode === 'baby';
+
+    $('nameMode').hidden = !naming;
+    $('partMe').hidden = baby;
+    $('partBaby').hidden = !baby;
+    $('rowHanja').hidden = !(naming && !baby);
+    $('rowQ').hidden = naming;
+    $('rowDol').hidden = !baby || state.chips.dol !== 'yes';
+
+    if (!naming) {
+      num('noName', '①'); num('noBirth', '②'); num('noCal', '③');
+      num('noGender', '④'); num('noWho', '⑤'); num('noQ', '⑥');
+    } else if (!baby) {
+      num('noName', '①'); num('noHanja', '②'); num('noBirth', '③'); num('noCal', '④');
+      num('noGender', '⑤'); num('noWho', '⑥');
+    } else {
+      num('noBaby', '①'); num('noBabySur', '②'); num('noParents', '③');
+      num('noDol', '④'); num('noSib', '⑤'); num('noWho', '⑥');
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-namemode]'), function (x) {
+      var on = x.getAttribute('data-namemode') === state.nameMode;
+      x.classList.toggle('is-on', on);
+      x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    $('formHint').textContent = naming
+      ? '칸을 다 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요'
+      : '여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요';
+  }
+
   function restoreForm(d) {
     if (!d) return;
-    if (typeof d.fPhone === 'string') { $('fPhone').value = d.fPhone; lastPhoneMirror = d.fPhone; }
-    if (typeof d.fName === 'string') $('fName').value = d.fName;
-    if (typeof d.fHanja === 'string') $('fHanja').value = d.fHanja;
-    if (typeof d.fBirth === 'string') $('fBirth').value = d.fBirth;
-    if (typeof d.fWho === 'string') $('fWho').value = d.fWho;
-    if (typeof d.fQ === 'string') $('fQ').value = d.fQ;
-    if (d.cal === 'solar' || d.cal === 'lunar' || d.cal === 'leap') {
-      state.cal = d.cal;
-      setChips('data-cal', d.cal);
+    if (d.nameMode === 'baby' || d.nameMode === 'rename') state.nameMode = d.nameMode;
+    TEXT_FIELDS.forEach(function (id) {
+      var el = $(id);
+      if (el && typeof d[id] === 'string') el.value = d[id];
+    });
+    if (typeof d.fPhone === 'string') lastPhoneMirror = d.fPhone;
+    CHECK_FIELDS.forEach(function (id) {
+      var el = $(id);
+      if (el && d[id]) el.checked = true;
+    });
+    if (d.chips && typeof d.chips === 'object') {
+      Object.keys(state.chips).forEach(function (g) {
+        if (typeof d.chips[g] === 'string') chipSet(g, d.chips[g]);
+      });
     }
-    if (d.gender === 'F' || d.gender === 'M') {
-      state.gender = d.gender;
-      setChips('data-gender', d.gender);
-    }
-    if (d.fTimeUnknown) {
-      $('fTimeUnknown').checked = true;
-      $('fBirth').placeholder = '예: 1979-08-08';
-    }
-    if (d.fPrivacy) $('fPrivacy').checked = true;
+    if ($('fTimeUnknown').checked) $('fBirth').placeholder = PH_ME_DATE;
+    if ($('fBabyTimeUnknown').checked) $('fBabyBirth').placeholder = PH_BABY_DATE;
+    layout();
   }
+
   /* 모든 칸을 '처음 받았을 때' 그대로 — 양력 · 성별 미선택 · 빈 칸 · 동의 미체크
      (결제 확인용 휴대폰 번호는 상품과 무관하므로 지우지 않고 신청서에 다시 채워 둔다) */
   function resetForm() {
-    ['fName', 'fHanja', 'fBirth', 'fWho', 'fQ'].forEach(function (id) { $(id).value = ''; });
-    $('fTimeUnknown').checked = false;
-    $('fBirth').placeholder = '예: 1979-08-08 08:30';
-    $('fPrivacy').checked = false;
-    state.cal = 'solar';
-    setChips('data-cal', 'solar');
-    state.gender = '';
-    setChips('data-gender', '');      /* 아무것도 골라지지 않은 상태 */
+    FORM_FIELDS.forEach(function (id) { var el = $(id); if (el) el.value = ''; });
+    CHECK_FIELDS.forEach(function (id) { var el = $(id); if (el) el.checked = false; });
+    $('fBirth').placeholder = PH_ME_FULL;
+    $('fBabyBirth').placeholder = PH_BABY_FULL;
+    chipSet('calMe', 'solar');
+    chipSet('calBaby', 'solar');
+    chipSet('calDad', 'solar');
+    chipSet('calMom', 'solar');
+    chipSet('genderMe', '');
+    chipSet('genderBaby', '');
+    chipSet('dol', 'no');
+    state.nameMode = 'rename';
     $('copybox').hidden = true;
     lastPhoneMirror = '';
     mirrorPhone();
+    layout();
     clearMsg();
   }
 
@@ -703,7 +847,7 @@ a { color: inherit; }
     var d = storeLoad();
     var fromPay = !!(d && d.fromPay === true);
     if (d) storeClear();              /* 1회성 — 읽는 즉시 지워 두 번 되살아나지 않게 */
-    payRestored = !!(fromPay && PRODUCTS[d.type] && d.type === state.type);
+    payRestored = !!(fromPay && d.type && PRODUCTS[d.type] && d.type === state.type);
     if (payRestored) restoreForm(d);
     return payRestored;
   }
@@ -740,28 +884,14 @@ a { color: inherit; }
 
     $('prodEyebrow').textContent = p.eyebrow;
     $('prodTitle').textContent = p.emoji + ' ' + p.name;
-    $('prodDesc').innerHTML = p.desc;
-    $('prodList').innerHTML = p.list.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    $('prodDesc').textContent = p.desc;
     $('payAmount').textContent = p.price;
 
-    /* 개명·작명에서만 '현재 사용하는 주민등록상 한자' 칸이 붙는다 */
-    var naming = type === 'naming';
-    $('rowHanja').hidden = !naming;
+    $('qLabel').textContent = p.qLabel || '';
+    $('qHint').textContent = p.qHint || '';
+    $('fQ').placeholder = p.qPh || '';
 
-    /* 칸 번호 — 개명·작명은 한 칸이 더 붙어 일곱 칸이 된다 */
-    $('noName').textContent = '①';
-    $('noHanja').textContent = '②';
-    $('noBirth').textContent = naming ? '③' : '②';
-    $('noCal').textContent = naming ? '④' : '③';
-    $('noGender').textContent = naming ? '⑤' : '④';
-    $('noWho').textContent = naming ? '⑥' : '⑤';
-    $('noQ').textContent = naming ? '⑦' : '⑥';
-
-    $('qLabel').textContent = p.qLabel;
-    $('qHint').textContent = p.qHint;
-    $('fQ').placeholder = p.qPh;
-
-    $('formHint').textContent = (naming ? '일곱 칸' : '여섯 칸') + '을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요';
+    layout();
 
     $('payCard').href = p.pay;
     $('payFallback').href = p.pay;
@@ -785,56 +915,62 @@ a { color: inherit; }
     });
   });
 
-  /* ── 칩 (양력·음력·윤달 / 성별) ─────────── */
-  Array.prototype.forEach.call(document.querySelectorAll('[data-cal]'), function (b) {
+  /* ── [개명] / [신생아 작명] ─────────────── */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-namemode]'), function (b) {
     b.addEventListener('click', function () {
-      state.cal = b.getAttribute('data-cal');
-      Array.prototype.forEach.call(document.querySelectorAll('[data-cal]'), function (x) {
-        var on = x === b;
-        x.classList.toggle('is-on', on);
-        x.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
+      state.nameMode = b.getAttribute('data-namemode') === 'baby' ? 'baby' : 'rename';
+      layout();
       clearMsg();
     });
   });
-  Array.prototype.forEach.call(document.querySelectorAll('[data-gender]'), function (b) {
-    b.addEventListener('click', function () {
-      state.gender = b.getAttribute('data-gender');
-      Array.prototype.forEach.call(document.querySelectorAll('[data-gender]'), function (x) {
-        var on = x === b;
-        x.classList.toggle('is-on', on);
-        x.setAttribute('aria-pressed', on ? 'true' : 'false');
-        if (on) {
-          var r = x.closest('.cform__row');
-          if (r) r.classList.remove('is-error');
-        }
-      });
+
+  /* 칩 — 처음 상태는 마크업의 is-on 을 그대로 읽어 둔다 */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-chip]'), function (x) {
+    var g = x.getAttribute('data-g');
+    if (x.classList.contains('is-on') && g in state.chips) state.chips[g] = x.getAttribute('data-v');
+    x.addEventListener('click', function () {
+      chipSet(g, x.getAttribute('data-v'));
+      var r = x.closest('.cform__row');
+      if (r) r.classList.remove('is-error');
       clearMsg();
     });
   });
 
   /* ── 생년월일시 — 숫자만 쳐도 1979-08-08 08:30 모양으로 ── */
-  var birthEl = $('fBirth');
-  birthEl.addEventListener('input', function () {
-    if (birthEl.value.indexOf('-') >= 0 || birthEl.value.length >= 8) {
-      var d = birthEl.value.replace(/[^0-9]/g, '').slice(0, 12);
+  function birthFmt(el) {
+    if (el.value.indexOf('-') >= 0 || el.value.length >= 8) {
+      var d = el.value.replace(/[^0-9]/g, '').slice(0, 12);
       var out = d;
       if (d.length > 4) out = d.slice(0, 4) + '-' + d.slice(4);
       if (d.length > 6) out = d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6);
       if (d.length > 8) out = d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) + ' ' + d.slice(8);
       if (d.length > 10) out = d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) + ' ' + d.slice(8, 10) + ':' + d.slice(10);
-      if (birthEl.value !== out) birthEl.value = out;
+      if (el.value !== out) el.value = out;
     }
     clearMsg();
+  }
+  ['fBirth', 'fBabyBirth', 'fDadBirth', 'fMomBirth'].forEach(function (id) {
+    var el = $(id);
+    if (el) el.addEventListener('input', function () { birthFmt(el); });
   });
+
   $('fTimeUnknown').addEventListener('change', function () {
     var on = $('fTimeUnknown').checked;
-    birthEl.placeholder = on ? '예: 1979-08-08' : '예: 1979-08-08 08:30';
-    if (on) birthEl.value = birthEl.value.replace(/\s+\d{1,2}(:\d{1,2})?$/, '');
+    $('fBirth').placeholder = on ? PH_ME_DATE : PH_ME_FULL;
+    if (on) $('fBirth').value = $('fBirth').value.replace(/\s+\d{1,2}(:\d{1,2})?$/, '');
     clearMsg();
   });
-  ['fName', 'fHanja', 'fWho', 'fQ'].forEach(function (id) {
-    $(id).addEventListener('input', clearMsg);
+  $('fBabyTimeUnknown').addEventListener('change', function () {
+    var on = $('fBabyTimeUnknown').checked;
+    $('fBabyBirth').placeholder = on ? PH_BABY_DATE : PH_BABY_FULL;
+    if (on) $('fBabyBirth').value = $('fBabyBirth').value.replace(/\s+\d{1,2}(:\d{1,2})?$/, '');
+    clearMsg();
+  });
+  $('fBabyDue').addEventListener('change', clearMsg);
+
+  ['fName', 'fHanja', 'fWho', 'fQ', 'fBabySur', 'fDol', 'fSib'].forEach(function (id) {
+    var el = $(id);
+    if (el) el.addEventListener('input', clearMsg);
   });
   $('fPrivacy').addEventListener('change', clearMsg);
 
@@ -885,12 +1021,12 @@ a { color: inherit; }
     try { m.scrollIntoView({ block: 'nearest' }); } catch (e) { }
     try { if (navigator.vibrate) navigator.vibrate([22, 38]); } catch (e) { }
   }
-  function birthParts() {
-    var v = String(birthEl.value || '').trim();
+  function birthParts(el) {
+    var v = String(el.value || '').trim();
     var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);
     if (!m) return null;
     var y = +m[1], mo = +m[2], d = +m[3];
-    /* 2027년 정미년 신생아 작명까지 받는다 */
+    /* 2027년 정미년 신생아 작명·출산 예정일까지 받는다 */
     if (y < 1900 || y > 2027 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
     var dt = new Date(y, mo - 1, d);
     if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
@@ -903,8 +1039,8 @@ a { color: inherit; }
     return { y: y, m: mo, d: d, hh: null, mm: null };
   }
   /* 날짜는 맞는데 시간만 00:00~23:59를 벗어난 경우 — 안내를 시간 쪽으로 */
-  function badTime() {
-    var v = String(birthEl.value || '').trim();
+  function badTime(el) {
+    var v = String(el.value || '').trim();
     var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);
     if (!m) return false;
     var y = +m[1], mo = +m[2], d = +m[3];
@@ -914,51 +1050,113 @@ a { color: inherit; }
     var t = /(\d{1,2}):(\d{1,2})/.exec(v);
     return !!t && (+t[1] < 0 || +t[1] > 23 || +t[2] < 0 || +t[2] > 59);
   }
-  function birthLine() {
-    var b = birthParts();
+  function birthLine(el) {
+    var b = birthParts(el);
+    if (!b) return String(el.value || '').trim();
     var s = b.y + '-' + pad(b.m) + '-' + pad(b.d);
-    if (!b.hh && b.mm == null) return s + ' (시간 모름)';
-    return b.hh == null ? s + ' (시간 모름)' : s + ' ' + pad(b.hh) + ':' + pad(b.mm);
+    if (b.hh == null) return s + ' (시간 모름)';
+    return s + ' ' + pad(b.hh) + ':' + pad(b.mm);
+  }
+  /* 아기 — 출산 예정일 표시까지 붙여 한 줄로 */
+  function babyLine() {
+    var b = birthParts($('fBabyBirth'));
+    if (!b) return $('fBabyBirth').value.trim();
+    var s = b.y + '-' + pad(b.m) + '-' + pad(b.d);
+    var due = $('fBabyDue').checked;
+    if (b.hh == null) return s + (due ? ' (출산 예정일 · 시간 미정)' : ' (시간 모름)');
+    return s + ' ' + pad(b.hh) + ':' + pad(b.mm) + (due ? ' (출산 예정일)' : '');
   }
   function calLabel(v) {
     if (v === 'lunar') return '음력';
     if (v === 'leap') return '음력 윤달';
     return '양력';
   }
+  function genderLabel(v) {
+    if (v === 'F') return '여성';
+    if (v === 'M') return '남성';
+    if (v === 'U') return '미정';
+    return '';
+  }
+  function contactOk() {
+    return !!($('fWho').value.trim() || $('fPhone').value.trim());
+  }
+  function dateBad(el, who) {
+    if (badTime(el)) return { el: el, msg: who + ' 태어난 시간은 00:00 ~ 23:59 사이로 적어 주세요.' };
+    return { el: el, msg: who + ' 생년월일을 1975-04-12 처럼 적어 주세요 (달력에 없는 날짜는 다시 확인이 필요해요).' };
+  }
+
+  function missingBaby() {
+    var v = $('fBabyBirth').value.trim();
+    if (!v) return { el: $('fBabyBirth'), msg: '아기 생년월일시를 적어 주세요 — 아직이라면 예정일을 적고 ‘출산 예정일이에요’에 체크해 주세요.' };
+    if (!birthParts($('fBabyBirth'))) return dateBad($('fBabyBirth'), '아기');
+    if (!state.chips.genderBaby) return { el: chipFirst('genderBaby'), msg: '아기 성별을 골라 주세요 — 아직 모르시면 ‘미정’을 눌러 주세요.' };
+    if (!$('fBabySur').value.trim()) return { el: $('fBabySur'), msg: '아버지 한자 성(姓)을 적어 주세요 — 예: 金' };
+    if (!$('fDadBirth').value.trim()) return { el: $('fDadBirth'), msg: '아버지 생년월일시를 적어 주세요 — 시간을 모르면 날짜만 적어도 돼요.' };
+    if (!birthParts($('fDadBirth'))) return dateBad($('fDadBirth'), '아버지');
+    if (!$('fMomBirth').value.trim()) return { el: $('fMomBirth'), msg: '어머니 생년월일시를 적어 주세요 — 시간을 모르면 날짜만 적어도 돼요.' };
+    if (!birthParts($('fMomBirth'))) return dateBad($('fMomBirth'), '어머니');
+    if (state.chips.dol === 'yes' && !$('fDol').value.trim()) return { el: $('fDol'), msg: '돌림자 글자를 적어 주세요 — 예: 洙' };
+    if (!contactOk()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
+    if (!$('fPrivacy').checked) return { el: $('fPrivacy'), msg: '개인정보 수집·이용에 동의해 주세요 — 상담 접수에 꼭 필요한 단계예요.' };
+    return null;
+  }
+
   function missing() {
     var p = prod();
+    if (state.type === 'naming' && state.nameMode === 'baby') return missingBaby();
+
     var name = $('fName').value.trim();
     if (!name) return { el: $('fName'), msg: '성함을 적어 주세요 — 부르기 편한 이름이면 돼요.' };
     if (state.type === 'naming' && !$('fHanja').value.trim()) {
       return { el: $('fHanja'), msg: '현재 쓰는 주민등록상 한자를 적어 주세요 — 모르시면 ‘모름’이라고 적어 주세요.' };
     }
     if (!$('fBirth').value.trim()) return { el: $('fBirth'), msg: '생년월일시를 적어 주세요 — 시간을 모른다면 아래 ‘시간은 몰라요’에 체크해 주세요.' };
-    if (!birthParts()) {
-      if (badTime()) return { el: $('fBirth'), msg: '태어난 시간은 00:00 ~ 23:59 사이로 적어 주세요.' };
+    if (!birthParts($('fBirth'))) {
+      if (badTime($('fBirth'))) return { el: $('fBirth'), msg: '태어난 시간은 00:00 ~ 23:59 사이로 적어 주세요.' };
       return { el: $('fBirth'), msg: '생년월일을 1979-08-08 처럼 적어 주세요 (달력에 없는 날짜는 다시 확인이 필요해요).' };
     }
-    if (!state.gender) return { el: document.querySelector('[data-gender]'), msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
-    if (!$('fWho').value.trim() && !$('fPhone').value.trim()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
+    if (!state.chips.genderMe) return { el: chipFirst('genderMe'), msg: '성별을 골라 주세요 — 사주를 세울 때 꼭 필요해요.' };
+    if (!contactOk()) return { el: $('fWho'), msg: '결제 확인을 위해 연락처(카드결제)나 입금자명(계좌이체)을 적어 주세요.' };
     if (p.qRequired && !$('fQ').value.trim()) return { el: $('fQ'), msg: p.qLabel + '을 한 줄로 적어 주세요 — 그게 상담의 중심이에요.' };
     if (!$('fPrivacy').checked) return { el: $('fPrivacy'), msg: '개인정보 수집·이용에 동의해 주세요 — 상담 접수에 꼭 필요한 단계예요.' };
     return null;
   }
 
-  /* ── 카톡으로 보낼 신청 문구 ───────────── */
+  /* ── 카톡으로 보낼 신청 문구 ─────────────
+     개명 / 신생아 작명 각각의 칸을 빠짐없이, 화면에 보이는 순서 그대로 담는다. */
   function orderText() {
     var p = prod();
+    var naming = state.type === 'naming';
+    var baby = naming && state.nameMode === 'baby';
     var who = $('fWho').value.trim() || $('fPhone').value.trim();
-    var lines = [p.order, '성함: ' + $('fName').value.trim()];
-    if (state.type === 'naming') lines.push('현재 사용하는 주민등록상 한자: ' + $('fHanja').value.trim());
-    lines.push('생년월일시: ' + birthLine());
-    lines.push('양력·음력·윤달: ' + calLabel(state.cal));
-    lines.push('성별: ' + (state.gender === 'M' ? '남' : '여'));
+    var lines = [p.order];
+
+    if (naming) lines.push('신청 종류: ' + (baby ? '신생아 작명' : '개명'));
+
+    if (baby) {
+      lines.push('아기 생년월일시: ' + babyLine());
+      lines.push('아기 양력·음력·윤달: ' + calLabel(state.chips.calBaby));
+      lines.push('아기 성별: ' + genderLabel(state.chips.genderBaby));
+      lines.push('아버지 한자 성(姓): ' + $('fBabySur').value.trim());
+      lines.push('아버지 사주: ' + birthLine($('fDadBirth')) + ' · ' + calLabel(state.chips.calDad));
+      lines.push('어머니 사주: ' + birthLine($('fMomBirth')) + ' · ' + calLabel(state.chips.calMom));
+      lines.push('돌림자: ' + (state.chips.dol === 'yes' ? '사용함 — ' + $('fDol').value.trim() : '사용 안 함'));
+      var sib = $('fSib').value.trim();
+      if (sib) lines.push('다른 자녀: ' + sib);
+    } else {
+      lines.push('성함: ' + $('fName').value.trim());
+      if (naming) lines.push('현재 사용하는 주민등록상 한자: ' + $('fHanja').value.trim());
+      lines.push('생년월일시: ' + birthLine($('fBirth')));
+      lines.push('양력·음력·윤달: ' + calLabel(state.chips.calMe));
+      lines.push('성별: ' + genderLabel(state.chips.genderMe));
+      var q = $('fQ').value.trim();
+      if (q) lines.push(p.qLabel + ': ' + q);
+    }
+
     lines.push('연락처(카드결제) 또는 입금자명(계좌이체): ' + who);
     /* 결제창에 넣은 번호와 신청서 연락처가 다르면 둘 다 남겨 대조하기 쉽게 */
     var ph = mobileOf($('fPhone').value);
     if (ph && ph !== mobileOf(who)) lines.push('결제 휴대폰: ' + $('fPhone').value.trim());
-    var q = $('fQ').value.trim();
-    if (q) lines.push(p.qLabel + ': ' + q);
     return lines.join('\n');
   }
 
@@ -1142,6 +1340,15 @@ a { color: inherit; }
   /* 열릴 때 — 결제 복귀(fromPay)면 그 값만 되살리고, 그 밖에는 무조건 빈 초기 상태 */
   if (!initForm()) resetForm();
 
+  /* ?type=baby 로 들어오면 신생아 작명 갈래부터 (결제 복귀 값이 있으면 그쪽이 우선) */
+  function applyBabyLink() {
+    if (!payRestored && state.type === 'naming' && String(qs.type || '').toLowerCase() === 'baby') {
+      state.nameMode = 'baby';
+      layout();
+    }
+  }
+  applyBabyLink();
+
   /* 💳 결제하러 다녀온 손님 — 맨 위 복귀 줄 (2026-11-21) */
   $('payBack').addEventListener('click', function (e) {
     if (e.target.closest('#payBackGo')) {
@@ -1158,6 +1365,7 @@ a { color: inherit; }
   window.addEventListener('pageshow', function () {
     if (payRestored) { payBackCheck(); return; }   /* 이미 결제 복귀 값이 올라와 있다 */
     if (!initForm()) resetForm();          /* 브라우저가 폼 값을 스스로 되살렸어도 지운다 */
+    applyBabyLink();                       /* ?type=baby 로 들어온 손님은 다시 신생아 갈래로 */
     payBackCheck();                        /* 결제하러 다녀온 손님이면 맨 위 복귀 줄을 다시 보인다 */
   });
 })();
