@@ -126,7 +126,7 @@
       localStorage.setItem(UNLOCK_KEY, JSON.stringify(o));
     } catch (e) {}
   }
-  var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
+  var FRIEND_GIFT = '9일 체험 + 액운 태우기 1회';
   var HASHTAGS = '#내사주타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
   var INSTA = 'life.saju_yoonise';
   // 인스타에 그대로 붙여넣는 한 덩어리 — 계정 태그 한 줄 + 짧은 추천 한 줄 + 해시태그 (2026-11-23 6차)
@@ -218,7 +218,7 @@
 
   /* ── 초대 코드·링크 ─────────────────────────────── */
   function myCode() { return (state.profile && state.profile.invite_code) || ''; }
-  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 5일 체험·액운 6회가 바로 열리고,
+  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 9일 체험·액운 1회가 바로 열리고,
      케미는 보내는 사람이 '케미 링크'로 따로 보낸다(chemiLink → /calendar/member/?chemi=...). 2026-11-22 */
   function myLink(withCode) {
     var code = myCode();
@@ -542,7 +542,7 @@
     var t = $('#inviteDoneT'), s = $('#inviteDoneS');
     if (kind === 'already') {
       if (t) t.textContent = '이미 다른 초대 코드가 연결된 계정이에요';
-      if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 5일 체험은 그대로 쓰실 수 있어요.';
+      if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 9일 체험은 그대로 쓰실 수 있어요.';
     } else if (kind === 'again') {
       if (t) t.textContent = '✅ 연결 완료!';
       if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 9일 무료가 기다리고 있어요.';
@@ -3219,7 +3219,7 @@
         localStorage.setItem(REF_KEY, ref);
         if (from) localStorage.setItem(REF_FROM_KEY, from);
         /* /calendar/ 도 이 손님을 '초대받은 손님'으로 볼 수 있게 따로 표시해 둔다.
-           로그인이 되면 REF_KEY 는 비워지지만 이 표시는 남는다(5일 체험 유지). */
+           로그인이 되면 REF_KEY 는 비워지지만 이 표시는 남는다(9일 체험 유지). */
         localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: ref, at: new Date().toISOString() }));
       } catch (e) {}
     }
@@ -3239,7 +3239,7 @@
         try { localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: state.refPending, at: new Date().toISOString() })); } catch (e) { }
       }
     }
-    /* 초대받은 손님이 달력으로 넘어가도 5일·액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
+    /* 초대받은 손님이 달력으로 넘어가도 9일·액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
     var toCal = $('#toCalendar');
     if (toCal && state.refPending) toCal.href = '../?ref=' + encodeURIComponent(state.refPending);
 

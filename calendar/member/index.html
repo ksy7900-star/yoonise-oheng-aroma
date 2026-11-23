@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261123w">
+<link rel="stylesheet" href="member.css?v=20261123x">
 </head>
 <body>
 
@@ -30,7 +30,7 @@
   <!-- 초대 링크로 들어온 사람 -->
   <div class="banner" id="refBanner" hidden>
     <b id="refBannerTitle">초대 링크로 들어오셨어요</b>
-    <span>친구 초대 혜택 · <b>5일 체험 + 액운 태우기 1회</b></span>
+    <span>친구 초대 혜택 · <b>9일 체험 + 액운 태우기 1회</b></span>
   </div>
 
   <!-- ✅ 초대 연결 완료 — 달력의 '카카오 3초 연결'을 마치고 돌아온 자리 (2026-11-22) -->
@@ -294,7 +294,7 @@
 
     <div class="gift">
       <span class="gift__ic" aria-hidden="true">🎁</span>
-      <span class="gift__b">초대받은 친구는 <b>5일 체험 + 액운 태우기 1회</b>를 받아요. 그냥 들어온 사람은 3일이에요.</span>
+      <span class="gift__b">초대받은 친구는 <b>9일 체험 + 액운 태우기 1회</b>를 받아요. 그냥 들어온 사람은 7일이에요.</span>
     </div>
   </section>
 
@@ -308,11 +308,46 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- 계산 엔진(달력과 같은 파일) -->
-<script src="../vendor/lunar.js?v=20261123w"></script>
-<script src="../assets/manse.js?v=20261123w"></script>
-<script src="../assets/timing.js?v=20261123w"></script>
+<script src="../vendor/lunar.js?v=20261123x"></script>
+<script src="../assets/manse.js?v=20261123x"></script>
+<script src="../assets/timing.js?v=20261123x"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261123w"></script>
+<script src="member.js?v=20261123x"></script>
+
+<!-- 캐시 자가 치유 (2026-11-23 #17006 김나영 님) —
+     폰에 예전 화면(옛 member.css·member.js: STEP 3 카드가 보이거나 '5일/3일' 문구)이 남아 있으면
+     서버 sw.js 의 VERSION 과 지금 화면의 ?v= 를 비교해, 서버가 더 새로울 때 딱 한 번 새 주소로 다시 연다.
+     (뒤로는 돌지 않는다 · sessionStorage 로 한 버전당 한 번만) -->
+<script>
+(function () {
+  try {
+    var el = document.querySelector('script[src*="member.js"]');
+    var m = /[?&]v=([0-9A-Za-z.]+)/.exec((el && el.getAttribute('src')) || '');
+    var BUILD = m ? m[1] : '';
+    if (!BUILD || !window.fetch) return;
+    function heal() {
+      fetch('../sw.js', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.text() : '';
+      }).then(function (txt) {
+        var v = /VERSION\s*=\s*'([0-9A-Za-z.]+)'/.exec(txt || '');
+        if (!v) return;
+        var LIVE = v[1];
+        if (!LIVE || LIVE <= BUILD) return;              // 서버가 같거나 더 예전이면 그대로
+        var u = new URL(location.href);
+        if (u.searchParams.get('v') === LIVE) return;     // 이미 새 주소로 왔다
+        try {
+          if (sessionStorage.getItem('yoonise.member.heal') === LIVE) return;
+          sessionStorage.setItem('yoonise.member.heal', LIVE);
+        } catch (e) {}
+        u.searchParams.set('v', LIVE);
+        location.replace(u.toString());
+      }).catch(function () {});
+    }
+    if (document.readyState === 'complete') heal();
+    else window.addEventListener('load', heal);
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
