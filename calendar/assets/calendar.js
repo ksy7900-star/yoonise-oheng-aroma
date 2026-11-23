@@ -7771,6 +7771,7 @@
     loadDiary();
     loadNight();
     syncLockUI();
+    syncTrialState();      // 코드로 이미 열린 기기면 위 '1년 전체 열기' 버튼이 잠깐 보였다 사라지지 않게 한 번 더 맞춘다
     if (state.unlocked) syncPaidTier(state.tier);   // 이미 열린 기기 — 로그인한 회원이면 등급만 맞춰 둔다 (조용히)
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);
     initForm();
