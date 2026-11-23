@@ -18,7 +18,7 @@
      FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·1.5초 의식·스티커·처방이 바로 열립니다(테스트용).
      → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
-  var FREE_DAYS_BASE = 3;   // 그냥 들어온 손님 — 첫 방문일 포함 3일(D+0·D+1·D+2)
+  var FREE_DAYS_BASE = 7;   // 그냥 들어온 손님 — 첫 방문일 포함 7일(D+0~D+6). 8일째부터 잠금(2026-11-23 확정)
   /* ── 2.0 첫 화면 (2026-11-23 김나영 님 확정) ────────────────────────────
      "3초 만에 이해되는 첫 화면" — ① 미니 원국 1줄 ② 명리 원국 기반 3줄 후킹
      ③ 3색 달력(⚠️ 조심 · ⚡ 기운 UP · 🌿 실속·정리) ④ 🔥 오늘 액운 태우기.
@@ -28,16 +28,17 @@
        예전 5색 달력과 부적 팝업이 그대로 돌아온다(코드 보존). */
   var LITE_MODE = true;
   /* ── 지인 테스트용 우회 플래그 (2026-11-23) ─────────────────────────────
-     무료 체험 계산·잠금 함수는 그대로 두고, 화면에서만 전부 열어 준다.
-     → 달력의 어떤 날짜를 눌러도 잠금 팝업 없이 그날 설명이 열린다.
-     · false 로 바꾸면 3일 체험 + 잠금 + 결제·코드 흐름이 예전 그대로 돌아온다. */
-  var TEST_OPEN_ALL = true;
+     true  → 무료 체험 계산·잠금 함수는 그대로 두고, 화면에서만 전부 열어 준다.
+             (달력의 어떤 날짜를 눌러도 잠금 팝업 없이 그날 설명이 열린다)
+     false → 실제 판매 모드. 7일 무료 체험 + 8일째부터 잠금 + 결제·입장 코드 흐름.
+     2026-11-23 김나영 님 확정(#16544): 지인 테스트를 끝내고 실제 7일 무료·잠금으로 전환. */
+  var TEST_OPEN_ALL = false;
   /* ── 친구 초대(?ref=) 보너스 ───────────────────────────────────────────────
      /calendar/member/ 의 초대 링크(?ref=코드)로 들어온 손님은 '초대받은 손님'으로 보고
-     무료 체험을 3일 → 5일, 액운 태우기를 무료 5회 → 6회로 늘린다. (2026-11-21)
+     무료 체험을 7일 → 9일, 액운 태우기를 무료 5회 → 6회로 늘린다. (2026-11-21 · 기본 7일로 늘린 2026-11-23)
      · 코드는 member.js 와 같은 칸(REF_KEY)에 적고, 로그인으로 그 칸이 비워져도
-       INVITED_KEY 가 남아 다음 방문에도 5일이 이어진다.
-     · ?ref= 없이 들어온 손님은 지금까지처럼 3일 그대로. */
+       INVITED_KEY 가 남아 다음 방문에도 9일이 이어진다.
+     · ?ref= 없이 들어온 손님은 지금까지처럼 7일 그대로. */
   var INVITE_DAYS_BONUS = 2;
   var INVITE_BURN_BONUS = 1;
   var REF_KEY = 'yoonise.member.ref.v1';    // member.js 가 ?ref= 를 적어 두는 칸 (같은 오리진)
@@ -50,7 +51,7 @@
   var inviteFromLink = false;   // 이번 주소에 ?ref= 가 직접 붙어 들어왔는가(안내·재설정은 이때만)
   var inviteRef = readInviteRef();
   var invited = !!inviteRef;
-  var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 5일 · 그냥 들어오면 3일
+  var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 9일 · 그냥 들어오면 7일
 
   /** 초대 코드 모양인가 — member.js 와 같은 규칙(영문·숫자 4~12자) */
   function validRef(v) { return /^[A-Z0-9]{4,12}$/.test(String(v || '').trim().toUpperCase()); }
@@ -100,7 +101,7 @@
   }
 
   /* ── 초대받은 친구 → 원터치 카카오 연결 (2026-11-22) ─────────────────────
-     초대 링크(?ref=)로 온 손님은 달력에서 바로 5일·액운 1회가 열린다. 하지만 서버에
+     초대 링크(?ref=)로 온 손님은 달력에서 바로 9일·액운 1회가 열린다. 하지만 서버에
      '누가 누구를 초대했는지'가 남으려면 카카오 연결(로그인)이 한 번 필요하다. 그래서
      안내 배너와 달력 맨 위 줄에 '카카오 3초 연결' 버튼을 두고, member 화면에 autologin=1 로
      넘겨 로그인을 바로 시작한다(로그인 뒤 attach_referrer 가 추천 실적을 쌓는다).
@@ -157,7 +158,7 @@
   var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
   var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary', M: 'month' };
   var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D', month: 'M' };
-  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 이용권' };
+  var TIER_NAME = { pass: '1년 전체 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 이용권' };
   /* 위 티어가 아래 티어의 기능을 모두 포함한다.
      month(1개월 이용권)는 2026-11-23 추가 — 인스타 인증 손님에게 주는 선물 코드다.
      기능은 1년 패스와 같고(달력 전체 · 액운 태우기 5회) **기간만 30일**이라, 등급은 패스와 같은 1로 둔다. */
@@ -165,7 +166,7 @@
   var MONTH_DAYS = 30;   // 1개월 이용권 — 코드를 넣은 날부터 30일
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
-  var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 3일은 이 날부터 고정
+  var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 7일은 이 날부터 고정
   var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
@@ -659,7 +660,7 @@
     if (start > state.todayISO) start = state.todayISO;
     return { start: start, end: T.addDays(start, FREE_DAYS - 1) };
   }
-  /** 무료 3일을 다 썼는가 — 코드를 넣지 않은 채 4일째가 되면 참 */
+  /** 무료 7일을 다 썼는가 — 코드를 넣지 않은 채 8일째가 되면 참 */
   function trialOver() {
     if (TEST_OPEN_ALL) return false;          // 지인 테스트 — 잠금 없이 전부 열림
     if (!FREE_TRIAL_ENABLED || state.unlocked) return false;
@@ -674,14 +675,17 @@
   /** index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over) 전환 */
   function syncTrialState() {
     // 지인 테스트(TEST_OPEN_ALL)는 "체험 중"이 아니라 "전체 오픈" 상태로 보여 준다 —
-    // '3일 무료' 문구가 뜨면 실제로는 다 열려 있는데 잠긴 줄 알아서다 (2026-11-23)
+    // '7일 무료' 문구가 뜨면 실제로는 다 열려 있는데 잠긴 줄 알아서다 (2026-11-23)
     var mode = TEST_OPEN_ALL ? 'off'
       : ((!FREE_TRIAL_ENABLED || state.unlocked) ? 'off' : (trialOver() ? 'over' : 'on'));
     document.body.setAttribute('data-trial', mode);
     var strip = $('#calTrialOver');
     if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
+    /* 체험 중이든 끝났든 — 달력 위에 '1년 전체 열기 · 14,900원' 버튼 하나만 심플하게 (2026-11-23 김나영 님) */
+    var pb = $('#passBar');
+    if (pb) pb.hidden = !(FREE_TRIAL_ENABLED && !TEST_OPEN_ALL && !state.unlocked);
   }
-  /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '3일' 문구도 5일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
+  /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구도 9일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
     if (!invited) return;
     var nodes = $$('.js-trial, .js-trial-over, .cal__trialover-t, #guideTrialH, #guideTrialSub');
@@ -698,11 +702,11 @@
       wr.hidden = false;
     }
   }
-  /* ── 기존 방문자 + 친구 초대(?ref=) — 5일·액운 1회를 실제로 적용하고 한 번만 알린다 ─────
+  /* ── 기존 방문자 + 친구 초대(?ref=) — 9일·액운 1회를 실제로 적용하고 한 번만 알린다 ─────
      사주가 이미 저장된 기기는 웰컴 팝업 없이 달력이 바로 열려서, 초대 링크로 들어와도
      혜택이 붙었는지 알 수 없었다. 그래서
-       ① 무료 체험이 이미 끝난 기기라면 이 초대를 받은 날부터 다시 5일을 세운다(기기당 1회).
-          → '5일 무료'라고 알려 놓고 실제로는 잠겨 있는 일이 없게.
+       ① 무료 체험이 이미 끝난 기기라면 이 초대를 받은 날부터 다시 9일을 세운다(기기당 1회).
+          → '9일 무료'라고 알려 놓고 실제로는 잠겨 있는 일이 없게.
        ② 달력이 열리자마자 위에서 안내 한 줄(토스트형 배너)을 띄운다 — 그 코드로는 1회만. */
   function loadInviteNotice() {
     try {
@@ -728,7 +732,7 @@
     for (var i = 0; i < keys.length - 30; i++) delete o.refs[keys[i]];
     saveInviteNotice(o);
   }
-  /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 5일로 다시 세운다 (기기당 1회) */
+  /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 9일로 다시 세운다 (기기당 1회) */
   function applyInviteFreshStart() {
     if (!invited || !inviteFromLink || !FREE_TRIAL_ENABLED || state.unlocked || !state.res || !state.todayISO) return false;
     if (inviteNoticeSeen(inviteRef)) return false;      // 이미 이 코드로 들어온 적 있는 기기
@@ -736,7 +740,7 @@
     if (rec.fresh) return false;                        // 초대 한 번으로 한 번만 새로 세운다
     var start = trialStartISO();                        // 저장된 첫 방문일(없으면 오늘)
     if (!start) return false;
-    if (T.addDays(start, FREE_DAYS - 1) >= state.todayISO) return false;   // 아직 5일 안이면 그대로
+    if (T.addDays(start, FREE_DAYS - 1) >= state.todayISO) return false;   // 아직 9일 안이면 그대로
     trialStartMemo = state.todayISO;
     try { localStorage.setItem(TRIAL_KEY, state.todayISO); } catch (e) { }
     rec.fresh = state.todayISO;
@@ -766,7 +770,7 @@
       var t = $('#inviteNoticeT'), s = $('#inviteNoticeS');
       if (inviteArrival.paid) {
         if (t) t.innerHTML = '🎁 초대 코드가 연결됐어요';
-        if (s) s.textContent = '이미 전체 이용 중이라 5일 체험은 필요 없어요 · 달력은 그대로예요';
+        if (s) s.textContent = '이미 전체 이용 중이라 ' + FREE_DAYS + '일 체험은 필요 없어요 · 달력은 그대로예요';
       } else {
         var w = trialWindow(), l = burnLeft();
         if (t) t.innerHTML = '🎁 친구 초대로 <b>' + FREE_DAYS + '일 무료</b> + 액운 태우기 <b>' +
@@ -808,7 +812,7 @@
     return !!w && iso >= w.start && iso <= w.end;
   }
   /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다)
-      무료 3일을 다 쓴 뒤에는 오늘도 포함해 전부 잠긴다. */
+      무료 7일을 다 쓴 뒤에는 오늘도 포함해 전부 잠긴다. */
   function isOpenDay(iso) {
     if (TEST_OPEN_ALL) return true;           // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
     if (state.unlocked) return true;
@@ -856,7 +860,7 @@
     box.hidden = false;
 
     /* 무료 체험 중에는 '몇 월을 조심하라'는 결론을 캡처해 가는 사람이 있다(#9098).
-       3일 체험 + 코드 미입력 상태에서는 개수만 보이고, 카드 안의 월 이름은 가린다. */
+       7일 체험 + 코드 미입력 상태에서는 개수만 보이고, 카드 안의 월 이름은 가린다. */
     var locked = FREE_TRIAL_ENABLED && !state.unlocked;
     box.classList.toggle('yearfold--locked', locked);
 
@@ -1943,7 +1947,7 @@
       }
     }, 180);
   }
-  /** 사용법 팝업 맨 위 '3일 무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
+  /** 사용법 팝업 맨 위 '무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
       날짜는 첫 방문일~첫 방문일+2(FREE_DAYS=3)로 고정. 체험이 끝났으면 종료 안내로 바꾼다. */
   function syncGuideTrial() {
     syncGuideCopy();
@@ -3737,7 +3741,10 @@
       noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     }
     if (LITE_MODE) {
-      $('#calNote').innerHTML = '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.' +
+      /* 잠금(8일째 이후)에도 달력의 3색은 그대로 보인다 — 날짜를 눌렀을 때만 결제 안내가 나온다 */
+      $('#calNote').innerHTML = (FREE_TRIAL_ENABLED && !state.unlocked && trialOver()
+        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 날짜를 누르면 <b>1년 전체 패스 14,900원</b>(하루 40원) 안내가 나와요.'
+        : '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.') +
         '<br>저녁마다 오늘 하루를 1초 체크해 보세요. 내 흐름이 기록으로 남아요.';
     } else {
       $('#calNote').textContent = noteText;
@@ -3900,7 +3907,11 @@
     if (!info || !modalEl) return;
     /* 2.0 — 날짜를 누르면 잠금·부적 없이 "그날이 왜 이런 날인지 + 피할 것/챙길 것"만 보여 준다.
        기존 잠금·부적 로직(아래)은 하나도 지우지 않고 이 길로만 안 간다. */
-    if (LITE_MODE) {
+    /* 잠금 판정은 2.0 화면에서도 먼저 한다 — 무료 7일이 지난 날(8일째 이후)은
+       잠금·결제 팝업이 나와야 한다 (2026-11-23 실제 판매 모드 전환) */
+    var lock = FREE_TRIAL_ENABLED && !inFree(iso);
+    var pastLock = lock && iso < state.todayISO;
+    if (LITE_MODE && !lock) {
       lastFocus = document.activeElement;
       state.sel = iso;
       renderCalendar();
@@ -3916,9 +3927,7 @@
       return;
     }
     var hasBadges = !!(info.badges && info.badges.length);
-    var lock = FREE_TRIAL_ENABLED && !inFree(iso);
     /* 체험 중 지난 날 — '지난 날'이라고 알려 주고 여는 방법을 보여 준다 (2026-11-21 QA M3) */
-    var pastLock = lock && iso < state.todayISO;
     // 기운 태그가 없는 잔잔한 날은 원래 팝업을 열지 않는다.
     // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
     // 잠긴 날(지난 날·체험 범위 밖)은 누르면 여는 방법을 알려 준다.
@@ -4116,25 +4125,17 @@
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
-  /** 잠금 카드·지난 날 안내에 같이 쓰는 상품 3개 버튼 — 제목 아래 한 줄로 '무엇이 들어 있는지'까지 (2026-11-21) */
+  /** 잠금 카드·지난 날 안내에 붙는 상품 — 2026-11-23 김나영 님 확정: 단일 '1년 전체 패스 14,900원' 하나만
+     (옛 3단 — 올인원 19,900 · 성찰 에디션 24,900 — 판매 종료. 이미 받은 코드는 그대로 열린다) */
+  var PASS_WAS_PRICE = '29,000원';   // 정가 — 취소선으로 보여 주고 14,900원을 강조
   function lockShopButtonsHTML() {
-    return '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="pass">' +
-      '<span class="shop-btn__no">1</span>' +
+    return '<button type="button" class="btn btn--ghost-light shop-btn shop-btn--pass" data-shop="pass">' +
       '<span class="shop-btn__text">' +
-      '<span class="shop-btn__label">🎟️ 1년 패스 · 14,900원</span>' +
-      '<span class="shop-btn__desc">2027 타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span>' +
-      '</span></button>' +
-      '<button type="button" class="btn btn--ghost-light shop-btn" data-shop="allinone">' +
-      '<span class="shop-btn__no">2</span>' +
-      '<span class="shop-btn__text">' +
-      '<span class="shop-btn__label">👑 올인원 · 19,900원</span>' +
-      '<span class="shop-btn__desc">1년 패스 전부 + 매일 일진 부적 · 매일 1회 액운 태우기</span>' +
-      '</span></button>' +
-      '<button type="button" class="btn btn--cream shop-btn" data-shop="diary">' +
-      '<span class="shop-btn__no">3</span>' +
-      '<span class="shop-btn__text">' +
-      '<span class="shop-btn__label">✨ 성찰 에디션 · 24,900원 <span class="shop-btn__tag">추천</span></span>' +
-      '<span class="shop-btn__desc">올인원 전부 + 365일 1줄 성찰 다이어리</span>' +
+      '<span class="shop-btn__label">🎟️ 2027 내 사주 타이밍 달력 · 1년 전체 패스</span>' +
+      '<span class="shop-btn__desc shop-btn__desc--price">' +
+        '<s class="shop-btn__was">' + PASS_WAS_PRICE + '</s> → <b>14,900원</b>' +
+        ' <span class="shop-btn__perday">하루 40원</span></span>' +
+      '<span class="shop-btn__desc">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름 + 매일 1회 액운 태우기</span>' +
       '</span></button>';
   }
 
@@ -4187,16 +4188,13 @@
       '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
       lockInviteHTML() +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
-      '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
+      '<button type="button" class="lock__code" data-lock-open>이미 입장 코드가 있으신가요?</button>';
   }
 
-  /** 잠금·결제 팝업에 붙는 '성찰 다이어리 3회 무료 체험' 한 줄 (2026-11-21) */
+  /** 성찰 다이어리 안내 한 줄 — 2026-11-23 단일 패스로 통일하며 판매를 닫아 잠금 팝업에는 띄우지 않는다.
+     (기존 성찰 에디션 코드로 열린 기기는 diaryTierOpen() 으로 그대로 쓴다) */
   function diaryTrialLine() {
-    if (!diaryTryEligible()) return '';
-    var left = diaryTryLeft();
-    return '<p class="lock__diary">✨ 1줄 성찰 다이어리도 ' + (left > 0
-      ? '<b>3회 무료 체험</b> 중 — ' + left + '회 남았어요'
-      : '<b>3회 무료 체험</b>을 다 썼어요 — 성찰 에디션에서 계속') + '</p>';
+    return '';
   }
   function lockModalHTML(info) {
     var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
@@ -4207,11 +4205,11 @@
     var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
     var ws = tw ? T.parseISO(tw.start) : null;
     var over = trialOver();
-    return lockHeadHTML(info, over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · 3 DAYS') +
+    return lockHeadHTML(info, over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · ' + FREE_DAYS + ' DAYS') +
       (over
         ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>입장 코드를 넣으면 전체가 열려요</p>'
         : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>') +
-      '<p class="lock__sub">1년 패스 / 올인원 / 성찰 에디션 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
+      '<p class="lock__sub">1년 전체 패스 하나예요 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
       diaryTrialLine() +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
@@ -4225,7 +4223,7 @@
       '</div>' +
       lockInviteHTML() +
       '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
-      '<button type="button" class="lock__code" data-lock-open>🔑 입장 코드가 있어요</button>';
+      '<button type="button" class="lock__code" data-lock-open>이미 입장 코드가 있으신가요?</button>';
   }
 
   /* ── 결제가 끝난 고객의 CTA (2026-11-21 QA M2) ──────────────────────────
@@ -4407,32 +4405,8 @@
       '<b>' + esc(price) + '</b></div>';
   }
 
-  /* ── 결제 팝업 맨 위 3단 상품 비교·전환 (2026-11-21) ────────────────
-     1년 패스 버튼으로 팝업을 열면 다른 두 상품(올인원·성찰 에디션)이
-     아예 보이지 않던 문제를 없앤다. 지금 보는 구성은 금테+금색 배지로
-     강조하고, 나머지를 누르면 팝업 내용과 페이앱 결제 링크가 그 자리에서
-     바뀐다 (data-shop-switch="pass|allinone|diary"). */
-  var TIERSW = [
-    { k: 'pass', ic: '🎟️', nm: '1년 패스', pr: PASS_PRICE, df: '달력·1년 부적·태우기 5회', tag: '' },
-    { k: 'allinone', ic: '👑', nm: '올인원', pr: ALLINONE_PRICE, df: '매일 일진부적·매일 1회 태우기', tag: '인기' },
-    { k: 'diary', ic: '✨', nm: '성찰 에디션', pr: DIARY_PRICE, df: '365일 1줄 다이어리 · 지금 3회 무료', tag: '추천' }
-  ];
-  function tierswHTML(active) {
-    return '<div class="tiersw" role="group" aria-label="2027 상품 세 가지 — 눌러서 비교하고 바꿔 보세요">' +
-      TIERSW.map(function (t) {
-        var on = t.k === active;
-        return '<button type="button" class="tiersw__b' + (on ? ' is-on' : '') + '"' +
-          ' data-shop-switch="' + t.k + '" aria-pressed="' + (on ? 'true' : 'false') + '"' +
-          ' aria-label="' + esc(t.nm + ' ' + t.pr + (t.tag ? ' ' + t.tag : '') + (on ? ' — 지금 보고 있는 구성' : ' — 이 구성 보기')) + '">' +
-          (t.tag ? '<span class="tiersw__tag">' + esc(t.tag) + '</span>' : '') +
-          '<span class="tiersw__nm"><span class="tiersw__ic" aria-hidden="true">' + t.ic + '</span> ' + esc(t.nm) + '</span>' +
-          '<span class="tiersw__pr">' + esc(t.pr) + '</span>' +
-          '<span class="tiersw__df">' + esc(t.df) + '</span>' +
-          '</button>';
-      }).join('') +
-      '</div>' +
-      '<p class="tiersw__hint">다른 구성을 누르면 그 자리에서 바로 바뀌어요 · ✨ 1줄 성찰 다이어리는 <b>3회 무료 체험</b> 중</p>';
-  }
+  /* ── 3단 상품 비교 탭은 2026-11-23 단일 패스로 통일하며 없앴다.
+     (data-shop-switch 핸들러는 남겨 두되, 어떤 상품을 눌러도 패스 하나로 그린다 — shopHTMLFor 참고) */
 
   /* ── 결제 두 버튼 — 💳 카드결제 (페이앱) · 🏦 계좌이체 ────────────────────
      item: 'pass' | 'allinone' | 'care-one' | 'care-set' | 'consult'
@@ -5089,66 +5063,58 @@
     openKakao();
   }
 
-  /* 1번 — 🎟️ 1년 패스 (14,900원) */
-  /** 무료 체험 중이면 결제 팝업 상단에 '먼저 3일 무료' 안내 한 줄 — 결제 전에 체험부터 */
+  /* ── 단일 상품 — 🎟️ 2027 내 사주 타이밍 달력 · 1년 전체 패스 14,900원 ─────────────
+     2026-11-23 김나영 님 확정(#16556): 옛 3단(올인원 19,900 · 성찰 에디션 24,900) 판매를 닫고
+     결제 창은 이 하나만 보여 준다. 정가는 29,000원(취소선) → 14,900원, '하루 40원' 강조.
+     · 결제: 페이앱 카드(PAYAPP_PASS_URL, JS 직행) + SC제일은행 계좌이체 그대로
+     · 결제 뒤 결제한 휴대폰 번호에 묶인 6자리 입장 코드를 카톡으로 보낸다 */
+  /** 무료 체험 중이면 결제 팝업 상단에 '먼저 7일 무료' 안내 한 줄 — 결제 전에 체험부터 */
   function trialShopNote() {
     if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
     if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
     return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
   }
+  /** 가격 한 줄 — 정가 취소선 → 14,900원 → 하루 40원 (팝업·잠금 카드 공통) */
+  function passPriceHTML(prefix) {
+    return '<div class="shop__price shop__price--pass">' +
+      '<span>' + esc(prefix || '1년 전체 패스') + '</span>' +
+      '<span class="shop__was"><s>' + PASS_WAS_PRICE + '</s></span>' +
+      '<b>14,900원</b>' +
+      '<em class="shop__perday">하루 40원</em>' +
+      '</div>';
+  }
+  /** 단일 패스 결제 줄 — 💳 카드·간편결제 14,900원 주 버튼 1개
+     + 그 아래 작은 🏦 계좌이체 안내(버튼) · 🔑 이미 입장 코드(팝업 아래에 붙는다) (2026-11-23 김나영 님) */
+  function passPayActionsHTML() {
+    var url = cardUrlOf('pass');
+    var inner = '<span class="pay__ico" aria-hidden="true">💳</span>' +
+      '<span class="pay__label"><b>카드 · 간편결제 <span class="pay__amt">14,900원</span></b></span>';
+    return phoneFieldHTML('pass') +
+      (url
+        ? '<a class="pay__btn pay__btn--card pay__btn--pass" href="' + esc(url) + '" target="_blank" rel="noopener" data-pay="card" data-item="pass" data-pay-link="1">' + inner + '</a>'
+        : '<button type="button" class="pay__btn pay__btn--card pay__btn--pass" data-pay="card" data-item="pass">' + inner + '</button>') +
+      '<button type="button" class="shop__mini" data-pay="bank" data-item="pass">🏦 계좌이체 안내</button>' +
+      '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
+  }
+  /** 단일 패스 본문 — 결제 창·잠금 팝업·액운 태우기 소진 팝업이 같이 쓴다 */
+  function passShopCoreHTML() {
+    return '<p class="shop__sub">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름 + 매일 1회 액운 태우기</p>' +
+      passPriceHTML('2027 내 사주 타이밍 달력 · 1년 전체 패스') +
+      '<ul class="shop__list">' +
+      '<li><b>2026년 11월 ~ 2027년 12월 14개월</b><span>내 사주로 하루씩, 날짜별 흐름을 전부</span></li>' +
+      '<li><b>날짜별 조심 · 기운 UP · 실속</b><span>그날 피할 것과 챙길 것까지 한눈에</span></li>' +
+      '<li><b>매일 1회 액운 태우기</b><span>하루 한 번, 적고 · 구기고 · 태워 보내기</span></li>' +
+      '<li><b>기기에 바로 저장</b><span>회원가입 없이, 결제한 번호로 받은 코드로 열기</span></li>' +
+      '</ul>' +
+      /* 2026-11-23 심플 결제 — 카드 주 버튼 하나 + 작은 계좌이체·코드 링크만.
+         계좌이체를 고르면 안내 안에 '입금 확인 카톡 보내기'가 나오므로 큰 카톡 버튼은 두지 않는다. */
+      passPayActionsHTML();
+  }
   function passShopHTML() {
-    return '<p class="modal__eyebrow">2027 PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
-      '<h2 class="shop__title" id="shopTitle">🎟️ 1년 패스</h2>' +
-      tierswHTML('pass') +
+    return '<p class="modal__eyebrow">2027 FULL PASS · 앱 전용 · 2026년 11월 ~ 2027년 12월 14개월</p>' +
+      '<h2 class="shop__title" id="shopTitle">🎟️ 2027 내 사주 타이밍 달력 · 1년 전체 패스</h2>' +
       trialShopNote() +
-      '<p class="shop__sub">생년월일과 성별을 넣으면 <b>2026년 11월부터 2027년 12월까지 14개월</b>(2027년 1~12월 전체 포함)이 내 달력으로 펼쳐져요. 좋은 날·조심할 날을 미리 보고, 그날의 부적 스티커를 달력에 착착 붙이는 앱이에요.</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>2026~2027 내 사주 타이밍 맵</b><span>2026년 11월부터 2027년 12월까지, 하루씩 전부</span></li>' +
-      '<li><b>1년 수호 부적</b><span>2026년 11월부터 2027년 12월까지 내내 나를 받쳐 주는 부적</span></li>' +
-      '<li><b>액운 태우기 5회 무료</b><span>적고 · 구기고 · 태워 보내기, 다섯 장</span></li>' +
-      '</ul>' +
-      priceHTML('2027 1년 패스', PASS_PRICE) +
-      payActionsHTML('pass') +
-      kakaoOrderHTML('pass', '💬 결제 완료 · 카톡으로 입장 코드 받기');
-  }
-
-  /* 2번 — 👑 올인원 (19,900원) */
-  function allinoneShopHTML() {
-    return '<p class="modal__eyebrow">2027 ALL-IN-ONE · 가장 많이 고르는 구성</p>' +
-      '<h2 class="shop__title" id="shopTitle">👑 올인원</h2>' +
-      tierswHTML('allinone') +
-      trialShopNote() +
-      '<p class="shop__sub">1년 패스에 <b>매일 일진 부적</b>과 <b>매일 1회 액운 태우기</b>까지 다 열리는 구성이에요. 매일 부적을 붙이고, 매일 한 번 마음을 비우고 싶다면 여기서 시작하세요.</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
-      '<li><b>매일 일진 부적</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
-      '<li><b>매일 1회 액운 태우기</b><span>매일 한 번 — 적고, 구기고, 태워 보내기</span></li>' +
-      '</ul>' +
-      '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
-      '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
-      priceHTML('2027 올인원', ALLINONE_PRICE) +
-      payActionsHTML('allinone') +
-      kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기');
-  }
-
-  /* 3번 — ✨ 성찰 에디션 (24,900원) — 올인원 전부 + 365일 1줄 성찰 다이어리
-     PAYAPP_DIARY_URL 이 비어 있으면 카드 버튼은 '카톡으로 결제 링크 받기', 계좌이체 + 노란 카톡 버튼으로 안내한다. */
-  function diaryShopHTML() {
-    return '<p class="modal__eyebrow">REFLECTION EDITION · 365일 1줄 성찰 다이어리</p>' +
-      '<h2 class="shop__title" id="shopTitle">✨ 성찰 에디션</h2>' +
-      tierswHTML('diary') +
-      trialShopNote() +
-      '<p class="shop__sub">올인원 전부에 <b>365일 1줄 성찰 다이어리</b>까지. 매일 다른 질문 한 줄이 1년 뒤 내 기록이 돼요.' +
-      (diaryTryEligible() ? '<br><b>지금은 3회 무료 체험 중</b> — 무료 ' + diaryTryLeft() + '회가 남았어요. 다 쓰면 이 상품에서 365일 내내 이어집니다.' : '') + '</p>' +
-      '<ul class="shop__list">' +
-      '<li><b>올인원 전부</b><span>타이밍 맵 · 1년 수호 부적 · 매일 일진 부적 · 매일 1회 액운 태우기</span></li>' +
-      '<li><b>365일 1줄 성찰 다이어리</b><span>날마다 다른 맞춤 질문 하나, 부담 없는 한 줄</span></li>' +
-      '<li><b>내 기록 저장</b><span>달력 펜 점 · 📖 내 성찰 기록 보기 · .txt 백업</span></li>' +
-      '</ul>' +
-      priceHTML('2027 성찰 에디션', DIARY_PRICE) +
-      payActionsHTML('diary') +
-      kakaoOrderHTML('diary', '💬 결제 완료 · 카톡으로 성찰 에디션 코드 받기') +
-      '<p class="shop__note">이미 올인원을 쓰고 계시면 카톡으로 알려 주시면 차액을 안내해 드려요.</p>';
+      passShopCoreHTML();
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
@@ -5264,7 +5230,7 @@
      체험을 막은 뒤 팝업 아래 결제 영역(1종 2,900원 · 3종 5,900원)으로 데려간다.
      · 이미 뽑아 둔 결과를 보는 것(오늘의 처방)은 그대로 둔다 — 막는 것은 '추가 실행'뿐.
      · 기록은 기기별로 남는다(로그인·서버 없이 도는 앱이라 localStorage 하나로 충분). */
-  var CARE_TRIAL_KEY = 'yoonise.care.trial.v1';   /* ⚠️ 이름 주의 — 위쪽 TRIAL_KEY 는 '첫 방문일'(무료 3일)이라
+  var CARE_TRIAL_KEY = 'yoonise.care.trial.v1';   /* ⚠️ 이름 주의 — 위쪽 TRIAL_KEY 는 '첫 방문일'(무료 7일)이라
                                                      같은 var 이름을 쓰면 무료 체험 기록까지 덮어쓴다 (2026-11-22) */
   var trialDone = { card: false, objet: false, bowl: false };
   var trialLoaded = false;
@@ -6161,7 +6127,9 @@
   /* ── 결제가 끝난 고객에게 또 결제창을 띄우지 않는다 (2026-11-21 QA M2) ── */
   function ownedShopHTML(tier) {
     var rank = TIER_RANK[tier] || 0;
-    var ups = ['allinone', 'diary'].filter(function (k) { return (TIER_RANK[k] || 0) > rank; });
+    /* 2026-11-23 단일 패스 — 위 단계(올인원·성찰 에디션) 판매를 닫아 업그레이드 버튼을 두지 않는다.
+       (예전에 그 코드를 받은 분은 그 등급 그대로 계속 쓴다) */
+    var ups = [];
     return '<p class="modal__eyebrow">ALREADY OPEN · 결제 완료</p>' +
       '<h2 class="shop__title" id="shopTitle">✅ ' + esc(TIER_NAME[tier]) + ' 적용 중</h2>' +
       '<p class="shop__sub">이미 <b>' + esc(TIER_NAME[tier]) + '</b> 코드로 이 사주가 열려 있어요. 같은 상품을 다시 결제하실 필요는 없어요.</p>' +
@@ -6229,6 +6197,8 @@
 
   /** 구입 팝업 내용 — 이미 갖고 있는 상품이면 '적용 중', 더 높은 상품이면 차액 업그레이드 */
   function shopHTMLFor(kind) {
+    /* 2026-11-23 단일 패스 — 옛 올인원·성찰 에디션은 판매를 닫아 어떤 길로 들어와도 패스 하나로 보여 준다. */
+    if (kind === 'allinone' || kind === 'diary') kind = 'pass';
     /* 1개월 이용권은 기간이 짧은 선물 코드 — '이미 갖고 있어요'로 막지 않고
        상품 안내를 그대로 보여 준다(더 길게 보는 길을 열어 둔다). */
     if (TIER_NAME[kind] && state.unlocked && TIER_NAME[state.tier] && state.tier !== 'month') {
@@ -6237,17 +6207,17 @@
     }
     return kind === 'burn' ? burnShopHTML()
       : (kind === 'care' ? careShopHTML()
-        : (kind === 'consult' ? consultShopHTML()
-          : (kind === 'diary' ? diaryShopHTML()
-            : (kind === 'allinone' ? allinoneShopHTML() : passShopHTML()))));
+        : (kind === 'consult' ? consultShopHTML() : passShopHTML()));
   }
 
   /* 상품 팝업을 닫지 않고 1년 패스 ↔ 올인원 ↔ 성찰 에디션으로 갈아탄다.
      이미 가진 등급이면 shopHTMLFor() 가 '적용 중'·'차액 업그레이드'로 그린다. */
   /* 어느 상품 팝업 맨 아래에나 — 코드를 이미 받은 사람이 결제창을 다시 거치지 않고
      달력 아래 **그 하나의 입력창**을 바로 여는 줄 (2026-11-21) */
+  /** 결제 팝업 맨 아래의 작은 접힘 링크 — 코드를 이미 받은 분만 누르는 자리 (2026-11-23)
+      메인 화면에는 코드 입력칸을 드러내지 않고, 이 링크를 눌렀을 때만 입력칸이 열린다. */
   function codeEntryHTML() {
-    return '<button type="button" class="shop__code" data-lock-open>🔑 입장 코드가 있어요 · 바로 입력</button>';
+    return '<button type="button" class="shop__code shop__code--quiet" data-lock-open>이미 입장 코드가 있으신가요?</button>';
   }
   function shopCodeLinkHTML(kind) {
     return (TIER_NAME[kind] || kind === 'burn') ? codeEntryHTML() : '';
@@ -6270,8 +6240,8 @@
   function openShop(kind, force) {
     /* 2.0 테스트 기간 — 결제·코드 팝업은 화면에서 감춰 뒀다. 열리지 않는 팝업을 대신 열어
        화면이 잠기는 일이 없게 여기서 막고, 부드럽게 안내만 한다 (2026-11-23). */
-    if (LITE_MODE && !force) {
-      toast('지금은 무료 체험 기간이에요 — 결제·코드 화면은 잠시 감춰 두었어요');
+    if (TEST_OPEN_ALL && !force) {          // 지인 테스트(전체 오픈) 중에만 결제·코드 팝업을 막는다
+      toast('지금은 지인 테스트 기간이에요 — 결제·코드 화면은 잠시 감춰 두었어요');
       return;
     }
     if (!shopEl) return;
@@ -6306,7 +6276,7 @@
   }
 
   /* ══ 🔥 오늘 액운 태우기 ═════════════════════════════════════════
-     무료 5회(1년 패스·체험) / 올인원·성찰 에디션은 날마다 계속.
+     무료 체험 손님은 5회 맛보기 / 코드로 열린 기기(패스·1개월)는 날마다 1회 계속.
      **어느 등급이든 하루에 딱 1회** — localStorage 에 마지막으로 태운 날짜(YYYY-MM-DD)를 남긴다.
      · 사람 이름은 묻지도 받지도 않는다 — '일'과 '걱정'만 적는 한 줄.
      · 적은 글은 메모리(burn.text)에만 있고, 팝업을 닫으면 즉시 사라진다.
@@ -6423,7 +6393,9 @@
   }
   /** 오늘 이미 1회 태웠는가 — 등급과 무관하게 하루 1회 */
   function burnBurnedToday() { return !!burn.day && burn.day === burnTodayKey(); }
-  function burnUnlimited() { return TEST_OPEN_ALL || tierAtLeast('allinone'); }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
+  /* 2026-11-23 단일 패스 — 패스 하나가 '매일 1회 액운 태우기'까지 포함한다(코드로 열린 기기 = 매일 1회).
+     무료 체험 손님은 그대로 5회 맛보기. */
+  function burnUnlimited() { return TEST_OPEN_ALL || !!state.unlocked; }  function burnLeft() { return Math.max(0, BURN_FREE - burn.used); }
   /** 등급 이름
      · 2026-11-23 김나영 님: 액운 태우기 카드의 '성찰 에디션 · 오늘 마침' 같은 옛 상품명을 걷어내고
        상품 이름을 하나(내 사주 타이밍 달력)로 통일했다. */
@@ -6519,13 +6491,13 @@
     var leftLine = un
       ? burnPlanName() + '은 매일 한 번씩 — 내일 다시 마음을 비우러 오세요.'
       : (l > 0 ? '무료 ' + BURN_FREE + '회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
-               : '무료 ' + BURN_FREE + '회를 모두 썼어요. 내일도 이어 가시려면 올인원을 살펴보세요.');
+               : '무료 ' + BURN_FREE + '회를 모두 썼어요. 내일도 이어 가시려면 1년 전체 패스를 살펴보세요.');
     return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
       '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
       '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
       '<p class="burn__foot">하루에 단 한 번, 진심을 담아 비워내는 의식입니다. 적은 글은 어디에도 남지 않았어요.</p>' +
-      (!un && l <= 0 ? '<button type="button" class="burn__go burn__go--start" data-burn="upgrade">올인원 살펴보기</button>' : '') +
+      (!un && l <= 0 ? '<button type="button" class="burn__go burn__go--start" data-burn="upgrade">1년 전체 패스 살펴보기</button>' : '') +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
   }
 
@@ -6665,7 +6637,7 @@
       try { burnDialog.focus({ preventScroll: true }); } catch (e) { try { burnDialog.focus(); } catch (e2) {} }
       return;
     }
-    // 무료 5회를 다 썼으면 리추얼 대신 올인원 안내 팝업으로 자연스럽게 넘긴다
+    // 무료 5회를 다 썼으면 리추얼 대신 단일 패스 안내 팝업으로 자연스럽게 넘긴다
     if (!burnUnlimited() && burnLeft() <= 0) { openShop('burn'); return; }
     burnEl.hidden = false;
     burn.stage = 'prep';
@@ -7097,29 +7069,12 @@
     runBurnPrep();
   }
 
-  /* 5장을 다 쓴 뒤 — 올인원 안내(1년 패스 사용자는 7,900원 업그레이드) */
+  /* 무료 5회를 다 쓴 뒤 — 2026-11-23 단일 패스로 통일. 패스 하나면 매일 1회 계속 태울 수 있다. */
   function burnShopHTML() {
-    var pass = !!state.unlocked && state.tier === 'pass';
-    return '<p class="modal__eyebrow">ALL-IN-ONE · 매일 1회 액운 태우기</p>' +
+    return '<p class="modal__eyebrow">FULL PASS · 매일 1회 액운 태우기</p>' +
       '<h2 class="shop__title" id="shopTitle">🔥 무료 5회를 다 쓰셨어요</h2>' +
-      '<p class="shop__sub">오늘의 액운은 <b>올인원</b>에서 <b>매일 한 번씩, 날마다</b> 계속 태울 수 있어요. 1년 달력 전체에 매일 1회 액운 태우기까지 <b>' + ALLINONE_PRICE + '</b>이에요.</p>' +
-      (pass
-        ? '<div class="shop__save"><b>이미 1년 패스(14,900원)를 이용 중이세요</b>' +
-          '<span>차액 ' + BURN_UPGRADE_PRICE + '만 더 내면 올인원 코드로 바로 바꿔 드려요</span></div>' +
-          priceHTML('올인원 업그레이드', BURN_UPGRADE_PRICE) +
-          payActionsHTML('up-allinone') +
-          kakaoOrderHTML('up-allinone', '💬 결제 완료 · 카톡으로 올인원 코드 받기') +
-          '<p class="shop__note">카드로 결제하셨으면 노란 버튼으로 카톡에 알려 주세요. 차액을 확인한 뒤 올인원 입장 코드를 보내 드려요.</p>'
-        : '<ul class="shop__list">' +
-          '<li><b>1년 패스 전부</b><span>타이밍 맵 · 1년 수호 부적 · 액운 태우기 5회</span></li>' +
-          '<li><b>매일 일진 부적 — 전부</b><span>특별한 날·경고등 켜진 날마다 나오는 캐릭터 부적 스티커를 하나도 빼놓지 않고</span></li>' +
-          '<li><b>🔥 매일 1회 액운 태우기</b><span>매일 한 번 — 구워서 재로 날려 버리기</span></li>' +
-          '</ul>' +
-          '<div class="shop__save"><b>처음부터 올인원으로 시작하시면 업그레이드 대비 2,900원 더 유리해요</b>' +
-          '<span>1년 패스 14,900원 + 업그레이드 7,900원 = 22,800원 → 올인원 ' + ALLINONE_PRICE + '</span></div>' +
-          priceHTML('2027 올인원', ALLINONE_PRICE) +
-          payActionsHTML('allinone') +
-          kakaoOrderHTML('allinone', '💬 결제 완료 · 카톡으로 입장 코드 받기')) +
+      '<p class="shop__sub">1년 전체 패스를 열면 <b>매일 한 번씩</b> 계속 태울 수 있어요.</p>' +
+      passShopCoreHTML() +
       '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>';
   }
 
@@ -7476,7 +7431,7 @@
        · 체험 끝·잠금  : 🔑 입장 코드 입력(#lockBtn)이 먼저 눈에 들어와야 하므로
          #careJump 는 그 바로 아래("이 캘린더 보는 법" 위).
      DOM 노드를 옮겨도 각 버튼에 걸린 클릭 리스너는 노드를 따라 그대로 살아 있다. */
-  /** 무료 체험 중(코드 없이 3·5일 쓰는 중)인가 — 이때는 코드 입력 바를 달력 아래에서 결제 영역으로 내린다
+  /** 무료 체험 중(코드 없이 7·9일 쓰는 중)인가 — 이때는 코드 입력 바를 달력 아래에서 결제 영역으로 내린다
      (2026-11-22 김나영 님 결정: '결제해야 하나?' 하는 오해를 없앤다) */
   function trialCleanMode() {
     return FREE_TRIAL_ENABLED && !state.unlocked && !trialOver();
@@ -7502,9 +7457,11 @@
       }
     }
 
-    if (trialCleanMode()) {
+    if (trialCleanMode() && !LITE_MODE) {
       /* ① 달력 바로 아래 첫 자리 = ⚡ 긴급 개운템 바로가기만 (결제한 상태와 같은 모양)
-         ② 🔑 입장 코드 입력은 맨 아래 결제 영역의 상품 4개 아래로 — '이미 결제해서 코드를 받으셨나요?' */
+         ② 🔑 입장 코드 입력은 맨 아래 결제 영역의 상품 4개 아래로 — '이미 결제해서 코드를 받으셨나요?'
+         2.0 단순화 화면은 그 결제 영역(.cta)이 감춰져 있어, 그리로 보내면 코드 칸이 사라진다.
+         그래서 2.0 에서는 아래 마지막 갈래(달력 바로 아래 🔑 줄)로 내려 보낸다. */
       careUnderCalendar();
       var steps = $('#ctaSteps');
       if (steps && steps.parentNode) {
@@ -7672,6 +7629,9 @@
   function openLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
     if (!p) return;
+    /* 2.0 화면에서 감춰 둔 클래스가 남아 있어도 코드 칸은 반드시 열린다.
+       입력칸만 열고 위의 큰 '입장 코드 입력' 바(#lockBtn)는 띄우지 않는다 — 메인 화면을 깔끔하게 (2026-11-23) */
+    if (p.classList.contains('v2-parked')) p.classList.remove('v2-parked');
     p.hidden = false;
     if (btn) btn.setAttribute('aria-expanded', 'true');
     syncLockUI();
@@ -7797,6 +7757,8 @@
       // 3색 모아보기 버튼은 2.0 전용 — 예전 5색 화면에서는 다시 감춘다
       $$('.calfilter__btn--warn, .calfilter__btn--up, .calfilter__btn--real').forEach(function (el) { el.classList.add('v2-parked'); });
     }
+    /* 2.0 단순화 화면 — 🔑 입장 코드 입력칸은 메인 화면에 드러내지 않는다 (2026-11-23 김나영 님 확정)
+       결제 팝업 맨 아래 '이미 입장 코드가 있으신가요?'를 누를 때만 openLockPanel 이 열어 준다. */
     syncTrialState();
     syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
     syncMemberLinks();     // 초대 코드로 들어온 손님이 케미 화면으로 넘어갈 때 코드가 따라가게 (2026-11-22)
@@ -7865,7 +7827,7 @@
     });
     var lockGo = $('#lockGo');
     if (lockGo) lockGo.addEventListener('click', function (e) { e.preventDefault(); tryUnlock(); });
-    // 달력 위 '무료 3일 체험이 끝났어요' 줄 — 누르면 코드 입력 패널을 바로 연다
+    // 달력 위 '무료 7일 체험이 끝났어요' 줄 — 누르면 코드 입력 패널을 바로 연다
     var trialStrip = $('#calTrialOver');
     if (trialStrip) trialStrip.addEventListener('click', function (e) { e.preventDefault(); openLockPanel(); });
     var lockInput = $('#lockCode');

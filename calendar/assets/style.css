@@ -1943,6 +1943,24 @@ body.is-modal-open { overflow: hidden; }
 }
 .shop__price span { font-size: 10.5px; letter-spacing: .04em; color: rgba(241, 245, 249, .58); }
 .shop__price b { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+/* ── 단일 패스 가격 한 줄 (2026-11-23) — 정가 29,000원 취소선 → 14,900원 → '하루 40원' ── */
+.shop__price--pass { flex-wrap: wrap; align-items: baseline; gap: 2px 9px; }
+.shop__price--pass > span:first-child { width: 100%; }
+.shop__price--pass .shop__was { font-size: 11px; letter-spacing: 0; text-decoration: line-through; color: rgba(241, 245, 249, .46); }
+.shop__price--pass b { font-size: 18px; color: #FDE68A; }
+.shop__price--pass em.shop__perday {
+  font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: 0;
+  padding: 2px 7px; border-radius: 999px; background: #BE123C; color: #FFFBEB;
+  white-space: nowrap;
+}
+.shop-btn__desc--price { opacity: .95 !important; font-size: 11.5px; letter-spacing: 0; }
+.shop-btn__desc--price b { color: #FDE68A; font-weight: 700; }
+.shop-btn__was { color: rgba(241, 245, 249, .55); text-decoration: line-through; }
+.shop-btn__perday {
+  display: inline-block; margin-left: 2px; padding: 1px 6px; border-radius: 999px;
+  background: #BE123C; color: #FFFBEB; font-size: 9px; font-weight: 700; letter-spacing: 0;
+  vertical-align: 1px;
+}
 .shop__cta { margin-top: 12px; }
 .shop__note { font-size: 10px; color: var(--mute); line-height: 1.7; margin-top: 10px; text-align: center; }
 /* ── 결제 두 버튼 — 💳 카드결제 (페이앱) · 🏦 계좌이체 ─────────────── */
@@ -2004,6 +2022,32 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
   background: #F8FAFC; border: 1px solid rgba(15, 23, 42, .07);
 }
 .pay__note b { color: #BE123C; }
+/* ── 단일 패스 결제 — 주 버튼 하나 + 작은 계좌이체 링크 (2026-11-23) ── */
+.pay__btn--pass {
+  display: flex; width: 100%; justify-content: center; gap: 7px;
+  margin-top: 12px; padding: 15px 14px; border-radius: 15px;
+}
+.pay__btn--pass .pay__label { flex-direction: row; align-items: baseline; justify-content: center; }
+.pay__btn--pass .pay__label b { font-size: 13px; white-space: normal; }
+.pay__btn--pass .pay__amt { font-size: 14px; font-weight: 800; color: #FDE68A; letter-spacing: -0.01em; }
+.shop__mini {
+  display: block; width: auto; margin: 10px auto 0; padding: 6px 8px;
+  background: none; border: 0; font-family: inherit; font-size: 10.5px;
+  color: var(--mute); text-decoration: underline; text-underline-offset: 3px;
+}
+.shop__mini:active { transform: translateY(1px); }
+/* ── 달력 위 '1년 전체 열기 · 14,900원' 막대 (체험 중·체험 끝 모두) ── */
+.passbar {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; margin: 10px 0 2px; padding: 11px 14px; border-radius: 13px;
+  background: #FFFBEB; border: 1px solid rgba(180, 83, 9, .30);
+  font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: -.02em;
+  color: #92400E; cursor: pointer;
+}
+.passbar b { font-weight: 800; }
+.passbar__ar { font-weight: 800; }
+.passbar:active { transform: translateY(1px); }
+.passbar[hidden] { display: none; }
 .pay__kakao {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   width: 100%; margin-top: 9px; padding: 10px 12px; border-radius: 11px;
@@ -4637,6 +4681,13 @@ body.is-result .installbar { margin-top: 12px; }
 }
 .shop__code:hover { background: #FEF3C7; }
 .shop__code:active { transform: translateY(1px); }
+/* 결제 팝업 맨 아래 '이미 입장 코드가 있으신가요?' — 일반 손님이 놓치도록 작은 한 줄 (2026-11-23) */
+.shop__code--quiet {
+  display: block; width: auto; margin: 12px auto 0; padding: 6px 8px;
+  background: none; border: 0; font-size: 10.5px; font-weight: 500;
+  color: var(--mute); text-decoration: underline; text-underline-offset: 3px;
+}
+.shop__code--quiet:hover { background: none; color: #475569; }
 
 /* 입력 패널 — 이미 열려 있을 때 '다른 상품 코드로 바꿀 수 있다' 한 줄 */
 .lockpanel__swap {

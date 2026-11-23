@@ -2396,3 +2396,30 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 넘침: 390·320 폭 모두 `scrollWidth == clientWidth`(가로 넘침 0px) · 콘솔 오류·pageerror 0. 캡처 `work/qa97-390-step1-naming.png` · `work/qa97-390-step2-rename.png` · `work/qa97-390-step2-baby-top.png` · `work/qa97-320-step2-baby.png`
 - 덤: `?type=baby` 로 들어오면 `개명·작명` 탭 + 신생아 작명 갈래부터 열린다(`?type=rename`·`?type=naming` 은 기존대로 개명). 결제 복귀 값이 있으면 그쪽이 우선.
 - **라이브**(`https://ksy7900-star.github.io/yoonise-oheng-aroma/apply/` · 390×844 DPR2 · Pages 빌드 `d8ac091`): 세 탭 200 · 설명 문구 3종 완전 일치 · 불릿 0건 · 금액 49,000/100,000/200,000 · `개명·작명` 토글 노출(기본 개명)·한자 칸 보임·질문 칸 숨김 · 개명/신생아 복사 문구 실측 위와 동일 · 콘솔 오류 0 · 가로 넘침 0px · 캡처 `work/qa97-live-390-step1.png` · `work/qa97-live-390-step2-rename.png` · `work/qa97-live-390-step2-baby.png`
+
+## §98. 🔒 7일 무료 잠금 전환 · 단일 풀패스 14,900원 정비 (2026-11-23)
+
+자산: `calendar/assets/calendar.js` · `calendar/assets/style.css` · `calendar/index.html` · `calendar/sw.js` · `calendar/member/member.js` · `calendar/member/index.html`
+(김나영 님 확정 `#16544` · `#16556` · `#16577` · `#16588`)
+
+### 1. 실제 판매 모드 — 7일 무료 + 8일째 잠금
+- `TEST_OPEN_ALL = false` (지인 테스트 종료), `FREE_DAYS_BASE = 3 → 7` (초대 손님은 +2 → 9일, `?ref=` 보너스는 그대로).
+- 첫 방문일부터 7일(D+0~D+6)이 무료, 8일째부터 **날짜를 누르면 잠금·결제 팝업**. 2.0(LITE_MODE) 화면에서도 `openDayModal` 이 `inFree()` 를 먼저 보도록 고쳐, 잠금 팝업이 2.0 에서도 뜬다(그 전엔 2.0 이 잠금을 통째로 건너뛰었다).
+- **달력의 3색(⚠️ 조심 · ⚡ 기운 UP · 🌿 실속·정리)은 잠금 뒤에도 1년 내내 그대로** 보인다 — 잠기는 것은 상세 풀이 팝업뿐. 잠금 상태 안내도 `#calNote` 한 줄로 정리.
+- 화면 문구 `3일→7일`(hero·사용법·환영·CTL·리드), 초대 안내 `5일→9일`(배너·member).
+
+### 2. 단일 상품 — `2027 내 사주 타이밍 달력 · 1년 전체 패스`
+- 옛 3단(올인원 19,900 · 성찰 에디션 24,900) **판매 종료**. 잠금 팝업·결제 팝업·CTA·액운 태우기 소진 팝업 모두 이 하나만 보여 준다(`shopHTMLFor` 가 `allinone`/`diary` → `pass` 로 정규화, `TIERSW` 비교 탭 삭제, `ownedShopHTML` 업그레이드 버튼 삭제).
+- 가격 표기: 정가 `29,000원` 취소선 → **`14,900원`** + `하루 40원` 배지(`PASS_WAS_PRICE`·`passPriceHTML`).
+- 설명: `2027년 1년 내내 날짜별 조심·기운UP·실속 흐름 + 매일 1회 액운 태우기` (5회 제한 문구 제거).
+- 결제: `PAYAPP_PASS_URL`(`payapp-lite.js` 직행) + SC제일은행 `504-20-454146` 김나영(엔와이트레이드). 결제 팝업은 **`💳 카드·간편결제 14,900원` 주 버튼 1개 + 작은 `🏦 계좌이체 안내`·`🔑 이미 입장 코드가 있으신가요?` 링크**로 단순화(큰 카톡 버튼 제거 — 계좌이체 안내 안에 '입금 확인 카톡 보내기').
+- `burnUnlimited()` 를 `state.unlocked` 기준으로 바꿔 패스 하나로 **매일 1회 액운 태우기**가 실제로 열린다(무료 체험은 5회 그대로) — 상품 문구와 동작 일치.
+
+### 3. 체험 중 바로 결제 · 입장 코드는 숨김
+- 달력 위에 **`🔓 1년 전체 열기 · 14,900원 →`** 버튼 하나(`#passBar`, `data-shop="pass"`) — 체험 중·체험 끝 모두 노출, 누르면 같은 단일 패스 결제 창.
+- `🔑` 입장 코드 입력칸은 **메인 화면에 두지 않는다**. 결제 팝업·잠금 팝업 맨 아래 작은 `이미 입장 코드가 있으신가요?`(`data-lock-open`)를 눌렀을 때만 `openLockPanel()` 이 입력칸을 열어 준다(큰 `#lockBtn` 막대는 띄우지 않음).
+- `openShop` 의 2.0 차단을 `TEST_OPEN_ALL` 기준으로 바꿔 결제 팝업이 정상으로 열린다.
+
+### 4. 버전 · 검증
+- `sw.js` VERSION · `calendar/index.html` · `calendar/member/index.html` → **`20261123r`**.
+- 로컬 390×844 DPR2 (`work/qa-7day-lock-2026-11-23.py` · `…b.py`): 체험 종료(11-15 시작) 상태 `data-trial="over"` · 11월 3색 11칸·12월 31칸 모두 색 유지 · 잠금 팝업 `29,000원→14,900원 하루 40원`·옛 상품 문구 0건 · 결제 팝업 카드 링크 `z4otyE`·SC 계좌·코드 링크 숨김→탭 시 입력칸 · 체험 1일차 무료 7칸(11-23~11-29)·11-30 잠금 · `#passBar` 노출 · 콘솔 오류 0.

@@ -63,7 +63,7 @@
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
   var AUTOLOGIN_KEY = 'yoonise.member.autologin.tried.v1';   // 이 탭에서 카카오로 보낸 적 있는지 (무한 리다이렉트 방지)
   var INVITE_FLOW_KEY = 'yoonise.member.invite.flow.v1';    // 초대 링크의 '카카오 3초 연결'로 넘어온 흐름 (카카오 다녀와도 같은 탭이면 남는다)
-  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 5일 무료·액운 +1회를 줄 때 본다
+  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 9일 무료·액운 +1회를 줄 때 본다
   var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
   /* 달력의 '카톡 3초 연결 → 내 수호 부적' 카드로 들어온 손님 (2026-11-23 2차)
      카카오OAuth 는 주소의 ?next= 를 지우고 돌아오므로, 이 탭에 표시를 남겨 두고
@@ -545,13 +545,13 @@
       if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 5일 체험은 그대로 쓰실 수 있어요.';
     } else if (kind === 'again') {
       if (t) t.textContent = '✅ 연결 완료!';
-      if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 5일 무료가 기다리고 있어요.';
+      if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 9일 무료가 기다리고 있어요.';
     } else if (kind === 'linked') {
       if (t) t.textContent = '✅ 카카오 연결 완료!';
       if (s) s.textContent = '이제 내 초대 코드와 사다리가 이 계정에 쌓여요.';
     } else {
       if (t) t.textContent = '✅ 연결 완료!';
-      if (s) s.textContent = '초대해 준 친구에게도 혜택이 쌓였어요 — 달력으로 돌아가면 5일 무료가 열려 있어요.';
+      if (s) s.textContent = '초대해 준 친구에게도 혜택이 쌓였어요 — 달력으로 돌아가면 9일 무료가 열려 있어요.';
     }
     el.hidden = false;
     var rb = $('#refBanner');
