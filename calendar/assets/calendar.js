@@ -35,11 +35,12 @@
   var TEST_OPEN_ALL = false;
   /* ── 친구 초대(?ref=) 보너스 ───────────────────────────────────────────────
      /calendar/member/ 의 초대 링크(?ref=코드)로 들어온 손님은 '초대받은 손님'으로 보고
-     무료 체험을 7일 → 9일, 액운 태우기를 무료 5회 → 6회로 늘린다. (2026-11-21 · 기본 7일로 늘린 2026-11-23)
+     액운 태우기를 무료 5회 → 6회로 늘린다.
+     2026-11-23 김나영 님 확정(#17292): 무료 체험일은 초대든 아니든 **7일로 통일**(9일 문구 전부 폐기).
+       초대의 실질 혜택은 액운 태우기 +1회와 '초대해 준 사람의 사다리'다.
      · 코드는 member.js 와 같은 칸(REF_KEY)에 적고, 로그인으로 그 칸이 비워져도
-       INVITED_KEY 가 남아 다음 방문에도 9일이 이어진다.
-     · ?ref= 없이 들어온 손님은 지금까지처럼 7일 그대로. */
-  var INVITE_DAYS_BONUS = 2;
+       INVITED_KEY 가 남아 다음 방문에도 액운 +1회가 이어진다. */
+  var INVITE_DAYS_BONUS = 0;
   var INVITE_BURN_BONUS = 1;
   var REF_KEY = 'yoonise.member.ref.v1';    // member.js 가 ?ref= 를 적어 두는 칸 (같은 오리진)
   var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 { ref, at }
@@ -51,7 +52,7 @@
   var inviteFromLink = false;   // 이번 주소에 ?ref= 가 직접 붙어 들어왔는가(안내·재설정은 이때만)
   var inviteRef = readInviteRef();
   var invited = !!inviteRef;
-  var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대 손님 9일 · 그냥 들어오면 7일
+  var FREE_DAYS = FREE_DAYS_BASE + (invited ? INVITE_DAYS_BONUS : 0);   // 초대도 그냥 들어와도 7일 (2026-11-23 #17292)
 
   /** 초대 코드 모양인가 — member.js 와 같은 규칙(영문·숫자 4~12자) */
   function validRef(v) { return /^[A-Z0-9]{4,12}$/.test(String(v || '').trim().toUpperCase()); }
@@ -101,7 +102,7 @@
   }
 
   /* ── 초대받은 친구 → 원터치 카카오 연결 (2026-11-22) ─────────────────────
-     초대 링크(?ref=)로 온 손님은 달력에서 바로 9일·액운 1회가 열린다. 하지만 서버에
+     초대 링크(?ref=)로 온 손님은 달력에서 바로 7일·액운 1회가 열린다. 하지만 서버에
      '누가 누구를 초대했는지'가 남으려면 카카오 연결(로그인)이 한 번 필요하다. 그래서
      안내 배너와 달력 맨 위 줄에 '카카오 3초 연결' 버튼을 두고, member 화면에 autologin=1 로
      넘겨 로그인을 바로 시작한다(로그인 뒤 attach_referrer 가 추천 실적을 쌓는다).
@@ -720,7 +721,7 @@
     var pf = $('#passFoot');
     if (pf) pf.hidden = (mode !== 'on');
   }
-  /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구도 9일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
+  /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구를 FREE_DAYS·액운 보너스에 맞춰 주고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
     if (!invited) return;
     var nodes = $$('.js-trial, .js-trial-over, .cal__trialover-t, #guideTrialH, #guideTrialSub');
@@ -737,11 +738,11 @@
       wr.hidden = false;
     }
   }
-  /* ── 기존 방문자 + 친구 초대(?ref=) — 9일·액운 1회를 실제로 적용하고 한 번만 알린다 ─────
+  /* ── 기존 방문자 + 친구 초대(?ref=) — 액운 1회를 실제로 적용하고 한 번만 알린다 ─────
      사주가 이미 저장된 기기는 웰컴 팝업 없이 달력이 바로 열려서, 초대 링크로 들어와도
      혜택이 붙었는지 알 수 없었다. 그래서
-       ① 무료 체험이 이미 끝난 기기라면 이 초대를 받은 날부터 다시 9일을 세운다(기기당 1회).
-          → '9일 무료'라고 알려 놓고 실제로는 잠겨 있는 일이 없게.
+       ① 무료 체험이 이미 끝난 기기라면 이 초대를 받은 날부터 다시 7일을 세운다(기기당 1회).
+          → '7일 무료'라고 알려 놓고 실제로는 잠겨 있는 일이 없게.
        ② 달력이 열리자마자 위에서 안내 한 줄(토스트형 배너)을 띄운다 — 그 코드로는 1회만. */
   function loadInviteNotice() {
     try {
@@ -767,7 +768,7 @@
     for (var i = 0; i < keys.length - 30; i++) delete o.refs[keys[i]];
     saveInviteNotice(o);
   }
-  /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 9일로 다시 세운다 (기기당 1회) */
+  /** 무료 체험이 이미 끝난 기기 + 처음 닿은 초대 코드 → 오늘부터 7일로 다시 세운다 (기기당 1회) */
   function applyInviteFreshStart() {
     if (!invited || !inviteFromLink || !FREE_TRIAL_ENABLED || state.unlocked || !state.res || !state.todayISO) return false;
     if (inviteNoticeSeen(inviteRef)) return false;      // 이미 이 코드로 들어온 적 있는 기기
@@ -775,7 +776,7 @@
     if (rec.fresh) return false;                        // 초대 한 번으로 한 번만 새로 세운다
     var start = trialStartISO();                        // 저장된 첫 방문일(없으면 오늘)
     if (!start) return false;
-    if (T.addDays(start, FREE_DAYS - 1) >= state.todayISO) return false;   // 아직 9일 안이면 그대로
+    if (T.addDays(start, FREE_DAYS - 1) >= state.todayISO) return false;   // 아직 7일 안이면 그대로
     trialStartMemo = state.todayISO;
     try { localStorage.setItem(TRIAL_KEY, state.todayISO); } catch (e) { }
     rec.fresh = state.todayISO;
@@ -7867,7 +7868,7 @@
        · 체험 끝·잠금  : 🔑 입장 코드 입력(#lockBtn)이 먼저 눈에 들어와야 하므로
          #careJump 는 그 바로 아래("이 캘린더 보는 법" 위).
      DOM 노드를 옮겨도 각 버튼에 걸린 클릭 리스너는 노드를 따라 그대로 살아 있다. */
-  /** 무료 체험 중(코드 없이 7·9일 쓰는 중)인가 — 이때는 코드 입력 바를 달력 아래에서 결제 영역으로 내린다
+  /** 무료 체험 중(코드 없이 7일 쓰는 중)인가 — 이때는 코드 입력 바를 달력 아래에서 결제 영역으로 내린다
      (2026-11-22 김나영 님 결정: '결제해야 하나?' 하는 오해를 없앤다) */
   function trialCleanMode() {
     return FREE_TRIAL_ENABLED && !state.unlocked && !trialOver();

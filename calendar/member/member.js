@@ -63,7 +63,7 @@
   var REF_FROM_KEY = 'yoonise.member.reffrom.v1';
   var AUTOLOGIN_KEY = 'yoonise.member.autologin.tried.v1';   // 이 탭에서 카카오로 보낸 적 있는지 (무한 리다이렉트 방지)
   var INVITE_FLOW_KEY = 'yoonise.member.invite.flow.v1';    // 초대 링크의 '카카오 3초 연결'로 넘어온 흐름 (카카오 다녀와도 같은 탭이면 남는다)
-  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 9일 무료·액운 +1회를 줄 때 본다
+  var INVITED_KEY = 'yoonise.invited.v1';   // 초대받은 손님 표시 — /calendar/ 가 액운 +1회를 줄 때 본다 (체험일은 7일 고정)
   var GATE_KEY = 'yoonise.member.chemi.gate.v1';   // 로그인 전에 넣은 사주 — 로그인 돌아오면 이어서 계산
   /* 달력의 '카톡 3초 연결 → 내 수호 부적' 카드로 들어온 손님 (2026-11-23 2차)
      카카오OAuth 는 주소의 ?next= 를 지우고 돌아오므로, 이 탭에 표시를 남겨 두고
@@ -126,7 +126,7 @@
       localStorage.setItem(UNLOCK_KEY, JSON.stringify(o));
     } catch (e) {}
   }
-  var FRIEND_GIFT = '9일 체험과 액운 태우기 1회';
+  var FRIEND_GIFT = '7일 무료 체험과 액운 태우기 1회';
   var HASHTAGS = '#내사주타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
   var INSTA = 'life.saju_yoonise';
   // 인스타에 그대로 붙여넣는 한 덩어리 — 계정 태그 한 줄 + 짧은 추천 한 줄 + 해시태그 (2026-11-23 6차)
@@ -218,7 +218,7 @@
 
   /* ── 초대 코드·링크 ─────────────────────────────── */
   function myCode() { return (state.profile && state.profile.invite_code) || ''; }
-  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 9일 체험·액운 1회가 바로 열리고,
+  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 7일 체험·액운 1회가 바로 열리고,
      케미는 보내는 사람이 '케미 링크'로 따로 보낸다(chemiLink → /calendar/member/?chemi=...). 2026-11-22 */
   function myLink(withCode) {
     var code = myCode();
@@ -230,7 +230,7 @@
   }
   function shareLine() {
     return '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 친구 초대 혜택으로 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.\n'
+      + '내 링크로 들어오면 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.\n'
       + myLink();
   }
 
@@ -542,16 +542,16 @@
     var t = $('#inviteDoneT'), s = $('#inviteDoneS');
     if (kind === 'already') {
       if (t) t.textContent = '이미 다른 초대 코드가 연결된 계정이에요';
-      if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 9일 체험은 그대로 쓰실 수 있어요.';
+      if (s) s.textContent = '한 계정에는 초대 코드가 한 번만 붙어요. 달력 7일 체험은 그대로 쓰실 수 있어요.';
     } else if (kind === 'again') {
       if (t) t.textContent = '✅ 연결 완료!';
-      if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 9일 무료가 기다리고 있어요.';
+      if (s) s.textContent = '이미 연결돼 있던 계정이에요 — 달력으로 돌아가면 7일 무료가 기다리고 있어요.';
     } else if (kind === 'linked') {
       if (t) t.textContent = '✅ 카카오 연결 완료!';
       if (s) s.textContent = '이제 내 초대 코드와 사다리가 이 계정에 쌓여요.';
     } else {
       if (t) t.textContent = '✅ 연결 완료!';
-      if (s) s.textContent = '초대해 준 친구에게도 혜택이 쌓였어요 — 달력으로 돌아가면 9일 무료가 열려 있어요.';
+      if (s) s.textContent = '초대해 준 친구에게도 혜택이 쌓였어요 — 달력으로 돌아가면 7일 무료가 열려 있어요.';
     }
     el.hidden = false;
     var rb = $('#refBanner');
@@ -3069,7 +3069,7 @@
     }
     var url = chemiLink(ch);
     var line = '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 친구 초대 혜택으로 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.';
+      + '내 링크로 들어오면 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.';
     function fallback() {
       copyText(line + '\n' + url).then(function (ok) {
         toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.');
@@ -3218,7 +3218,7 @@
         localStorage.setItem(REF_KEY, ref);
         if (from) localStorage.setItem(REF_FROM_KEY, from);
         /* /calendar/ 도 이 손님을 '초대받은 손님'으로 볼 수 있게 따로 표시해 둔다.
-           로그인이 되면 REF_KEY 는 비워지지만 이 표시는 남는다(9일 체험 유지). */
+           로그인이 되면 REF_KEY 는 비워지지만 이 표시는 남는다(액운 +1회 유지). */
         localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: ref, at: new Date().toISOString() }));
       } catch (e) {}
     }
@@ -3238,7 +3238,7 @@
         try { localStorage.setItem(INVITED_KEY, JSON.stringify({ ref: state.refPending, at: new Date().toISOString() })); } catch (e) { }
       }
     }
-    /* 초대받은 손님이 달력으로 넘어가도 9일·액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
+    /* 초대받은 손님이 달력으로 넘어가도 액운 1회가 이어지게 — 링크에도 초대 코드를 실어 둔다 */
     var toCal = $('#toCalendar');
     if (toCal && state.refPending) toCal.href = '../?ref=' + encodeURIComponent(state.refPending);
 
