@@ -4180,9 +4180,9 @@
       '<p class="lock__title">🕘 지난 날이에요</p>' +
       '<p class="lock__sub">' + (trialOver()
         ? '무료 ' + FREE_DAYS + '일 체험(' + ws.m + '월 ' + ws.d + '일~' + fe.m + '월 ' + fe.d +
-          '일)이 끝났어요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.'
+          '일)이 끝났어요. 1년 전체 패스를 열면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.'
         : '무료 체험은 ' + ws.m + '월 ' + ws.d + '일부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
-          '일까지)만 열려요. 입장 코드를 넣으면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
+          '일까지)만 열려요. 1년 전체 패스를 열면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
       diaryTrialLine() +
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
@@ -4207,7 +4207,7 @@
     var over = trialOver();
     return lockHeadHTML(info, over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · ' + FREE_DAYS + ' DAYS') +
       (over
-        ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>입장 코드를 넣으면 전체가 열려요</p>'
+        ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>1년 전체 패스를 열면 전부 열려요</p>'
         : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>') +
       '<p class="lock__sub">1년 전체 패스 하나예요 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
       diaryTrialLine() +
@@ -4215,9 +4215,9 @@
       (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
       '<p class="lock__hint">' + (over
         ? '무료 체험은 ' + (ws ? ws.m + '월 ' + ws.d + '일~' : '') + fe.m + '월 ' + fe.d +
-          '일이었어요. 입장 코드를 넣으면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'
+          '일이었어요. 1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'
         : '이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
-          '입장 코드를 넣으면 이 사주로 지난 날까지 전부 열려요.') + '</p>' +
+          '1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.') + '</p>' +
       '<div class="lock__actions">' +
       lockShopButtonsHTML() +
       '</div>' +
