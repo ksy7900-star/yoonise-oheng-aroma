@@ -5152,77 +5152,30 @@
   }
 
   /* ── 3번 — 긴급 개운템 3종 (앱 안에서 그대로 체험) ────────────────
-     ① 주역 대나무 산가지 — 부채꼴 6개 중 '딱 1개'만 뽑는 의식
-        · 오행마다 처방 8개, 뽑을 때마다 한 바퀴 돌기 전엔 같은 처방이 다시 나오지 않는다
+     ① 대나무 뽑기 — 부채꼴 6개 중 '하루 딱 1개'만 뽑는 의식
+        · 산가지에 새겨진 번호(一~六)가 그대로 그날의 처방 번호다 (2026-11-23 확정)
      ② 디지털 개운 오브제 — 손가락으로 문지르면 기운이 차오르는 촉감(pointermove)
      ③ 1분 오행 싱잉볼 — 60초 지속 공명 + 4·2·6 복식호흡(12초)마다 재타종 + 수동 타종 */
   var CARE = {
-    목: {
-      obj: 'sprout', name: '새싹 화분', josa: '을',
-      missions: [
-        { tag: '색', text: '초록 잎이나 화분을 30초만 가만히 바라보세요. 눈이 먼저 쉬어요.' },
-        { tag: '동선', text: '창문을 열고 3분만 바깥 공기를 들이세요.' },
-        { tag: '손', text: '가까운 화분 잎을 손끝으로 쓸어 주고 물 한 모금 주세요.' },
-        { tag: '음식', text: '레몬 물 한 모금이나 신맛 한 입으로 입 안을 새로 고르세요.' },
-        { tag: '말', text: '미뤄 둔 안부 하나, 세 줄이면 충분해요. 지금 보내세요.' },
-        { tag: '몸', text: '목을 길게 빼고 어깨를 천천히 세 번 돌려 보세요.' },
-        { tag: '마음', text: '지금 뻗어 보고 싶은 일 하나를 메모에 한 줄로 적으세요.' },
-        { tag: '시간', text: '새로 시작할 일 하나를 5분짜리 한 걸음으로 쪼개 적으세요.' }
-      ]
-    },
-    화: {
-      obj: 'incense', name: '따뜻한 향로', josa: '를',
-      missions: [
-        { tag: '음식', text: '따뜻한 차 한 잔을 양손으로 감싸고 천천히 드세요.' },
-        { tag: '동선', text: '햇볕 드는 창가에 5분만 서 있어 보세요.' },
-        { tag: '색', text: '빨강·주황 소품 하나를 눈에 띄는 자리로 옮기세요.' },
-        { tag: '손', text: '손바닥을 10초 비벼 따뜻해지면 눈 위에 살짝 얹어 보세요.' },
-        { tag: '말', text: '망설인 결정 하나를 오늘 안에 한 줄로 정해 적으세요.' },
-        { tag: '마음', text: '오늘 고마웠던 사람 한 명을 떠올리고 이름만 적어 두세요.' },
-        { tag: '정리', text: '안 쓰는 알림 세 개를 지금 꺼 두세요.' },
-        { tag: '몸', text: '일어나 팔을 위로 쭉 뻗고 숨을 크게 한 번 들이세요.' }
-      ]
-    },
-    토: {
-      obj: 'stone', name: '황금 수호석', josa: '을',
-      missions: [
-        { tag: '손', text: '책상 위 어지러운 물건 세 개만 제자리에 두세요.' },
-        { tag: '몸', text: '맨발로 바닥을 딛고 1분 서서 발바닥 감각을 느껴 보세요.' },
-        { tag: '음식', text: '단맛 한 조각을 물 한 모금과 함께 천천히 드세요.' },
-        { tag: '색', text: '베이지·노랑 계열 소품 하나를 손 닿는 자리에 두세요.' },
-        { tag: '정리', text: '지갑 속 영수증과 쿠폰을 다 꺼내 버리세요.' },
-        { tag: '말', text: '안 쓸 약속 하나를 오늘 정중히 정리해 두세요.' },
-        { tag: '마음', text: '앉은 자리에서 발바닥과 엉덩이 감각을 30초 느껴 보세요.' },
-        { tag: '손', text: '서랍 하나만 열어 안 쓰는 것 한 개를 덜어 내세요.' }
-      ]
-    },
-    금: {
-      obj: 'bell', name: '수정 종', josa: '을',
-      missions: [
-        { tag: '손', text: '안 쓰는 사진이나 카톡방 세 개를 정리하세요.' },
-        { tag: '손', text: '은색이나 흰색 소품 하나를 반짝이게 닦아 주세요.' },
-        { tag: '정리', text: '안 쓰는 결제·구독 하나를 확인해서 끊으세요.' },
-        { tag: '음식', text: '물 한 모금으로 입 안을 헹구고 숨을 길게 한 번 내쉬세요.' },
-        { tag: '색', text: '흰 손수건이나 은색 소품 하나를 눈에 보이게 두세요.' },
-        { tag: '말', text: '받을 돈 한 건, 오늘 문자 한 줄로 물어보세요.' },
-        { tag: '마음', text: '정리 안 된 생각 세 개를 한 줄씩 적고 하나만 남기세요.' },
-        { tag: '손', text: '장바구니에 담아 둔 것 하나를 지금 지우세요.' }
-      ]
-    },
-    수: {
-      obj: 'orb', name: '행운 물결구슬', josa: '를',
-      missions: [
-        { tag: '음식', text: '미지근한 물 한 컵을 천천히 끝까지 마셔 보세요.' },
-        { tag: '손', text: '세수나 손 씻기로 얼굴의 열기를 먼저 식히세요.' },
-        { tag: '손', text: '손을 10초 씻고 물기를 톡 털어 내세요.' },
-        { tag: '말', text: '보내려던 답장은 오늘 초안에만 넣어 두세요.' },
-        { tag: '마음', text: '눈을 감고 숨을 세 번만 크게 쉬어 보세요.' },
-        { tag: '동선', text: '물소리나 빗소리 하나를 골라 1분만 가만히 들어 보세요.' },
-        { tag: '마음', text: '지금 드는 감정을 한 단어로 적어 보세요. 그걸로 충분해요.' },
-        { tag: '말', text: '급한 말은 "조금 있다 말할게요"로 한 번만 미뤄 보세요.' }
-      ]
-    }
+    목: { obj: 'sprout', name: '새싹 화분', josa: '을' },
+    화: { obj: 'incense', name: '따뜻한 향로', josa: '를' },
+    토: { obj: 'stone', name: '황금 수호석', josa: '을' },
+    금: { obj: 'bell', name: '수정 종', josa: '을' },
+    수: { obj: 'orb', name: '행운 물결구슬', josa: '를' }
   };
+
+  /* ① 대나무 6개의 처방 — 2026-11-23 김나영 님 확정(#16257).
+     감성 휴식 멘트를 모두 걷어내고, 막히고 꼬이는 날 어디에나 꽂히는 '현실 행동 전환' 6종.
+     산가지 번호(一~六)와 처방 번호가 1:1 — 손이 간 산가지 하나가 오늘의 처방이 된다. */
+  var BAMBOO_MISSIONS = [
+    { tag: '멈춤', text: '지금 바로 보내려던 메시지나 통화는 한 템포만 접어 두세요.' },
+    { tag: '말', text: '억지로 해명하려 들지 말고, 오늘은 사실만 짧게 남기세요.' },
+    { tag: '정리', text: '안 되는 한 가지와 씨름하지 말고, 당장 끝낼 작은 일 하나부터 치우세요.' },
+    { tag: '보류', text: '결론 내리려 애쓰지 말고, 오늘은 판을 벌리지 않은 채 현상 유지에 집중하세요.' },
+    { tag: '거리', text: '마음에 걸리는 상대와는 오늘 답장 간격만 평소보다 두 배로 늘리세요.' },
+    { tag: '핵심', text: '이것도 내 몫, 저것도 내 몫 하다가 지칩니다. 오늘 꼭 지킬 한 가지만 남기세요.' }
+  ];
+  var BAMBOO_ONCE_TEXT = '오늘의 처방은 하루 1번만 열려요 · 내일 다시 뽑아 보세요';
 
   var OBJ_SVG = {
     sprout: '<svg viewBox="0 0 120 120" class="obj" aria-hidden="true" focusable="false">' +
@@ -5272,50 +5225,26 @@
   };
 
   /* 뽑기·문지르기·싱잉볼의 화면 상태 (팝업을 닫으면 초기화) */
-  var PICK_KEY = 'yoonise.timing.carepick.v2';
+  var PICK_KEY = 'yoonise.timing.carepick.v3';
   var STICK_NUM = ['一', '二', '三', '四', '五', '六'];
-  var care = { pick: -1, mi: -1, lastMi: -1, bag: {}, charge: 0, lit: false, chargeStep: 0, dustAcc: 0, buy: 'set' };
+  var care = { pick: -1, charge: 0, lit: false, chargeStep: 0, dustAcc: 0, buy: 'set' };
 
-  function loadCarePick(el) {
+  /* 2026-11-23 확정 — 대나무는 **하루 1회 고정**. 뽑은 산가지 번호를 오늘 날짜(YYYY-MM-DD)와
+     함께 남겨 두고, 자정이 지나 날짜가 바뀌어야 새로 뽑을 수 있다.
+     팝업을 닫았다 다시 열거나 앱을 새로 고쳐도 오늘 뽑은 그 하나만 그대로 보인다. */
+  function loadCarePick() {
     try {
       var o = JSON.parse(localStorage.getItem(PICK_KEY) || 'null');
-      if (o && o.iso === state.todayISO && (!o.el || o.el === el) &&
-          typeof o.stick === 'number' && o.stick >= 0 && o.stick < 6 &&
-          typeof o.mi === 'number' && o.mi >= 0) {
-        care.bag = (o.bag && typeof o.bag === 'object') ? o.bag : {};
-        return { stick: o.stick, mi: o.mi };
-      }
+      if (o && o.iso === state.todayISO &&
+          typeof o.stick === 'number' && o.stick >= 0 && o.stick < 6) return o.stick;
     } catch (e) {}
-    care.bag = {};
-    return null;
+    return -1;
   }
-  function saveCarePick(o, el) {
+  function saveCarePick(stick) {
     try {
-      if (!o) localStorage.removeItem(PICK_KEY);
-      else localStorage.setItem(PICK_KEY, JSON.stringify({ iso: state.todayISO, el: el, stick: o.stick, mi: o.mi, bag: care.bag }));
+      if (typeof stick !== 'number' || stick < 0) localStorage.removeItem(PICK_KEY);
+      else localStorage.setItem(PICK_KEY, JSON.stringify({ iso: state.todayISO, stick: stick, at: Date.now() }));
     } catch (e) {}
-  }
-
-  /* 오늘의 처방 고르기 — 한 바퀴(8개)를 다 쓸 때까지는 같은 처방이 다시 나오지 않는다.
-     산가지 번호와 처방은 따로 뽑기 때문에, 같은 대나무를 다시 뽑아도 내용은 달라진다. */
-  function shuffleIdx(a) {
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-  function drawMission(el, avoid) {
-    var list = (CARE[el] || CARE['화']).missions;
-    var bag = care.bag[el];
-    if (!bag || !bag.length) {
-      bag = shuffleIdx(list.map(function (m, i) { return i; }));
-      care.bag[el] = bag;
-      if (bag.length > 1 && bag[0] === avoid) { bag[0] = bag[1]; bag[1] = avoid; }
-    }
-    var idx = bag.shift();
-    if (idx === avoid && bag.length) { bag.push(idx); idx = bag.shift(); }
-    return idx;
   }
 
   /* 1만 원 미만 소액은 페이앱 결제링크를 만들 수 없어 계좌이체 전용 — 낱개 3종 + 3종 풀세트
@@ -5451,9 +5380,8 @@
     return out;
   }
 
-  function bambooResultHTML(el, stick, mi) {
-    var list = (CARE[el] || CARE['화']).missions;
-    var m = list[((mi % list.length) + list.length) % list.length];
+  function bambooResultHTML(stick) {
+    var m = BAMBOO_MISSIONS[((stick % 6) + 6) % 6];
     return '<span class="bamboo__drawn-no">' + STICK_NUM[stick % 6] + '</span>' +
       '<span class="bamboo__tag">' + esc(m.tag) + '</span>' +
       '<b class="bamboo__text">' + esc(m.text) + '</b>';
@@ -5546,11 +5474,9 @@
     var c = CARE[el] || CARE['화'];
     var thr = EL_THEME[el] || EL_THEME['화'];
     loadTrial();
-    var saved = loadCarePick(el);
-    care.pick = saved ? saved.stick : -1;
-    care.mi = saved ? saved.mi : -1;
-    care.lastMi = saved ? saved.mi : -1;
-    var picked = care.pick >= 0 && care.mi >= 0;
+    var saved = loadCarePick();
+    care.pick = (typeof saved === 'number') ? saved : -1;   // 오늘 이미 뽑았으면 그 산가지가 고정
+    var picked = care.pick >= 0;
     /* 2026-11-23 확정 — 개운템은 무료. 잠금 없이 셋 다 그대로 연다 */
     var lockedCard = false;
     var lockedObjet = false;
@@ -5570,22 +5496,19 @@
       '<section class="care care--bamboo' + (lockedCard ? ' is-locked' : '') + '">' +
       '<p class="care__no">01</p>' +
       '<div class="care__head"><p class="care__title">오늘의 긴급 개운 처방</p></div>' +
-      '<p class="care__desc">마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.</p>' +
+      '<p class="care__desc">' + (picked
+        ? '오늘 뽑은 <b>대나무 1개</b>가 그대로 오늘의 처방이에요.'
+        : '마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.') + '</p>' +
       '<div class="bamboo' + (picked ? ' is-picked' : '') + '" data-bamboo>' +
       '<span class="bamboo__tray"></span>' +
       '<span class="bamboo__burst" aria-hidden="true"></span>' +
       '<div class="bamboo__fan">' + bambooSticksHTML() + '</div>' +
       '</div>' +
       '<div class="bamboo__result' + (picked ? ' is-show' : '') + '" data-bamboo-result' + (picked ? '' : ' hidden') + '>' +
-      (picked ? bambooResultHTML(el, care.pick, care.mi) : '') + '</div>' +
-      '<p class="care__hint" data-bamboo-hint>' + (lockedCard
-        ? (picked
-          ? '뽑은 하나가 오늘의 처방이에요. 소장하면 내일도 새로 뽑을 수 있어요. '
-          : '무료 체험은 1회예요 — 소장하면 매일 새로 뽑을 수 있어요. ')
-        : (picked
-          ? '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. '
-          : '여섯 개 중 마음이 끌리는 하나만 — 한 번에 하나씩 뽑아요.')) +
-      (picked ? '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>' : '') + '</p>' +
+      (picked ? bambooResultHTML(care.pick) : '') + '</div>' +
+      '<p class="care__hint' + (picked ? ' is-once' : '') + '" data-bamboo-hint>' + (picked
+        ? BAMBOO_ONCE_TEXT
+        : '여섯 개 중 마음이 끌리는 하나만 — 오늘은 딱 한 번 뽑아요.') + '</p>' +
       '</section>' +
 
       /* ② 디지털 개운 오브제 — 손가락으로 문지르기 */
@@ -5682,15 +5605,13 @@
   }
 
   function pickBamboo(i) {
-    if (care.pick === i && care.mi >= 0) { vibrate(12); return; }   // 같은 산가지 다시 누름 — 그대로
-    if (trialUsed('card')) { careLock('card'); return; }            // 1회 체험 완료 — 새로 뽑기만 잠금
-    var el = careElement();
-    var mi = drawMission(el, care.lastMi >= 0 ? care.lastMi : care.mi);
+    if (care.pick >= 0) {                                          // 오늘은 이미 뽑았다 — 자정까지 이 하나로 고정
+      toast(BAMBOO_ONCE_TEXT);
+      vibrate(12);
+      return;
+    }
     care.pick = i;
-    care.mi = mi;
-    care.lastMi = mi;
-    saveCarePick({ stick: i, mi: mi }, el);
-    markTrial('card');                                             // 첫 뽑기 = 무료 체험 1회
+    saveCarePick(i);
     var wrap = careEl('[data-bamboo]');
     if (wrap) wrap.classList.add('is-picked');
     $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
@@ -5700,39 +5621,23 @@
       b.setAttribute('aria-disabled', 'true');
     });
     sfxBambooDraw();
+    var desc = careEl('.care--bamboo .care__desc');
+    if (desc) desc.innerHTML = '오늘 뽑은 <b>대나무 1개</b>가 그대로 오늘의 처방이에요.';
     var panel = careEl('[data-bamboo-result]');
     var hint = careEl('[data-bamboo-hint]');
-    if (hint) hint.innerHTML = (trialUsed('card')
-      ? '뽑은 하나가 오늘의 처방이에요. 소장하면 내일도 새로 뽑을 수 있어요. '
-      : '뽑은 하나가 오늘의 처방이에요. 다시 뽑으면 다른 처방이 나와요. ') +
-      '<button type="button" class="care__reset" data-care="pickReset">다시 뽑기</button>';
+    if (hint) {
+      hint.className = 'care__hint is-once';
+      hint.textContent = BAMBOO_ONCE_TEXT;
+    }
     if (panel) panel.classList.remove('is-show');
     setTimeout(function () {
       if (!panel) return;
-      panel.innerHTML = bambooResultHTML(el, i, mi);
+      panel.innerHTML = bambooResultHTML(i);
       panel.hidden = false;
       panel.classList.add('is-show');
       sfxBambooReveal();
       vibrate([24, 30, 60]);
     }, 420);
-  }
-
-  function resetBamboo() {
-    if (trialUsed('card')) { careLock('card'); return; }             // 다시 뽑기는 소장한 뒤에
-    care.pick = -1;
-    care.mi = -1;                      // lastMi 는 남겨 둔다 — 다시 뽑을 때 바로 앞 처방이 또 나오지 않게
-    saveCarePick(null);
-    var wrap = careEl('[data-bamboo]');
-    if (wrap) wrap.classList.remove('is-picked');
-    $$('.bamboo__stick', wrap || shopBody).forEach(function (b) {
-      b.classList.remove('is-chosen', 'is-away');
-      b.removeAttribute('aria-disabled');
-    });
-    var panel = careEl('[data-bamboo-result]');
-    if (panel) { panel.classList.remove('is-show'); panel.hidden = true; panel.innerHTML = ''; }
-    var hint = careEl('[data-bamboo-hint]');
-    if (hint) hint.textContent = '여섯 개 중 마음이 끌리는 하나만 뽑아 보세요.';
-    sfxTap(1);
   }
 
   /* ② 오브제 — 손가락 문지르기(pointermove)로 게이지·빛가루·진동 */
@@ -6246,7 +6151,6 @@
 
   function handleCare(kind, btn, ev) {
     if (kind === 'stick') { pickBamboo(parseInt(btn.getAttribute('data-stick'), 10) || 0); return; }
-    if (kind === 'pickReset') { resetBamboo(); return; }
     if (kind === 'obj') { return; }             // 문지르기는 initCare 의 pointer 이벤트가 맡는다
     if (kind === 'objReset') { resetObj(); return; }
     if (kind === 'bowlTap') { bowlTap(); return; }
