@@ -2658,3 +2658,61 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 초대 링크로 들어온 달력(`/calendar/?ref=P12345&v=20261123z3`): `초대 혜택 적용 중 · 7일 무료` · 웰컴 팝업 `🎁 친구 초대 링크로 오셨어요 · 7일 무료 + 액운 태우기 1회 더` · `data-trial="on"` · 오류 0. `9일`은 날짜 표기(9일·19일·29일)뿐. 캡처 `work/qa-share/live-cal-invited.png`.
 - 스크립트: `work/qa-share/test_share.py`(로그인 목 세션 + Supabase REST 목으로 `invite_code=P12345`) · `work/qa-share/test_cal7.py`
 - 남긴 것: 부적 카드 하단 각인은 `윤이세사주 · 2027 타이밍 캘린더` 그대로(제품명 통일은 별건 — `내 타이밍 캘린더 열기` 버튼 등과 함께 결정 필요).
+
+## §107. 🌙 새벽 4시 작업 — /apply/ 자동 접수 · 추천 1/3/5/7 자동 해금 · 코드 SALT 서버 이전 · 카톡 공유 안전화 (2026-11-24)
+
+자산: `apply/index.html` · `calendar/assets/calendar.js` · `calendar/member/member.{js,html}` · `calendar/assets/pwa.js` · `calendar/assets/style.css` · `calendar/assets/share/*.jpg` · `calendar/yoon-key/index.html` · `calendar/index.html` · `calendar/sw.js` · Supabase(`fifynkkaeqcjlovesuop`) · 버전 **`20261124c`**
+
+### 1. `/apply/` 카톡 접수 누락 방지 (최우선)
+- `📩 신청서 접수하기`를 누르는 순간 신청서를 Supabase `consult_requests` 에 자동 저장한다(publishable 키 + INSERT 전용 RLS). 저장이 실패하거나 6.5초 넘게 걸려도 카톡으로 가는 길은 막지 않고, 그때만 예비 복사본(`#copybox`)을 보여 준다.
+- 복사·붙여넣기 안내를 전부 걷어 냈다. 완료 화면은 **`신청서 접수가 끝났어요!` + `카톡으로 '신청했어요' 한 마디만 남겨 주세요` + `💬 카톡 열기`** 하나뿐이고, 신청서·접수 버튼·STEP 2 머리는 숨긴다.
+- 저장 내용: `kind`(onepoint/saju/naming) · `name_mode`(rename/baby) · `product` · `body`(카톡 문구 그대로) · `payload.lines`(칸 순서 그대로 `[{k,v}]`) · `contact` · `created_at`.
+- RLS: `consult_requests` 는 `anon` INSERT 정책 하나뿐이고 SELECT 권한은 회수했다(anon 조회 → `42501`). 읽기는 PIN 확인이 붙은 `admin_consults(p_pin)` 로만.
+
+### 2. 0428 발급기 — `📋 신청서` 탭 · 등급명 정리 · 코드 계산 서버 이전
+- 탭 3개(`🔑 코드 발급` · `📋 신청서` · `👥 가입자`). 신청서 탭은 전체/오늘 숫자 + 최신 200건 목록(상품·종류·접수시각·이름·연락처, 펼치면 신청 문구 전문).
+- 가입자 현황의 옛 등급명 `성찰 에디션`·`올인원`·`1년 패스` → **`1년 전체`** 로 통일(지금 파는 단일 상품). 발급기 상품 버튼도 `1년 전체 패스(P)` · `1개월(M)` 두 개만 남기고, 옛 A/D 코드는 `받은 코드 확인`에서 계속 확인된다.
+- **`CODE_SALT` 를 클라이언트에서 완전히 제거**했다(calendar.js · yoon-key 양쪽). SALT 는 Supabase `app_secrets`(RLS 켜고 정책 없음 = anon·authenticated 접근 불가)에만 있고, 계산은 서버 함수가 한다.
+  - `verify_entry_code(p_code, p_phone, p_ymd, p_gender)` — 달력·발급기 공용 검증(anon 허용). 6자리·예전 사주 6자리·예전 18자리 모두 지원.
+  - `issue_entry_code(p_pin, p_letter, p_phone)` — 0428 PIN 필요. 발급기 `코드 만들기`가 이 함수를 부른다.
+  - plpgsql 로 FNV-1a/mix32 를 옮겨 **기존 JS 와 값이 완전히 같다**(P/01099991234 → `P77907`, M/01048487373 → `M15374`, 18자리 서명 `FN5K6`·`VVEN5` 일치 확인).
+  - 달력은 모양 검사(`shapeOfCode`) → 서버 확인(`verifyCodeRemote`) 순서로 바뀌었고, 통과한 코드는 지금처럼 기기에 저장돼 오프라인에서도 열린다. 서버에 닿지 않으면 열어 주지 않고 "확인 잠시 안 됨"만 알린다.
+
+### 3. 친구 초대 사다리 `1명 2주` + DB 자동 해금
+- 확정(2026-11-23 저녁): **1명 +2주(14일) · 3명 +1개월(30일) · 5명 +3개월(90일)+상담 1만원 할인 · 7명 +6개월(180일)+원포인트 반값**.
+- `referral_rules` 4줄(`PASS_2W`/14 · `PASS_1M`/30 · `PASS_3M`/90 · `PASS_6M`/180), `grant_referral_rewards` 재작성(5명 `CONSULT_10K_OFF`, 7명 `CONSULT_HALF` entitlement 추가), 옛 1명 `BURN_3_COUPON` 지급 블록 제거.
+- `my_referral_bonus()` — 로그인 사용자 본인의 추천 수·유효 보상 만료일(`max(expires_at)`)을 돌려주고, 아직 지급 안 된 칸이 있으면 그 자리에서 채운다. `auth.uid()` 자기 것만 본다.
+- 달력은 `bonusUntil` 을 `localStorage` 에 두고 `trialWindow().end` 를 그날까지 늘린다 → 7일 잠금이 켜져 있어도 보상 기간만큼 자동으로 열린다. 화면에는 `🎁 친구 초대 보상으로 12월 20일까지 달력이 열려 있어요` 한 줄(`#bonusBar`)이 뜨고 `7일 무료` 문구는 감춘다(`body.has-bonus`). 보상 밖 날짜의 잠금 팝업은 `INVITE BONUS · UNTIL 12/20` 으로 안내한다.
+- 기존 유료 코드와 충돌 없음: `state.unlocked`(코드로 열림)가 항상 우선이고, 보상은 체험 잠금만 늘린다.
+
+### 4. 케미/초대 카톡 공유 안전화
+- `?chemi=(생년월일시)` 를 보내는 링크에서 제거 — `[친구에게 보내기]`·`[내 링크 바로 보내기]` 모두 `?ref=내코드` 달력 초대 링크 하나만 보낸다(로그인 전이면 코드 없이).
+- 공유 멘트 확정: `2027년 내 사주 타이밍 달력 나도 보고 있는데 꽤 잘 맞아서 공유해. 행운 부적도 무료래!`
+- 카카오 SDK(2.7.4, JS 키 `24485cf4…`)를 member 화면에 넣고 `Kakao.Share.sendDefault` 피드 공유를 붙였다 — 대표 부적 카드(우정/사랑/행운) + 위 문구 + `내 달력 보기` 버튼. 미지원이면 `navigator.share`, 그것도 없으면 복사.
+  - 주의: SDK 2.7 은 `Kakao.init` 전에는 `Kakao.Share` 가 없다 — init 을 먼저 하는 순서로 고쳤다(첫 배포에서 이 순서 때문에 공유가 일반 공유로 떨어졌음).
+- 대표 카드 3종: `calendar/assets/share/{friend,love,luck}.jpg` (800×800, 기존 오행 마스코트 + `행운/사랑/우정 부적` 캡션).
+- 이름 박힌 개인 케미 부적은 기존 `[이미지로 저장]` 그대로.
+
+### 5. 안드로이드 카톡 → 크롬 바로 열기
+- 카톡 인앱(안드로이드)에서 `📲 바탕화면에 꺼내 두기`를 누르면 설치 안내 모달에 **`🌐 크롬으로 바로 열기 →`** 버튼이 먼저 뜬다. href = `intent://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/#Intent;scheme=https;package=com.android.chrome;end`.
+- iOS·비카톡 환경은 기존 안내(사파리 공유 / 주소 복사) 그대로.
+
+### 6. 검증 (라이브 · Playwright 390×844 · Android UA · 콘솔/pageerror 전부 0)
+| 항목 | 결과 |
+| --- | --- |
+| `/apply/` 개명 접수 | 서버 저장 id 2 · payload 8칸 정확 · 완료 카드 표시 · 신청서/카톡바 숨김 · 오류 0 |
+| `/apply/` 신생아 접수 | 서버 저장 id 3 · 10칸 정확(부모 사주·돌림자 포함) · 오류 0 |
+| 0428 `📋 신청서` | 3건 목록·전문 표시 · 오늘 3 · 오류 0 (검증 후 테스트 3건 삭제 → 현재 0건) |
+| 0428 코드 발급 | `010-0000-1234` → `P19244`(서버 계산이 기존 JS 와 일치) · 받은 코드 확인 통과 |
+| 달력 코드 입력 | `010-0000-1234` + `P19244` → `🔓 1년 전체 패스 확인됐어요` · 오류 0 |
+| 보상 자동 해금 | trialStart 11/1 + bonusUntil 12/20 → 배너 표시 · 12/15 열림 · 12/25 잠금(`INVITE BONUS · UNTIL 12/20`) · 오류 0 |
+| 체험 종료 잠금 팝업 | `🌿 실속·정리` 3색 태그 · 옛 `.mark` **0개** · 오류 0 |
+| 카톡 인앱 설치 모달 | `🌐 크롬으로 바로 열기 →` + 정확한 intent href · 오류 0 |
+| `/calendar/member/` | 새 사다리 4칸 표시 · `Kakao.Share.sendDefault` 호출(sharer.kakao.com 피커 열림) · 오류 0 |
+- 스크린샷: `browser/apply-done-2026-11-24-*.png` · `browser/yoonkey-consults-2026-11-24-*.png` · `work/qa-dawn-2026-11-24/{bonus-*,lock-over-*,install-kakao-android}.png`
+- 스크립트: `work/qa-dawn-2026-11-24/test_dawn.py`
+
+### 7. 남긴 것 / 필요한 것
+- 친구 추천 **실계정 자동 해금 라이브 확인**은 카카오 로그인 세션이 필요해 이번엔 못 했다. 서버 로직은 실제 계정(추천 3명)으로 트랜잭션 드라이런(롤백)해서 `PASS_2W` 지급·`max(expires_at)=2026-12-22` 를 확인했다.
+- 카톡 채널 자동응답 5칸은 `business.kakao.com` 세션이 만료돼(로그인 화면) 동기화하지 못했다. 복사용 최종 5종: `work/kakao-channel-autoreply-2026-11-24.md`.
+- 블로그 지수 진단·초안: `work/blog-drafts/2026-11-24-crank-recovery.md` (외부 링크 0·가격 0).
