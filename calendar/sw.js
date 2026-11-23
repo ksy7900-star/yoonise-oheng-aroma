@@ -11,7 +11,7 @@
    · activate 에서 이전 버전 캐시(yoonise-cal-*)를 전부 지운다.
      (같은 오리진의 다른 앱 캐시는 건드리지 않는다 — 이름 앞자리로만 지운다)
    ========================================================== */
-var VERSION = '20261123p';
+var VERSION = '20261123q';
 var CACHE = 'yoonise-cal-' + VERSION;
 var CACHE_PREFIX = 'yoonise-cal-';
 
