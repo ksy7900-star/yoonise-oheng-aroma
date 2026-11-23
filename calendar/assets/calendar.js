@@ -4362,7 +4362,6 @@
   var PASS_PRICE = '14,900원';
   var ALLINONE_PRICE = '19,900원';
   var DIARY_PRICE = '24,900원';
-  var CARE_PRICE = '1종 2,900원 · 3종 풀세트 5,900원';
   var CONSULT_PRICE = '49,000원';
 
   /* ── 1:1 상담 두 상품 (2026-11-22 개편) ────────────────────────────
@@ -5360,28 +5359,14 @@
       }));
     } catch (e) {}
   }
-  function trialUsed(k) { return !!(loadTrial()[k]); }
-  function markTrial(k) {
-    loadTrial();
-    if (trialDone[k]) return false;
-    trialDone[k] = true;
-    saveTrial();
-    paintTrialChips();
-    return true;
-  }
-  function trialChipHTML(k) {
-    return trialUsed(k)
-      ? '<span class="care__trial is-done" data-trial-chip="' + k + '">1회 체험 완료</span>'
-      : '<span class="care__trial" data-trial-chip="' + k + '">무료 1회 체험</span>';
-  }
-  function paintTrialChips() {
-    if (!shopBody) return;
-    $$('[data-trial-chip]', shopBody).forEach(function (el) {
-      var done = trialUsed(el.getAttribute('data-trial-chip'));
-      el.classList.toggle('is-done', done);
-      el.textContent = done ? '1회 체험 완료' : '무료 1회 체험';
-    });
-  }
+  /* 2026-11-23 김나영 님 확정(#16187) — "긴급 개운템은 돈 받지 않을 거야.
+     그냥 바탕화면 깔면 사용할 수 있어야 하잖아."
+     → 1회 체험 잠금을 걷어냈다. 대나무·오브제·싱잉볼 셋 다 횟수 제한 없이 쓴다.
+       (기록 키·불러오기 함수는 그대로 둔다 — 예전 기기에 남은 값이 있어도 무시된다) */
+  function trialUsed(k) { return false; }
+  function markTrial(k) { return true; }
+  function trialChipHTML(k) { return ''; }
+  function paintTrialChips() { if (!shopBody) return; }
   /* 1회 체험을 마친 항목을 또 실행하려 할 때 — 안내 + 결제 영역으로 부드럽게 */
   var CARE_LOCK_TEXT = '1회 체험을 완료했어요 · 소장하고 매일 꺼내 쓰기';
   function careLock(kind) {
@@ -5411,8 +5396,9 @@
   }
 
   function careItemLabel(v) {
+    /* 개운템은 무료 (2026-11-23 #16187) — 주문·카톡 문구에도 금액이 붙지 않게 이름만 */
     var it = CARE_ITEMS[v];
-    return it ? it.name + ' ' + it.price : '';
+    return it ? it.name : '';
   }
   function itemLabel(item) {
     var it = String(item || '');
@@ -5565,11 +5551,10 @@
     care.mi = saved ? saved.mi : -1;
     care.lastMi = saved ? saved.mi : -1;
     var picked = care.pick >= 0 && care.mi >= 0;
-    /* 1회 체험을 마친 항목 — 결과는 그대로 보여 주고, 새 실행만 잠근다 */
-    var lockedCard = trialUsed('card');
-    var lockedObjet = trialUsed('objet');
-    var lockedBowl = trialUsed('bowl');
-    if (lockedObjet) { care.charge = 0; care.lit = false; care.chargeStep = 0; }
+    /* 2026-11-23 확정 — 개운템은 무료. 잠금 없이 셋 다 그대로 연다 */
+    var lockedCard = false;
+    var lockedObjet = false;
+    var lockedBowl = false;
     return '<p class="modal__eyebrow">QUICK CARE · 긴급 개운템 3종</p>' +
       '<h2 class="shop__title" id="shopTitle">⚡ 극도로 힘들 때<br>긴급 개운템</h2>' +
       '<p class="care__place"><b>📍 추천 공간:</b> ' + esc(CARE_PLACE[el] || CARE_PLACE['화']) + '</p>' +
@@ -5584,7 +5569,7 @@
       /* ① 대나무 산가지 뽑기 */
       '<section class="care care--bamboo' + (lockedCard ? ' is-locked' : '') + '">' +
       '<p class="care__no">01</p>' +
-      '<div class="care__head"><p class="care__title">오늘의 긴급 개운 처방</p>' + trialChipHTML('card') + '</div>' +
+      '<div class="care__head"><p class="care__title">오늘의 긴급 개운 처방</p></div>' +
       '<p class="care__desc">마음이 끌리는 <b>대나무 1개</b>를 직접 뽑아 주세요. 뽑은 하나가 오늘의 처방이에요.</p>' +
       '<div class="bamboo' + (picked ? ' is-picked' : '') + '" data-bamboo>' +
       '<span class="bamboo__tray"></span>' +
@@ -5606,7 +5591,7 @@
       /* ② 디지털 개운 오브제 — 손가락으로 문지르기 */
       '<section class="care care--obj' + (lockedObjet ? ' is-locked' : '') + '">' +
       '<p class="care__no">02</p>' +
-      '<div class="care__head"><p class="care__title">내 디지털 개운 오브제</p>' + trialChipHTML('objet') + '</div>' +
+      '<div class="care__head"><p class="care__title">내 디지털 개운 오브제</p></div>' +
       '<p class="care__desc">2027년 곁에 두면 좋은 <b>' + esc(TALIS[el].label) + '</b> 기운 — ' + esc(c.name) + esc(c.josa) + ' 손가락으로 문질러 기운을 채워 보세요.</p>' +
       '<div class="care-obj' + (care.lit ? ' is-awake' : '') + (lockedObjet ? ' is-locked' : '') + '" data-care="obj" role="button" tabindex="0" ' +
       'style="--obj-glow:' + thr.color + '; --charge:' + care.charge + '" ' +
@@ -5633,7 +5618,7 @@
       /* ③ 1분 오행 싱잉볼 */
       '<section class="care care--bowl' + (lockedBowl ? ' is-locked' : '') + '">' +
       '<p class="care__no">03</p>' +
-      '<div class="care__head"><p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p>' + trialChipHTML('bowl') + '</div>' +
+      '<div class="care__head"><p class="care__title">1분 오행 싱잉볼 · 기운 리셋</p></div>' +
       '<p class="care__desc">코로 4초 · 멈춤 2초 · 입으로 6초, <b>12초 복식호흡</b>을 다섯 번 하는 동안 낮게 공명해요. 숨이 바뀔 때마다 다시 울려요.</p>' +
       '<div class="bowl' + (careBowl.on && !careBowl.paused ? ' is-on' : '') + '" data-bowl>' +
       '<button type="button" class="bowl__art" data-care="bowlTap" aria-label="싱잉볼 치기 — 1분 공명 시작">' +
@@ -5670,27 +5655,11 @@
         : '진행 중에 싱잉볼을 터치해도 언제든 다시 <b>댕~</b> 울려요.') + '</p>' +
       '</section>' +
 
-      /* 결제 영역 — 1회 체험을 마친 항목을 또 누르면 이 자리로 부드럽게 데려온다 */
-      '<div class="care__pay" data-care-pay>' +
-      '<p class="care__lock" data-care-lock role="status" aria-live="polite" hidden></p>' +
-      priceHTML('긴급 개운템', CARE_PRICE) +
-      '<div class="pay__pick pay__pick--4" role="group" aria-label="개운템 구성 선택">' +
-      CARE_ITEM_ORDER.map(function (k) {
-        var it = CARE_ITEMS[k], on = care.buy === k;
-        return '<button type="button" class="pay__pick-btn' + (on ? ' is-on' : '') + '" data-careitem="' + k + '" aria-pressed="' + on + '">' +
-          '<b>' + it.ico + ' ' + esc(it.name) + '</b><span>' + esc(it.price) + (it.rec ? ' · 추천' : '') + '</span></button>';
-      }).join('') +
-      '</div>' +
-      '<p class="pay__guide">소액(1만 원 미만) 상품은 계좌이체 전용이에요 · <b>' + esc(String(BANK_NAME).trim()) + ' ' + esc(String(BANK_ACCOUNT).trim()) + '</b></p>' +
-      payActionsHTML('care-' + care.buy, { card: false, bankSub: esc(careItemLabel(care.buy)) + ' · 계좌번호 복사' }) +
-      kakaoOrderHTML('care', '💬 결제 완료 · 카톡으로 알려 주기') +
-      '</div>' +
-      '<div class="shop__consult">' +
-      '<b>🔎 윤이세 1:1 상담</b>' +
-      '<span>원포인트 49,000원(고민 1가지) · 시그니처 100,000원(전체 흐름) — 캘린더로도 계속 걸리는 것을 사람이 짚어 드려요.</span>' +
-      '<button type="button" class="shop__consult-btn" data-shop="consult">1:1 상담 보기 →</button>' +
-      '</div>' +
-      '<p class="shop__note">3종은 각각 <b>처음 1회 무료</b>로 체험할 수 있어요 — 다 쓰면 소장하고 매일 꺼내 쓰세요.</p>';
+      /* 결제 영역 없음 — 2026-11-23 김나영 님 확정(#16187): 긴급 개운템은 돈을 받지 않는다.
+         바탕화면에 깔고 들어온 사람은 셋 다 횟수 제한 없이 그대로 쓴다.
+         (가격표·계좌이체·‘무료 1회 체험’ 칩·1:1 상담 유도까지 모두 걷어냈다 —
+          상담은 달력 맨 아래 ‘1:1 사주 · 작명 상담’ 카드가 맡는다) */
+      '<p class="shop__note">셋 다 <b>그냥 쓰시면 돼요</b> — 횟수도, 결제도 없어요. 내일 또 힘든 날에 다시 꺼내 쓰세요.</p>';
   }
 
   /* ── 긴급 개운템 동작 ───────────────────────────── */
@@ -8106,6 +8075,16 @@
       e.preventDefault();
       if (state.repTalis && hasSbSession()) { openTalisModal(); return; }
       location.href = './member/?autologin=1&next=talis';
+    });
+
+    /* 🌿 1:1 사주·작명 상담 카드의 '카톡 문의' (2026-11-23 #16164)
+       앵커에 rel="noopener noreferrer" 가 이미 있지만, 카톡·네이버 인앱 브라우저에서
+       새 창이 막히면 openNoRef 가 같은 창으로 넘기는 것까지 맡는다.
+       (어느 쪽이든 referrer 를 보내지 않아 '- 이전 페이지: URL' 문구가 붙지 않는다) */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('[data-kakao-inquiry]')) return;
+      e.preventDefault();
+      openNoRef(KAKAO);
     });
 
     // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 끌어다 놓기 · X·배경·닫기 버튼

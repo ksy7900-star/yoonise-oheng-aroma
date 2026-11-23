@@ -2261,3 +2261,41 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 웹: `duoCard → careCard → getAppBar` 순서 · `#getAppBar` 노출 · 카드 안에 `면접`·`계약`·`공짜` 0건 · `#careGo` 누르면 설치 안내(`크롬에서 까는 법`) 열림 · `beforeinstallprompt` 심으면 `prompt()` 1회. 캡처 `work/qa-v9-web-bottom.png`.
 - 앱(standalone 에뮬레이션): `html.is-standalone` · `#getAppBar` display none · 부제 `오늘 흔들릴 때 바로 열어 보세요` · `#careGo` → 개운템 팝업(대나무 6개·오브제·싱잉볼·무료 1회 체험 칩 3개) · 대나무 뽑기 실행 시 `1회 체험 완료` 전환. 캡처 `work/qa-v9-app-care.png` · `work/qa-v9/b-app-care-drawn.png`.
 - 콘솔 오류 0. 스크립트 `work/qa-care-install-2026-11-23.py` · `work/qa-care-guard-2026-11-23.py`
+
+## §94. 🌿 달력 맨 아래 1:1 사주·작명 상담 카드 · ⚡ 긴급 개운템 무료화 · 예전 화면(캐시) 문제 (2026-11-23)
+
+자산: `calendar/index.html` · `calendar/assets/style.css` · `calendar/assets/calendar.js` · `calendar/assets/pwa.js` · `calendar/sw.js` · `calendar/member/index.html`
+`?v=20261123n` / `sw.js VERSION 20261123n`
+(김나영 님 확정 `#16164`·`#16187` — "1:1 상담 카드 한 장" · "긴급 개운템은 돈 받지 않을 거야. 그냥 바탕화면 깔면 사용할 수 있어야 하잖아." / 제보 `#16176` "예전 캐시 화면이 남는다")
+
+### 1. 🌿 1:1 사주 · 작명 상담 카드 (`#consultCard`)
+- 자리: `#careCard`(긴급 개운템) → `#getAppBar`(바탕화면 꺼내기) → **`#consultCard`** → 면책 푸터. `#result` 안이라 사주를 넣고 달력이 열린 화면에서만 보인다.
+- 문구(가격표 없음): 라벨 `1:1 CONSULTING` / 제목 `🌿 1:1 사주 · 작명 상담이 필요할 때` / 본문 `혼자 정리하기 어려운 갈림길 앞에서, 내 결에 맞는 답을 함께 찾아보고 싶을 때`
+- 버튼 2개 나란히: 주 `상담 신청 · 안내 보기 →` → `../apply/` · 보조 `💬 카톡 문의` → `https://pf.kakao.com/_hxfbCG/chat`
+- 카톡은 앵커에 `target="_blank" rel="noopener noreferrer"` 를 두고(JS 가 죽어도 referrer 없이 열린다), `data-kakao-inquiry` 를 `calendar.js` 가 받아 `openNoRef(KAKAO)` 로 넘긴다 — 인앱 브라우저에서 새 창이 막히는 경우까지 같은 창 이동으로 처리. `- 이전 페이지: URL` 자동 문구 없음.
+
+### 2. ⚡ 긴급 개운템 — 무료 (돈을 받지 않는다)
+- `#careCard` 오른쪽 위 가격표(`1종 2,900원 / 3종 5,900원`) 삭제 → 제목 옆 **`앱 전용`** 골드 알약 배지(`.carecard__pill`). 카드 안 금액 0건.
+- `#shopModal` 의 개운템 팝업에서 **결제·잠금·체험 횟수 장치를 모두 걷어냈다**:
+  - `무료 1회 체험` / `1회 체험 완료` 칩(`trialChipHTML`) 제거, `trialUsed()` 는 항상 `false` — 대나무 다시 뽑기·오브제 다시 채우기·싱잉볼 다시 듣기가 횟수 제한 없이 된다. (기록 키 `yoonise.care.trial.v1` 는 남겨 둠 — 예전 기기 값은 무시)
+  - 가격표(`priceHTML`)·구성 선택(`pay__pick`)·`계좌이체` 안내·`payActionsHTML`·`kakaoOrderHTML('care')` 삭제 → `data-care-pay` 영역 자체가 없다.
+  - 팝업 끝의 `1:1 상담` 유도 블록도 제거(무료 팝업에서 결제 유도 없이) — 상담은 달력 맨 아래 1:1 상담 카드가 맡는다. `LITE_MODE` 에서 그 버튼이 토스트로 막히던 죽은 동선이기도 했다.
+  - 마지막 한 줄: `셋 다 그냥 쓰시면 돼요 — 횟수도, 결제도 없어요. 내일 또 힘든 날에 다시 꺼내 쓰세요.`
+  - `careItemLabel()` 은 금액 없이 이름만(주문·카톡 문구에 `2,900원`이 섞이지 않게), 미사용이 된 `CARE_PRICE` 상수 삭제.
+- 숨김 영역(`.v2-parked`)의 CTA 4번 버튼 문구도 `⚡ 긴급 개운템 무료` 로 맞춰 두었다.
+
+### 3. ⚠️ "방금 배포한 카드가 폰에서 안 보인다" (#16176)
+- 원인: GitHub Pages 가 HTML 에 `cache-control: max-age=600` 을 준다(실측 200 · `max-age=600`). 서비스 워커가 없는 브라우저(카톡·네이버 인앱)·첫 방문·워커가 붙기 전 화면에서는 배포 후 최대 10분간 예전 HTML 이 그대로 나온다.
+- `sw.js`
+  - 문서 요청은 `fetch(req, { cache: 'no-store' })` — HTTP 캐시도 중간 캐시도 건너뛴다. `req.mode === 'navigate'` 에 더해 `req.destination === 'document'` 까지 문서로 본다.
+  - `activate`: `yoonise-cal-*` 이전 버전 캐시를 전부 `caches.delete` → `clients.claim()` → 열려 있는 창에 `{type:'sw-activated', version}` 통지. (같은 오리진의 다른 앱 캐시는 건드리지 않는다)
+- `pwa.js`
+  - 등록 직후·화면이 다시 보일 때(`visibilitychange`)마다 `registration.update()`.
+  - `controllerchange` 로 새 워커가 이 화면을 넘겨받으면 **한 번만** `location.reload()`(첫 설치 claim 은 제외).
+  - `cacheHeal`: 화면에 실린 `?v=`(BUILD)와 서버 `sw.js` 의 `VERSION` 을 `cache:'no-store'` 로 비교해, 서버가 더 새 버전이면 새 `?v=` 주소로 **한 번만** `location.replace`. 뒤로 가는 이동은 하지 않고, 이미 새 주소면 다시 돌지 않는다(고리 방지).
+
+### 4. 검증 (로컬 repo 사본 390×844 DPR2 · `Cache-Control: max-age=600` 재현 서버)
+- 카드: 보이는 순서 `savedBar → hook3 → card → burnCard → duoCard → careCard → getAppBar → consultCard → foot` · 카드 358×192 · 두 버튼 같은 줄(179/135, 넘침 없음) · `상담 신청 · 안내 보기 →` → `/apply/`(`상담 신청서 · 윤이세사주`) · 카톡 `rel="noopener noreferrer"` · 콘솔 오류 0.
+- `#careCard`/`#consultCard` 안 `2,900원`·`5,900원`·`계좌`·`입금` **0건**. 앱(standalone)에서 `⚡ 지금 열어 보기` → 개운템 팝업: `data-care-pay` 없음 · 체험 칩 0개 · 결제 버튼 0개 · 금액/계좌 문구 0건 · 대나무 뽑기 → 다시 뽑기 → 다른 산가지 정상(잠금 없음).
+- 캐시: 서버 HTML 만 바꾸고 같은 주소로 새로 고침 → 새 HTML 반영(그 사이 일반 `fetch` 는 옛 사본을 돌려줘 HTTP 캐시가 살아 있음을 확인). `sw.js` VERSION 만 올리면 옛 캐시 삭제(`yoonise-cal-20261123o` 만 남음) · 새 워커 activated · 화면 자동 새로 고침. `?v=20261123m` 로 열면 스스로 `?v=20261123n` 으로 한 번 이동하고 멈춤.
+- 스크립트: `work/qa-consult-local-2026-11-23.py` · `work/qa-cache-stale-2026-11-23.py` · `work/qa-cacheheal-2026-11-23.py` · 캡처 `work/qa-v10/`

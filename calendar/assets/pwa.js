@@ -332,10 +332,61 @@
   showBar();
   markStandalone();
 
-  /* ── 서비스 워커 (network-first · skipWaiting · claim) ── */
+  /* ── 서비스 워커 (network-first · skipWaiting · claim) ──
+     · 등록 직후와 '화면이 다시 보일 때'마다 update() 로 새 sw.js 를 확인한다
+     · 새 워커가 이 화면을 넘겨받으면(controllerchange) 딱 한 번 새로 고친다 —
+       앱을 켜 둔 채로 배포해도 예전 화면이 남지 않게 (2026-11-23 제보 #16176)
+       (첫 설치에서 claim 으로 넘겨받는 경우엔 새로 고치지 않는다) */
   if ('serviceWorker' in navigator) {
+    var hadController = !!navigator.serviceWorker.controller;
+    var didReload = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (didReload || !hadController) return;
+      didReload = true;
+      location.reload();
+    });
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function () {});
+      navigator.serviceWorker.register('sw.js', { scope: './' }).then(function (reg) {
+        try { reg.update(); } catch (e) {}
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState !== 'visible') return;
+          try { reg.update(); } catch (e) {}
+        });
+      }).catch(function () {});
     });
   }
+
+  /* ── 예전 화면이 남아 있을 때 스스로 최신 화면으로 ──
+     깃허브 페이지 HTML 은 cache-control: max-age=600 이다. 서비스 워커가 없는
+     브라우저(카톡·네이버 인앱 등)나 워커가 붙기 전 첫 화면에서는 배포 직후
+     10분쯤 예전 화면이 그대로 보인다.
+     화면에 실린 ?v= (BUILD) 와 지금 서버의 sw.js VERSION 을 비교해서, 서버가
+     더 새 버전이면 새 ?v= 주소로 한 번만 다시 연다. (뒤로는 절대 돌지 않는다) */
+  (function cacheHeal() {
+    if (!window.fetch || !window.URL) return;
+    var BUILD = '';
+    try {
+      var me = document.currentScript || document.querySelector('script[src*="pwa.js"]');
+      var m = /[?&]v=([0-9A-Za-z.]+)/.exec((me && (me.src || me.getAttribute('src'))) || '');
+      if (m) BUILD = m[1];
+    } catch (e) {}
+    if (!BUILD) return;
+    var LIVE = '';
+    try {
+      var u = new URL(location.href);
+      var cur = u.searchParams.get('v') || '';
+      fetch('sw.js', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.text() : '';
+      }).then(function (txt) {
+        var m = /VERSION\s*=\s*'([0-9A-Za-z.]+)'/.exec(txt || '');
+        if (!m) return;
+        LIVE = m[1];
+        if (!LIVE || LIVE === BUILD) return;
+        if (LIVE < BUILD) return;          // 예전 파일이 섞여 와도 되돌리지 않는다
+        if (cur === LIVE) return;          // 이미 새 주소로 왔다 — 다시 돌지 않는다
+        u.searchParams.set('v', LIVE);
+        location.replace(u.toString());
+      }).catch(function () {});
+    } catch (e) {}
+  })();
 })();
