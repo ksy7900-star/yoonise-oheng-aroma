@@ -16,6 +16,7 @@
   var dialog = document.getElementById('installDialog');
   var body = document.getElementById('installBody');
   var getBar = document.getElementById('getAppBar');   // 수호 부적 카드 아래 초대 카드
+  var careGo = document.getElementById('careGo');       // ⚡ 긴급 개운템 카드의 버튼
   if (!bar || !modal || !body) return;
 
   var HIDE_KEY = 'yoonise.install.hide';
@@ -295,6 +296,21 @@
     if (getBar) { getBar.hidden = true; getBar.classList.remove('is-on'); }
     toast('📲 홈 화면에 앱이 깔렸어요 — 아이콘을 눌러 바로 열어 보세요');
   });
+
+  /* ── ⚡ 긴급 개운템 — 바탕화면에 꺼내 두면 그 자리에서 바로 열린다 ──
+     · 브라우저로 열었을 때 : 바탕화면 설치(또는 카톡·아이폰 안내)로 이어진다
+     · 바탕화면 아이콘(앱)으로 열었을 때 : 개운템 무료 체험 화면을 연다(calendar.js 가 받는다) */
+  if (careGo) {
+    careGo.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (isStandalone()) {
+        try { document.dispatchEvent(new CustomEvent('yoonise:care-open')); }
+        catch (err) { document.dispatchEvent(new Event('yoonise:care-open')); }
+        return;
+      }
+      onInstallClick();
+    });
+  }
 
   /* ── `📲 내 폰 바탕화면에 꺼내 두기` — 달력 맨 아래 카드 · 액운 태우기 STEP 3 한 줄 ──
      두 버튼 모두 data-pwa-install 하나로 묶어, 어디에 그려지든 같은 길로 보낸다. */

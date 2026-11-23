@@ -4727,6 +4727,11 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
 }
 .carecard__cta b { font-size: 12.5px; font-weight: 800; color: #FDE68A; }
 .carecard__cta:active { transform: translateY(1px); filter: brightness(.96); }
+/* 브라우저로 열었을 때 / 바탕화면 아이콘(앱)으로 열었을 때 — 같은 카드의 문구만 갈린다
+   (html.is-standalone 은 pwa.js 가 붙인다. 앱에서는 누르면 개운템 체험 화면이 바로 열린다) */
+.carecard__app { display: none; }
+html.is-standalone .carecard__web { display: none; }
+html.is-standalone .carecard__app { display: inline; }
 
 /* ── ✨ 케미·초대 배너 ────────────────────────────────── */
 .chemibanner {

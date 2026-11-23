@@ -2229,3 +2229,35 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - ③ standalone(앱으로 열림): `#getAppBar` display none · `html.is-standalone` · STEP 3 한 줄도 display none.
 - ④ 액운 태우기 풀코스(촛불 → 적기 → 구기기 → 발화 → 7.8초 소각 → STEP 3): `오늘의 의식을 마쳤습니다.` 아래 링크 노출 → 누르면 설치 안내 팝업이 액운 팝업 위에 뜸(`elementFromPoint` 가 `#installModal` 안). 캡처 `work/qa-v8-install/g-burn-step3.png`·`g-burn-step3-modal.png`.
 - 콘솔 오류 0 · pageerror 0 (전 케이스). 스크립트 `work/qa-install-2026-11-23.py`.
+
+## §93. ⚡ 긴급 개운템 카드 + 📲 바탕화면 꺼내기 분리 · 면책 문구 보강 (2026-11-23)
+
+자산: `calendar/index.html` · `calendar/assets/pwa.js` · `calendar/assets/calendar.js` · `calendar/assets/style.css` · `sw.js VERSION 20261123m` · `calendar/member/index.html` `?v=20261123m`
+(김나영 님 확정 `#16097`·`#16104` — "개운템 필요 없는 사람도 있으니 두 카드 다 두고, 맨 아래 면책 문구까지")
+
+### 1. 달력 하단 카드 순서 — `수호 부적 → ⚡ 긴급 개운템 → 📲 바탕화면 꺼내기 → 면책 푸터`
+- `#careCard` 가 `duoCard`(케미·수호 부적) **바로 다음**으로 올라왔고, `.v2-parked` 를 떼어 2.0 화면에 보인다. 폭 358(390 화면).
+- 문구: 제목 `⚡ 긴급 개운템` / 본문 `중요한 자리·마음이 흔들리는 날 바로 꺼내 쓰는 긴급 개운템` / 부제는 상태별 2종
+  - 웹: `바탕화면에 꺼내 두고 아이콘으로 여시면 무료로 열려요`
+  - 앱(standalone): `오늘 흔들릴 때 바로 열어 보세요`
+  - `면접·계약`·`공짜` 표현은 쓰지 않는다(김나영 님 확정).
+- 버튼도 상태별 — 웹 `바탕화면에 꺼내 두기 📲` / 앱 `지금 열어 보기 ⚡`. `.carecard__web`·`.carecard__app` 를 `html.is-standalone` 으로 갈라 CSS 만으로 바꾼다.
+- 기존 `📲 내 폰 바탕화면에 꺼내 두기`(`#getAppBar`)는 그대로 두고 긴급 개운템 카드 **아래**로 내렸다. 앱으로 열면 이 카드만 `hidden`.
+
+### 2. 누르면 어디로 가나
+| 상태 | 누르면 |
+|---|---|
+| 웹(브라우저) | 기존 설치 길 그대로 — 안드로이드 크롬·삼성 `beforeinstallprompt` / 카톡·네이버 메뉴 안내 / 아이폰 공유 안내 (`pwa.js onInstallClick()`) |
+| 바탕화면 아이콘(앱) | `yoonise:care-open` 신호 → `calendar.js openShop('care', true)` — 개운템 1회 무료 체험 화면(대나무 뽑기·개운 오브제·1분 싱잉볼)이 바로 열린다 |
+
+### 3. ⚠️ 2.0(`LITE_MODE`)에서 이 팝업 하나만 여는 법
+- `openShop(kind)` 에 `force` 인자를 더했다. `LITE_MODE` 면 지금처럼 토스트로 막되(`지금은 무료 체험 기간이에요 — 결제·코드 화면은 잠시 감춰 두었어요`), `force` 일 때만 통과한다.
+- `#shopModal` 이 `.v2-parked`(`display:none !important`)에 묶여 있어 열어도 안 보이던 상태였다 — §92⑤ 의 `#installModal` 과 같은 결함이라 **`#shopModal` 한 곳만 `.v2-parked` 에서 뺐다.** 결제·코드 팝업은 `openShop` 의 `LITE_MODE` 가드가 계속 막는다(검증: `data-shop="care"`·`data-shop="pass"` 클릭 → 팝업 안 열림·토스트만).
+
+### 4. 맨 아래 면책 문구
+- `이 캘린더는 오락과 자기이해를 위한 것이며, 운명을 단정하지 않습니다.` → **`본 안내는 일상 흐름 참고용이며, 개인의 선택과 결과에 대한 법적 책임을 지지 않습니다.`**
+
+### 5. 검증 (로컬 repo 사본 390×844 DPR2)
+- 웹: `duoCard → careCard → getAppBar` 순서 · `#getAppBar` 노출 · 카드 안에 `면접`·`계약`·`공짜` 0건 · `#careGo` 누르면 설치 안내(`크롬에서 까는 법`) 열림 · `beforeinstallprompt` 심으면 `prompt()` 1회. 캡처 `work/qa-v9-web-bottom.png`.
+- 앱(standalone 에뮬레이션): `html.is-standalone` · `#getAppBar` display none · 부제 `오늘 흔들릴 때 바로 열어 보세요` · `#careGo` → 개운템 팝업(대나무 6개·오브제·싱잉볼·무료 1회 체험 칩 3개) · 대나무 뽑기 실행 시 `1회 체험 완료` 전환. 캡처 `work/qa-v9-app-care.png` · `work/qa-v9/b-app-care-drawn.png`.
+- 콘솔 오류 0. 스크립트 `work/qa-care-install-2026-11-23.py` · `work/qa-care-guard-2026-11-23.py`

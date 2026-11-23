@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123l">
+<link rel="stylesheet" href="assets/style.css?v=20261123m">
 </head>
 <body>
 
@@ -458,7 +458,39 @@
       </button>
     </section>
 
-    <!-- 📲 내 폰 바탕화면에 꺼내 두기 — 수호 부적 카드 바로 아래 (2026-11-23)
+    <!-- ⚡ 긴급 개운템 — 수호 부적 카드 바로 아래 (2026-11-23 김나영 님 확정)
+         · 웹(브라우저)으로 열었을 때: 누르면 바탕화면 설치로 이어진다
+           (안드로이드 크롬·삼성 = 네이티브 설치 창 / 카톡·네이버 인앱 = 메뉴 안내 /
+            아이폰 사파리 = 공유 버튼 안내 — pwa.js 의 #installModal)
+         · 바탕화면 아이콘(앱·standalone)으로 열었을 때: 부제·버튼 문구가 바뀌고,
+           누르면 개운템 1회 무료 체험 화면이 바로 열린다 (pwa.js → calendar.js)
+         · 문구는 `.carecard__web` / `.carecard__app` — html.is-standalone 으로 갈린다 -->
+    <section class="card card--care" id="careCard" aria-labelledby="careTitle">
+      <div class="carecard__top">
+        <div>
+          <p class="carecard__eyebrow">QUICK CARE</p>
+          <h2 class="card__title" id="careTitle">⚡ 긴급 개운템</h2>
+        </div>
+        <span class="carecard__price">1종 2,900원<br>3종 5,900원</span>
+      </div>
+      <p class="carecard__sub">중요한 자리·마음이 흔들리는 날 바로 꺼내 쓰는 긴급 개운템<br>
+        <b class="carecard__free carecard__web">바탕화면에 꺼내 두고 아이콘으로 여시면 무료로 열려요</b>
+        <b class="carecard__free carecard__app">오늘 흔들릴 때 바로 열어 보세요</b>
+      </p>
+      <div class="carecard__items">
+        <span class="carecard__it"><b aria-hidden="true">🎋</b>대나무 뽑기</span>
+        <span class="carecard__it"><b aria-hidden="true">🪷</b>개운 오브제</span>
+        <span class="carecard__it"><b aria-hidden="true">🔔</b>1분 싱잉볼</span>
+      </div>
+      <button type="button" class="carecard__cta" id="careGo">
+        <span class="carecard__web">바탕화면에 꺼내 두기</span>
+        <span class="carecard__app">지금 열어 보기</span>
+        <b class="carecard__web" aria-hidden="true">📲</b>
+        <b class="carecard__app" aria-hidden="true">⚡</b>
+      </button>
+    </section>
+
+    <!-- 📲 내 폰 바탕화면에 꺼내 두기 — 긴급 개운템 카드 바로 아래 (2026-11-23)
          · 브라우저로 열었을 때만 보인다. 홈 화면 앱(standalone)으로 열면 pwa.js 가 숨긴다.
          · 누르면: 안드로이드 크롬·삼성 = 네이티브 설치 창 / 카톡·네이버 인앱 = 메뉴 안내 /
                    아이폰 사파리 = 공유 버튼 안내 (pwa.js 의 #installModal) -->
@@ -468,26 +500,6 @@
         <span aria-hidden="true">📲</span> 내 폰 바탕화면에 꺼내 두기
       </button>
     </div>
-
-    <!-- ⚡ 긴급 개운템 — 2.0 에서는 화면에서만 감춤(.v2-parked) -->
-    <section class="card card--care v2-parked" id="careCard" aria-labelledby="careTitle">
-      <div class="carecard__top">
-        <div>
-          <p class="carecard__eyebrow">QUICK CARE</p>
-          <h2 class="card__title" id="careTitle">⚡ 긴급 개운템</h2>
-        </div>
-        <span class="carecard__price">1종 2,900원<br>3종 5,900원</span>
-      </div>
-      <p class="carecard__sub">부적을 붙여도 유독 막히는 날 — 앱에서 바로 꺼내 쓰는 세 가지<br><b class="carecard__free">3종 각각 1회 무료 체험</b></p>
-      <div class="carecard__items">
-        <span class="carecard__it"><b aria-hidden="true">🎋</b>대나무 뽑기</span>
-        <span class="carecard__it"><b aria-hidden="true">🪷</b>개운 오브제</span>
-        <span class="carecard__it"><b aria-hidden="true">🔔</b>1분 싱잉볼</span>
-      </div>
-      <button type="button" class="carecard__cta" data-shop="care">
-        <span>지금 바로 꺼내 쓰기</span><b>⚡ 열기</b>
-      </button>
-    </section>
 
     <!-- ✨ 케미테스트 배너 — "친구/연인과 우리 케미 점수는?" 호기심으로 누르게 (2026-11-22) -->
     <section class="chemibanner v2-parked" id="chemiBanner" aria-labelledby="chemiBannerT">
@@ -576,7 +588,7 @@
     <footer class="foot">
       <button type="button" class="ghost-link" id="againBtn">입력 수정하기</button>
       <button type="button" class="ghost-link" id="clearBtn">저장된 정보 지우기</button>
-      <p class="micro micro--center">이 캘린더는 오락과 자기이해를 위한 것이며, 운명을 단정하지 않습니다.<br>© 윤이세사주</p>
+      <p class="micro micro--center">본 안내는 일상 흐름 참고용이며, 개인의 선택과 결과에 대한 법적 책임을 지지 않습니다.<br>© 윤이세사주</p>
     </footer>
   </div>
 
@@ -686,7 +698,7 @@
 </div>
 
 <!-- ───────── 구입 안내 팝업 (패스 · 아이템 · 1:1 상담 원포인트/시그니처) ───────── -->
-<div class="modal modal--shop v2-parked" id="shopModal" hidden>
+<div class="modal modal--shop" id="shopModal" hidden>
   <div class="modal__backdrop" data-shop-close></div>
   <div class="modal__dialog modal__dialog--shop" id="shopDialog" role="dialog" aria-modal="true" aria-labelledby="shopTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -746,11 +758,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123l"></script>
-<script src="assets/manse.js?v=20261123l"></script>
-<script src="assets/timing.js?v=20261123l"></script>
-<script src="assets/chars.js?v=20261123l"></script>
-<script src="assets/calendar.js?v=20261123l"></script>
-<script src="assets/pwa.js?v=20261123l"></script>
+<script src="vendor/lunar.js?v=20261123m"></script>
+<script src="assets/manse.js?v=20261123m"></script>
+<script src="assets/timing.js?v=20261123m"></script>
+<script src="assets/chars.js?v=20261123m"></script>
+<script src="assets/calendar.js?v=20261123m"></script>
+<script src="assets/pwa.js?v=20261123m"></script>
 </body>
 </html>

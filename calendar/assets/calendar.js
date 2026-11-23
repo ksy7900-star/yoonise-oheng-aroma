@@ -6391,10 +6391,13 @@
     if (nb) { try { nb.focus({ preventScroll: true }); } catch (e) { nb.focus(); } }
   }
 
-  function openShop(kind) {
+  /* force = true : 2.0 테스트 기간에도 이 팝업 하나만 연다.
+     바탕화면 아이콘(앱)으로 들어온 분이 `⚡ 긴급 개운템` 카드를 눌렀을 때,
+     개운템 1회 무료 체험 화면으로 바로 들어가기 위한 길 (2026-11-23). */
+  function openShop(kind, force) {
     /* 2.0 테스트 기간 — 결제·코드 팝업은 화면에서 감춰 뒀다. 열리지 않는 팝업을 대신 열어
        화면이 잠기는 일이 없게 여기서 막고, 부드럽게 안내만 한다 (2026-11-23). */
-    if (LITE_MODE) {
+    if (LITE_MODE && !force) {
       toast('지금은 무료 체험 기간이에요 — 결제·코드 화면은 잠시 감춰 두었어요');
       return;
     }
@@ -8284,6 +8287,12 @@
     }
 
     // 🔥 오늘 액운 태우기 — 달력 위 카드·긴급 개운템 팝업 어디서든 같은 리추얼로
+    // ⚡ 긴급 개운템 카드 — 바탕화면 아이콘(앱)으로 연 상태에서 누르면
+    //    개운템 1회 무료 체험 화면이 바로 열린다 (pwa.js 가 이 신호를 보낸다 · 2026-11-23)
+    document.addEventListener('yoonise:care-open', function () {
+      try { openShop('care', true); } catch (e) {}
+    });
+
     var burnOpen = $('#burnOpen');
     if (burnOpen) burnOpen.addEventListener('click', function (e) { e.preventDefault(); openBurnModal(); });
     if (burnEl) {
