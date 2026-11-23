@@ -3342,14 +3342,20 @@
     }
   }
 
-  /** 맨 위 내 사주 카드 안 미니 원국 — 여덟 글자를 오행 색 칩으로 (2026-11-23 3차)
-      누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다.
+  /** 맨 위 내 사주 카드 안 미니 원국 — 여덟 글자를 오행 색 칩으로 (2026-11-23 3차·4차)
+      토글이 같은 카드 안의 원국표(#natalInline)를 제자리에서 펼친다.
       전통 만세력 순서: 왼쪽 시주 → 오른쪽 년주 (시 · 일 · 월 · 년) */
   function renderNatalMini() {
     var box = $('#natalMini'), row = $('#natalMiniRow');
     if (!box || !row) return;
-    if (!LITE_MODE || !state.res) { box.hidden = true; return; }
+    if (!state.res) { box.hidden = true; return; }
     box.hidden = false;
+    if (!LITE_MODE) {
+      /* 예전 화면으로 돌릴 때 — 미니 1줄·토글 없이 원국표만 펼친 채 (코드 보존용) */
+      var t = $('#natalMiniTog'); if (t) t.hidden = true;
+      toggleNatal(true);
+      return;
+    }
     var p = state.res.pillars;
     var order = [['time', '시'], ['day', '일'], ['month', '월'], ['year', '년']];
     row.setAttribute('aria-label', '사주 여덟 글자 — 시주 · 일주 · 월주 · 년주 순, 오행 색으로 표시');
@@ -3371,12 +3377,16 @@
     }).join('');
   }
 
-  /** 원국표 접기/펼치기 — 접힌 기본 상태에서는 카드 자체를 감춘다(빈 상자가 남지 않게) */
+  /** 원국표 접기/펼치기 (2026-11-23 4차)
+      맨 위 `김나영 님` 카드 안에서만 열고 닫는다 — 미니 1줄과 4기둥 표가
+      동시에 보이지 않게 미니 줄은 감춘다(원국이 화면에 두 번 안 나오게). */
   function toggleNatal(open) {
-    var card = $('#natalCard'), tog = $('#natalMiniTog');
-    if (!card) return;
-    if (typeof open !== 'boolean') open = card.classList.contains('is-collapsed');
-    card.classList.toggle('is-collapsed', !open);
+    var inline = $('#natalInline'), row = $('#natalMiniRow'), cap = $('#natalMiniCap'), tog = $('#natalMiniTog');
+    if (!inline) return;
+    if (typeof open !== 'boolean') open = inline.hidden;
+    inline.hidden = !open;
+    if (row) row.hidden = open;
+    if (cap) cap.hidden = !open;
     if (tog) {
       tog.setAttribute('aria-expanded', open ? 'true' : 'false');
       tog.innerHTML = (open ? '원국표 접기' : '원국표 보기') +

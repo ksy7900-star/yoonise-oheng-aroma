@@ -5039,44 +5039,62 @@ body.is-lite .savedbar__meta { font-size: 11px; line-height: 1.55; margin-top: 4
   font-family: var(--sans); font-size: 10.5px; font-weight: 600; letter-spacing: -.02em;
 }
 .natalmini__tog:active { transform: scale(.97); }
+/* 펼쳤을 때 미니 1줄 대신 왼쪽에 서는 작은 이름 */
+.natalmini__cap {
+  font-family: var(--sans); font-size: 9.5px; font-weight: 600;
+  color: #9A9081; letter-spacing: .02em; margin-right: auto;
+}
+.natalmini__cap[hidden] { display: none !important; }
+
+/* 4차 — 원국표는 별도 카드가 아니라 이 카드 안 제자리에서 펼쳐진다 */
+.natalinline { flex: 0 0 100%; width: 100%; }
+.natalinline[hidden] { display: none !important; }
+.natalinline .natal {
+  margin-top: 6px; padding-top: 2px; padding-bottom: 2px;
+  border-top: 0; border-bottom: 0;
+}
+.natalinline .natal__pos { font-size: 9px; }
+.natalinline .natal__tile { width: 38px; height: 38px; font-size: 20px; border-radius: 11px; }
+.natalinline .micro { margin: 7px 0 0; font-size: 9.5px; line-height: 1.6; color: var(--ink-mute, #7A7164); }
 
 body.is-lite #natalCard { margin-top: 12px; }
 body.is-lite #natalCard.is-collapsed { display: none; }
 
-/* ── ② 3줄 후킹 — 밝은 종이 카드 (2026-11-23 3차: 검정 박스 → 아이보리 바탕에 어울리는 흰 카드) ── */
+/* ── ② 3줄 후킹 — 정갈한 순백 카드 (2026-11-23 4차: 누런 크림 바탕·형광펜 밑줄 제거) ──
+   · 바탕은 페이지와 어우러지는 #ffffff + 얇은 테두리만
+   · 강조는 형광펜 없이 굵은 진먹색 글씨로만 */
 .hook3 {
   margin-top: 14px; padding: 20px 19px 6px;
   background: #FFFFFF;
-  background-image: linear-gradient(180deg, #FFFDF7 0%, #FFFFFF 58%);
-  border: 1px solid rgba(31, 27, 22, .09);
-  border-radius: 22px;
-  box-shadow: 0 9px 24px rgba(31, 27, 22, .07);
+  border: 1px solid rgba(31, 27, 22, .10);
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(31, 27, 22, .05);
   color: var(--ink-book);
 }
 .hk {
   margin: 0 0 15px; padding: 1px 0 15px;
-  border-bottom: 1px solid rgba(31, 27, 22, .07);
+  border-bottom: 1px solid rgba(31, 27, 22, .08);
 }
 .hk:last-child { margin-bottom: 0; padding-bottom: 13px; border-bottom: 0; }
+/* 라벨 — 색 배지 대신 자간 넓은 작은 글씨 (미니멀 톤) */
 .hk__label {
-  display: inline-block; margin: 0 0 8px;
-  padding: 3px 9px; border-radius: 6px;
-  font-family: var(--sans); font-size: 9.5px; font-weight: 800;
-  letter-spacing: .12em; line-height: 1.5;
+  display: inline-block; margin: 0 0 7px; padding: 0;
+  background: none; border: 0; border-radius: 0;
+  font-family: var(--sans); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .17em; line-height: 1.5; color: #9B9284;
 }
-.hk__label--today { background: #FBF0D9; color: #8A5A16; }
-.hk__label--year  { background: #FBE9E4; color: #8C3A2A; }
-.hk__label--core  { background: #EFEBE2; color: #5A5347; }
+.hk__label--today { color: #9B9284; }
+.hk__label--year  { color: #8E5A4A; }
+.hk__label--core  { color: #6E675B; }
 .hk__text {
   margin: 0; font-family: var(--sans);
   font-size: 14.5px; line-height: 1.8; letter-spacing: -.01em;
-  color: #3A342C; word-break: keep-all;
+  color: #2E2A24; word-break: keep-all;
 }
 .hk-name { font-weight: 800; color: #8C3A2A; }
-/* 밑줄에 형광펜처럼 금빛을 옅게 깐다 — 먹색 글씨는 그대로 */
+/* 강조 — 형광펜 배경 없이 굵은 진먹색 글씨로만 */
 .hk-hl {
-  font-weight: 800; color: #7A4E12; padding: 0 1px;
-  background: linear-gradient(transparent 62%, rgba(240, 200, 112, .40) 62%);
+  font-weight: 800; color: #1E1B16; padding: 0; background: none;
 }
 .hk-mark { font-weight: 700; }
 

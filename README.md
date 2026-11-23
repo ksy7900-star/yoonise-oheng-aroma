@@ -2019,3 +2019,34 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - `work/qa-v3/daytext_test.py` — `@lite-text` 구간만 떼어 quickjs 로 180일 문구를 뽑아 중복 검사 (`allmonths.py` 로 여러 사주·달 일괄).
 - 스크린샷: `work/qa-v3/qa-v3-1-origuk-hooking.png` · `qa-v3-3-day01.png` · `qa-v3-3-day13.png` · `qa-v3-4-warn-nightcheck.png` · `qa-v3-5-chemi-nologin.png` · `qa-v3-5-chemi-grow.png` · `qa-v3-6-talis-390x844.png` · `qa-v3-6-talis-360x740.png`
 - 남은 확인(사용자 몫): Supabase `referral_rules` 를 1/3/5/7 로 맞추는 것은 보상 스위치를 켤 때.
+
+## §86. 4차 — 원국 제자리 접기 · 화이트 후킹 카드 · 케미 첫 화면 (2026-11-23)
+
+자산: `style.css?v=20261123f` · `calendar.js?v=20261123f` · `member.js?v=20261123f` · `sw.js VERSION 20261123f`
+
+### 1. 원국 — 상단 `김나영 님` 카드 안에서 제자리 접기/펴기
+- 원인: `원국표 보기 ▾` 를 눌러도 실제 표(`#natal`)는 후킹 카드 **아래 별도 카드**에서 펼쳐져 ① 원국이 위·아래 두 번, ② 상단만 보면 버튼 글자만 바뀌는 것처럼 보였다.
+- 조치: `#natal` · `#natalNote` 를 `.savedbar` 안 `#natalInline` 으로 옮기고, 별도 `.card--natal`(`#natalCard`)은 `.v2-parked` 로 감췄다.
+  - 접힘 = 미니 원국 1줄(시·일·월·년 오행 색 칩) + `원국표 보기 ▾`
+  - 펼침 = 미니 1줄은 감추고(`#natalMiniRow[hidden]`) 왼쪽에 `원국 여덟 글자` 캡션, **바로 그 자리**에 4기둥 표(시주·일주·월주·년주 + 십성 + 오행 색 글자 + 절입 각주), 버튼은 `원국표 접기 ▴`
+  - `.natal` 은 **문서에 하나뿐** — 어떤 상태에서도 원국이 두 번 그려지지 않는다(검증: `document.querySelectorAll('.natal').length === 1`).
+- `LITE_MODE=false` 로 되돌리면 미니 1줄·토글 없이 표만 펼친 채(예전 화면) 돌아간다.
+
+### 2. 후킹 카드 — 누런 크림·형광펜 제거
+- `.hook3`: 웜톤 그라데이션 제거 → **`#ffffff` + 1px 테두리(`rgba(31,27,22,.10)`)** + 옅은 그림자.
+- `.hk__label`: 색 배지(연금·연분홍·회색) → **배경 없는 자간 넓은 작은 글씨**. TODAY `#9B9284` · 2027 고비 `#8E5A4A` · 핵심 `#6E675B`.
+- `.hk-hl`: 금빛 형광펜 배경 삭제 → **굵은 진먹색(`#1E1B16`) 글씨**만. 본문 `#2E2A24`, 이름 `#8C3A2A`.
+
+### 3. `/calendar/member/` — 첫 화면이 곧바로 케미 테스트
+- 순서: (초대 안내 한 줄, 해당될 때만) → **`2027 · 케미 테스트 · 어떤 관계인가요?`** → 결과 → `🎁 무료로 달력 넓히기` · `📸 인스타 스토리 공유`(결과 카드 안) → 인스타 인증 → STEP 1 로그인(3단계 요약 포함) → STEP 2 사다리 → STEP 3 초대 링크.
+- 히어로 안에 있던 `친구 사다리 3단계` 요약은 사다리 설명 자리(STEP 1 로그인 카드)로 내려 첫 화면을 가볍게 했다.
+- 결과의 `내 초대 링크 만들기 →` 는 로그인 전이면 STEP 1 로그인 카드로 먼저 데려간다(`state.user` 로 분기).
+- 검증(390×844): `어떤 관계인가요?` top **289px**·관계 칩 bottom 455px — 첫 화면 안. 카드 순서 `chemiCard → chemiResult → storyGiftCard → authCard → ladderCard → inviteCard`.
+
+### 4. #talisModal 6초 호흡 연출 — 재확인
+- `오늘 기운 받기` / 부적 톡 → `sfxBless()`(0.12s 어택 · 6초 싱잉볼 7음 + 저역 '웅') + `.talis-showcase.is-blessed`(물결 수렴 2.15s) + `.talis-plaque.is-charged`(오라·링·입자 2.6s) + `#talisPhrase` 6초 호흡(1.7s 페이드인 → 2초 머묾 → 1.8s 페이드아웃, 6.0s 에 비움).
+- 라이브 실측(390×844): t+0.3s opacity 0 → t+1.1s 0.62 → t+2.6s 1.0 → t+4.2s 0.96 → t+6.8s 문구 비움. `AudioContext` running · 오실레이터 7개 생성 · `blessed/charged` 클래스 정상 부착·해제. 버튼·부적 둘 다 동작.
+
+### 5. 검증 스크린샷
+`work/qa-v4-closed.png`(접힘) · `work/qa-v4-open.png`(펼침) · `work/qa-v4-member-top.png`(케미 첫 화면) · `work/qa-v4-talis-btn-1s.png`·`qa-v4-talis-btn-7s.png`(6초 호흡)
+스크립트: `work/qa-v4-local.py` · `work/qa-v4-member.py` · `work/qa-v4-talis.py` · `work/qa-v4-live.py`

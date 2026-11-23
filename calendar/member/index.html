@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261123e">
+<link rel="stylesheet" href="member.css?v=20261123f">
 </head>
 <body>
 
@@ -17,18 +17,15 @@
   <div class="hero__inner">
     <p class="hero__eyebrow">YOONISE · MEMBER</p>
     <h1 class="hero__title">친구·연인과 나,<br><em>2027년</em></h1>
-    <p class="hero__sub">두 사람 사주로 2027년 케미를 한 장에 봐요.<br>친구가 내 링크로 들어오면 내 사다리가 한 칸씩 올라갑니다.</p>
-
-    <!-- 친구 사다리 3단계 — 팝업 대신 제목 바로 아래 3줄 요약 (1초 스캔 · 2026-11-21) -->
-    <ol class="howstep" aria-label="친구 사다리 사용법 3단계">
-      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">1️⃣</span><span class="howstep__t">카카오 3초 로그인</span></li>
-      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">2️⃣</span><span class="howstep__t">내 초대 링크 복사해 친구에게 보내기</span></li>
-      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">3️⃣</span><span class="howstep__t">친구가 들어오면 사다리 보상 <b>자동 오픈!</b></span></li>
-    </ol>
+    <p class="hero__sub">두 사람 사주로 2027년 케미를 한 장에 봐요.<br>친구에게 내 링크가 오가면 내 달력이 한 칸씩 넓어져요.</p>
   </div>
 </header>
 
 <main class="wrap">
+
+  <!-- 4차 (2026-11-23) — 첫 화면 맨 위는 곧바로 '2027 · 케미 테스트 · 어떤 관계인가요?'
+       · 로그인(STEP 1~3) 카드는 케미 결과를 본 뒤 맨 아래로 내렸다.
+       · 초대 링크로 들어온 손님에게만 뜨는 안내 줄 두 개는 그대로 맨 위(한 줄짜리라 케미를 가리지 않는다). -->
 
   <!-- 초대 링크로 들어온 사람 -->
   <div class="banner" id="refBanner" hidden>
@@ -43,106 +40,7 @@
     <a class="banner__go" id="inviteDoneGo" href="../">📅 내 타이밍 달력으로 돌아가기</a>
   </div>
 
-  <!-- ───────── STEP 1 · 로그인 ───────── -->
-  <section class="card" id="authCard">
-    <p class="card__eyebrow">STEP 1 · 내 계정</p>
-    <h2 class="card__title" id="authTitle">카카오로 3초면 끝나요</h2>
-    <p class="card__sub" id="authSub">닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.</p>
-
-    <div id="authOut">
-      <button type="button" class="btn btn--kakao" id="loginBtn" style="margin-top:16px">
-        <span class="btn__ic" aria-hidden="true">💬</span>
-        <span>카카오로 시작하기</span>
-      </button>
-      <p class="fine" id="loginHint">로그인하면 내 초대 코드가 만들어지고, 친구가 그 코드로 들어올 때마다 사다리가 한 칸씩 올라가요.</p>
-    </div>
-
-    <div id="authIn" hidden>
-      <div class="who">
-        <span class="who__av" id="whoAv" aria-hidden="true">윤</span>
-        <span class="who__b">
-          <b class="who__name" id="whoName">이름</b>
-          <span class="who__mail" id="whoMail">메일</span>
-        </span>
-        <button type="button" class="who__out" id="logoutBtn">로그아웃</button>
-      </div>
-      <p class="fine" id="dbNote" hidden></p>
-
-      <!-- 카카오 로그인 직후 — 카톡 채널 추가 (2026-11-22) -->
-      <a class="chadd" id="chAddBtn" href="https://pf.kakao.com/_hxfbCG" target="_blank" rel="noopener noreferrer">
-        <span class="chadd__ic" aria-hidden="true">💬</span>
-        <span class="chadd__b">
-          <b>윤이세사주 채널 추가</b>
-          <span>새 부적·이벤트·상담 소식을 카톡으로 먼저 받아요</span>
-        </span>
-        <span class="chadd__go" aria-hidden="true">추가 →</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- ───────── STEP 2 · 사다리 ───────── -->
-  <section class="card" id="ladderCard">
-    <p class="card__eyebrow">STEP 2 · 내 사다리</p>
-    <h2 class="card__title" id="ladderTitle">친구가 들어오면, 한 칸씩</h2>
-    <!-- 결제자는 기간 대신 상담 할인권 사다리 하나만 (2026-11-22) -->
-    <p class="ladder-tier" id="ladderTier" hidden></p>
-
-    <div class="count">
-      <span class="count__n" id="cntNum">0</span>
-      <span class="count__u">명</span>
-      <span class="count__next" id="cntNext">첫 칸까지 1명</span>
-    </div>
-
-    <!-- 사다리가 오르는 기준 — 친구가 '카카오 3초 연결(로그인)'까지 마쳐야 1명으로 올라간다 (2026-11-22) -->
-    <p class="ladder-how" id="ladderHow">친구가 링크로 들어와 <b>카카오 3초 연결(로그인)</b>을 마치면 1명으로 올라가요.</p>
-
-    <div class="rail" aria-hidden="true">
-      <div class="rail__track"><span class="rail__fill" id="railFill" style="width:0%"></span></div>
-      <div class="rail__marks" id="railMarks"></div>
-    </div>
-
-    <ul class="rungs" id="rungs"></ul>
-
-    <p class="ladder-note" id="ladderNote">사다리는 <b>1명 · 3명 · 5명 · 7명</b> 네 칸이에요. 친구가 내 링크로 들어와 로그인하면 그만큼 <b>내 사주 타이밍 달력</b>이 더 넓게 열려요.</p>
-
-    <div class="preview" id="previewRow" hidden>
-      <p class="preview__lb">미리보기 — 실제 숫자가 아니에요. 칸이 차는 모양만 봐 주세요.</p>
-      <div class="preview__chips" id="previewChips"></div>
-    </div>
-
-    <div class="brandmark brandmark--card">
-      <span class="brandmark__ic" aria-hidden="true">🌙</span>
-      <span class="brandmark__t">내 사주 타이밍 달력</span>
-      <span class="brandmark__sep" aria-hidden="true">·</span>
-      <span class="brandmark__b">윤이세사주</span>
-      <span class="brandmark__h">(@life.saju_yoonise)</span>
-    </div>
-  </section>
-
-  <!-- ───────── STEP 3 · 초대 링크 ───────── -->
-  <section class="card" id="inviteCard">
-    <p class="card__eyebrow">STEP 3 · 초대 링크</p>
-    <h2 class="card__title">한 번만 복사해서 보내면 돼요</h2>
-    <p class="card__sub">친구가 내 링크로 들어와 로그인하면, 두 사람 모두에게 혜택이 붙어요.</p>
-
-    <div class="code" id="codeRow">
-      <span>내 초대 코드</span>
-      <b id="myCode">····</b>
-    </div>
-    <p class="linkbox" id="myLink">https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?ref=내코드</p>
-
-    <div class="btn-row">
-      <button type="button" class="btn btn--gold btn--wide" id="copyLinkBtn">링크 복사</button>
-      <button type="button" class="btn btn--ghost" id="copyTextBtn">공유 문구</button>
-    </div>
-
-    <div class="gift">
-      <span class="gift__ic" aria-hidden="true">🎁</span>
-      <span class="gift__b">초대받은 친구는 <b>5일 체험 + 액운 태우기 1회</b>를 받아요. 그냥 들어온 사람은 3일이에요.</span>
-    </div>
-  </section>
-
-  <!-- ───────── 케미 입력 ───────── -->
+  <!-- ───────── STEP 0 · 케미 테스트 (첫 화면) ───────── -->
   <section class="card" id="chemiCard">
     <p class="card__eyebrow">2027 · 케미 테스트</p>
     <h2 class="card__title">어떤 관계인가요?</h2>
@@ -289,6 +187,8 @@
   <!-- ───────── 케미 결과 ───────── -->
   <section class="card" id="chemiResult" hidden aria-live="polite"></section>
 
+  <!-- 결과 아래 — ① 무료로 달력 넓히기(1/3/5/7) ② 인스타 스토리 공유 는 결과 카드 안(.grow),
+       그 아래 ③ 인스타 인증 안내 → ④ 카카오 연결·초대 링크 세 카드 순서 (2026-11-23 4차) -->
   <!-- ───────── 인스타 인증 (피드·릴스 · 1개월 패스 · 단일 이벤트) ───────── -->
   <section class="card" id="storyGiftCard">
     <p class="card__eyebrow">인스타 인증</p>
@@ -335,6 +235,112 @@
     </div>
   </section>
 
+  <!-- ───────── STEP 1 · 로그인 (케미 결과를 본 뒤에 나온다) ───────── -->
+  <section class="card" id="authCard">
+    <p class="card__eyebrow">STEP 1 · 내 계정</p>
+    <h2 class="card__title" id="authTitle">카카오로 3초면 끝나요</h2>
+    <p class="card__sub" id="authSub">닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.</p>
+
+    <!-- 친구 사다리 3단계 — 팝업 대신 제목 바로 아래 3줄 요약 (1초 스캔 · 2026-11-21) -->
+    <ol class="howstep" aria-label="친구 사다리 사용법 3단계">
+      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">1️⃣</span><span class="howstep__t">카카오 3초 로그인</span></li>
+      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">2️⃣</span><span class="howstep__t">내 초대 링크 복사해 친구에게 보내기</span></li>
+      <li class="howstep__i"><span class="howstep__n" aria-hidden="true">3️⃣</span><span class="howstep__t">친구가 들어오면 사다리 보상 <b>자동 오픈!</b></span></li>
+    </ol>
+
+    <div id="authOut">
+      <button type="button" class="btn btn--kakao" id="loginBtn" style="margin-top:16px">
+        <span class="btn__ic" aria-hidden="true">💬</span>
+        <span>카카오로 시작하기</span>
+      </button>
+      <p class="fine" id="loginHint">로그인하면 내 초대 코드가 만들어지고, 친구가 그 코드로 들어올 때마다 사다리가 한 칸씩 올라가요.</p>
+    </div>
+
+    <div id="authIn" hidden>
+      <div class="who">
+        <span class="who__av" id="whoAv" aria-hidden="true">윤</span>
+        <span class="who__b">
+          <b class="who__name" id="whoName">이름</b>
+          <span class="who__mail" id="whoMail">메일</span>
+        </span>
+        <button type="button" class="who__out" id="logoutBtn">로그아웃</button>
+      </div>
+      <p class="fine" id="dbNote" hidden></p>
+
+      <!-- 카카오 로그인 직후 — 카톡 채널 추가 (2026-11-22) -->
+      <a class="chadd" id="chAddBtn" href="https://pf.kakao.com/_hxfbCG" target="_blank" rel="noopener noreferrer">
+        <span class="chadd__ic" aria-hidden="true">💬</span>
+        <span class="chadd__b">
+          <b>윤이세사주 채널 추가</b>
+          <span>새 부적·이벤트·상담 소식을 카톡으로 먼저 받아요</span>
+        </span>
+        <span class="chadd__go" aria-hidden="true">추가 →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ───────── STEP 2 · 사다리 ───────── -->
+  <section class="card" id="ladderCard">
+    <p class="card__eyebrow">STEP 2 · 내 사다리</p>
+    <h2 class="card__title" id="ladderTitle">친구가 들어오면, 한 칸씩</h2>
+    <!-- 결제자는 기간 대신 상담 할인권 사다리 하나만 (2026-11-22) -->
+    <p class="ladder-tier" id="ladderTier" hidden></p>
+
+    <div class="count">
+      <span class="count__n" id="cntNum">0</span>
+      <span class="count__u">명</span>
+      <span class="count__next" id="cntNext">첫 칸까지 1명</span>
+    </div>
+
+    <!-- 사다리가 오르는 기준 — 친구가 '카카오 3초 연결(로그인)'까지 마쳐야 1명으로 올라간다 (2026-11-22) -->
+    <p class="ladder-how" id="ladderHow">친구가 링크로 들어와 <b>카카오 3초 연결(로그인)</b>을 마치면 1명으로 올라가요.</p>
+
+    <div class="rail" aria-hidden="true">
+      <div class="rail__track"><span class="rail__fill" id="railFill" style="width:0%"></span></div>
+      <div class="rail__marks" id="railMarks"></div>
+    </div>
+
+    <ul class="rungs" id="rungs"></ul>
+
+    <p class="ladder-note" id="ladderNote">사다리는 <b>1명 · 3명 · 5명 · 7명</b> 네 칸이에요. 친구가 내 링크로 들어와 로그인하면 그만큼 <b>내 사주 타이밍 달력</b>이 더 넓게 열려요.</p>
+
+    <div class="preview" id="previewRow" hidden>
+      <p class="preview__lb">미리보기 — 실제 숫자가 아니에요. 칸이 차는 모양만 봐 주세요.</p>
+      <div class="preview__chips" id="previewChips"></div>
+    </div>
+
+    <div class="brandmark brandmark--card">
+      <span class="brandmark__ic" aria-hidden="true">🌙</span>
+      <span class="brandmark__t">내 사주 타이밍 달력</span>
+      <span class="brandmark__sep" aria-hidden="true">·</span>
+      <span class="brandmark__b">윤이세사주</span>
+      <span class="brandmark__h">(@life.saju_yoonise)</span>
+    </div>
+  </section>
+
+  <!-- ───────── STEP 3 · 초대 링크 ───────── -->
+  <section class="card" id="inviteCard">
+    <p class="card__eyebrow">STEP 3 · 초대 링크</p>
+    <h2 class="card__title">한 번만 복사해서 보내면 돼요</h2>
+    <p class="card__sub">친구가 내 링크로 들어와 로그인하면, 두 사람 모두에게 혜택이 붙어요.</p>
+
+    <div class="code" id="codeRow">
+      <span>내 초대 코드</span>
+      <b id="myCode">····</b>
+    </div>
+    <p class="linkbox" id="myLink">https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?ref=내코드</p>
+
+    <div class="btn-row">
+      <button type="button" class="btn btn--gold btn--wide" id="copyLinkBtn">링크 복사</button>
+      <button type="button" class="btn btn--ghost" id="copyTextBtn">공유 문구</button>
+    </div>
+
+    <div class="gift">
+      <span class="gift__ic" aria-hidden="true">🎁</span>
+      <span class="gift__b">초대받은 친구는 <b>5일 체험 + 액운 태우기 1회</b>를 받아요. 그냥 들어온 사람은 3일이에요.</span>
+    </div>
+  </section>
+
 </main>
 
 <footer class="foot">
@@ -345,11 +351,11 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- 계산 엔진(달력과 같은 파일) -->
-<script src="../vendor/lunar.js?v=20261123e"></script>
-<script src="../assets/manse.js?v=20261123e"></script>
-<script src="../assets/timing.js?v=20261123e"></script>
+<script src="../vendor/lunar.js?v=20261123f"></script>
+<script src="../assets/manse.js?v=20261123f"></script>
+<script src="../assets/timing.js?v=20261123f"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261123e"></script>
+<script src="member.js?v=20261123f"></script>
 </body>
 </html>

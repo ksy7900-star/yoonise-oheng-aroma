@@ -2155,10 +2155,12 @@
       });
     });
 
-    /* 🎁 친구 초대하고 혜택 받기 — 결과에서 STEP 2 · 내 사다리 / STEP 3 · 초대 링크로 조용히 올라간다 */
+    /* 🎁 친구 초대하고 혜택 받기 — 결과에서 STEP 2 · 내 사다리 / STEP 3 · 초대 링크로 올라간다.
+       4차(2026-11-23): 로그인 카드가 결과 아래로 내려갔으니, 로그인 전이면 STEP 1 로그인으로 먼저 데려간다. */
     var jump = box.querySelector('[data-invite-jump]');
     if (jump) jump.addEventListener('click', function () {
-      var target = doc.getElementById('ladderCard') || doc.getElementById('inviteCard');
+      var target = (state.user ? doc.getElementById('ladderCard') : doc.getElementById('authCard'))
+        || doc.getElementById('ladderCard') || doc.getElementById('inviteCard');
       if (!target) return;
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       target.classList.remove('is-jump');

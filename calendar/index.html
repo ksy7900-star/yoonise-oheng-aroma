@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123e">
+<link rel="stylesheet" href="assets/style.css?v=20261123f">
 </head>
 <body>
 
@@ -208,10 +208,18 @@
         <span class="savedbar__lock" id="savedBarLock" hidden></span>
       </div>
       <button type="button" class="savedbar__btn" id="editBtn">수정</button>
-      <!-- 2.0 — 내 사주 카드 안 미니 원국 1줄 (2026-11-23). 누르면 아래 원국표 카드가 펼쳐진다 -->
+      <!-- 2.0 — 내 사주 카드 안 미니 원국 1줄 + 제자리 원국표 (2026-11-23 4차)
+           · 접힘: 미니 원국 1줄(시·일·월·년) + `원국표 보기 ▾`
+           · 펼침: 미니 1줄은 가리고 **바로 이 카드 안**에 4기둥 원국표가 펼쳐진다(버튼은 `원국표 접기 ▴`)
+           → 원국이 화면에 두 번 나오지 않도록 아래 `내 사주` 카드는 감춰 두었다. -->
       <div class="natalmini" id="natalMini" hidden>
         <span class="natalmini__row" id="natalMiniRow"></span>
-        <button type="button" class="natalmini__tog" id="natalMiniTog" aria-expanded="false" aria-controls="natalCard">원국표 보기 <span aria-hidden="true">▾</span></button>
+        <span class="natalmini__cap" id="natalMiniCap" hidden>원국 여덟 글자</span>
+        <button type="button" class="natalmini__tog" id="natalMiniTog" aria-expanded="false" aria-controls="natalInline">원국표 보기 <span aria-hidden="true">▾</span></button>
+        <div class="natalinline" id="natalInline" hidden>
+          <div class="natal" id="natal"></div>
+          <p class="micro" id="natalNote"></p>
+        </div>
       </div>
     </div>
 
@@ -251,14 +259,13 @@
       </button>
     </nav>
 
-    <!-- 원국 — 2.0 에서는 기본 접힘(#natalCard.is-collapsed). 맨 위 미니 원국 1줄의 토글로 펼친다 -->
-    <section class="card card--natal" id="natalCard" aria-labelledby="natalTitle">
+    <!-- 원국 — 2.0 4차에서 맨 위 `김나영 님` 카드 안(#natalInline)으로 옮겼다.
+         원국이 화면에 두 번 보이지 않도록 이 별도 카드는 감춰만 둔다(.v2-parked). -->
+    <section class="card card--natal v2-parked" id="natalCard" aria-label="내 사주 원국">
       <div class="sec__head">
         <h2 class="sec__title" id="natalTitle">내 사주</h2>
         <p class="sec__meta" id="natalMeta"></p>
       </div>
-      <div class="natal" id="natal"></div>
-      <p class="micro" id="natalNote"></p>
     </section>
 
     <!-- 2027 1년 대표 수호 부적 — 2.0 에서는 화면에서만 감춤(.v2-parked) -->
@@ -724,11 +731,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123e"></script>
-<script src="assets/manse.js?v=20261123e"></script>
-<script src="assets/timing.js?v=20261123e"></script>
-<script src="assets/chars.js?v=20261123e"></script>
-<script src="assets/calendar.js?v=20261123e"></script>
-<script src="assets/pwa.js?v=20261123e"></script>
+<script src="vendor/lunar.js?v=20261123f"></script>
+<script src="assets/manse.js?v=20261123f"></script>
+<script src="assets/timing.js?v=20261123f"></script>
+<script src="assets/chars.js?v=20261123f"></script>
+<script src="assets/calendar.js?v=20261123f"></script>
+<script src="assets/pwa.js?v=20261123f"></script>
 </body>
 </html>
