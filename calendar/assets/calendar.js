@@ -838,22 +838,29 @@
     setTimeout(function () { if (!el.classList.contains('is-on')) el.hidden = true; }, 300);
   }
 
-  /** 잠금 판정 — 입장 코드로 열었거나 무료 체험을 끈 동안에는 달력 범위 전체가 열린다. */
-  function inFree(iso) {
-    if (TEST_OPEN_ALL) return iso >= RANGE_FROM && iso <= RANGE_TO;   // 지인 테스트 — 전 구간 열림
-    if (state.unlocked) return iso >= RANGE_FROM && iso <= RANGE_TO;
-    if (!FREE_TRIAL_ENABLED) return iso >= RANGE_FROM && iso <= RANGE_TO;
+  /** 이 날 하나만 보고 잠금을 판정한다 — 달력 범위 전체가 아니라.
+     · 입장 코드 · 지인 테스트 · 판매 off → 다 열린다.
+     · 무료 체험 중 → **지난 날과 오늘까지 열리고**, 잠기는 곳은 미래 날짜 중
+       무료 체험이 끝난 다음 날(iso > trialEnd) 하나뿐이다.
+     · 체험이 끝난 뒤 → 오늘·앞날은 잠기고, 지나간 날은 그대로 열려 있다.
+     지난 날을 눌러 "어, 그날 진짜 맞네" 하고 확인하는 자리인데 결제 팝업이 떠서
+     닫히던 문제 (2026-11-23 김나영 님 #17156 · 캡처 6949) — 지난 날은 잠그지 않는다. */
+  function isLockedDay(iso) {
+    if (TEST_OPEN_ALL) return false;          // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
+    if (state.unlocked) return false;
+    if (!FREE_TRIAL_ENABLED) return false;
     var w = trialWindow();
-    return !!w && iso >= w.start && iso <= w.end;
+    if (!w) return false;
+    return iso > w.end && iso >= state.todayISO;
   }
-  /** 무료 체험이 켜져 있을 때만 '지난 날'은 눌리지 않는다. (입장 코드를 넣으면 지난 날도 열린다)
-      무료 7일을 다 쓴 뒤에는 오늘도 포함해 전부 잠긴다. */
+  /** 무료 구간 안인가 — 지난 날 · 오늘 · 체험 마지막 날까지 참 */
+  function inFree(iso) {
+    if (iso < RANGE_FROM || iso > RANGE_TO) return false;
+    return !isLockedDay(iso);
+  }
+  /** 이 날이 눌리는 칸인가 — 잠긴 날도 '여는 방법'을 알려 주려고 누를 수 있다 */
   function isOpenDay(iso) {
-    if (TEST_OPEN_ALL) return true;           // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
-    if (state.unlocked) return true;
-    if (!FREE_TRIAL_ENABLED) return true;
-    if (trialOver()) return false;
-    return iso >= state.todayISO;
+    return !isLockedDay(iso);
   }
   function infoFor(iso) {
     if (!state.natal) return null;
@@ -4185,8 +4192,8 @@
     if (LITE_MODE) {
       /* 잠금(8일째 이후)에도 달력의 3색은 그대로 보인다 — 날짜를 눌렀을 때만 결제 안내가 나온다 */
       $('#calNote').innerHTML = (FREE_TRIAL_ENABLED && !state.unlocked && trialOver()
-        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 날짜를 누르면 <b>1년 전체 패스 14,900원</b>(하루 40원) 안내가 나와요.'
-        : '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.') +
+        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 오늘·앞날은 <b>1년 전체 패스 14,900원</b>(하루 40원) 안내가 나오고, <b>지난 날은 그대로 열려요</b>.'
+        : '궁금한 날짜를 눌러 보세요 — <b>지난 날도</b> 그날 조심할 점과 챙길 점이 바로 나와요. (체험 7일이 지난 앞날은 여는 방법이 나와요.)') +
         '<br>저녁마다 오늘 하루를 1초 체크해 보세요. 내 흐름이 기록으로 남아요.';
     } else {
       $('#calNote').textContent = noteText;
@@ -4350,10 +4357,10 @@
     if (!info || !modalEl) return;
     /* 2.0 — 날짜를 누르면 잠금·부적 없이 "그날이 왜 이런 날인지 + 피할 것/챙길 것"만 보여 준다.
        기존 잠금·부적 로직(아래)은 하나도 지우지 않고 이 길로만 안 간다. */
-    /* 잠금 판정은 2.0 화면에서도 먼저 한다 — 무료 7일이 지난 날(8일째 이후)은
-       잠금·결제 팝업이 나와야 한다 (2026-11-23 실제 판매 모드 전환) */
-    var lock = FREE_TRIAL_ENABLED && !inFree(iso);
-    var pastLock = lock && iso < state.todayISO;
+    /* 잠금 판정은 2.0 화면에서도 먼저 한다 — 미래 날짜 중 무료 체험이 끝난 다음 날부터만
+       잠금·결제 팝업이 나온다. 지난 날은 눌러서 그날 설명을 그대로 본다
+       (2026-11-23 김나영 님 #17156 — 지난 날에 14,900원 팝업이 뜨던 문제) */
+    var lock = isLockedDay(iso);
     if (LITE_MODE && !lock) {
       lastFocus = document.activeElement;
       state.sel = iso;
@@ -4370,10 +4377,9 @@
       return;
     }
     var hasBadges = !!(info.badges && info.badges.length);
-    /* 체험 중 지난 날 — '지난 날'이라고 알려 주고 여는 방법을 보여 준다 (2026-11-21 QA M3) */
     // 기운 태그가 없는 보통 날은 원래 팝업을 열지 않는다.
     // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
-    // 잠긴 날(지난 날·체험 범위 밖)은 누르면 여는 방법을 알려 준다.
+    // 잠긴 날(체험 범위 밖 미래)은 누르면 여는 방법을 알려 준다.
     if (!hasBadges && !diaryAllowed() && !lock) {
       toast(state.unlocked || !FREE_TRIAL_ENABLED
         ? '이 날은 특별히 피할 일 없이 내 페이스대로 가면 되는 날이에요.'
@@ -4383,8 +4389,8 @@
     lastFocus = document.activeElement;
     state.sel = iso;
     renderCalendar();                       // 날짜 칸 선택 표시
-    modalBody.innerHTML = pastLock ? pastDayModalHTML(info)
-      : (lock ? lockModalHTML(info) : (hasBadges ? briefModalHTML(info) : plainModalHTML(info)));
+    modalBody.innerHTML = lock ? lockModalHTML(info)
+      : (hasBadges ? briefModalHTML(info) : plainModalHTML(info));
     modalDialog.classList.toggle('modal__dialog--lock', lock);
     modalDialog.classList.remove('is-lock-scrolled');
     modalEl.hidden = false;
@@ -4610,40 +4616,27 @@
       '</div>';
   }
 
-  /** 무료 체험 중 '지난 날'을 눌렀을 때 — 왜 안 열리는지와 여는 방법 (2026-11-21 QA M3) */
-  function pastDayModalHTML(info) {
-    var tw = trialWindow();
-    var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
-    var ws = tw ? T.parseISO(tw.start) : T.parseISO(state.todayISO);
-    var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
-    var markHtml = marks.map(function (m) {
-      return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
-    }).join('');
-    return lockHeadHTML(info, trialOver() ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · 지난 날') +
-      '<p class="lock__title">🕘 지난 날이에요</p>' +
-      '<p class="lock__sub">' + (trialOver()
-        ? '무료 ' + FREE_DAYS + '일 체험(' + ws.m + '월 ' + ws.d + '일~' + fe.m + '월 ' + fe.d +
-          '일)이 끝났어요. 1년 전체 패스를 열면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.'
-        : '무료 체험은 ' + ws.m + '월 ' + ws.d + '일부터 ' + FREE_DAYS + '일(' + fe.m + '월 ' + fe.d +
-          '일까지)만 열려요. 1년 전체 패스를 열면 <b>2026년 11월부터 2027년 12월까지</b> 지난 날도 모두 열립니다.') + '</p>' +
-      diaryTrialLine() +
-      (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
-      '<div class="lock__actions">' + lockShopButtonsHTML() + '</div>' +
-      lockInviteHTML() +
-      '<button type="button" class="btn modal__done-btn modal__done-btn--dark" data-modal-close>닫고 달력 보기</button>' +
-      '<button type="button" class="lock__code" data-lock-open>이미 입장 코드가 있으신가요?</button>';
-  }
-
   /** 성찰 다이어리 안내 한 줄 — 2026-11-23 단일 패스로 통일하며 판매를 닫아 잠금 팝업에는 띄우지 않는다.
      (기존 성찰 에디션 코드로 열린 기기는 diaryTierOpen() 으로 그대로 쓴다) */
   function diaryTrialLine() {
     return '';
   }
+  /** 잠금 팝업의 3색 힌트 — 옛 5색 딱지(● 머니·● 소통 …) 대신, 손님이 달력에서
+     이미 보고 있는 3색(⚠️ 조심 · ⚡ 기운 UP · 🌿 실속·정리)만 하나 붙인다.
+     잠긴 날이라 내용은 못 보여 주지만, 어떤 결의 날인지는 한눈에 남겨 둔다.
+     (2026-11-23 김나영 님 #17156 — 캡처 6949 에 `● 머니` 가 남아 있던 문제) */
+  function lockTagHTML(info) {
+    var p = litePrimary(info);
+    if (!p || !p.entry) return '';
+    var base = LITE_FULL[p.key] || '';
+    var word = String(p.entry.short || '').replace(/^[^\s]+\s/, '');
+    var text = base;
+    if (word && base.indexOf(word) < 0) {
+      text = /조심$/.test(word) ? '⚠️ ' + word : base + ' · ' + word;
+    }
+    return '<div class="lock__marks"><span class="lock__tag lock__tag--' + p.key + '">' + esc(text) + '</span></div>';
+  }
   function lockModalHTML(info) {
-    var marks = info.marks.filter(function (m) { return !m.minor && m.cat !== 'gray'; }).slice(0, 2);
-    var markHtml = marks.map(function (m) {
-      return '<span class="mark"><span class="mark__dot dot dot--' + m.cat + '"></span>' + esc(m.label) + '</span>';
-    }).join('');
     var tw = trialWindow();
     var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
     var ws = tw ? T.parseISO(tw.start) : null;
@@ -4655,7 +4648,7 @@
       '<p class="lock__sub">1년 전체 패스 하나예요 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
       diaryTrialLine() +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
-      (markHtml ? '<div class="lock__marks">' + markHtml + '</div>' : '') +
+      lockTagHTML(info) +
       '<p class="lock__hint">' + (over
         ? '무료 체험은 ' + (ws ? ws.m + '월 ' + ws.d + '일~' : '') + fe.m + '월 ' + fe.d +
           '일이었어요. 1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'

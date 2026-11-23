@@ -736,6 +736,18 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 .lock__marks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .lock .mark { background: rgba(241, 245, 249, .08); color: rgba(241, 245, 249, .8); }
 .lock .mark__dot { opacity: .9; }
+/* 잠금 팝업의 3색 힌트 — 달력·날짜 팝업과 같은 말(⚠️ 조심 / ⚡ 기운 UP / 🌿 실속·정리)만
+   어두운 카드 위에 올린다. 옛 5색 딱지(● 머니 등)는 2026-11-23 정리 (#17156) */
+.lock__tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: -.01em;
+  background: rgba(241, 245, 249, .10); color: rgba(241, 245, 249, .92);
+  box-shadow: inset 0 0 0 1px rgba(241, 245, 249, .14);
+}
+.lock__tag--warn { background: rgba(190, 18, 60, .22); color: #FECDD3; box-shadow: inset 0 0 0 1px rgba(251, 113, 133, .30); }
+.lock__tag--up { background: rgba(217, 155, 43, .20); color: #FDE68A; box-shadow: inset 0 0 0 1px rgba(253, 230, 138, .26); }
+.lock__tag--real { background: rgba(16, 185, 129, .18); color: #A7F3D0; box-shadow: inset 0 0 0 1px rgba(167, 243, 208, .24); }
 .lock__hint { font-size: 11.5px; color: rgba(241, 245, 249, .62); line-height: 1.75; margin-top: 16px; }
 .lock__actions { position: relative; z-index: 1; margin-top: 20px; }
 
