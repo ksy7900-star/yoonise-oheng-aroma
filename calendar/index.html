@@ -316,8 +316,10 @@
         <button type="button" class="calfilter__btn v2-parked" data-filter="good" aria-pressed="false">🍀 좋은 날</button>
       </div>
 
-      <!-- 무료 7일을 다 쓴 기기 — 달력 바로 위에 잠금 안내 한 줄 (2026-11-21 · 2026-11-23 7일로) -->
-      <button type="button" class="cal__trialover" id="calTrialOver" hidden>
+      <!-- 무료 7일을 다 쓴 기기 — 달력 바로 위 잠금 안내 한 줄 (2026-11-21 · 2026-11-23 7일로)
+           2.0 화면에서는 감춰 둔다(.v2-parked) — 같은 안내를 #calNote 한 줄이 하고,
+           '눌러서 코드 넣기'로 메인 화면에 코드 입력을 드러내지 않기 위해서다. -->
+      <button type="button" class="cal__trialover v2-parked" id="calTrialOver" hidden>
         <span class="cal__trialover-t">🔒 무료 7일 체험이 끝났어요</span>
         <span class="cal__trialover-s">입장 코드를 넣으면 2026년 11월~2027년 12월 전체가 열려요 <b>· 눌러서 코드 넣기</b></span>
       </button>
