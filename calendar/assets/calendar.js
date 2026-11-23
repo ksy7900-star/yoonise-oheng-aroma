@@ -2807,7 +2807,6 @@
     blue: { key: 'real', label: '실속·정리', emoji: '🌿' },
     gray: { key: 'real', label: '실속·정리', emoji: '🌿' }
   };
-  var LITE_FULL = { warn: '⚠️ 조심', up: '⚡ 기운 UP', real: '🌿 실속·정리' };
 
   /* ── 3색 희소성 엔진 (2026-11-23 2차 확정) ───────────────────────────
      한 달에 색을 다 칠하면 어떤 색도 눈에 안 들어온다 (⚡ 기운UP 11일 도배 지적).
@@ -2950,8 +2949,13 @@
     return litePlan(info.y, info.m).map[info.iso] || null;
   }
 
+  /* @lite-text:start */
+  /* 3색 표기 — 날짜 팝업 태그와 화면 라벨이 같은 말을 쓴다 */
+  var LITE_FULL = { warn: '⚠️ 조심', up: '⚡ 기운 UP', real: '🌿 실속·정리' };
   /* ── 날짜 상세 — 왜 이런 날인지 + 피할 것 / 챙길 것 (표에서 고른다) ──
-     key : 그날의 세부 이유(명리 관계) — 말은 전부 일상어로 푼다. */
+     key : 그날의 세부 이유(명리 관계) — 말은 전부 일상어로 푼다.
+     2026-11-23 3차: 같은 달 1일·13일이 같은 문구로 나오던 문제를 고치며
+     아래 GAN_TONE·ZHI_TONE(60갑자)·STEM_AVOID·BRANCH_KEEP(그날 오행 처방)을 더했다. */
   var LITE_DAY = {
     chung: {
       head: '말 한마디로 손해 보기 쉬운 날',
@@ -3008,6 +3012,116 @@
       keep: '밀린 정리 하나만 끝내기'
     }
   };
+
+  /* ── ① 그날의 60갑자 — 위(천간 10)와 아래(지지 12)가 오늘 어떻게 다른지 ──
+     같은 "충돌하는 날"이라도 병오일과 임자일은 결이 다르다. 그 결을 한 줄씩 붙인다.
+     천간은 오늘의 공기, 지지는 그 아래 바닥의 결 — 처방이 아니라 분위기로만 말한다.
+     (천간 10 × 지지 12 = 60갑자라 한 달 30일 안에서 같은 문구가 나오지 않는다) */
+  var GAN_TONE = [
+    '위로는 나무 기운이 앞으로 뻗어요.',
+    '위로는 덩굴 같은 나무 기운이 부드럽게 감겨요.',
+    '위로는 볕 같은 불 기운이 환하게 드러나요.',
+    '위로는 촛불 같은 불 기운이 한곳을 비춰요.',
+    '위로는 산 같은 흙 기운이 버티고 서요.',
+    '위로는 밭을 고르는 흙 기운이 고르게 펴져요.',
+    '위로는 칼날 같은 쇠 기운이 서 있어요.',
+    '위로는 보석을 다듬는 쇠 기운이 곱게 빛나요.',
+    '위로는 큰물 같은 물 기운이 넓게 흘러요.',
+    '위로는 이슬 같은 물 기운이 조용히 내려앉아요.'
+  ];
+  var ZHI_TONE = [
+    '아래로는 밤의 물이 흘러, 혼자 있는 시간이 편한 바닥이에요.',
+    '아래에 단단한 흙이 깔려, 끝을 맺는 일에 힘이 붙어요.',
+    '아래에서 새싹이 밀고 올라와, 시작하는 쪽으로 마음이 당겨요.',
+    '아래에서 가지가 뻗어, 사람 쪽으로 마음이 열려요.',
+    '아래에 젖은 흙이 고여, 감정이 한 번 가라앉는 자리예요.',
+    '아래에서 열기가 올라와, 말이 조금 빨라지기 쉬워요.',
+    '아래에 한낮의 볕이 내려앉아, 몸이 먼저 지치기 쉬워요.',
+    '아래에 마른 흙이 버텨, 맺고 정리하는 쪽에 힘이 실려요.',
+    '아래에서 쇠가 울려, 확인하고 다듬는 일이 잘 풀려요.',
+    '아래에 결이 선 쇠가 놓여, 마무리가 깔끔해져요.',
+    '아래에 묵은 흙이 쌓여, 덜어 내는 일이 잘 돼요.',
+    '아래로 깊은 물이 흘러, 감정은 흘려보내고 몸을 쉬게 하는 게 좋아요.'
+  ];
+
+  /* ── ② 그날의 오행 처방 — 오늘만 피할 것 · 오늘만 챙길 것 ──
+     신호 처방(LITE_DAY.avoid/keep)에 하루 단위 항목을 하나씩 더한다.
+     천간 10 × 지지 12 라 같은 달 안에서 두 날의 문구가 같아질 수 없다. */
+  var STEM_AVOID = [
+    '한 번에 여러 곳에 손대기',
+    '할 일을 미루고 매만지기만 하기',
+    '열이 오른 채로 밀어붙이기',
+    '마음이 뜨거울 때 결론 내기',
+    '자리를 잡고 꿈쩍 않기',
+    '벌여 놓고 손 놓아 두기',
+    '칼같이 선을 긋고 말하기',
+    '티끌까지 따지기',
+    '확인 없이 넘겨짚기',
+    '작은 일에 오래 마음 쓰기'
+  ];
+  var BRANCH_KEEP = [
+    '혼자 정리하는 시간 30분',
+    '매듭지어야 할 일 하나 끝내기',
+    '미뤄 둔 첫 단계 하나 떼기',
+    '안부 연락 한 통',
+    '말하기 전에 한 번 가라앉히기',
+    '보내기 전에 한 번 더 읽기',
+    '점심 뒤 10분 눈 붙이기',
+    '맺을 것 하나 정해 끝내기',
+    '확인 두 번, 마무리 한 번',
+    '서랍이나 책상 한 칸 정리',
+    '안 쓰는 것 하나 덜어 내기',
+    '잠을 한 시간 앞당기기'
+  ];
+
+  /** 오늘의 60갑자 한 줄 — "병오일 — 위로는 … 아래로는 …" (<b> 태그 포함) */
+  function dateLine(info) {
+    var gz = (info && info.gz) || {};
+    var g = GAN_TONE[gz.ganIndex] || '';
+    var z = ZHI_TONE[gz.zhiIndex] || '';
+    if (!g && !z) return '';
+    var head = gz.textKo ? '<b>' + esc(gz.textKo) + '일</b> — ' : '';
+    return head + [g, z].filter(Boolean).join(' ');
+  }
+
+  /** 오늘만 피할 것 · 오늘만 챙길 것 — 그날 천간·지지에서 하나씩 */
+  function dayActs(info) {
+    var gz = (info && info.gz) || {};
+    return { avoid: STEM_AVOID[gz.ganIndex] || '', keep: BRANCH_KEEP[gz.zhiIndex] || '' };
+  }
+
+  /** 날짜 팝업의 문구 한 벌 — 화면과 검증 스크립트가 같은 함수를 쓴다.
+      같은 사주·같은 날이면 언제나 같은 문구(규칙적), 다른 날이면 반드시 다른 문구. */
+  function liteDayText(info) {
+    var p = litePrimary(info);
+    var d = LITE_DAY[p.kind] || LITE_DAY.calm;
+    var tag;
+    if (p.entry) {
+      /* '🌿 실속·정리 · 정리'처럼 같은 말이 두 번 나오지 않게 — 짧은 이름이
+         이미 색 이름에 들어 있으면 색 이름만 쓴다 */
+      var word = String(p.entry.short || '').replace(/^[^\s]+\s/, '');
+      tag = '<span class="litemodal__tag litemodal__tag--' + p.key + '">' +
+        LITE_FULL[p.key] + (word && LITE_FULL[p.key].indexOf(word) < 0 ? ' · ' + esc(word) : '') + '</span>';
+    } else {
+      tag = '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
+    }
+    /* 잔잔한 날도 신호가 있는 날도 '그날의 60갑자' 한 줄을 반드시 붙인다 */
+    var why;
+    if (p.kind === 'calm') {
+      var cl = calmLines(info, p.soft);
+      why = esc(cl[0]) + (cl[1] ? '<br>' + cl[1] : '');
+    } else {
+      var dl = dateLine(info);
+      why = esc(d.why) + (dl ? '<br>' + dl : '');
+    }
+    var acts = dayActs(info);
+    return {
+      p: p, key: p.key, kind: p.kind,
+      tag: tag, head: d.head, why: why,
+      avoid: d.avoid + (acts.avoid ? ' · ' + acts.avoid : ''),
+      keep: d.keep + (acts.keep ? ', ' + acts.keep : '')
+    };
+  }
   /** 그날의 대표 색과 세부 이유 — 이 달에 뽑힌 날만 색을 갖고, 나머지는 잔잔한 날 */
   function litePrimary(info) {
     var e = liteEntry(info);
@@ -3024,33 +3138,18 @@
     return { key: e.key, kind: kind, soft: false, entry: e };
   }
 
-  /* ── 잔잔한 날의 두 줄 — 일진의 천간·지지 오행에 따라 매번 다른 말 ────
+  /* ── 잔잔한 날의 두 줄 — 일진의 천간·지지에 따라 매번 다른 말 ────
      같은 "잔잔한 날" 고정 멘트가 반복되면 눌러 볼 이유가 사라진다.
-     천간 5 × 지지 5 = 25가지 조합에, 이 달 강조에서 빠진 날은 앞줄만 바꾼다. */
-  var CALM_GAN = {
-    '목': '나무 기운이 도는 날이라, 하던 일을 매만지면 잘 자라요.',
-    '화': '불 기운이 도는 날이라, 마음이 먼저 달아올라요. 순서만 챙기세요.',
-    '토': '흙 기운이 도는 날이라, 자리를 잡고 정리하기에 맞아요.',
-    '금': '쇠 기운이 도는 날이라, 군더더기를 덜어 내면 일이 반듯해져요.',
-    '수': '물 기운이 도는 날이라, 붙들지 말고 흐르듯 넘기면 편해요.'
-  };
-  var CALM_ZHI = {
-    '목': '아래에서 자라나는 기운이 받쳐 줘요 — 미뤄 둔 일 하나는 끝낼 만해요.',
-    '화': '아래에서 열기가 올라와요 — 오늘은 혼자 정리하는 쪽이 편해요.',
-    '토': '아래가 든든히 받쳐 줘서, 돈과 일정 점검이 잘 되는 날이에요.',
-    '금': '아래에서 가지를 쳐 주니, 안 쓰는 것 덜어 내기 좋아요.',
-    '수': '아래로 물이 흘러요 — 감정은 흘려보내고 몸을 먼저 쉬게 해 주세요.'
-  };
-  /** 잔잔한 날 팝업의 '왜 이런 날인지' 두 줄 (배열) */
+     천간 10 × 지지 12 = 60갑자 조합이라 한 달 안에서 같은 문구가 나오지 않는다.
+     이 달 강조에서 빠진 날은 앞줄만 '살짝 어긋나는 구석'으로 바꾼다. */
   function calmLines(info, soft) {
-    var gan = (info && info.ganEl) || '';
-    var zhi = (info && info.zhiEl) || '';
     var first = soft
       ? '살짝 어긋나는 구석은 있지만, 크게 흔들리는 날은 아니에요.'
-      : (CALM_GAN[gan] || '오늘은 크게 부딪히는 기운이 없이 잔잔하게 흐르는 날이에요.');
-    var second = CALM_ZHI[zhi] || '이런 날일수록 밀린 정리 하나만 끝내면 충분해요.';
+      : '오늘은 크게 부딪히는 기운 없이 잔잔하게 흐르는 날이에요.';
+    var second = dateLine(info) || '이런 날일수록 밀린 정리 하나만 끝내면 충분해요.';
     return [first, second];
   }
+  /* @lite-text:end */
 
   /* ── 오늘 내 한 줄 — 오늘 일진 × 내 사주 ── */
   var LITE_TODAY = {
@@ -3073,12 +3172,12 @@
      조심할 달은 달력과 같은 계산(yearInfo)의 결과를 그대로 쓴다. */
   var SAEUN_2027 = { label: '정미년', gan: 3, zhi: 7 };   // 丁未
   var LITE_AREA = {
-    money:  { t: '돈·계약',   do: '큰 지출·보증·동업 서명은 하루 두고 결정하세요.' },
-    people: { t: '사람·관계', do: '감정이 실린 말은 한 번 접었다가 보내세요.' },
-    work:   { t: '일·책임',   do: '혼자 떠안지 말고 일정은 절반만 잡으세요.' },
-    docs:   { t: '서류·절차', do: '기한과 금액을 두 번 확인하고 구두 약속은 피하세요.' },
-    talk:   { t: '말·소문',   do: '남 얘기와 단정하는 말을 아끼세요.' },
-    body:   { t: '건강·체력', do: '늦은 밤 일정을 줄이고 잠부터 챙기세요.' }
+    money:  { do: '큰 지출과 보증, 동업 서명은 하루 두고 결정하는 게 좋아요.' },
+    people: { do: '감정이 실린 말은 한 번 접었다가 보내는 게 좋아요.' },
+    work:   { do: '혼자 다 떠안지 말고 일정은 절반만 잡는 게 좋아요.' },
+    docs:   { do: '기한과 금액을 두 번 확인하고 구두 약속은 피하는 게 좋아요.' },
+    talk:   { do: '남 얘기와 단정하는 말은 아끼는 게 좋아요.' },
+    body:   { do: '늦은 밤 일정을 줄이고 잠부터 챙기는 게 좋아요.' }
   };
   var LITE_REL_AREA = { chung: 'people', hyeong: 'docs', hae: 'talk', bokkeum: 'work', yukhap: 'work' };
   var LITE_TEN_AREA = {
@@ -3095,14 +3194,16 @@
     yukhap: '내 중심 글자와 묶이는 해예요',
     '': '내 사주 가운데로 기운이 들어오는 해예요'
   };
-  /* 가려운 곳 — 영역별로 "그래서 어디서 아픈지"를 구체적으로 */
-  var YEAR_AREA_ITCH = {
-    money: '큰 지출이나 서명 앞에서 한 번 멈칫하게 돼요. 금액보다 타이밍이 문제예요.',
-    people: '가까운 사이라 대충 넘긴 말이 문제가 돼요. 상처는 대개 한마디에서 시작돼요.',
-    work: '일이 겹쳐서 혼자 다 떠안게 돼요. 책임이 커지는 자리에서 흔들려요.',
-    docs: '기한과 금액, 구두로 넘긴 약속이 발목을 잡아요. 서류에서 한 번 끊겨요.',
-    talk: '내가 한 말이 크게 돌아와요. 남 얘기와 단정하는 말이 특히 탈이 돼요.',
-    body: '잠과 체력이 먼저 흔들려요. 밤 일정부터 줄이는 게 순서예요.'
+  /* 2027년이 내게 어떻게 닿는지 — 영역 이름을 라벨처럼 붙이지 않고,
+     상담가가 풀어 주는 한 문장으로 바로 말한다(2026-11-23 3차).
+     "돈·계약이에요" 같은 A·B 짝짓기·단어 중복은 쓰지 않는다. */
+  var YEAR_AREA_LINE = {
+    money:  '<b class="hk-hl">큰 지출과 계약</b> 앞에서 한 번 멈칫하게 돼요. 금액보다 타이밍이 문제예요.',
+    people: '<b class="hk-hl">가까운 사이</b>일수록 말 한마디로 서운함이 쌓이기 쉬워요. 상처는 대개 한마디에서 시작돼요.',
+    work:   '<b class="hk-hl">책임이 따르는 일</b>이 겹치면서 마음이 바빠지기 쉬워요. 혼자 다 떠안지 않게 조심해야 해요.',
+    docs:   '<b class="hk-hl">기한과 금액</b>이 발목을 잡아요. 구두로 넘긴 약속에서 한 번 끊겨요.',
+    talk:   '<b class="hk-hl">내가 한 말</b>이 크게 돌아오기 쉬워요. 남 얘기와 단정하는 말이 특히 탈이 돼요.',
+    body:   '<b class="hk-hl">잠과 체력</b>이 먼저 흔들려요. 밤 일정부터 줄이는 게 순서예요.'
   };
 
   function hookYearData() {
@@ -3143,13 +3244,8 @@
     return { area: area, areaKey: areaKey, months: months, rel: relDay || relMonth || '' };
   }
 
-  /** 받침에 따라 '이에요/예요'를 고른다 — "사람·관계예요"처럼 읽히게 */
-  function josaIeyo(word) {
-    var s = String(word || '');
-    var ch = s.charCodeAt(s.length - 1);
-    if (!ch || ch < 0xAC00 || ch > 0xD7A3) return '이에요';
-    return ((ch - 0xAC00) % 28) ? '이에요' : '예요';
-  }
+  /* (2026-11-23 3차) '사람·관계예요' 같은 A·B 짝짓기 말투를 없애며 josaIeyo() 는 지웠다 —
+     영역은 YEAR_AREA_LINE 의 한 문장으로만 말한다. */
 
   /* 오늘 하루 — 그날 기운을 상담가 말투로 두 줄 (한자 용어 없이) */
   var HOOK_TODAY = {
@@ -3173,7 +3269,7 @@
            '이런 조용한 날에 하나만 정리해 두면, 기운 센 날에 그게 무기가 돼요.']
   };
 
-  /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 */
+  /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 (2026-11-23 3차: 밝은 카드 + 자연스러운 상담가 말투) */
   function renderHook() {
     var box = $('#hook3');
     if (!box) return;
@@ -3202,17 +3298,17 @@
           ? d.months.map(function (m) { return m + '월'; }).join('·')
           : '';
         var rel = YEAR_REL_LINE[d.rel] || YEAR_REL_LINE[''];
-        var itch = YEAR_AREA_ITCH[d.areaKey] || '';
+        var line = YEAR_AREA_LINE[d.areaKey] || YEAR_AREA_LINE.people;
+        var doLine = d.area.do || '';
         yearBox.innerHTML =
-          '2027년은 ' + rel + '. ' + owner + ' 사주에서 제일 크게 흔들리는 건 ' +
-          '<b class="hk-hl">' + d.area.t + '</b>' + josaIeyo(d.area.t) + '.' +
-          (itch ? '<br>' + itch : '') +
-          (ms ? '<br>특히 <b class="hk-hl">' + ms + '</b>엔 ' + d.area.do : '');
+          '2027년은 ' + rel + '. ' + owner + ' 사주에서는 ' + line +
+          (ms ? '<br>특히 <b class="hk-hl">' + ms + '</b>엔 ' + doLine : '');
       }
     }
   }
 
-  /** 맨 위 내 사주 카드 안 미니 원국 1줄 — 누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다
+  /** 맨 위 내 사주 카드 안 미니 원국 — 여덟 글자를 오행 색 칩으로 (2026-11-23 3차)
+      누르면 기존 원국표(#natal·#natalNote)가 펼쳐진다.
       전통 만세력 순서: 왼쪽 시주 → 오른쪽 년주 (시 · 일 · 월 · 년) */
   function renderNatalMini() {
     var box = $('#natalMini'), row = $('#natalMiniRow');
@@ -3220,15 +3316,24 @@
     if (!LITE_MODE || !state.res) { box.hidden = true; return; }
     box.hidden = false;
     var p = state.res.pillars;
-    var order = [['time', '시주'], ['day', '일주'], ['month', '월주'], ['year', '년주']];
-    row.setAttribute('aria-label', '사주 여덟 글자 — 시주 · 일주 · 월주 · 년주 순');
+    var order = [['time', '시'], ['day', '일'], ['month', '월'], ['year', '년']];
+    row.setAttribute('aria-label', '사주 여덟 글자 — 시주 · 일주 · 월주 · 년주 순, 오행 색으로 표시');
     row.innerHTML = order.map(function (o) {
       var pil = p[o[0]];
-      if (!pil) return '<span class="natalmini__p is-none" title="시주 · 시간 모름">—</span>';
+      if (!pil) {
+        return '<span class="natalmini__col is-none" title="시주 · 시간 모름">' +
+          '<span class="natalmini__pos">' + o[1] + '</span>' +
+          '<span class="natalmini__chips"><span class="natalmini__chip natalmini__chip--none">—</span></span></span>';
+      }
       var me = o[0] === 'day' ? ' is-me' : '';
-      return '<span class="natalmini__p' + me + '" title="' + o[1] + '">' +
-        esc(pil.gan) + ' ' + esc(pil.zhi) + '</span>';
-    }).join('<span class="natalmini__sep" aria-hidden="true">·</span>');
+      /* 천간·지지를 한 글자씩 떼어 각자의 오행 색으로 — 원국표(#natal)와 같은 색 토큰 */
+      return '<span class="natalmini__col' + me + '" title="' + o[1] + '주">' +
+        '<span class="natalmini__pos">' + o[1] + '</span>' +
+        '<span class="natalmini__chips">' +
+        '<span class="natalmini__chip natalmini__chip--' + esc(M.GAN_EL[pil.ganIndex]) + '">' + esc(pil.gan) + '</span>' +
+        '<span class="natalmini__chip natalmini__chip--' + esc(M.ZHI_EL[pil.zhiIndex]) + '">' + esc(pil.zhi) + '</span>' +
+        '</span></span>';
+    }).join('');
   }
 
   /** 원국표 접기/펼치기 — 접힌 기본 상태에서는 카드 자체를 감춘다(빈 상자가 남지 않게) */
@@ -3258,15 +3363,15 @@
     renderDuo();
   }
 
-  /** 🔥 액운 태우기 아래 두 칸 — ① 케미테스트 ② 카톡 3초 연결 → 2027 수호 부적 */
+  /** 🔥 액운 태우기 아래 두 칸 — ① 케미테스트 ② 카카오 연결 → 2027 수호 부적 */
   function renderDuo() {
     var go = $('#talisGetGo'), sub = $('#talisGetSub');
     if (!go) return;
     var linked = hasSbSession();
-    go.textContent = linked ? '내 수호 부적 열기 →' : '카톡 3초 연결하고 받기 →';
+    go.textContent = linked ? '내 수호 부적 열기 →' : '카카오로 연결하고 내 부적 받기 →';
     if (sub) sub.textContent = linked
       ? '연결돼 있어요 — 내 사주에 맞는 부적을 바로 열어 보세요.'
-      : '카톡으로 연결하면 내 사주에 맞는 수호 부적이 바로 열려요.';
+      : '카카오로 연결하면 내 사주에 맞는 2027 수호 부적이 바로 열려요.';
   }
 
   function renderSavedBar() {
@@ -3536,7 +3641,7 @@
     var freeEnd = tw ? T.parseISO(tw.end) : null;
     var noteText;
     if (LITE_MODE) {
-      noteText = '색이 붙은 날을 누르면 그날 왜 그런지, 무엇을 피하고 무엇을 챙기면 되는지 바로 나와요.';
+      noteText = '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.';
     } else if (!FREE_TRIAL_ENABLED || state.unlocked) {
       noteText = '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.';
     } else if (trialOver() || !freeEnd) {
@@ -3545,8 +3650,8 @@
       noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
     }
     if (LITE_MODE) {
-      $('#calNote').innerHTML = '색이 붙은 날을 누르면 그날 왜 그런지, 무엇을 피하고 무엇을 챙기면 되는지 바로 나와요.' +
-        '<br>저녁마다 오늘 하루를 <b>1초 체크</b>해 보세요. 내 흐름이 기록으로 남아요.';
+      $('#calNote').innerHTML = '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.' +
+        '<br>저녁마다 오늘 하루를 1초 체크해 보세요. 내 흐름이 기록으로 남아요.';
     } else {
       $('#calNote').textContent = noteText;
     }
@@ -3789,34 +3894,24 @@
      (2026-11-23 김나영 님: "날짜를 누르면 왜 그런 날인지 + 피할 행동·챙길 행동이 명확히")
      도장 찍기·상담·결제 유도는 여기에 넣지 않고 본문 3단만 둔다. */
   function liteDayModalHTML(info) {
-    var p = litePrimary(info);
-    var d = LITE_DAY[p.kind] || LITE_DAY.calm;
-    var tagHtml;
-    if (p.entry) {
-      tagHtml = '<span class="litemodal__tag litemodal__tag--' + p.key + '">' +
-        LITE_FULL[p.key] + ' · ' + esc(String(p.entry.short).replace(/^[^\s]+\s/, '')) + '</span>';
-    } else {
-      tagHtml = '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
-    }
-    /* 잔잔한 날은 고정 멘트 대신 일진의 천간·지지 오행으로 매번 다른 두 줄 */
-    var why = p.kind === 'calm'
-      ? calmLines(info, p.soft).map(function (s) { return esc(s); }).join('<br>')
-      : esc(d.why);
+    /* 문구는 liteDayText() 한 곳에서만 만든다 — 날짜마다 다른 문장이 나오는지
+       검증 스크립트(work/qa-v3/daytext_test.py)도 같은 함수를 쓴다. */
+    var tx = liteDayText(info);
     return '<div class="litemodal">' +
       '<p class="modal__eyebrow">' + (info.iso === state.todayISO ? 'TODAY · 오늘의 타이밍' : 'DAY · 이 날의 타이밍') + '</p>' +
       '<p class="litemodal__date" id="modalTitle">' + fmtMD(info.iso) +
         '<span>' + esc(fmtKoDate(info.iso)) + ' ' + DOW_KO[info.dow] + '요일 · 음력 ' + esc(info.lunarText) + '</span></p>' +
-      '<div class="litemodal__tags">' + tagHtml + '</div>' +
-      '<h3 class="litemodal__head">' + esc(d.head) + '</h3>' +
+      '<div class="litemodal__tags">' + tx.tag + '</div>' +
+      '<h3 class="litemodal__head">' + esc(tx.head) + '</h3>' +
       '<div class="litemodal__body">' +
-        '<p class="litemodal__why">' + why + '</p>' +
+        '<p class="litemodal__why">' + tx.why + '</p>' +
         '<div class="litemodal__act litemodal__act--avoid">' +
           '<span class="litemodal__k" aria-hidden="true">🚫</span>' +
-          '<p class="litemodal__actp"><b>오늘 피할 것</b><span>' + esc(d.avoid) + '</span></p>' +
+          '<p class="litemodal__actp"><b>오늘 피할 것</b><span>' + esc(tx.avoid) + '</span></p>' +
         '</div>' +
         '<div class="litemodal__act litemodal__act--keep">' +
           '<span class="litemodal__k" aria-hidden="true">✅</span>' +
-          '<p class="litemodal__actp"><b>오늘 챙길 것</b><span>' + esc(d.keep) + '</span></p>' +
+          '<p class="litemodal__actp"><b>오늘 챙길 것</b><span>' + esc(tx.keep) + '</span></p>' +
         '</div>' +
       '</div>' +
       nightCheckHTML(info) +
@@ -3956,12 +4051,12 @@
   }
 
   /** 🎁 친구 초대 혜택 카드 — 결제를 망설이는 손님을 바로 초대 루프로 (2026-11-21 김나영 님 확정)
-      사다리: 1명 액운 태우기 3회 + 전 상품 할인 쿠폰 · 3명 1개월 · 5명 2개월 · 10명 3개월 패스
+      사다리(2026-11-23 3차 확정): 1명 +1개월 · 3명 +3개월 · 5명 +6개월+상담 1만원 · 7명 1년 전체+원포인트 반값
       문구는 '초대·케미' 대신 무엇을 하는 곳인지 바로 보이게 (2026-11-22) */
   function inviteCardHTML(cls) {
     return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
-      '<p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>' +
+      '<p class="invitecard__d"><b>1명</b> +1개월 · <b>3명</b> +3개월 · <b>5명</b> +6개월+상담 1만원 · <b>7명</b> 1년 전체+반값</p>' +
       '<a class="invitecard__go" href="' + memberHref() + '">친구 초대하고 케미테스트 하러 가기 →</a>' +
       '</div>';
   }
@@ -4132,18 +4227,12 @@
     box.classList.toggle('is-compact', paid);
   }
 
-  /* ── 초대 사다리 문구 — 미결제 / 결제자 (2026‑11‑22 김나영 님 확정) ── */
-  var LADDER_TEXT_FREE = '1명 액운3회+할인 · 3명 1개월 · 5명 2개월 · 10명 3개월';
-  var LADDER_TEXT_PAID = {
-    pass: '1명 상담 5천원 · 3명 올인원 무료 · 5명 원포인트 반값 · 10명 시그니처 반값',
-    allinone: '1명 상담 5천원 · 3명 성찰 에디션 무료 · 5명 원포인트 반값 · 10명 시그니처 반값',
-    diary: '1명 상담 5천원 · 3명 상담 1만원 · 5명 원포인트 반값 · 10명 시그니처 반값'
-  };
-  /* 결제자 초대 문구 1안 (2026-11-22 김나영 님 확정)
-     — 시작값('5,000원~50%')으로 약해 보이던 표현을 빼고, 첫 단계 혜택을 앞세운다.
-       1명~10명 세부 단계는 /calendar/member/ 사다리에서 그대로 보여 준다. */
-  var INVITE_PAID_TITLE = '🎁 친구 초대하면 <b>1:1 상담 최대 반값(50%)</b>';
-  var INVITE_PAID_SUB = '1명만 초대해도 바로 5천원 할인 · 단계별 혜택 보기';
+  /* ── 초대 사다리 문구 — 1 / 3 / 5 / 7 (2026-11-23 3차 김나영 님 확정) ──
+     무료·결제자 사다리를 하나로 통일했다. 상품 이름은 '내 사주 타이밍 달력'.
+     세부 단계는 /calendar/member/ 사다리에서 그대로 보여 준다. */
+  var LADDER_TEXT_FREE = '1명 +1개월 · 3명 +3개월 · 5명 +6개월+상담 1만원 · 7명 1년 전체+상담 반값';
+  var INVITE_PAID_TITLE = '🎁 친구 초대하면 <b>내 사주 타이밍 달력</b>이 더 열려요';
+  var INVITE_PAID_SUB = '1명 +1개월 · 3명 +3개월 · 단계별 혜택 보기';
 
   /** ✨ 케미테스트 배너 — "친구/연인과 2027년 우리 케미 점수는?" (2026-11-22 김나영 님 확정)
       제목은 결제 여부와 상관없이 케미 점수 호기심 — 아래 한 줄만 결제자/미결제자로 갈린다. */

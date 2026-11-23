@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>내 사주 2027년 길흉 달력 + 액운 태우기 | 윤이세사주</title>
+<title>내 사주 타이밍 달력 | 윤이세사주</title>
 <meta name="description" content="생년월일만 넣으면 2027년 조심할 날·치고 나갈 날을 하루씩 짚어주고, 막힌 운을 태워 비우는 맞춤 사주 달력 · 윤이세사주">
 <meta name="theme-color" content="#FAFBFD">
 <meta property="og:type" content="website">
@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123b">
+<link rel="stylesheet" href="assets/style.css?v=20261123c">
 </head>
 <body>
 
@@ -50,7 +50,7 @@
 <header class="hero">
   <div class="hero__inner">
     <p class="hero__eyebrow">YOONISE · TIMING CALENDAR</p>
-    <h1 class="hero__title">내 인생 <br><em>타이밍 캘린더</em></h1>
+    <h1 class="hero__title">내 사주 <br><em>타이밍 달력</em></h1>
     <p class="hero__sub">생년월일 한 번이면, 내 사주로 <b>2027년 하루하루를 색으로</b> 찍어 드려요.<br>⚠️ 조심할 날은 하루 미루고, ⚡ 기운 받는 날은 밀어붙이세요.</p>
     <ul class="hero__facts">
       <li>절기 시각까지 반영</li>
@@ -181,7 +181,7 @@
       </details>
 
       <p class="form-alert" id="formAlert" role="alert" hidden></p>
-      <button class="submit" type="submit" id="submitBtn">내 타이밍 캘린더 열기</button>
+      <button class="submit" type="submit" id="submitBtn">내 사주 타이밍 달력 열기</button>
       <p class="form-note">입력한 정보는 <b>이 기기(브라우저)에만</b> 저장돼요. 서버로 보내지 않습니다.</p>
     </form>
   </section>
@@ -230,7 +230,7 @@
       </article>
       <article class="hk hk--core">
         <p class="hk__label hk__label--core">핵심</p>
-        <p class="hk__text" id="hookCore">일이 꼬이는 건 대개 <b class="hk-hl">딱 며칠 때문</b>입니다.<br>달력에 <b class="hk-mark">⚠️</b> 뜬 날만 피해도 <b class="hk-hl">2027년 큰 풍파는 비켜 가요.</b></p>
+        <p class="hk__text" id="hookCore">일이 꼬이는 건 대개 <b class="hk-hl">딱 며칠 때문</b>이에요.<br>달력에 <b class="hk-mark">⚠️</b> 뜬 날만 피해도 <b class="hk-hl">2027년 큰 풍파는 비켜 가요.</b></p>
       </article>
     </section>
 
@@ -403,7 +403,7 @@
         <p class="howto__free">날짜를 누르면 팝업 아래 <b>✨ 오늘의 1줄 성찰</b>이 함께 나와요. 한 줄을 남긴 날은 달력 칸에 <b>작은 펜 점</b>이 찍혀요.</p>
       </details>
 
-      <p class="cal__note" id="calNote">기운이 흔들리는 날·경고등 켜진 날(딱지가 붙은 날)을 누르면 그날의 부적이 나와요.</p>
+      <p class="cal__note" id="calNote">궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.</p>
 
       <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
       <button type="button" class="diarybook v2-parked" id="diaryBookBtn">
@@ -431,7 +431,9 @@
 
     <!-- ✨ 2026-11-23 2차 — 액운 태우기 아래 두 칸
          ① 너랑나랑 케미테스트 (/calendar/member/)
-         ② 카톡 3초 연결 → 내 2027 수호 부적 (REP50 모달 재활용) -->
+         ② 카카오 연결 → 내 2027 수호 부적 (REP50 모달 재활용)
+         3차(2026-11-23): '카톡 3초 연결' 같은 광고성 문구를 걷어 내고
+         부적을 '받는 것'으로 조용히 말한다 — 카카오 연결 안내는 그대로 둔다. -->
     <section class="duo" id="duoCard" aria-label="케미테스트와 2027 수호 부적">
       <a class="duo__card duo__card--chemi" href="./member/">
         <span class="duo__eyebrow">CHEMI TEST</span>
@@ -441,9 +443,9 @@
       </a>
       <button type="button" class="duo__card duo__card--talis" id="talisGet">
         <span class="duo__eyebrow">GUARDIAN TALISMAN · 2027</span>
-        <span class="duo__t">💎 카톡 3초 연결하고 내 2027 수호 부적 받기</span>
-        <span class="duo__d" id="talisGetSub">카톡으로 연결하면 내 사주에 맞는 수호 부적이 바로 열려요.</span>
-        <span class="duo__go" id="talisGetGo">카톡 3초 연결하고 받기 →</span>
+        <span class="duo__t">💎 나의 2027년 한 해를 지키는 수호 부적</span>
+        <span class="duo__d" id="talisGetSub">카카오로 연결하면 내 사주에 맞는 2027 수호 부적이 바로 열려요.</span>
+        <span class="duo__go" id="talisGetGo">카카오로 연결하고 내 부적 받기 →</span>
       </button>
     </section>
 
@@ -472,7 +474,7 @@
       <div class="chemibanner__b">
         <p class="chemibanner__eyebrow">CHEMI TEST</p>
         <p class="chemibanner__t" id="chemiBannerT">친구/연인과 2027년 우리 케미 점수는?</p>
-        <p class="chemibanner__d" id="chemiBannerD">1명 액운3회+할인 · 3명 1개월 · 5명 2개월 · 10명 3개월</p>
+        <p class="chemibanner__d" id="chemiBannerD">1명 +1개월 · 3명 +3개월 · 5명 +6개월+상담 1만원 · 7명 1년 전체+반값</p>
       </div>
       <a class="chemibanner__go" href="./member/">케미테스트 하러 가기 <span aria-hidden="true">→</span></a>
     </section>
@@ -499,7 +501,7 @@
         <!-- 🎁 친구 초대 혜택 — 결제 전 손님이 바로 초대 루프로 (2026-11-21) -->
         <div class="invitecard invitecard--year" id="yearInvite" hidden>
           <p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>
-          <p class="invitecard__d"><b>1명</b> 액운3회+할인 · <b>3명</b> 1개월 · <b>5명</b> 2개월 · <b>10명</b> 3개월</p>
+          <p class="invitecard__d"><b>1명</b> +1개월 · <b>3명</b> +3개월 · <b>5명</b> +6개월+상담 1만원 · <b>7명</b> 1년 전체+반값</p>
           <a class="invitecard__go" href="./member/">친구 초대하고 케미테스트 하러 가기 →</a>
         </div>
       </div>
@@ -581,7 +583,7 @@
     <div class="modal__content welcome">
       <p class="welcome__trial js-trial">🎁 사주를 넣는 날부터 <b>3일 무료</b></p>
       <p class="welcome__invite" id="welcomeInvite" hidden></p>
-      <h2 class="welcome__title" id="welcomeTitle">내 인생 <span class="welcome__title-em">타이밍 캘린더</span></h2>
+      <h2 class="welcome__title" id="welcomeTitle">내 사주 <span class="welcome__title-em">타이밍 달력</span></h2>
       <p class="welcome__intro">내 사주로 2027년 <b>조심할 날은 피해 가고</b>, <b>치고 나갈 날은 놓치지 않게</b> 막힌 운을 뚫어주는 맞춤 달력이에요.</p>
       <p class="welcome__hook">답답하고 일이 안 풀릴 때<br><b>🔥 막힌 기운 태워버리기</b> <span class="welcome__hook-free">(무료 체험)</span></p>
       <p class="welcome__hook welcome__hook--diary">매일 한 줄이면 충분할 때<br><b>✨ 1줄 성찰 다이어리</b> <span class="welcome__hook-free">(3회 무료 체험)</span></p>
@@ -722,11 +724,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123b"></script>
-<script src="assets/manse.js?v=20261123b"></script>
-<script src="assets/timing.js?v=20261123b"></script>
-<script src="assets/chars.js?v=20261123b"></script>
-<script src="assets/calendar.js?v=20261123b"></script>
-<script src="assets/pwa.js?v=20261123b"></script>
+<script src="vendor/lunar.js?v=20261123c"></script>
+<script src="assets/manse.js?v=20261123c"></script>
+<script src="assets/timing.js?v=20261123c"></script>
+<script src="assets/chars.js?v=20261123c"></script>
+<script src="assets/calendar.js?v=20261123c"></script>
+<script src="assets/pwa.js?v=20261123c"></script>
 </body>
 </html>

@@ -74,36 +74,30 @@
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
   var EL_MOTHER = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };  // 나를 생하는 오행
 
-  // 최종 확정된 4단 (2026-11-21 김나영 님 확정) — 날짜 단위를 겹치지 않게 나눠서
-  // 1명은 기간이 아니라 '액운 태우기 + 할인 쿠폰'으로, 3명부터 기간(총 1·2·3개월)으로 올라간다.
+  /* ── 최종 확정 사다리 (2026-11-23 3차 김나영 님 확정) — 1 / 3 / 5 / 7 ─────────
+     상품 이름은 '내 사주 타이밍 달력'으로 통일(검색·바이럴 태그와 같은 말).
+       · 1명 내 사주 타이밍 달력 +1개월
+       · 3명 내 사주 타이밍 달력 +3개월
+       · 5명 내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인
+       · 7명 내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)
+     Supabase referral_rules 테이블은 보상 스위치를 켤 때 이 숫자로 함께 맞춘다. */
   var LADDER = [
-    { n: 1, title: '액운 태우기 3회 + 전 상품 할인 쿠폰', sub: '1년·올인원 3천원, 성찰 에디션 5천원 할인' },
-    { n: 3, title: '1개월 패스 무료', sub: '한 달 전체를 바로 열어요' },
-    { n: 5, title: '2개월 패스 무료', sub: '두 달 전체를 열어 드려요' },
-    { n: 10, title: '3개월 패스 무료', sub: '석 달을 통째로 열어 드려요' }
+    { n: 1, title: '내 사주 타이밍 달력 +1개월', sub: '지금부터 한 달을 통째로 열어 드려요' },
+    { n: 3, title: '내 사주 타이밍 달력 +3개월', sub: '석 달을 통째로 열어 드려요' },
+    { n: 5, title: '내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인', sub: '반년을 열고, 상담은 1만원 빼 드려요' },
+    { n: 7, title: '내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)', sub: '2026년 11월~2027년 12월 전부 · 49,000원 → 24,500원' }
   ];
 
-  /* ── 결제자용 4단 (2026-11-22 김나영 님 확정) ─────────────────
-     이미 달력을 산 사람에겐 기간 보상이 의미가 없다 — 1:1 상담으로 넘긴다.
-     · 1명  1:1 상담 5,000원 할인권 (원포인트·시그니처)
-     · 3명  다음 단계 무료 업그레이드 (성찰 에디션 보유자는 상담 10,000원 할인권)
-     · 5명  원포인트 리딩 50% 할인권
-     · 10명 시그니처 리딩 50% 할인권 */
+  /* ── 결제자 안내 (2026-11-23 3차) ─────────────────────────────
+     사다리 자체는 무료·결제자 모두 1/3/5/7 하나로 통일했다.
+     결제자는 달력이 이미 다 열려 있어서 5명·7명 칸의 1:1 상담 할인이 실질 혜택이다. */
   var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };
   var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';   // 달력(/calendar/)이 코드를 열 때 쓰는 그 키
 
+  /** 사다리 — 무료·결제자 모두 같은 1/3/5/7 (기간 보상이 겹쳐도 손해가 없다) */
   function ladderFor(tier) {
-    if (!tier) return LADDER;
-    var third = tier === 'diary'
-      ? { n: 3, title: '1:1 상담 10,000원 할인권', sub: '원포인트·시그니처' }
-      : { n: 3, title: '다음 단계 무료 업그레이드', sub: tier === 'pass' ? '올인원으로 올려 드려요' : '성찰 에디션으로 올려 드려요' };
-    return [
-      { n: 1, title: '1:1 상담 5,000원 할인권', sub: '원포인트·시그니처' },
-      third,
-      { n: 5, title: '원포인트 리딩 50% 할인권', sub: '49,000원 → 24,500원' },
-      { n: 10, title: '시그니처 리딩 50% 할인권', sub: '100,000원 → 50,000원' }
-    ];
+    return LADDER;
   }
 
   /** 달력이 이 기기에서 연 상품 등급 — 코드가 실제로 열린 기록이 있을 때만 인정한다 */
@@ -133,8 +127,8 @@
     } catch (e) {}
   }
   var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
-  var HASHTAGS = '#타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
-  var HASHTAG_LIST = ['#타이밍달력', '#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
+  var HASHTAGS = '#내사주타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
+  var HASHTAG_LIST = ['#내사주타이밍달력', '#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
   var INSTA = 'life.saju_yoonise';
   var CAPTION = '@' + INSTA + '\n' + HASHTAGS;   // 인스타에 그대로 붙여넣는 한 덩어리
 
@@ -374,30 +368,10 @@
     return true;
   }
 
-  /* ── 화면: 케미 결과 로그인 잠금 ──────────────────
-     사주 입력은 그대로 두고, '2027년 케미 보기' 결과만 로그인하고 보여 준다. */
-  function renderGate() {
-    var box = $('#chemiResult');
-    if (!box) return;
-    box.innerHTML = '<p class="card__eyebrow">2027 · 케미 결과</p>'
-      + '<h2 class="card__title">한 번만 로그인하면<br>바로 열려요</h2>'
-      + '<div class="gate">'
-      + '<span class="gate__lock">🔒 결과 직전 한 단계</span>'
-      + '<p class="gate__lead">카카오로 3초 로그인하고 <b>케미 결과 + 5일 체험</b> 바로 열기</p>'
-      + '<ul class="gate__list">'
-      + '<li><i>1</i><span>카카오로 로그인하면 <b>초대 코드</b>가 생겨요</span></li>'
-      + '<li><i>2</i><span>친구가 내 링크로 들어오면 <b>5일 체험</b>이 붙어요</span></li>'
-      + '<li><i>3</i><span>다시 돌아오면 <b>넣어 둔 사주 그대로</b> 결과가 열려요</span></li>'
-      + '</ul>'
-      + '<button type="button" class="btn btn--navy" id="gateLoginBtn">'
-      + '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span></button>'
-      + '<p class="gate__note">닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.<br>로그인은 초대 코드와 사다리 보상을 위한 거예요.</p>'
-      + '</div>';
-    box.hidden = false;
-    var b = $('#gateLoginBtn');
-    if (b) b.addEventListener('click', function (e) { onLogin(e, b); });
-    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  /* ── 케미 결과 로그인 잠금 — 걷어 냄 (2026-11-23 3차 김나영 님) ─────────
+     "케미테스트를 로그인으로 먼저 막지 말고, 두 사람 생년월일 입력 → 케미 점수·부적이 먼저 바로"
+     → 결과를 막던 화면은 지웠다. 로그인은 결과 아래 초대·사다리 안내에서 권한다.
+     (아래 renderGate 는 되돌릴 때를 위해 남겨 두지 않고 함께 삭제했다) */
 
   function onLogout(e) {
     if (e) e.preventDefault();
@@ -631,13 +605,17 @@
     }
 
     var fill = $('#railFill');
-    if (fill) fill.style.width = Math.min(100, (cnt / 10) * 100) + '%';
+    if (fill) {
+      var topN = LAD[LAD.length - 1].n || 7;      /* 마지막 칸(7명)을 100%로 — 10명 고정값을 뺐다 */
+      fill.style.width = Math.min(100, (cnt / topN) * 100) + '%';
+    }
 
     var marks = $('#railMarks');
     if (marks && marks.getAttribute('data-kind') !== (state.paidTier || 'free')) {
       marks.setAttribute('data-kind', state.paidTier || 'free');
+      var topM = LAD[LAD.length - 1].n || 7;
       marks.innerHTML = LAD.map(function (r) {
-        return '<span class="rail__mark" data-n="' + r.n + '" style="left:' + (r.n / 10 * 100) + '%">' + r.n + '</span>';
+        return '<span class="rail__mark" data-n="' + r.n + '" style="left:' + (r.n / topM * 100) + '%">' + r.n + '</span>';
       }).join('');
     }
     if (marks) {
@@ -667,7 +645,7 @@
     if (tn) {
       if (state.paidTier) {
         tn.hidden = false;
-        tn.innerHTML = '🎟️ <b>' + esc(TIER_NAME[state.paidTier]) + '</b> 결제자용 사다리 — 기간 대신 1:1 상담 할인권으로 드려요';
+        tn.innerHTML = '🎟️ <b>' + esc(TIER_NAME[state.paidTier]) + '</b> 결제자예요 — 달력은 이미 다 열려 있으니, 5명·7명 칸의 <b>1:1 상담 할인</b>이 실질 혜택이에요';
       } else {
         tn.hidden = true;
         tn.innerHTML = '';
@@ -676,8 +654,8 @@
     var note = $('#ladderNote');
     if (note) {
       note.innerHTML = state.paidTier
-        ? '친구가 내 링크로 들어와 로그인하면, 그 숫자만큼 <b>1:1 상담 할인권</b>이 쌓여요. 쓸 때는 카톡으로 알려 주세요.'
-        : '이미 1년 패스를 쓰시는 분은 기간 대신 <b>원포인트 · 시그니처 1:1 상담 5,000원 할인 쿠폰</b>으로 드려요.';
+        ? '친구가 내 링크로 들어와 로그인하면, 그 숫자만큼 <b>1:1 상담 할인</b>이 쌓여요. 쓸 때는 카톡으로 알려 주세요.'
+        : '사다리는 <b>1명 · 3명 · 5명 · 7명</b> 네 칸이에요. 친구가 내 링크로 들어와 로그인하면 그만큼 <b>내 사주 타이밍 달력</b>이 더 넓게 열려요.';
     }
 
     var pv = $('#previewRow');
@@ -687,7 +665,7 @@
       if (show) {
         var chips = $('#previewChips');
         if (chips) {
-          var vals = [null, 0, 1, 3, 5, 10];
+          var vals = [null, 0, 1, 3, 5, 7];
           chips.innerHTML = vals.map(function (v) {
             var on = (state.demo === v) || (v === null && state.demo === null);
             return '<button type="button" class="pchip' + (on ? ' is-on' : '') + '" data-v="' + (v === null ? 'real' : v) + '">'
@@ -2086,6 +2064,33 @@
       + '</div>';
     html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
 
+    /* ── 결과 바로 아래 두 갈래 (2026-11-23 3차 김나영 님) ──────────────
+       ① 친구 초대 1/3/5/7 로 '내 사주 타이밍 달력'을 무료로 넓히기
+       ② 인스타 스토리에 @life.saju_yoonise 태그 → 달력 +1개월
+       결과를 다 본 자리에서 조용히 한 장씩 — 가격표·배너는 넣지 않는다. */
+    html += '<section class="grow" aria-label="내 사주 타이밍 달력 더 열기">'
+      + '<div class="grow__card">'
+      + '<p class="grow__lb">🎁 무료로 달력 넓히기</p>'
+      + '<p class="grow__t">친구를 초대하면 <b>내 사주 타이밍 달력</b>이 더 열려요</p>'
+      + '<ul class="grow__ladder">'
+      + '<li><b>1명</b><span>내 사주 타이밍 달력 +1개월</span></li>'
+      + '<li><b>3명</b><span>내 사주 타이밍 달력 +3개월</span></li>'
+      + '<li><b>5명</b><span>내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인</span></li>'
+      + '<li><b>7명</b><span>내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)</span></li>'
+      + '</ul>'
+      + '<button type="button" class="btn btn--gold btn--wide" data-invite-jump>내 초대 링크 만들기 →</button>'
+      + '</div>'
+      + '<div class="grow__card grow__card--insta">'
+      + '<p class="grow__lb">📸 인스타 스토리 공유</p>'
+      + '<p class="grow__t">스토리에 올리고 <b>@' + INSTA + '</b> 를 태그해 주세요</p>'
+      + '<p class="grow__d">인증하면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요. 방금 만든 케미 카드나 달력 화면을 그대로 올리면 돼요.</p>'
+      + '<div class="btn-row">'
+      + '<button type="button" class="btn btn--ghost" id="growCopyCap">인스타에 올릴 문구 복사</button>'
+      + '<a class="btn btn--ghost" href="#storyGiftCard">인증 방법 보기</a>'
+      + '</div>'
+      + '</div>'
+      + '</section>';
+
     /* 낮은 조합(60~77점)에만 — 부적 아래 조용한 상담 한 줄. 가격표·배너 없이 (2026-11-22) */
     if (scoreIsLow(score)) {
       html += '<p class="chemi__consult">'
@@ -2096,18 +2101,16 @@
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
       + '</div>';
-    /* 결과를 본 직후의 두 갈래 — ① 윤이세사주 채널 추가(원터치) ② 친구 초대 사다리로 (2026-11-22) */
+    /* 결과를 본 직후 — 윤이세사주 채널 추가(원터치). 친구 초대는 위 grow 카드가 맡는다 */
     html += '<div class="chemi__more">'
       + '<a class="btn btn--gold" href="' + KAKAO_CHANNEL_ADD + '" target="_blank" rel="noopener">'
       + '<span aria-hidden="true">💬</span> 윤이세사주 채널 추가하기</a>'
-      + '<button type="button" class="btn btn--ghost" data-invite-jump>'
-      + '<span aria-hidden="true">🎁</span> 친구 초대하고 혜택 받기</button>'
       + '</div>';
     html += '<p class="note">보내는 링크에는 <b>내 사주 정보만</b>(생년월일·시각·성별) 담겨요. 상대방 사주는 담기지 않아요. '
       + '친구가 링크를 열고 자기 사주를 넣으면 같은 비교가 그쪽 화면에서 만들어집니다.</p>';
     html += '<div class="brandmark brandmark--card">'
       + '<span class="brandmark__ic" aria-hidden="true">🌙</span>'
-      + '<span class="brandmark__t">2027 타이밍 캘린더</span>'
+      + '<span class="brandmark__t">내 사주 타이밍 달력</span>'
       + '<span class="brandmark__sep" aria-hidden="true">·</span>'
       + '<span class="brandmark__b">윤이세사주</span>'
       + '<span class="brandmark__h">(@life.saju_yoonise)</span>'
@@ -2143,6 +2146,14 @@
 
     var sh = $('#shareChemiBtn');
     if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
+
+    /* 📸 인스타에 올릴 문구 복사 — 결과 아래 인스타 카드에서 바로 */
+    var gc = $('#growCopyCap');
+    if (gc) gc.addEventListener('click', function () {
+      copyText(CAPTION).then(function (ok) {
+        toast(ok ? '인스타 문구를 복사했어요. 스토리에 붙여넣으세요.' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요.');
+      });
+    });
 
     /* 🎁 친구 초대하고 혜택 받기 — 결과에서 STEP 2 · 내 사다리 / STEP 3 · 초대 링크로 조용히 올라간다 */
     var jump = box.querySelector('[data-invite-jump]');
@@ -2999,13 +3010,9 @@
     if (rMe.error) { showCheminError(rMe); return; }
     if (rYou.error) { showCheminError(rYou); return; }
 
-    /* 로그인 전 — 결과 대신 로그인 안내. 넣은 사주는 세션에 남겨 돌아오면 그대로 연다. */
-    if (!state.user && !force) {
-      saveGate();
-      renderGate();
-      if (state.db === 'off') toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.');
-      return;
-    }
+    /* 로그인 전에도 결과를 그대로 보여 준다 (2026-11-23 3차) — 막던 길은 걷어 냈다.
+       넣은 사주는 세션에 쟁여 두어, 나중에 로그인해도 그대로 이어진다. */
+    saveGate();
 
     var btn = $('#chemiBtn'), load = $('#chemiLoading');
     state.busy = true;
