@@ -3036,8 +3036,10 @@
   function kakaoSdk() {
     try {
       var K = window.Kakao;
-      if (!K || !K.Share || !K.init) return null;
+      if (!K || !K.init) return null;
+      /* SDK 2.7 은 init 전에는 Kakao.Share 가 아직 안 붙는다 — 먼저 init 하고 나서 확인한다 */
       if (typeof K.isInitialized === 'function' && !K.isInitialized()) K.init(KAKAO_JS_KEY);
+      if (!K.Share) return null;
       return K;
     } catch (e) { return null; }
   }

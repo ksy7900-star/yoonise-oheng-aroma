@@ -18,7 +18,8 @@
 /* ==========================================================
    윤이세 — 상담·작명 전용 신청서 (/apply/)
    1안 색감: 화이트 · 딥네이비(#1E293B) · 에메랄드/코랄 · 노란 카톡 (2026-11-21)
-   순서 개편 (2026-11-22): ① 상품 고르고 결제(위) → ② 신청서·카톡 접수(아래)
+   순서 개편 (2026-11-22): ① 상품 고르고 결제(위) → ② 신청서 접수(아래)
+   2026-11-24: 접수는 서버 자동 저장 — 손님은 복사·붙여넣기 없이 카톡에 한 마디만.
    ========================================================== */
 :root {
   --bg: #FAFBFD;
@@ -397,7 +398,7 @@ a { color: inherit; }
 
 <main class="wrap">
 
-  <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '신청서 → 카톡 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
+  <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '신청서 → 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
   <div class="payback" id="payBack" hidden>
     <span class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면, 아래 신청서에 사주 정보를 적고 접수 버튼만 눌러 주세요.</span></p>
     <div class="payback__row">
@@ -414,7 +415,7 @@ a { color: inherit; }
 
   <ol class="flow">
     <li><i>1</i>상품 고르고 결제</li>
-    <li><i>2</i>신청서 · 카톡 접수</li>
+    <li><i>2</i>신청서 · 접수</li>
   </ol>
 
   <!-- ── STEP 1 · 상품 선택 + 결제 (결제를 위로 올린다) ────────── -->
@@ -471,7 +472,7 @@ a { color: inherit; }
   <!-- ── STEP 2 · 상담 신청서 (결제 다음) ─────────────────────── -->
   <div class="step step--sep">
     <span class="step__tag">STEP 2</span>
-    <span class="step__t">신청서 적고 카톡 접수</span>
+    <span class="step__t">신청서 적고 접수</span>
   </div>
 
   <section class="cform" aria-labelledby="formHead">
@@ -827,8 +828,8 @@ a { color: inherit; }
     });
 
     $('formHint').textContent = naming
-      ? '칸을 다 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요'
-      : '여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요';
+      ? '칸을 다 채우고, 맨 아래 접수 버튼을 누르면 끝이에요'
+      : '여섯 칸을 채우고, 맨 아래 접수 버튼을 누르면 끝이에요';
   }
 
   function restoreForm(d) {
@@ -929,7 +930,6 @@ a { color: inherit; }
 
     $('payCard').href = p.pay;
     $('payFallback').href = p.pay;
-    $('payNote').firstChild.textContent = '결제를 마치면 아래 신청서를 채우고 노란 버튼을 눌러 주세요. ';
 
     clearMsg();
     if (push !== false) {
@@ -1242,7 +1242,7 @@ a { color: inherit; }
   window.addEventListener('blur', function () { sawBlur = true; });
   document.addEventListener('visibilitychange', function () { if (document.hidden) sawBlur = true; });
 
-  /* ── 노란 버튼: 확인 → 서버 접수 → 완료 카드 ───────
+  /* ── 접수 버튼: 확인 → 서버 접수 → 완료 카드 ───────
      2026-11-24: 복사→붙여넣기 안내를 걷어 냈다. 누르는 순간 신청서가 서버에 저장되고,
      손님은 완료 카드의 💬 카톡 열기 로 '신청했어요' 한 마디만 남기면 된다.
      서버 저장이실패해도 카톡으로 가는 길은 막지 않는다(그때만 예쁜 복사본을 보여 준다). */
@@ -1482,7 +1482,7 @@ a { color: inherit; }
     if (e.target.closest('#payBackGo')) {
       payWaitClear();
       $('payBack').hidden = true;
-      $('kakaoGo').click();     /* 기존 카톡 접수와 같은 길 — 확인(빈 칸이면 신청서로 이동) + 복사 + 카톡 */
+      $('kakaoGo').click();     /* 접수와 같은 길 — 확인(빈 칸이면 신청서로 이동) + 서버 저장 + 완료 카드 */
       return;
     }
     if (e.target.closest('#payBackX')) { payWaitClear(); $('payBack').hidden = true; }
