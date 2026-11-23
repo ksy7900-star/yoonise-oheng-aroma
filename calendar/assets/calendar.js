@@ -6767,6 +6767,7 @@
       '<p class="burn__rx"><b>오늘의 한 줄 처방</b>' + esc(burnLineOf(el)) + '</p>' +
       '<p class="burn__foot">' + esc(burnLeftText()) + '</p>' +
       '<p class="burn__done-day">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</p>' +
+      '<button type="button" class="burn__install" data-pwa-install>내일 바로 오게 홈 화면에 꺼내 두기 <span aria-hidden="true">→</span></button>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
   }
 

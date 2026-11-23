@@ -3,6 +3,8 @@
    · 설치 버튼 : 앱으로 열려 있으면 숨김, 브라우저면 상단에 노출
    · beforeinstallprompt 가 잡히면 누르는 즉시 네이티브 설치 창
    · 카톡·네이버 인앱 / iOS / 그 외 브라우저는 각각 맞는 안내 + 주소 복사
+   · 2026-11-23: 달력 맨 아래 `📲 내 폰 바탕화면에 꺼내 두기`(#getAppBar)와
+     액운 태우기 STEP 3 한 줄([data-pwa-install])도 같은 길로 연결 — 앱으로 열면 함께 숨긴다.
    ========================================================== */
 (function () {
   'use strict';
@@ -13,6 +15,7 @@
   var modal = document.getElementById('installModal');
   var dialog = document.getElementById('installDialog');
   var body = document.getElementById('installBody');
+  var getBar = document.getElementById('getAppBar');   // 수호 부적 카드 아래 초대 카드
   if (!bar || !modal || !body) return;
 
   var HIDE_KEY = 'yoonise.install.hide';
@@ -50,6 +53,24 @@
     bar.hidden = false;
     // 한 프레임 뒤에 켜야 아래에서 올라오는 느낌이 산다
     requestAnimationFrame(function () { bar.classList.add('is-on'); });
+  }
+
+  /* ── 앱으로 연 상태면 카드 자체를 숨긴다 ────────────────
+     · #getAppBar : 달력 맨 아래 초대 카드
+     · [data-pwa-install] : 액운 태우기 STEP 3 한 줄 (나중에 그려지므로 html 클래스로 함께 숨김) */
+  function markStandalone() {
+    var on = isStandalone();
+    try { document.documentElement.classList.toggle('is-standalone', on); } catch (e) {}
+    if (getBar) {
+      if (on) { getBar.hidden = true; getBar.classList.remove('is-on'); }
+      else showGetBar();
+    }
+    return on;
+  }
+  function showGetBar() {
+    if (!getBar || isStandalone()) return;
+    getBar.hidden = false;
+    requestAnimationFrame(function () { getBar.classList.add('is-on'); });
   }
 
   /* ── 토스트 ─────────────────────────────────────────── */
@@ -102,6 +123,9 @@
   var COPY_BTN = '<button type="button" class="install__copy" data-install-copy>' +
     '<span aria-hidden="true">📋</span> 주소 복사하기</button>' +
     '<p class="install__addr" data-install-addr></p>';
+  var COPY_BTN_SUB = '<button type="button" class="install__copy install__copy--sub" data-install-copy>' +
+    '<span aria-hidden="true">📋</span> 주소 복사하기</button>' +
+    '<p class="install__addr" data-install-addr></p>';
 
   function stepsHTML(list) {
     return '<ol class="install__steps">' + list.map(function (s) {
@@ -113,22 +137,24 @@
   function contentFor(kind) {
     if (kind === 'inapp') {
       var where = isKakao() ? '카톡' : '네이버';
-      var toBrowser = isIOS() ? '사파리' : '크롬(또는 인터넷)';
+      var toBrowser = isIOS() ? '사파리' : '크롬(또는 삼성 인터넷)';
+      // 카톡은 메뉴를 거치지 않고 바로 기본 브라우저로 넘기는 길을 먼저 준다 (안드로이드·iOS 둘 다)
+      var extBtn = isKakao()
+        ? '<button type="button" class="install__copy install__ext" data-install-external>' +
+          '<span aria-hidden="true">↗</span> 브라우저에서 열기</button>'
+        : '';
       return '<p class="install__eyebrow">INSTALL</p>' +
-        '<h2 class="install__t" id="installTitle">10초면 바탕화면에 앱으로 깔려요</h2>' +
-        '<p class="install__d"><b>' + where + '에서는 바로 설치 버튼이 숨겨져 있어요.</b><br>' +
-        (isIOS() ? '사파리' : '크롬이나 삼성 인터넷') + '에서 한 번만 열면 바로 깔립니다.</p>' +
-        stepsHTML([
-          ['1', '아래 <b>📋 주소 복사하기</b>를 눌러요'],
-          ['2', toBrowser + ' 앱을 열어 주소창에 붙여넣어요'],
-          ['3', '열린 화면에서 <b>📲 앱 설치</b>를 누르면 끝!']
-        ]) +
-        COPY_BTN;
+        '<h2 class="install__t" id="installTitle">' + where + ' 안에선 설치 창이 안 떠요</h2>' +
+        '<p class="install__d">우측 메뉴(<b>⋮</b> / <b>···</b>)에서 <b>\'다른 브라우저로 열기\'</b>를 누른 뒤 꺼내 두세요.<br>' +
+        '열린 ' + toBrowser + ' 화면에서 한 번 더 누르면 끝이에요.</p>' +
+        extBtn +
+        '<p class="install__hint">버튼이 안 열리면 아래 주소를 복사해 ' + toBrowser + ' 주소창에 붙여 넣어 주세요.</p>' +
+        (extBtn ? COPY_BTN_SUB : COPY_BTN);
     }
     if (kind === 'ios') {
       return '<p class="install__eyebrow">INSTALL · iPhone</p>' +
-        '<h2 class="install__t" id="installTitle">사파리에선 이렇게 깔아요</h2>' +
-        '<p class="install__d">아이폰은 앱스토어가 아니라 <b>사파리 공유 버튼</b>으로 깔아요.<br>한 번 깔면 아이콘만 눌러 바로 열려요.</p>' +
+        '<h2 class="install__t" id="installTitle">사파리에선 이렇게 꺼내요</h2>' +
+        '<p class="install__d">하단 공유(<b>□↑</b>) 또는 메뉴에서 <b>\'홈 화면에 추가\'</b>를 누르면 바탕화면에 아이콘이 생겨요.</p>' +
         stepsHTML([
           ['1', '사파리 하단 가운데 <b>공유 □↑</b>를 눌러요'],
           ['2', '목록을 내려 <b>홈 화면에 추가</b>를 골라요'],
@@ -158,9 +184,9 @@
         ]) + COPY_BTN;
     }
     return '<p class="install__eyebrow">INSTALL</p>' +
-      '<h2 class="install__t" id="installTitle">홈 화면에 앱으로 깔기</h2>' +
-      '<p class="install__d">크롬이면 주소창 오른쪽 <b>설치 아이콘(⊕)</b> 또는 <b>점 세 개 → 저장 및 공유 → 앱 설치</b>로 깔 수 있어요.</p>' +
-      '<p class="install__d">휴대폰에서는 <b>크롬·삼성 인터넷</b>으로 열어야 설치 버튼이 보여요.</p>' +
+      '<h2 class="install__t" id="installTitle">홈 화면에 꺼내 두기</h2>' +
+      '<p class="install__d">지금 쓰는 브라우저에서는 설치 버튼이 안 보일 수 있어요.<br>휴대폰이면 <b>크롬·사파리</b>로 열어 주세요.</p>' +
+      '<p class="install__d">크롬이면 주소창 오른쪽 <b>점 세 개 → 앱 설치</b>(또는 <b>홈 화면에 추가</b>)로 꺼낼 수 있어요.</p>' +
       COPY_BTN;
   }
 
@@ -247,7 +273,11 @@
 
   modal.addEventListener('click', function (e) {
     if (e.target.closest('[data-install-close]')) { closeModal(); return; }
-    if (e.target.closest('[data-install-copy]')) { copyUrl(); }
+    if (e.target.closest('[data-install-copy]')) { copyUrl(); return; }
+    if (e.target.closest('[data-install-external]')) {
+      // 카톡 인앱 → 기본 브라우저로 바로 넘긴다 (안 열리면 아래 주소 복사가 길)
+      try { location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(PAGE_URL); } catch (err) {}
+    }
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !modal.hidden) closeModal();
@@ -262,18 +292,29 @@
   window.addEventListener('appinstalled', function () {
     deferredPrompt = null;
     hideBar();
+    if (getBar) { getBar.hidden = true; getBar.classList.remove('is-on'); }
     toast('📲 홈 화면에 앱이 깔렸어요 — 아이콘을 눌러 바로 열어 보세요');
   });
+
+  /* ── `📲 내 폰 바탕화면에 꺼내 두기` — 달력 맨 아래 카드 · 액운 태우기 STEP 3 한 줄 ──
+     두 버튼 모두 data-pwa-install 하나로 묶어, 어디에 그려지든 같은 길로 보낸다. */
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest('[data-pwa-install]') : null;
+    if (!t) return;
+    e.preventDefault();
+    onInstallClick();
+  }, false);
 
   /* 앱으로 열린 채로 시작했거나, 설치 뒤 standalone으로 바뀌면 버튼을 숨긴다 */
   try {
     var mq = window.matchMedia('(display-mode: standalone)');
-    var onChange = function () { if (mq.matches) hideBar(); else showBar(); };
+    var onChange = function () { markStandalone(); if (mq.matches) hideBar(); else showBar(); };
     if (mq.addEventListener) mq.addEventListener('change', onChange);
     else if (mq.addListener) mq.addListener(onChange);
   } catch (e) {}
 
   showBar();
+  markStandalone();
 
   /* ── 서비스 워커 (network-first · skipWaiting · claim) ── */
   if ('serviceWorker' in navigator) {

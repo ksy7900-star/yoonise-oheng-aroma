@@ -2192,3 +2192,40 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
   - `STEP 3 · 내 사주로 빈자리 채우기` / `오늘의 한 줄 처방` = `뭐가 문제인지 다 설명하려는 마음을 멈추고, 오늘은 한 가지만 짚어 두세요.`(금) / 아래 `내 사주 타이밍 달력 · 오늘 마침` / 화면 전체에 `성찰 에디션 · 오늘 마침` 0건, 콘솔 오류 0.
 - 날짜 순환 365일 시뮬레이션(오행마다): 8문장 전부 등장, **연속 같은 문장 0일**, 8일 주기 완전 순환. 오늘(11-23) 각 오행 1번째 문장과 11-24 문장이 모두 다름.
 - 스크린샷 `work/qa-month/burn-step3.png`(STEP 3 전체), 스크립트 `work/qa-burn-step3-2026-11-23.py` · `work/probe-burn.py`
+
+## §92. 📲 내 폰 바탕화면에 꺼내 두기 — 달력 맨 아래 + 액운 태우기 STEP 3 (2026-11-23)
+
+자산: `calendar/index.html` · `calendar/assets/pwa.js` · `calendar/assets/calendar.js` · `calendar/assets/style.css` · `sw.js VERSION 20261123l` · `calendar/member/index.html` `?v=20261123l`
+(김나영 님 확정 `#16037` — 홈 화면 바로가기 추가 2곳)
+
+### 1. ① 달력 맨 아래 — 수호 부적 카드 바로 밑, footer 위
+- `<div class="getapp" id="getAppBar" hidden>` 한 덩어리. 문구 `매번 링크 찾기 번거로우시죠? 내일도 바로 열 수 있게 꺼내 두세요` + 버튼 `📲 내 폰 바탕화면에 꺼내 두기`. 과하지 않게 흰 카드(18px 라운드 · 1px 헤어라인) 하나, 버튼은 딥네이비 한 색.
+- `#result` 안에 있어 사주를 넣고 달력이 열린 뒤에만 보인다. 390×844에서 카드 폭 358 · 높이 116.
+
+### 2. ② 액운 태우기 STEP 3 — `오늘의 의식을 마쳤습니다.` 바로 아래
+- `burnDoneHTML()` 의 `burn__done-day` 문단과 `닫기` 버튼 사이에 `.burn__install` 한 줄(`내일 바로 오게 홈 화면에 꺼내 두기 →`, 11.5px 언더라인).
+- 액운 태우기 팝업(z-index 120) 위로 설치 안내 팝업이 떠야 하므로 `.modal--install { z-index: 132; }` 를 줬다.
+
+### 3. 같은 길 — `data-pwa-install` 하나로
+- 두 버튼 모두 `[data-pwa-install]`. `pwa.js` 가 **document 클릭 위임**으로 받아 기존 `onInstallClick()` 으로 보낸다(나중에 그려지는 STEP 3 버튼도 그대로 동작).
+- **앱(standalone)으로 열면 둘 다 숨김** — `pwa.js markStandalone()` 이 `html.is-standalone` 을 붙이고, CSS `.getapp`·`[data-pwa-install]` 를 `display:none !important`(미디어쿼리 `display-mode: standalone/fullscreen` 백업 동시 적용). `appinstalled` 에서도 카드가 바로 사라진다.
+
+### 4. 환경별 동작 (`#installModal`)
+| 환경 | 누르면 |
+|---|---|
+| 안드로이드 크롬·삼성 (`beforeinstallprompt` 잡힘) | 즉시 네이티브 `홈 화면에 추가 / 설치` 창. 창을 닫으면 브라우저 메뉴 안내로 |
+| 카톡 인앱 (`KAKAOTALK`) | `우측 메뉴(⋮ / ···)에서 '다른 브라우저로 열기'를 누른 뒤 꺼내 두세요` + **`↗ 브라우저에서 열기`**(`kakaotalk://web/openExternal?url=`) + 주소 복사(보조 버튼) |
+| 네이버 인앱 (`NAVER(inapp`) | 같은 메뉴 안내 + 주소 복사 |
+| 아이폰 사파리 | `하단 공유(□↑) 또는 메뉴에서 '홈 화면에 추가'를 누르면 바탕화면에 아이콘이 생겨요` + 1·2·3 단계 |
+| 그 외·미지원 | `지금 쓰는 브라우저에서는 설치 버튼이 안 보일 수 있어요 — 크롬·사파리로 열어 주세요` + 주소 복사 |
+
+### 5. ⚠️ 같이 고친 라이브 결함 — 설치 안내 팝업이 `display:none`
+- 2.0(`LITE_MODE = true`)에서 `.v2-parked { display:none !important }` 가 **모달에도** 붙어 있어, `#installModal` 은 `hidden=false` 로 열어도 화면에 안 떴다(`#installBar` 도 같은 이유로 늘 숨김). 이번 두 버튼이 죽은 것처럼 보이므로 **`#installModal` 한 곳만 `.v2-parked` 에서 뺐다.**
+- 같은 상태가 `#welcomeModal`·`#guideModal`·`#shopModal`·`#diaryBookModal` 에도 남아 있다 — 라이브(`?v=20261123k`)에서 `getComputedStyle(...).display === 'none'` 확인. 2.0 화면 단순화로 일부러 감춘 것인지, 놓친 것인지는 확인 필요(손대지 않음).
+
+### 6. 검증 (로컬 repo 사본 390×844 DPR2 · 실제 의식 풀코스 포함)
+- ① 카드 노출: `#getAppBar` 가 `duoCard`(수호 부적 카드) **바로 다음** · footer 위, `hidden=false` · `is-on` · 358×116. 캡처 `work/qa-v8-cal-install.png`.
+- ② 클릭: 크롬 안내 / 아이폰 공유 안내 / 카톡 '다른 브라우저로 열기' + `↗ 브라우저에서 열기` / 네이버 안내 / 삼성 안내 각각 정상, `beforeinstallprompt` 를 심으면 `prompt()` 1회 호출. 캡처 `work/qa-v8-install/a-android-modal.png`·`c_ios.png`·`d_kakao.png`·`e_naver.png`·`e2-samsung.png`.
+- ③ standalone(앱으로 열림): `#getAppBar` display none · `html.is-standalone` · STEP 3 한 줄도 display none.
+- ④ 액운 태우기 풀코스(촛불 → 적기 → 구기기 → 발화 → 7.8초 소각 → STEP 3): `오늘의 의식을 마쳤습니다.` 아래 링크 노출 → 누르면 설치 안내 팝업이 액운 팝업 위에 뜸(`elementFromPoint` 가 `#installModal` 안). 캡처 `work/qa-v8-install/g-burn-step3.png`·`g-burn-step3-modal.png`.
+- 콘솔 오류 0 · pageerror 0 (전 케이스). 스크립트 `work/qa-install-2026-11-23.py`.
