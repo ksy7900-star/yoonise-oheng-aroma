@@ -172,8 +172,12 @@
     var ua = (navigator.userAgent || '');
     var mobile = /Android|iPhone|iPad|iPod/i.test(ua);
     if (!mobile) {
-      var w = window.open(INSTA_WEB, '_blank', 'noopener');
-      if (!w) location.href = INSTA_WEB;
+      /* 새 창으로 — window.open + noopener 는 null 을 돌려주므로, 현재 창까지 넘어가지 않게 링크 클릭으로 연다 */
+      var a = doc.createElement('a');
+      a.href = INSTA_WEB; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      doc.body.appendChild(a);
+      try { a.click(); } catch (e) {}
+      a.parentNode && a.parentNode.removeChild(a);
       return;
     }
     var left = false;
