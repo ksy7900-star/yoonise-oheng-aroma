@@ -2445,3 +2445,26 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 라이브 `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/?v=20261123s` · 390×844 DPR2 · Android UA · localStorage 비운 상태(`work/hook-20261123s/verify.py`):
   - 히어로 문구·카드 안내 **2곳 모두 새 문구로 렌더**, localStorage 키 0개, 입력 폼 노출, 팝업·오버레이 0개, `scrollWidth 390 = innerWidth 390`(가로 넘침 없음), **콘솔 오류 0 · pageerror 0 · 요청 실패 0**.
   - 회원 페이지(`/calendar/member/?v=20261123s`)도 콘솔 오류 0 · 가로 넘침 없음(`verify_member.py`).
+
+## §100. 🧹 첫 화면 불필요 문구 2곳 제거 (2026-11-23)
+
+자산: `calendar/index.html` · `calendar/sw.js` · `calendar/member/index.html` · 버전 **`20261123t`**
+(김나영 님 확정 `#16725` · 캡처 6921)
+
+### 1. 히어로 서브 카피 — 둘째 줄 삭제
+- 삭제: `<br>중요한 약속·결정 전에 내 사주 날짜부터 확인하세요.`
+- 남은 문구: `일이 꼬이는 건 대개 딱 며칠 때문입니다. 달력에 ⚠️ 뜬 날만 피해도 **2027년 큰 풍파는 비켜 가요.**` (390px 에서 2줄, 강조 `<b>` 한 곳만)
+- 같은 약속이 첫 화면에 두 번(풍파 + 약속 확인) 반복되던 것을 한 줄로 정리.
+
+### 2. 히어로 메타 줄 — `7일 무료` 항목 삭제
+- `.hero__facts` 에서 `<li class="js-trial">7일 무료</li>` 삭제 → 보이는 값은 **`절기 시각까지 반영 · 기기에만 저장`** (구분점 `·` 은 `li + li::before` 로 자동 1개).
+- **무료 체험 기능은 그대로** — `FREE_DAYS_BASE = 7` · `TRIAL_KEY` · 8일째 잠금(`trialOver()` → 잠금 팝업 14,900원)은 손대지 않았다. `.js-trial` 노드는 사용법 카드·CTA·환영 팝업(3곳)에 남아 있어 `syncTrialState()`·`syncInviteCopy()` 도 정상 동작.
+- 히어로에서 사라진 '7일' 안내는 달력 위 `🔓 1년 전체 열기 · 14,900원` 버튼과 사용법·환영 문구에서 그대로 이어진다.
+
+### 3. 버전 · 검증
+- `sw.js` VERSION · `calendar/index.html` · `calendar/member/index.html` → **`20261123t`** (문서는 SW 가 `cache:'no-store'` network-first 라 즉시 반영)
+- 로컬 390×844 DPR2 · Android UA · localStorage 비움 (`work/hero-trim-20261123t/verify.py` · `verify_trial.py` · `shot.py`):
+  - 히어로 서브 = `일이 꼬이는 건 대개 딱 며칠 때문입니다. 달력에 ⚠️ 뜬 날만 피해도 2027년 큰 풍파는 비켜 가요.` (2줄, 51px) · `중요한 약속` 문자열 0건
+  - 메타 줄 = `절기 시각까지 반영 · 기기에만 저장` (보이는 `li` 2개, 마지막 `li` 의 `::before` = `·` 1개)
+  - 가로 넘침 0px(`scrollWidth 390 = innerWidth 390`) · 팝업/오버레이 0개 · 콘솔 오류 0 · pageerror 0 · 요청 실패 0
+  - 체험 로직 회귀: 사주 입력 후 `data-trial="on"`·`trialStart=2026-11-23`·무료 구간 열림 → `TRIAL_KEY` 를 9일 전으로 밀면 `data-trial="over"` + 날짜 클릭 시 잠금 팝업(`🔒 무료 7일 체험이 끝났어요` · 29,000원 취소선 · 14,900원)
