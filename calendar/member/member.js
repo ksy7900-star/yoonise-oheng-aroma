@@ -2124,12 +2124,16 @@
     html += '<div class="amulbox" id="amulBox"></div>';
     /* 부적 바로 아래 두 버튼 (2026-11-23 7차 김나영 님)
        '다시'는 걷어 내고 → 맨 아래 작은 '다른 사람과 케미 다시 보기' 글자 링크로만 남긴다.
-       [이미지로 저장] + [친구에게 보내기](강조) — 보내기는 부적 그림과 통합 링크를 한 번에 넘긴다. */
+       [이미지로 저장]은 그림만, [친구에게 보내기](강조)는 그림 없이 통합 링크만 보낸다 (2026-11-23 / #17252). */
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--ghost" id="saveAmulBtn">이미지로 저장</button>'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareAmulBtn">친구에게 보내기</button>'
       + '</div>';
     html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요.</p>';
+    /* 로그인 전 한 줄 (2026-11-23 / #17252) — 보내기를 막지 않으면서 초대 코드가 빠진다는 걸 미리 알린다. */
+    if (!state.user) {
+      html += '<p class="share-note" id="shareAmulNote">카카오로 연결하면 보내는 링크에 <b>내 초대 코드</b>도 함께 담겨요 — 지금 보내도 우리 둘 케미는 그대로 열려요.</p>';
+    }
 
     /* ── 결과 바로 아래 두 갈래 (2026-11-23 7차 김나영 님) ──────────────
        ① 친구 초대 1/3/5/7 — 로그인했으면 '현재 N명 달성' + [내 링크 바로 보내기]
@@ -2201,10 +2205,10 @@
       saveAmul(cv, rel, aName, bName);
     });
 
-    /* [친구에게 보내기] — 방금 그린 부적 PNG + 통합 링크(케미+내 초대 코드)를 한 번에 */
+    /* [친구에게 보내기] — 그림 없이 통합 링크(케미+내 초대 코드) 하나만 (2026-11-23 / #17252) */
     var sendB = $('#shareAmulBtn');
     if (sendB) sendB.addEventListener('click', function () {
-      shareAmul(cv, a, rel, aName, bName);
+      shareAmul(a);
     });
 
     /* [내 링크 바로 보내기] — 로그인 전이면 카카오 연결부터 */
@@ -3018,46 +3022,39 @@
     } catch (e) { fail(); }
   }
 
-  /* ── [친구에게 보내기] — 부적 PNG + 통합 링크(케미 + 내 초대 코드) ──────
-     · 파일 공유가 되는 폰(카톡·안드로이드·iOS): navigator.share({ files, text })
-       → 친구가 받는 건 그림 1장과, 그 안에 든 링크 1개(누르면 우리 둘 케미 + 내 초대 실적).
-     · 파일 공유가 안 되는 곳(PC·인앱 브라우저): 이미지를 저장하고 링크를 클립보드에 넣은 뒤
-       "링크가 복사됐어요! 이미지와 함께 카톡에 붙여넣어 보내 주세요" 로 안내한다. */
-  function shareAmul(cv, ch, rel, aName, bName) {
+  /* ── [친구에게 보내기] — 통합 링크 하나(케미 + 내 초대 코드) ──────────────
+     2026-11-23 실기기 제보(#17252): 예전엔 부적 PNG를 files로 같이 넘겼는데,
+     안드로이드·iOS 카톡은 files가 있으면 그림만 받고 text·url을 잘라 버렸다.
+     → 이제 그림 없이 { title, text, url }만 넘긴다. 그림 저장은 바로 옆 [이미지로 저장] 몫.
+     · text 안에 주소를 또 넣지 않는다 — 안드로이드 크롬이 text와 url을 붙여 보내서
+       링크가 두 개로 찍힌다. 주소는 url 한 곳에만 싣는다.
+     · navigator.share가 없는 곳(PC·인앱 브라우저): 링크를 클립보드에 넣고 토스트로 안내.
+     · 로그인 전(!state.user)에도 보내기를 막지 않는다 — 우리 둘 케미는 그대로 열리고
+       내 초대 코드만 빠진다. 버튼 아래 한 줄(#shareAmulNote)이 그 사실을 미리 알린다. */
+  function shareAmul(ch) {
     var url = chemiLink(ch);
-    var text = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.\n' + url;
+    var line = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.';
+    var copyAll = line + '\n' + url;
 
     function fallback() {
-      copyText(text).then(function (ok) {
-        saveAmul(cv, rel, aName, bName, true);
+      copyText(copyAll).then(function (ok) {
         toast(ok
-          ? '링크가 복사됐어요! 이미지와 함께 카톡에 붙여넣어 보내 주세요'
-          : '이미지를 저장했어요. 링크는 화면에서 길게 눌러 복사해 주세요.');
+          ? '링크가 복사됐어요 — 카톡에 붙여넣어 보내 주세요.'
+          : '링크를 화면에서 길게 눌러 복사해 주세요.');
       });
     }
 
-    function tryShare(blob) {
-      try {
-        var file = null;
-        try { file = new File([blob], amulFname(rel, aName, bName), { type: 'image/png' }); } catch (e) { file = null; }
-        if (!file || !navigator.share || !navigator.canShare || !navigator.canShare({ files: [file] })) {
-          fallback(); return;
-        }
-        navigator.share({
-          title: '2027년 ' + (rel === 'love' ? '사랑' : '우정') + ' 부적 · ' + (aName || '나') + (bName ? ' · ' + bName : ''),
-          text: text,
-          files: [file]
-        }).catch(function (err) {
-          if (err && err.name === 'AbortError') return;   // 사용자가 공유 창을 닫았을 뿐
-          fallback();
-        });
-      } catch (e) { fallback(); }
-    }
-
+    if (!navigator.share) { fallback(); return; }
     try {
-      if (cv.toBlob) { cv.toBlob(function (blob) { if (blob) tryShare(blob); else fallback(); }, 'image/png'); return; }
-    } catch (e) {}
-    fallback();
+      navigator.share({
+        title: '2027년 우리 케미 · 윤이세사주',
+        text: line,
+        url: url
+      }).then(function () {}, function (err) {
+        if (err && err.name === 'AbortError') return;   // 사용자가 공유 창을 닫았을 뿐
+        fallback();
+      });
+    } catch (e) { fallback(); }
   }
 
   /* ── [내 링크 바로 보내기] — 링크 하나(케미 + 초대)로 초대와 케미를 같이 ── */

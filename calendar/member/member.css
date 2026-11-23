@@ -880,6 +880,9 @@ a { color: inherit; }
 }
 .amulimg { display: block; width: 100%; height: auto; }
 .story__cap { text-align: center; font-size: 11.5px; line-height: 1.6; color: var(--mute); margin-top: 10px; }
+/* [친구에게 보내기] 아래 — 로그인 전 한 줄 (2026-11-23 / #17252). 보내기는 막지 않고 안내만. */
+.share-note { text-align: center; font-size: 12px; line-height: 1.58; color: var(--ink-2); margin: 8px 4px 0; }
+.share-note b { color: var(--gold); font-weight: 700; }
 
 /* ── 부적 아래 조용한 상담 한 줄 — 낮은 조합(60~77점)에만 (2026-11-22) ──
    결제 유도가 아니라 '딱 한 가지만 짚어 볼까' 하는 제안이라
