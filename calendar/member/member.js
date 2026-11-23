@@ -2126,7 +2126,7 @@
       + '<p class="grow__lb">📸 인스타 올리기 · +1개월</p>'
       + '<p class="grow__t">인스타 <b>피드·릴스</b>에 결과 화면을 올리면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요</p>'
       + '<button type="button" class="btn btn--gold btn--wide" id="instaGoBtn">📸 태그 복사하고 인스타 올리기</button>'
-      + '<p class="grow__d">올린 화면은 카톡 <b>윤이세사주</b>로 보내 주세요 · 계정당 1회</p>'
+      + '<p class="grow__d">올린 화면을 카톡 <b>윤이세사주</b>로 보내 주시면 <b>+1개월 코드</b>를 보내 드려요 · 계정당 1회</p>'
       + '</div>'
       + '</section>';
 

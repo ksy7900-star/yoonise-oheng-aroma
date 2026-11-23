@@ -144,7 +144,7 @@
      기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
 
        D21744
-         P/A/D    상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션
+         P/A/D/M  상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션 · M 1개월(30일) 이용권
          21744    서명 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + 아래 CODE_SALT 로 계산
                   → 사주를 넣지 않아도 되고, 사장님이 번호만 발급기에 넣으면 3초에 코드가 나온다
 
@@ -155,10 +155,14 @@
      ★ 아래 CODE_SALT·서명 함수는 그 발급기와 반드시 똑같이 맞춰야 한다(발급기를 고치면 여기도 같이). */
   var CODE_SALT = 'yoonise-2027-timing-9f3a';
   var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
-  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary' };
-  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D' };
-  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
-  var TIER_RANK = { pass: 1, allinone: 2, diary: 3 };   // 위 티어가 아래 티어의 기능을 모두 포함한다
+  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary', M: 'month' };
+  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D', month: 'M' };
+  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 이용권' };
+  /* 위 티어가 아래 티어의 기능을 모두 포함한다.
+     month(1개월 이용권)는 2026-11-23 추가 — 인스타 인증 손님에게 주는 선물 코드다.
+     기능은 1년 패스와 같고(달력 전체 · 액운 태우기 5회) **기간만 30일**이라, 등급은 패스와 같은 1로 둔다. */
+  var TIER_RANK = { pass: 1, allinone: 2, diary: 3, month: 1 };
+  var MONTH_DAYS = 30;   // 1개월 이용권 — 코드를 넣은 날부터 30일
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
   var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 3일은 이 날부터 고정
@@ -338,9 +342,10 @@
     terms: null, view: null, sel: null, todayISO: '', cache: {},
     stamps: {}, justStamped: null, pendingStamp: null,
     unlocked: false,      // 개인 전용 입장 코드로 잠금 해제됨(localStorage) — FREE_TRIAL_ENABLED 와 별개
-    tier: '',             // '' | 'pass'(1년 패스) | 'allinone'(올인원 패키지) | 'diary'(성찰 에디션)
-    code: null,           // 지금 이 기기에 넣어 둔 코드 { code, tier, ymd, gender }
+    tier: '',             // '' | 'pass'(1년 패스) | 'allinone'(올인원) | 'diary'(성찰 에디션) | 'month'(1개월 이용권)
+    code: null,           // 지금 이 기기에 넣어 둔 코드 { code, tier, ymd, gender, phone, until }
     mismatch: null,       // 코드 주인과 지금 사주가 다를 때 { code, id } — 이때는 잠금 상태
+    expiredCode: null,    // 30일이 지나 다시 잠긴 1개월 이용권 { code, until, phone } — 안내 한 줄에만 쓴다
     hintOff: false,       // 첫 부적 말풍선 힌트를 이 화면에서 접었는지 (한 번 누르거나 부적을 붙이면 끝)
     filter: 'all',        // all | bad | good — 달력의 '조심할 날만 / 좋은 날만' 보기
     yearDigest: null,     // 2027 한 해 요약(조심할 달·좋은 달). 사주가 바뀌면 다시 계산
@@ -1024,7 +1029,7 @@
         ymd: legacy[2], gender: legacy[3]
       };
     }
-    var simple = /^([PAD])(\d{5})$/.exec(n);
+    var simple = /^([PADM])(\d{5})$/.exec(n);
     if (!simple) return { status: 'format' };
     var letter = simple[1];
     var phone = ctx.phone || '';
@@ -1105,6 +1110,34 @@
     });
   }
 
+  /* ── 1개월 이용권(M 코드)의 기간 ─────────────────────────────────
+     인스타 인증 손님에게 보내는 선물 코드 — 코드를 넣은 때로부터 30일만 열린다.
+     · until 은 이 기기의 저장값에만 있고, 코드에는 기간이 들어 있지 않다(발급기는 6자리만 만든다).
+     · 30일이 지나면 다시 잠그고, 안내 한 줄로 '기간이 끝났다'고만 알려 준다. */
+  function monthUntilISO() {
+    return new Date(Date.now() + MONTH_DAYS * 86400000).toISOString();
+  }
+  /** 저장된 코드가 1개월 이용권이고 오늘 날짜가 지났는가 */
+  function monthExpired(code) {
+    if (!code || code.tier !== 'month') return false;
+    var t = Date.parse(code.until || '');
+    return !isNaN(t) && Date.now() > t;
+  }
+  /** ISO 시각 → '2026년 12월 23일' (이 기기 시간대 기준) */
+  function koDate(iso) {
+    if (!iso) return '';                 // 값이 없으면 new Date(null) 이 1970년이 되므로 먼저 막는다
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  }
+  /** 기간이 끝난 1개월 이용권을 다시 잠근다 — 안내할 값만 남기고 저장값은 지운다 */
+  function expireMonthCode() {
+    var c = state.code;
+    if (c) state.expiredCode = { code: c.code || '', until: c.until || '', phone: c.phone || '' };
+    state.code = null; state.tier = ''; state.unlocked = false;
+    try { localStorage.removeItem(UNLOCK_KEY); } catch (e) {}
+  }
+
   /* ── 입장 코드 잠금 해제 ─────────────────────────────────────
      결제 후 카톡으로 받은 6자리 코드 + 결제하신 휴대폰 번호를 넣으면 2026-11 ~ 2027-12 전체가 열린다.
      지금은 번호 기반(2026-11-21~)이라 사주와 묶지 않고 이 기기에 저장한다.
@@ -1116,7 +1149,15 @@
     var o = null;
     try { o = raw ? JSON.parse(raw) : null; } catch (e) { o = null; }
     if (o && TIER_NAME[o.tier] && (o.code || o.ymd || o.phone)) {
-      state.code = { code: o.code || '', tier: o.tier, ymd: o.ymd || '', gender: o.gender || '', phone: o.phone || '' };
+      var saved = {
+        code: o.code || '', tier: o.tier, ymd: o.ymd || '', gender: o.gender || '',
+        phone: o.phone || '', until: o.until || ''
+      };
+      if (monthExpired(saved)) {         // 1개월 이용권 30일이 지났다 — 다시 잠근다
+        state.code = saved; expireMonthCode();
+        return;
+      }
+      state.code = saved;
       state.tier = o.tier;
       state.unlocked = true;
       return;
@@ -1129,20 +1170,23 @@
       state.unlocked = true;
     }
   }
-  /** 코드 저장 — o 가 없으면 잠금. { code, tier, phone, ymd, gender } */
+  /** 코드 저장 — o 가 없으면 잠금. { code, tier, phone, ymd, gender, until } */
   function saveUnlock(o) {
     var tier = o && TIER_NAME[o.tier] ? o.tier : '';
+    /* 1개월 이용권 — 넣은 때로부터 30일. 이미 기간이 적힌 값으로 다시 저장할 때는 그 기간을 그대로 둔다 */
+    var until = tier === 'month' ? (o.until || monthUntilISO()) : '';
     state.tier = tier;
     state.code = tier ? {
       code: o.code || '', tier: tier, phone: o.phone || '',
-      ymd: o.ymd || '', gender: o.gender || '', legacy: !!o.legacy
+      ymd: o.ymd || '', gender: o.gender || '', legacy: !!o.legacy, until: until
     } : null;
     state.unlocked = !!tier;
+    if (tier) state.expiredCode = null;
     try {
       if (tier) {
         localStorage.setItem(UNLOCK_KEY, JSON.stringify({
           v: 3, code: o.code || '', tier: tier, phone: o.phone || '',
-          ymd: o.ymd || '', gender: o.gender || '',
+          ymd: o.ymd || '', gender: o.gender || '', until: until,
           at: new Date().toISOString()
         }));
       } else {
@@ -1157,6 +1201,7 @@
   function syncCodeBinding() {
     state.mismatch = null;
     if (!state.tier || !state.code) { state.unlocked = false; return false; }
+    if (monthExpired(state.code)) { expireMonthCode(); return false; }   // 1개월 이용권 30일 지남
     if (state.code.phone) { state.unlocked = true; return true; }
     var id = currentIdentity();
     if (!state.code.ymd) {                     // 예전 고정 코드 — 지금 사주 1명에게 묶는다
@@ -4238,6 +4283,8 @@
         return;
       }
       if (!rank) return;                               // 미결제·무료 체험 — 네 칸 그대로
+      /* 1개월 이용권도 네 칸을 그대로 — 기간이 짧으니 1년 상품을 정가로 보고 고를 수 있게 */
+      if (tier === 'month') return;
       var k = TIER_RANK[kind] || 0;
       if (k <= rank) { b.hidden = true; return; }      // 이미 산 등급과 그 아래 등급은 숨긴다
       var fee = upPrice(tier, kind);
@@ -6309,7 +6356,9 @@
 
   /** 구입 팝업 내용 — 이미 갖고 있는 상품이면 '적용 중', 더 높은 상품이면 차액 업그레이드 */
   function shopHTMLFor(kind) {
-    if (TIER_NAME[kind] && state.unlocked && TIER_NAME[state.tier]) {
+    /* 1개월 이용권은 기간이 짧은 선물 코드 — '이미 갖고 있어요'로 막지 않고
+       상품 안내를 그대로 보여 준다(더 길게 보는 길을 열어 둔다). */
+    if (TIER_NAME[kind] && state.unlocked && TIER_NAME[state.tier] && state.tier !== 'month') {
       var own = TIER_RANK[state.tier] || 0, want = TIER_RANK[kind] || 0;
       return want <= own ? ownedShopHTML(state.tier) : upgradeShopHTML(state.tier, kind);
     }
@@ -7585,7 +7634,10 @@
         tierEl.hidden = false;
         tierEl.innerHTML = '지금 적용된 티어 · <b>' + esc(TIER_NAME[state.tier]) + '</b>' +
           (state.tier === 'diary' ? ' — 이 사주 달력 전체 + 성찰 다이어리 + 매일 1회 액운 태우기'
-            : (state.tier === 'allinone' ? ' — 이 사주 달력 전체 + 매일 1회 액운 태우기' : ' — 이 사주 달력 전체'));
+            : (state.tier === 'allinone' ? ' — 이 사주 달력 전체 + 매일 1회 액운 태우기'
+              : (state.tier === 'month'
+                ? ' — 이 사주 달력 전체' + (state.code && state.code.until ? ' · <b>' + esc(koDate(state.code.until)) + '까지</b>' : '')
+                : ' — 이 사주 달력 전체')));
         tierEl.classList.toggle('is-allinone', state.tier === 'allinone' || state.tier === 'diary');
       } else if (state.tier && state.mismatch) {
         tierEl.hidden = false;
@@ -7647,6 +7699,13 @@
     }
     if (reset) reset.hidden = !state.unlocked;
     if (msg && state.unlocked && !msg.textContent) msg.textContent = '이 기기에서는 이미 열려 있어요.';
+    /* 1개월 이용권 30일이 끝나 다시 잠긴 기기 — 왜 잠겼는지 한 줄 */
+    if (msg && !state.unlocked && state.expiredCode && !msg.textContent) {
+      msg.textContent = '1개월 이용권 기간이 끝났어요' +
+        (state.expiredCode.until ? ' (' + koDate(state.expiredCode.until) + '까지)' : '') +
+        ' — 계속 보시려면 카톡으로 새 코드를 받아 코드 칸에 다시 넣어 주세요.';
+      msg.classList.remove('is-ok');
+    }
     renderCtaSteps();      // 결제가 끝난 상품은 맨 아래 카드에서 '적용 중'으로 (M2)
     renderChemiBanner();   // 케미·초대 배너 문구도 결제자/미결제자로 갈린다 (2026-11-22)
     syncTrialState();      // 무료 체험 중 / 체험 종료 / 전체 오픈 — index.html 문구 전환
@@ -7755,7 +7814,9 @@
         ? '🔓 성찰 에디션 확인됐어요 — ' + who + '로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
         : (p.tier === 'allinone'
           ? '🔓 올인원 확인됐어요 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
-          : '🔓 1년 패스 확인됐어요 — ' + who + '로 2026년 11월부터 2027년 12월까지 열렸습니다.');
+          : (p.tier === 'month'
+            ? '🔓 1개월 이용권 확인됐어요 — ' + who + '로 ' + koDate(state.code && state.code.until) + '까지 달력 전체가 열렸습니다.'
+            : '🔓 1년 패스 확인됐어요 — ' + who + '로 2026년 11월부터 2027년 12월까지 열렸습니다.'));
       msg.classList.add('is-ok');
     }
     if (inp) inp.value = '';
@@ -7765,7 +7826,9 @@
       ? '🔓 성찰 에디션 — ' + who + '로 다이어리까지 열렸어요'
       : (p.tier === 'allinone'
         ? '🔓 올인원 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기'
-        : '🔓 1년 패스 확인 — ' + who + '로 전체 날짜가 열렸어요'));
+        : (p.tier === 'month'
+          ? '🔓 1개월 이용권 — ' + koDate(state.code && state.code.until) + '까지 열렸어요'
+          : '🔓 1년 패스 확인 — ' + who + '로 전체 날짜가 열렸어요')));
     sfxOpen();
     /* 열렸으면 잠시 뒤 패널을 접어 달력이 드러나게 — 배지는 초록으로 남는다 */
     setTimeout(function () {

@@ -273,6 +273,10 @@ body.locked{overflow:hidden}
 
     <span class="lb">상품</span>
     <div class="prods" id="prods" role="group" aria-label="상품">
+      <button type="button" class="prod" data-tier="month">
+        <span><span class="prod__l">🗓️ 1개월 (30일)</span><span class="prod__s">인스타 인증 선물 · 달력 전체 30일</span></span>
+        <span class="prod__p">M</span>
+      </button>
       <button type="button" class="prod" data-tier="pass">
         <span><span class="prod__l">🎟️ 1년 패스</span><span class="prod__s">달력 전체 + 1년 수호 부적</span></span>
         <span class="prod__p">P</span>
@@ -359,9 +363,10 @@ body.locked{overflow:hidden}
      (예전 18자리 코드 YS-P-791025F-K7QM3 와 그때 만든 사주 기반 6자리는 달력에서 계속 열린다 — 호환용 계산기를 남겨 둔다.) */
   var CODE_SALT = 'yoonise-2027-timing-9f3a';
   var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary' };
-  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D' };
-  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션' };
+  var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary', M: 'month' };
+  var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D', month: 'M' };
+  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 (30일)' };
+  var MONTH_DAYS = 30;   // 1개월 이용권 — 달력에서 코드를 넣은 날부터 30일 (달력 assets/calendar.js 와 같은 값)
 
   function fnv1a(str) {
     var h = 0x811c9dc5;
@@ -437,7 +442,7 @@ body.locked{overflow:hidden}
   }
 
   var $ = function (s) { return document.querySelector(s); };
-  var state = { tier: 'diary', phone: '', code: null };
+  var state = { tier: 'month', phone: '', code: null };
 
   function init() {
     $('#prods').addEventListener('click', function (e) {
@@ -488,6 +493,9 @@ body.locked{overflow:hidden}
     $('#outCode').textContent = state.code.code;
     $('#outMeta').innerHTML = TIER_NAME[state.tier] + ' · ' + fmtPhone(phone) + ' 번호 전용' +
       '<br>손님이 캘린더 🔑 칸에 <b>이 번호 + ' + state.code.code + '</b>를 넣으면 바로 열려요.' +
+      (state.tier === 'month'
+        ? '<br>손님이 코드를 넣은 날부터 <b>' + MONTH_DAYS + '일</b> 열리고, ' + MONTH_DAYS + '일이 지나면 다시 잠겨요.'
+        : '') +
       '<br>번호를 바꿔 넣으면 열리지 않아요 — 결제할 때 넣은 번호 그대로 알려 주세요.';
     $('#outMsg').textContent = '';
     saveHist(state.code);
@@ -498,11 +506,20 @@ body.locked{overflow:hidden}
   function guideText() {
     var c = state.code;
     if (!c) return '';
-    return [
-      '안녕하세요, 윤이세입니다.',
-      TIER_NAME[c.tier] + ' 결제 확인됐어요. 감사합니다!',
-      '',
-      '입장 코드: ' + c.code + '  (6자리)',
+    /* 1개월 이용권(인스타 인증 선물)은 '결제 확인'이 아니라 '인증 확인'으로, 기간도 함께 적는다 */
+    var open = c.tier === 'month'
+      ? ['안녕하세요, 윤이세입니다.',
+         '인스타에 올려 주신 화면 잘 봤어요. 감사합니다!',
+         '약속한 1개월 입장 코드 보내 드려요.',
+         '',
+         '1개월 입장 코드: ' + c.code + '  (6자리)',
+         '',
+         '코드를 넣으신 날부터 30일 동안 2027 타이밍 달력 전체를 보실 수 있어요.']
+      : ['안녕하세요, 윤이세입니다.',
+         TIER_NAME[c.tier] + ' 결제 확인됐어요. 감사합니다!',
+         '',
+         '입장 코드: ' + c.code + '  (6자리)'];
+    return open.concat([
       '',
       '1) 캘린더 열기: https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/',
       '2) 생년월일·성별을 넣고 "내 타이밍 캘린더 열기"',
@@ -511,9 +528,9 @@ body.locked{overflow:hidden}
       '   · 입장 코드: 위 6자리',
       '   두 칸을 넣으면 바로 열립니다.',
       '',
-      '결제하실 때 넣은 번호와 코드가 한 쌍이라, 번호가 다르면 열리지 않아요. 번호를 바꾸셨다면 이 채팅으로 알려 주세요.',
+      '번호와 코드가 한 쌍이라, 번호가 다르면 열리지 않아요. 번호를 바꾸셨다면 이 채팅으로 알려 주세요.',
       '궁금한 점도 이 채팅으로 편하게 말씀해 주세요.'
-    ].join('\n');
+    ]).join('\n');
   }
 
   function copy(text, okMsg) {
@@ -588,9 +605,9 @@ body.locked{overflow:hidden}
       return;
     }
 
-    var simple = /^([PAD])(\d{5})$/.exec(n);
+    var simple = /^([PADM])(\d{5})$/.exec(n);
     if (!simple) {
-      out.innerHTML = '❌ 6자리 코드(P·A·D 한 글자 + 숫자 5자리) 또는 예전 18자리 코드를 넣어 주세요.';
+      out.innerHTML = '❌ 6자리 코드(P·A·D·M 한 글자 + 숫자 5자리) 또는 예전 18자리 코드를 넣어 주세요.';
       return;
     }
     if (!phone) {
@@ -794,7 +811,8 @@ body.locked{overflow:hidden}
   var TIER = {
     pass:     { name: '1년 패스',    cls: 'badge--pass' },
     allinone: { name: '올인원',      cls: 'badge--allinone' },
-    diary:    { name: '성찰 에디션', cls: 'badge--diary' }
+    diary:    { name: '성찰 에디션', cls: 'badge--diary' },
+    month:    { name: '1개월',       cls: 'badge--pass' }
   };
   var FREE = { name: '무료', cls: 'badge--free' };
   var MSG_NOT_YET = '아직 DB 연결 전이에요 — 마이그레이션 실행 후 바로 표시됩니다';
@@ -961,7 +979,7 @@ body.locked{overflow:hidden}
 
     var tiers = s.by_tier || {};
     var parts = [];
-    ['pass', 'allinone', 'diary'].forEach(function (k) {
+    ['pass', 'allinone', 'diary', 'month'].forEach(function (k) {
       if (Number(tiers[k]) > 0) parts.push(TIER[k].name + ' ' + num(Number(tiers[k])));
     });
     if (Number(tiers.free) > 0) parts.push('무료 ' + num(Number(tiers.free)));
