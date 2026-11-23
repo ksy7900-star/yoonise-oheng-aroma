@@ -7981,16 +7981,6 @@
       location.href = './member/?autologin=1&next=talis';
     });
 
-    /* 🌿 1:1 사주·작명 상담 카드의 '카톡 문의' (2026-11-23 #16164)
-       앵커에 rel="noopener noreferrer" 가 이미 있지만, 카톡·네이버 인앱 브라우저에서
-       새 창이 막히면 openNoRef 가 같은 창으로 넘기는 것까지 맡는다.
-       (어느 쪽이든 referrer 를 보내지 않아 '- 이전 페이지: URL' 문구가 붙지 않는다) */
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest || !e.target.closest('[data-kakao-inquiry]')) return;
-      e.preventDefault();
-      openNoRef(KAKAO);
-    });
-
     // 팝업 안: 부적 1.5초 누르기(pointer) · 낙관 도장 끌어다 놓기 · X·배경·닫기 버튼
     modalEl.addEventListener('click', function (e) {
       var tap = e.target.closest ? e.target.closest('[data-ritual="tap"]') : null;

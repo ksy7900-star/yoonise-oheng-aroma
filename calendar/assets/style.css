@@ -4750,7 +4750,7 @@ html.is-standalone .carecard__app { display: inline; }
 
 /* ── 🌿 1:1 사주 · 작명 상담 — 바탕화면 꺼내기 아래 · 면책 푸터 위 (2026-11-23 #16164)
       가격을 늘어놓지 않고 "언제 찾으면 되는지"만 말하는 카드 1장.
-      주 버튼 = 신청·안내(/apply/) · 보조 = 카톡 채널(노란 카톡색) */
+      버튼은 하나뿐 — 신청·안내(/apply/)로 가면 그 안에서 상품 선택 → 결제 → 카톡 접수까지 이어진다 (2026-11-23 #16314) */
 .consult {
   margin-top: 16px;
   padding: 20px 17px 17px;
@@ -4776,34 +4776,19 @@ html.is-standalone .carecard__app { display: inline; }
   color: var(--ink-2); word-break: keep-all;
 }
 .consult__btns { display: flex; align-items: stretch; gap: 8px; margin-top: 15px; }
-.consult__main, .consult__sub {
-  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  min-width: 0; padding: 12px 9px;
+.consult__main {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  width: 100%; min-width: 0; padding: 13px 10px;
   border-radius: 13px;
-  font-size: 12px; font-weight: 800; letter-spacing: -.03em; line-height: 1.2;
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.03em; line-height: 1.2;
   text-align: center; text-decoration: none; white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   transition: transform .14s ease, filter .18s ease;
-}
-.consult__main {
-  flex: 1.4 1 0;
   color: #FFF8E8;
   background: linear-gradient(135deg, var(--navy), var(--navy-deep));
   box-shadow: 0 10px 20px -15px rgba(15, 23, 42, .9);
 }
 .consult__main:active { transform: translateY(1px); filter: brightness(.96); }
-.consult__sub {
-  flex: 1 1 0;
-  color: #3F3413;
-  background: #FDF3C8;
-  border: 1px solid #F0DC8B;
-}
-.consult__sub:active { transform: translateY(1px); filter: brightness(.97); }
-/* 아주 좁은 화면(갤럭시 폴드 바깥 등)에서만 두 줄로 */
-@media (max-width: 340px) {
-  .consult__btns { flex-direction: column; }
-  .consult__main, .consult__sub { padding: 12px 10px; font-size: 12.5px; }
-}
 
 /* ── ✨ 케미·초대 배너 ────────────────────────────────── */
 .chemibanner {

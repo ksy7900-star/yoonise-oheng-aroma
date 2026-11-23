@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123o">
+<link rel="stylesheet" href="assets/style.css?v=20261123p">
 </head>
 <body>
 
@@ -500,19 +500,16 @@
       </button>
     </div>
 
-    <!-- 🌿 1:1 사주 · 작명 상담 — 바탕화면 꺼내기 카드 바로 아래, 면책 푸터 위
-         (2026-11-23 김나영 님 확정 #16164 — 가격표를 늘어놓지 않는 카드 1장)
-         · 주 버튼 = 상담 신청서·안내(/apply/) · 보조 = 카톡 채널 문의
-         · 카톡은 href 에 rel="noopener noreferrer" 를 두고(JS 가 죽어도 referrer 없이),
-           인앱 브라우저에서 새 창이 막히는 경우까지 calendar.js 의 openNoRef 가 맡는다
-           → '안녕하세요 ... - 이전 페이지: https://...' 자동 문구가 붙지 않게 -->
+    <!-- 🌿 윤이세 1:1 맞춤 사주 상담 — 바탕화면 꺼내기 카드 바로 아래, 면책 푸터 위
+         (2026-11-23 김나영 님 확정 #16164 → #16314 — 가격표를 늘어놓지 않는 카드 1장)
+         · 버튼은 1개 = 상담 신청 바로가기(/apply/) — 그 안에서 상품 선택 → 결제 → 카톡 접수까지 이어진다
+           (중복이던 '카톡 문의' 보조 버튼은 #16314 로 제거) -->
     <section class="consult" id="consultCard" aria-labelledby="consultTitle">
       <p class="consult__eyebrow">1:1 CONSULTING</p>
-      <h2 class="consult__t" id="consultTitle">🌿 1:1 사주 · 작명 상담이 필요할 때</h2>
-      <p class="consult__d">혼자 정리하기 어려운 갈림길 앞에서, 내 결에 맞는 답을 함께 찾아보고 싶을 때</p>
+      <h2 class="consult__t" id="consultTitle">🌿 윤이세 1:1 맞춤 사주 상담</h2>
+      <p class="consult__d">혼자 정리하기 어려운 갈림길에서 답을 찾고 싶을 때</p>
       <div class="consult__btns">
-        <a class="consult__main" href="../apply/">상담 신청 · 안내 보기 <span aria-hidden="true">→</span></a>
-        <a class="consult__sub" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer" data-kakao-inquiry><span aria-hidden="true">💬</span> 카톡 문의</a>
+        <a class="consult__main" href="../apply/" rel="noopener noreferrer">1:1 상담 신청 바로가기 <span aria-hidden="true">→</span></a>
       </div>
     </section>
 
@@ -773,11 +770,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123o"></script>
-<script src="assets/manse.js?v=20261123o"></script>
-<script src="assets/timing.js?v=20261123o"></script>
-<script src="assets/chars.js?v=20261123o"></script>
-<script src="assets/calendar.js?v=20261123o"></script>
-<script src="assets/pwa.js?v=20261123o"></script>
+<script src="vendor/lunar.js?v=20261123p"></script>
+<script src="assets/manse.js?v=20261123p"></script>
+<script src="assets/timing.js?v=20261123p"></script>
+<script src="assets/chars.js?v=20261123p"></script>
+<script src="assets/calendar.js?v=20261123p"></script>
+<script src="assets/pwa.js?v=20261123p"></script>
 </body>
 </html>
