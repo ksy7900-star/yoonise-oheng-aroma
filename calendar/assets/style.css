@@ -118,9 +118,22 @@ a { color: inherit; }
   font-style: normal;
   background-image: linear-gradient(transparent 91%, rgba(30, 41, 59, .22) 91%);
 }
-.hero__sub {
-  margin-top: 16px;
-  font-size: 13.5px; line-height: 1.9; color: var(--ink-2);
+/* 첫 화면 후킹 카드 — 작은 회색 글씨로는 눈에 안 들어와서, 짙은 네이비 판 위에
+   흰 글씨 + 골드 강조로 올렸다(2026-11-23 김나영 님 #16752). 결과 화면에서는 숨김. */
+.hero__hook {
+  margin-top: 20px;
+  padding: 17px 18px 16px;
+  border: 1px solid rgba(247, 202, 121, .16);
+  border-radius: 16px;
+  background: linear-gradient(158deg, #212B3F 0%, #181F2E 52%, #141A26 100%);
+  box-shadow: 0 12px 26px -14px rgba(15, 23, 42, .55), inset 0 1px 0 rgba(255, 255, 255, .07);
+  font-size: 15px; line-height: 1.72; letter-spacing: -0.012em;
+  color: #F5F7FC;
+  word-break: keep-all;
+}
+.hero__hook .hl { color: #F7CA79; font-weight: 700; }
+@media (max-width: 359px) {
+  .hero__hook { font-size: 14.5px; padding: 16px 16px 15px; }
 }
 .hero__facts {
   display: flex; flex-wrap: wrap; gap: 0;
@@ -3765,7 +3778,7 @@ body.is-result .hero__title {
 }
 body.is-result .hero__title br { display: none; }
 body.is-result .hero__title em { white-space: nowrap; }
-body.is-result .hero__sub,
+body.is-result .hero__hook,
 body.is-result .hero__facts { display: none; }
 body.is-result .savedbar { padding: 14px 4px 0; }
 
