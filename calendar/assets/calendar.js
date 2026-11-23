@@ -379,6 +379,34 @@
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
   }
 
+  /* ── 저장된 정보 지우기 — 이 앱의 기록을 100% 지운다 (2026-11-23 김나영 님 #16839) ──
+     예전에는 사주(STORE_KEY)만 지워서 액운 태우기 횟수(yoonise.timing.burn.v1)·첫 방문일·
+     열린 코드·성찰·저녁 체크가 그대로 남았다 → 다시 입력해도 곧바로 '무료 5회를 다 쓰셨어요'
+     팝업이 떴다. 이 앱이 쓰는 키는 전부 'yoonise.' 로 시작하므로(localStorage·sessionStorage
+     같은 이름) 접두어로 한 번 훑고, 접두어가 다른 옛 키는 목록으로 한 번 더 지운다.
+     목록은 함수 안에서 읽는다 — 위쪽 KEY 상수들이 이 함수보다 아래에서 정의되기 때문. */
+  var APP_KEY_PREFIX = 'yoonise.';
+  function appDataKeys() {
+    return [STORE_KEY, MAIN_KEY, UNLOCK_KEY, LEGACY_UNLOCK_KEY, TRIAL_KEY, STAMP_KEY,
+      DIARY_KEY, DIARY_TRY_KEY, NIGHT_KEY, WELCOME_KEY, GUIDE_KEY, PAYWAIT_KEY, PHONE_KEY,
+      PICK_KEY, CARE_TRIAL_KEY, BURN_KEY, SOUND_KEY, REF_KEY, INVITED_KEY,
+      INVITE_NOTICE_KEY];
+  }
+  function clearAllAppData() {
+    var named = appDataKeys();
+    [localStorage, sessionStorage].forEach(function (st) {
+      try {
+        var wipe = [];
+        for (var i = 0; i < st.length; i++) {
+          var k = st.key(i);
+          if (k && (k.indexOf(APP_KEY_PREFIX) === 0 || named.indexOf(k) >= 0)) wipe.push(k);
+        }
+        named.forEach(function (k) { if (k && wipe.indexOf(k) < 0) wipe.push(k); });
+        wipe.forEach(function (k) { try { st.removeItem(k); } catch (e) { } });
+      } catch (e) { /* 저장소가 막혀도 화면은 새로 시작한다 */ }
+    });
+  }
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -469,7 +497,9 @@
     $('#birthForm').addEventListener('submit', onSubmit);
     $('#againBtn').addEventListener('click', openForm);
     $('#editBtn').addEventListener('click', openForm);
-    $('#clearBtn').addEventListener('click', function () { clearInput(); location.reload(); });
+    // 저장된 정보 지우기 — 사주만이 아니라 이 앱의 모든 기록(액운 태우기 횟수·무료 체험 시작일·
+    // 열린 코드·성찰·저녁 체크·초대 표시)을 함께 지우고 처음 화면으로 돌아간다 (2026-11-23 #16839)
+    $('#clearBtn').addEventListener('click', function () { clearAllAppData(); location.reload(); });
     $('#prevMonth').addEventListener('click', function () { shiftMonth(-1); });
     $('#nextMonth').addEventListener('click', function () { shiftMonth(1); });
   }
@@ -681,9 +711,14 @@
     document.body.setAttribute('data-trial', mode);
     var strip = $('#calTrialOver');
     if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
-    /* 체험 중이든 끝났든 — 달력 위에 '1년 전체 열기 · 14,900원' 버튼 하나만 심플하게 (2026-11-23 김나영 님) */
+    /* 달력 위 '1년 전체 열기 · 14,900원' 큰 버튼 — 체험이 끝난 기기에만 보인다.
+       체험 중에 띄우면 들어가자마자 결제 유도로 읽혀서, 체험 1일차에 달력 바로 위에
+       뜨던 버튼을 내렸다 (2026-11-23 김나영 님 #16839 · 캡처 6922).
+       체험 중 결제 경로는 맨 아래 footer 의 작은 한 줄(#passFoot)이 맡는다. */
     var pb = $('#passBar');
-    if (pb) pb.hidden = !(FREE_TRIAL_ENABLED && !TEST_OPEN_ALL && !state.unlocked);
+    if (pb) pb.hidden = (mode !== 'over');
+    var pf = $('#passFoot');
+    if (pf) pf.hidden = (mode !== 'on');
   }
   /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구도 9일로 바꾸고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
@@ -1610,7 +1645,7 @@
     var head = tryStrip +
       '<div class="diary__meta">' +
       (plainDay
-        ? '<span class="badge badge--gray">잔잔한 날</span><span class="diary__tag">오늘의 결</span>'
+        ? '<span class="badge badge--gray">무난한 날</span><span class="diary__tag">오늘의 결</span>'
         : '<span class="badge badge--' + (DIARY_CAT_CLASS[cat] || 'gray') + '">' + esc(cat) + '</span><span class="diary__tag">그날의 결</span>') +
       '</div>' +
       '<p class="diary__q">' + esc(q) + '</p>' +
@@ -1748,7 +1783,7 @@
       var r = diary.entries[k];
       var p = T.parseISO(k);
       var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
-      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.plain ? '잔잔한 날' : (r.cat || '')) + ']');
+      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.plain ? '무난한 날' : (r.cat || '')) + ']');
       out.push('Q. ' + (r.q || ''));
       out.push('A. ' + (r.text || ''));
       out.push('');
@@ -1790,7 +1825,7 @@
           p.m + '월 ' + p.d + '일 성찰 기록 — 그날 열기">' +
           '<span class="dbook__date">' + p.y + '.' + p.m + '.' + p.d +
           '<em>(' + dow + ')</em></span>' +
-          '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '잔잔한 날' : (r.cat || '성찰')) + '</span>' +
+          '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '무난한 날' : (r.cat || '성찰')) + '</span>' +
           '<span class="dbook__q">' + esc(r.q || '') + '</span>' +
           '<span class="dbook__a">' + esc(r.text || '') + '</span>' +
           '</button>';
@@ -3078,8 +3113,10 @@
       keep: '이번 달 목표 한 줄 적기, 지난 일 정리'
     },
     calm: {
-      head: '잔잔하게 흘러가는 날',
-      why: '오늘은 크게 부딪히는 기운이 없는 날이에요. 이런 날은 아무 일도 일어나지 않으니까, 미뤄 둔 정리 하나를 끝내기에 가장 좋아요.',
+      /* 보통 날 — 실제 문구는 아래 CALM_DAY 가 그날 60갑자로 골라 쓴다.
+         여기 값은 색인·스크린리더가 쓰는 기본값(fallback). */
+      head: '내 속도대로 정리하는 날',
+      why: '큰 변수 없이 내 페이스대로 움직이기 좋은 날이에요. 새 판을 벌이기보다 지금 손에 쥔 일부터 차분히 마무리해 보세요.',
       avoid: '없는 일을 만들어 확인하기',
       keep: '밀린 정리 하나만 끝내기'
     }
@@ -3173,6 +3210,7 @@
   function liteDayText(info) {
     var p = litePrimary(info);
     var d = LITE_DAY[p.kind] || LITE_DAY.calm;
+    var calm = p.kind === 'calm' ? calmCopy(info) : null;   // 보통 날 — 그날 60갑자로 고른 한 벌
     var tag;
     if (p.entry) {
       /* '🌿 실속·정리 · 정리'처럼 같은 말이 두 번 나오지 않게 — 짧은 이름이
@@ -3181,9 +3219,9 @@
       tag = '<span class="litemodal__tag litemodal__tag--' + p.key + '">' +
         LITE_FULL[p.key] + (word && LITE_FULL[p.key].indexOf(word) < 0 ? ' · ' + esc(word) : '') + '</span>';
     } else {
-      tag = '<span class="litemodal__tag litemodal__tag--calm">잔잔한 날</span>';
+      tag = '<span class="litemodal__tag litemodal__tag--calm">' + calm.badge + '</span>';
     }
-    /* 잔잔한 날도 신호가 있는 날도 '그날의 60갑자' 한 줄을 반드시 붙인다 */
+    /* 보통 날도 신호가 있는 날도 '그날의 60갑자' 한 줄을 반드시 붙인다 */
     var why;
     if (p.kind === 'calm') {
       var cl = calmLines(info, p.soft);
@@ -3198,7 +3236,7 @@
     if (!dayIsToday(info)) why = why.split('오늘').join('이 날');
     return {
       p: p, key: p.key, kind: p.kind,
-      tag: tag, head: d.head, why: why,
+      tag: tag, head: calm ? calm.head : d.head, why: why,
       avoid: d.avoid + (acts.avoid ? ' · ' + acts.avoid : ''),
       keep: d.keep + (acts.keep ? ', ' + acts.keep : '')
     };
@@ -3219,14 +3257,53 @@
     return { key: e.key, kind: kind, soft: false, entry: e };
   }
 
-  /* ── 잔잔한 날의 두 줄 — 일진의 천간·지지에 따라 매번 다른 말 ────
-     같은 "잔잔한 날" 고정 멘트가 반복되면 눌러 볼 이유가 사라진다.
-     천간 10 × 지지 12 = 60갑자 조합이라 한 달 안에서 같은 문구가 나오지 않는다.
+  /* ── 보통 날(색이 안 붙은 날)의 문구 — 2026-11-23 김나영 님 #16839 ────
+     "잔잔한 날"·"잔잔하게 흘러가는 날"은 아무것도 알려 주지 않는 말이라 걷어냈다(캡처 6924).
+     그날의 60갑자로 여섯 벌 중 하나를 고정 선택 — 같은 날은 몇 번을 눌러도 같은 말,
+     옆 날은 다른 말. 배지·제목·본문 모두 '실속·숨고르기' 톤이고, 흉단·결핍 표현은 쓰지 않는다. */
+  var CALM_DAY = [
+    {
+      badge: '무난한 날', head: '내 속도대로 정리하는 날',
+      why: '큰 변수 없이 내 페이스대로 움직이기 좋은 날이에요. 새 판을 벌이기보다 지금 손에 쥔 일부터 차분히 마무리해 보세요.'
+    },
+    {
+      badge: '내 페이스 날', head: '밀린 일 하나 끝내기 좋은 날',
+      why: '눈에 띄게 흔들리는 기운은 없어요. 이런 날에 미뤄 둔 일 하나를 끝내 두면 다음 며칠이 훨씬 가벼워져요.'
+    },
+    {
+      badge: '숨 고르는 날', head: '서두르지 않아도 되는 날',
+      why: '급하게 밀어붙일 일이 없는 하루예요. 일정 사이에 빈칸을 하나 두고 하던 일의 속도를 내 쪽에 맞춰 보세요.'
+    },
+    {
+      badge: '정리하는 날', head: '쌓인 것부터 덜어 내는 날',
+      why: '새로 벌이기보다 손에 익은 일을 매만지기 좋은 날이에요. 책상·서류·메모 중 하나만 정리해도 하루가 정돈돼요.'
+    },
+    {
+      badge: '무난한 날', head: '확인하고 넘어가기 좋은 날',
+      why: '큰일 없이 지나가는 날이에요. 평소에 흘려 둔 금액과 기한을 한 번씩만 다시 봐 두면 손해가 없어요.'
+    },
+    {
+      badge: '내 페이스 날', head: '몸의 리듬부터 챙기는 날',
+      why: '기운이 크게 튀지 않는 날이라 몸이 보내는 신호가 잘 들려요. 잠과 식사 중 하나만 제때 챙겨도 다음 날이 달라져요.'
+    }
+  ];
+  /** 그날의 보통 날 문구 — 60갑자(천간 10 × 지지 12)로 고정 선택 */
+  function calmCopy(info) {
+    var gz = (info && info.gz) || {};
+    var gi = gz.ganIndex, zi = gz.zhiIndex;
+    var i = (typeof gi === 'number' && typeof zi === 'number')
+      ? (gi * 12 + zi) % CALM_DAY.length : 0;
+    return CALM_DAY[i] || CALM_DAY[0];
+  }
+  /** 스크린리더용 그날 한 줄 — 보통 날은 그날의 벌(calmCopy)까지 맞춘다 */
+  function liteHeadOf(info) {
+    var p = litePrimary(info);
+    return p.kind === 'calm' ? calmCopy(info).head : (LITE_DAY[p.kind] || LITE_DAY.calm).head;
+  }
+  /* ── 보통 날의 두 줄 — 그날의 벌 + 일진의 천간·지지 한 줄 ────
      이 달 강조에서 빠진 날은 앞줄만 '살짝 어긋나는 구석'으로 바꾼다. */
   function calmLines(info, soft) {
-    var first = soft
-      ? '살짝 어긋나는 구석은 있지만, 크게 흔들리는 날은 아니에요.'
-      : '오늘은 크게 부딪히는 기운 없이 잔잔하게 흐르는 날이에요.';
+    var first = (soft ? '살짝 어긋나는 구석은 있지만, 크게 흔들리는 날은 아니에요. ' : '') + calmCopy(info).why;
     var second = dateLine(info) || '이런 날일수록 밀린 정리 하나만 끝내면 충분해요.';
     return [first, second];
   }
@@ -3242,7 +3319,7 @@
     wealth: '오늘은 <b class="hk-hl">돈이 오가는 날</b>이에요. 나가는 돈부터 확인하면 새는 구멍이 보여요.',
     doc:    '오늘은 <b class="hk-hl">문서·정리에 힘이 실리는 날</b>이에요. 미뤄 둔 서류를 오늘 펴 두면 오래 남아요.',
     jie:    '오늘은 <b class="hk-hl">달의 기준이 바뀌는 날</b>이에요. 새로 벌이기보다 이번 달 목표 한 줄이면 충분해요.',
-    calm:   '오늘은 <b class="hk-hl">크게 부딪히는 일이 없는 잔잔한 날</b>이에요. 밀린 정리 하나만 끝내도 충분해요.'
+    calm:   '오늘은 <b class="hk-hl">크게 부딪히는 일이 없는 무난한 날</b>이에요. 밀린 정리 하나만 끝내도 충분해요.'
   };
 
   /* ── 2027 내 급소 — 정미년(丁未) × 내 원국 ──
@@ -3647,7 +3724,7 @@
       var night = !!nightOf(iso);
       // 2.0 — 스크린리더에도 한자 용어 대신 그날의 쉬운 한 줄을 읽어 준다
       var label = LITE_MODE
-        ? v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + LITE_DAY[litePrimary(info).kind].head
+        ? v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + liteHeadOf(info)
         : v.m + '월 ' + d + '일 ' + DOW_KO[info.dow] + '요일, ' + info.headline;
       if (iso < state.todayISO && !open) label = v.m + '월 ' + d + '일, 지난 날';
       var stamp = LITE_MODE ? null : stampOf(iso);   // 2.0 에서는 도장 부적을 감추므로 스티커도 그리지 않는다
@@ -3712,7 +3789,7 @@
       if (stat3.real) bits3.push('<b class="sum sum--real">🌿 실속·정리 ' + stat3.real + '일</b>');
       $('#calSummary').innerHTML = bits3.length
         ? bits3.join('<span class="sum__dot" aria-hidden="true">·</span>')
-        : '이 달은 색이 붙은 날이 적어요 — 잔잔하게 흐르는 달이에요';
+        : '이 달은 색이 붙은 날이 적어요 — 차분하게 흐르는 달이에요';
     } else {
       var bits = [];
       if (stat.gold) bits.push('소통 ' + stat.gold);
@@ -3835,7 +3912,7 @@
     };
     var EMPTY = {
       warn: '이 달은 유난히 부딪히는 날이 없어요. 흐름이 고른 달입니다.',
-      up: '이 달은 밀어붙일 날이 따로 없어요. 잔잔하게 정리하기 좋은 달입니다.',
+      up: '이 달은 밀어붙일 날이 따로 없어요. 차분히 정리하기 좋은 달입니다.',
       real: '이 달은 새 달이 시작되는 날 말고는 눈에 띄는 날이 없어요.'
     };
     box.hidden = false;
@@ -3928,13 +4005,13 @@
     }
     var hasBadges = !!(info.badges && info.badges.length);
     /* 체험 중 지난 날 — '지난 날'이라고 알려 주고 여는 방법을 보여 준다 (2026-11-21 QA M3) */
-    // 기운 태그가 없는 잔잔한 날은 원래 팝업을 열지 않는다.
+    // 기운 태그가 없는 보통 날은 원래 팝업을 열지 않는다.
     // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
     // 잠긴 날(지난 날·체험 범위 밖)은 누르면 여는 방법을 알려 준다.
     if (!hasBadges && !diaryAllowed() && !lock) {
       toast(state.unlocked || !FREE_TRIAL_ENABLED
-        ? '이 날은 특별히 피할 일 없이 잔잔하게 흘러가는 날이에요.'
-        : '이 날은 딱지가 붙지 않은 잔잔한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
+        ? '이 날은 특별히 피할 일 없이 내 페이스대로 가면 되는 날이에요.'
+        : '이 날은 딱지가 붙지 않은 무난한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
       return;
     }
     lastFocus = document.activeElement;
@@ -4116,11 +4193,11 @@
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
 
-  /** 기운 배지가 없는 잔잔한 날 — 부적 없이 오늘의 성찰만 남기는 팝업 */
+  /** 기운 배지가 없는 보통 날 — 부적 없이 오늘의 성찰만 남기는 팝업 */
   function plainModalHTML(info) {
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
-      '<p class="modal__calm">이 날은 부적이 나오는 날은 아니에요. 잔잔한 날일수록 한 줄 적어 두기 좋아요.</p>' +
+      '<p class="modal__calm">이 날은 부적이 나오는 날은 아니에요. 무난한 날일수록 한 줄 적어 두기 좋아요.</p>' +
       diarySectionHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
