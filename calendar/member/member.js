@@ -2085,8 +2085,8 @@
       + '<p class="grow__t">스토리에 올리고 <b>@' + INSTA + '</b> 를 태그해 주세요</p>'
       + '<p class="grow__d">인증하면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요. 방금 만든 케미 카드나 달력 화면을 그대로 올리면 돼요.</p>'
       + '<div class="btn-row">'
-      + '<button type="button" class="btn btn--ghost" id="growCopyCap">인스타에 올릴 문구 복사</button>'
-      + '<a class="btn btn--ghost" href="#storyGiftCard">인증 방법 보기</a>'
+      + '<button type="button" class="btn btn--ghost" id="growCopyCap">올릴 문구 복사</button>'
+      + '<a class="btn btn--ghost" href="#storyGiftCard">인증 방법</a>'
       + '</div>'
       + '</div>'
       + '</section>';
