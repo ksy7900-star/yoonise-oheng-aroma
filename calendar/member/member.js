@@ -1125,6 +1125,20 @@
     if (!arr || !arr.length) return '';
     return arr[mix32(fnv32(seed + '#' + salt)) % arr.length];
   }
+  /* 같은 문장이 두 번 나오지 않게 — 직전에 쓴 문장(avoid)과 같으면 그 풀 안에서 다음 문장으로 넘긴다.
+     (2026-11-23 #16887 — 두 사람의 일간·오행이 같아 해시가 같은 자리에 떨어지면
+      '가까워서 서운한 것도 그냥 넘겨요 — 그 자리에서 말하기.'가 두 번 나오던 문제) */
+  function pickAvoid(arr, seed, salt, avoid) {
+    if (typeof arr === 'string') return arr;
+    if (!arr || !arr.length) return '';
+    var i = mix32(fnv32(seed + '#' + salt)) % arr.length;
+    if (!avoid || arr[i] !== avoid) return arr[i];
+    for (var k = 1; k < arr.length; k++) {
+      var cand = arr[(i + k) % arr.length];
+      if (cand !== avoid) return cand;
+    }
+    return arr[i];
+  }
   function pairSeed(a, b, rel) {
     var s = [rel];
     [a, b].forEach(function (ch) {
@@ -1620,7 +1634,7 @@
   };
 
   /* 이 사람과 있을 때 내가 챙길 점 한 줄 — 갈래를 먼저 고르고, 그 안에서 쌍 해시로 문장을 고른다 */
-  function compFor(self, other, rel, side) {
+  function compFor(self, other, rel, side, avoid) {
     var seed = pairSeed(self, other, rel) + '#comp' + side;
     var lens = pairLens(self, other);
     var zk = zhiKeyOf(self, other), mk = masterKeyOf(self, other);
@@ -1635,11 +1649,11 @@
       var b = branches[fnv32(seed + '#br') % branches.length];
       var set = (COMP_PAIR[b.k] && (COMP_PAIR[b.k][rel] || COMP_PAIR[b.k].friend)) || null;
       var pool = set ? (b.el ? (set[b.el] || []) : set) : [];
-      var line = pool.length ? pickFrom(pool, seed + '#' + domElement(other) + zk + mk, b.k + (b.el || '')) : '';
+      var line = pool.length ? pickAvoid(pool, seed + '#' + domElement(other) + zk + mk, b.k + (b.el || ''), avoid) : '';
       if (line) return line;
     }
     var set2 = (COMP_PLAIN[rel] || COMP_PLAIN.friend)[domElement(other)] || [];
-    return set2.length ? pickFrom(set2, seed + '#' + zk + mk, 'plain') : '이 사람과 있을 땐 내 페이스 하나는 남겨 두기.';
+    return set2.length ? pickAvoid(set2, seed + '#' + zk + mk, 'plain', avoid) : '이 사람과 있을 땐 내 페이스 하나는 남겨 두기.';
   }
 
   /* ④ 2027년 꼭 챙겨줄 점 — 두 번째 줄은 18가지 행동 팁 풀에서 조합 해시로 */
@@ -2009,12 +2023,17 @@
     var roleSet = (ROLE[rel] || ROLE.friend)[mk] || (ROLE[rel] || ROLE.friend).same;
     var role = pickFrom(roleSet, seed + '#' + domElement(b) + (b.counts[b.natal.element] || 0), 'role');
 
-    /* ② 각자 보완할 점 — 상대가 바뀌면 문장이 바뀐다. 두 사주를 겹친 갈래로 한 줄씩 */
+    /* ② 각자 보완할 점 — 상대가 바뀌면 문장이 바뀐다. 두 사주를 겹친 갈래로 한 줄씩
+       (2026-11-23 #16887 — 두 사람 해시가 같은 자리에 떨어져도 같은 문장이 두 번 나오지 않게,
+        두 번째 사람은 첫 사람이 쓴 문장을 피해서 고른다) */
+    var compRaw = [];
     var comps = [a, b].map(function (ch, i) {
       var other = i === 0 ? b : a;
       var nm = i === 0 ? aName : bName;
       var otherName = i === 0 ? bName : aName;
-      var line = fill(compFor(ch, other, rel, i), peerWord(otherName, rel));
+      var raw = compFor(ch, other, rel, i, i ? compRaw[0] : '');
+      compRaw.push(raw);
+      var line = fill(raw, peerWord(otherName, rel));
       return '<b>' + esc(nm) + '</b> : ' + line;
     });
 
@@ -2045,8 +2064,16 @@
        카드와 같은 달을 쓰고, 카드가 '없어요'일 때만 정미년 월운 충돌로 채운다. */
     var warnMs = (info.warnBoth.length ? info.warnBoth : info.warnOne.map(function (x) { return x.n; })).slice(0, 2);
     var tenseMs = warnMs.length ? warnMs : pairTenseMonths(a, b);
-    care.push('단, <b>' + tenseMs.map(function (n) { return n + '월'; }).join('·')
-      + '</b>엔 둘의 기운이 부딪히기 쉬우니 말 한마디만 아끼세요.');
+    /* 2026-11-23 #16887 — 첫 줄에서 이미 말한 달은 셋째 줄에서 빼고, 겹치면 그 달을 가리키는 말로 합친다
+       (예: '1월엔 둘 다 지쳐요 …' 다음에 '단, 1월엔 …'이 또 나오던 문제) */
+    var mValNum = mVal ? parseInt(String(mVal), 10) : NaN;
+    var otherTense = tenseMs.filter(function (n) { return n !== mValNum; });
+    if (otherTense.length) {
+      care.push('단, <b>' + otherTense.map(function (n) { return n + '월'; }).join('·')
+        + '</b>엔 둘의 기운이 부딪히기 쉬우니 말 한마디만 아끼세요.');
+    } else if (tenseMs.length) {
+      care.push('그달엔 둘의 기운이 부딪히기 쉬우니 말 한마디만 아끼세요.');
+    }
 
     /* ④ 딱 맞는 달 · 조심할 달 (warnMs 는 위에서 이미 골랐다) */
     var goodMs = bestMs.slice(0, 3);
