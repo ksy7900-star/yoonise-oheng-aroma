@@ -126,7 +126,7 @@
       localStorage.setItem(UNLOCK_KEY, JSON.stringify(o));
     } catch (e) {}
   }
-  var FRIEND_GIFT = '9일 체험 + 액운 태우기 1회';
+  var FRIEND_GIFT = '9일 체험과 액운 태우기 1회';
   var HASHTAGS = '#내사주타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
   var INSTA = 'life.saju_yoonise';
   // 인스타에 그대로 붙여넣는 한 덩어리 — 계정 태그 한 줄 + 짧은 추천 한 줄 + 해시태그 (2026-11-23 6차)
@@ -230,7 +230,7 @@
   }
   function shareLine() {
     return '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 ' + FRIEND_GIFT + ' 받고, 우리 둘 2027년 케미도 볼 수 있대.\n'
+      + '내 링크로 들어오면 친구 초대 혜택으로 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.\n'
       + myLink();
   }
 
@@ -756,7 +756,7 @@
     if (!state.user) { toast('로그인하면 내 링크가 담긴 문구가 만들어져요.'); return; }
     var text = shareLine();
     if (navigator.share) {
-      navigator.share({ title: '윤이세 2027 타이밍 캘린더', text: text }).then(function () {}, function () {
+      navigator.share({ title: '내 사주 타이밍 달력', text: text }).then(function () {}, function () {
         copyText(text).then(function (ok) { toast(ok ? '공유 문구를 복사했어요.' : '복사가 안 됐어요.'); });
       });
       return;
@@ -3047,7 +3047,7 @@
     if (!navigator.share) { fallback(); return; }
     try {
       navigator.share({
-        title: '2027년 우리 케미 · 윤이세사주',
+        title: '내 사주 타이밍 달력',
         text: line,
         url: url
       }).then(function () {}, function (err) {
@@ -3057,7 +3057,9 @@
     } catch (e) { fallback(); }
   }
 
-  /* ── [내 링크 바로 보내기] — 링크 하나(케미 + 초대)로 초대와 케미를 같이 ── */
+  /* ── [내 링크 바로 보내기] — 링크 하나(케미 + 초대)로 초대와 케미를 같이 ──
+     2026-11-23 (#17281 · 캐처 6960): text 끝에 주소를 또 넣어 카톡에 긴 URL이 두 번 찍렸다.
+     → text는 문구만, 주소는 url 한 곳에만. 클립보드로 떨어질 때만 문구+주소를 합쳐 복사한다. */
   function onShareMyLink(ch) {
     if (!state.user) { onLogin(null, $('#growShareBtn')); return; }
     if (!myCode()) {
@@ -3066,17 +3068,17 @@
       return;
     }
     var url = chemiLink(ch);
-    var text = '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 ' + FRIEND_GIFT + ' 받고, 우리 둘 2027년 케미도 볼 수 있대.\n'
-      + url;
-    if (navigator.share) {
-      navigator.share({ title: '윤이세 2027 타이밍 캘린더', text: text, url: url }).then(function () {}, function () {
-        copyText(text).then(function (ok) { toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); });
+    var line = '2027년 사주 달력 같이 보자 🌙\n'
+      + '내 링크로 들어오면 친구 초대 혜택으로 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.';
+    function fallback() {
+      copyText(line + '\n' + url).then(function (ok) {
+        toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.');
       });
-      return;
     }
-    copyText(text).then(function (ok) {
-      toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.');
+    if (!navigator.share) { fallback(); return; }
+    navigator.share({ title: '내 사주 타이밍 달력', text: line, url: url }).then(function () {}, function (err) {
+      if (err && err.name === 'AbortError') return;
+      fallback();
     });
   }
 
