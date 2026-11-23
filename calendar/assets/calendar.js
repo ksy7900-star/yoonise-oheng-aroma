@@ -4674,19 +4674,28 @@
     var fe = tw ? T.parseISO(tw.end) : T.parseISO(state.todayISO);
     var ws = tw ? T.parseISO(tw.start) : null;
     var over = trialOver();
-    return lockHeadHTML(info, over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · ' + FREE_DAYS + ' DAYS') +
-      (over
-        ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>1년 전체 패스를 열면 전부 열려요</p>'
-        : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>') +
+    /* 친구 초대 보상 기간이 켜져 있으면, 잠긴 날은 '보상 밖의 날짜'다 — 7일 체험 문구 대신 보상 만료일을 말한다 */
+    var bonus = bonusActive();
+    var bEnd = bonus ? T.parseISO(bonusUntil()) : null;
+    return lockHeadHTML(info, bonus ? 'INVITE BONUS · UNTIL ' + (bEnd ? bEnd.m + '/' + bEnd.d : '')
+      : (over ? 'FREE TRIAL · ENDED' : 'FREE TRIAL · ' + FREE_DAYS + ' DAYS')) +
+      (bonus
+        ? '<p class="lock__title">🔒 이 날은 친구 초대 보상 기간 밖이에요<br>1년 전체 패스를 열면 전부 열려요</p>'
+        : (over
+          ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>1년 전체 패스를 열면 전부 열려요</p>'
+          : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>')) +
       '<p class="lock__sub">1년 전체 패스 하나예요 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
       diaryTrialLine() +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
       lockTagHTML(info) +
-      '<p class="lock__hint">' + (over
-        ? '무료 체험은 ' + (ws ? ws.m + '월 ' + ws.d + '일~' : '') + fe.m + '월 ' + fe.d +
-          '일이었어요. 1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'
-        : '이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
-          '1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.') + '</p>' +
+      '<p class="lock__hint">' + (bonus
+        ? '친구 초대 보상으로 ' + (bEnd ? bEnd.m + '월 ' + bEnd.d + '일' : '보상 기간') +
+          '까지 열려 있었어요. 그 뒤 날짜는 1년 전체 패스로 열려요 — 2026년 11월부터 2027년 12월까지 전부예요.'
+        : (over
+          ? '무료 체험은 ' + (ws ? ws.m + '월 ' + ws.d + '일~' : '') + fe.m + '월 ' + fe.d +
+            '일이었어요. 1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.'
+          : '이 날의 이야기는 무료 구간(' + fe.m + '월 ' + fe.d + '일까지) 밖이에요. ' +
+            '1년 전체 패스를 열면 이 사주로 2026년 11월부터 2027년 12월까지 전부 열려요.')) + '</p>' +
       '<div class="lock__actions">' +
       lockShopButtonsHTML() +
       '</div>' +
