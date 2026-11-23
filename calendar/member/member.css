@@ -373,7 +373,7 @@ a { color: inherit; }
 }
 .pchip.is-on { background: var(--ink); color: #F8FAFC; border-color: var(--ink); }
 
-/* ── 사다리 하단 한 줄 안내 — 이미 1년 패스를 쓴 분의 보상 ── */
+/* ── 사다리 하단 한 줄 안내 — 결제자에게는 상담 할인이 실제 혜택 ── */
 .ladder-note {
   margin-top: 14px;
   padding: 9px 12px;

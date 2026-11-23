@@ -2254,7 +2254,10 @@
       '<div class="talis-showcase talis-showcase--' + d.el + '"><div class="talis-showcase__obj">' +
       plaqueHTML(d.el, { tag: true, action: 'talis-bless', lg: true, fx: true, type: null }) +
       '<span class="talis-showcase__waves" aria-hidden="true"><i></i><i></i></span>' +
-      '</div></div>' +
+      '</div>' +
+      /* 기운 문구는 부적 그림 위 중앙에 겹쳐 둔다 (2026-11-23 5차 · 버튼 아래에 있으면 눈이 닿지 않았다) */
+      '<p class="talis-phrase" id="talisPhrase" role="status" aria-live="polite"></p>' +
+      '</div>' +
       '<p class="talis-modal__name"><span aria-hidden="true">' + d.icon + '</span>' + esc(d.name) + '</p>' +
       (d.mantra
         ? '<p class="talis-modal__mantra"><b>' + esc(d.hanja) + '</b> · ' + esc(d.mantra) + '</p>'
@@ -2262,7 +2265,6 @@
       '<p class="talis-modal__why talis-modal__why--verse">' +
         (d.verse || []).map(function (v) { return esc(v); }).join('<br>') + '</p>' +
       '<button type="button" class="btn talis-bless-btn" data-talis-bless>오늘 기운 받기</button>' +
-      '<p class="talis-phrase" id="talisPhrase" role="status" aria-live="polite"></p>' +
       '<p class="talis-bless__note">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-talis-close>닫기</button>';
     talisEl.hidden = false;
@@ -2294,7 +2296,6 @@
   function onTalisBless(e) {
     if (!talisBody) return;
     var sc = talisBody.querySelector('.talis-showcase');
-    var note = talisBody.querySelector('.talis-bless__note');
     var phrase = talisBody.querySelector('.talis-phrase');
     if (!sc) return;
     clearTimeout(sc._blessT);
@@ -2305,11 +2306,7 @@
     var plaque = sc.querySelector('.talis-plaque');
     talisBurst(plaque);              /* 부적을 눌러도, 아래 버튼을 눌러도 빛이 안으로 모인다 */
     sfxBless();
-    if (note) {                       // 문구가 뜨면 예전 안내 한 줄은 비켜 준다 (겹쳐 보이지 않게)
-      note.classList.remove('is-on');
-      note.textContent = '';
-    }
-    talisRevealText(phrase, TALIS_PHRASE);
+    talisRevealText(phrase, TALIS_PHRASE);   /* 부적 그림 위 중앙에서 6초 호흡 */
   }
 
   /* ── 하루 부적 — 그날의 부적 고르기 ─────────────────── */
@@ -7500,7 +7497,6 @@
     var parent = care.parentNode;                 // 달력 카드 안의 제자리
     if (!parent) return;
     var panel = $('#lockPanel'), tie = $('#codeBindNote'), ask = $('#lockAsk');
-    var note = $('#calNote');
     /** ref 바로 뒤로 옮긴다 — 다른 부모에 있어도 그대로 따라온다 */
     function put(el, ref) {
       if (!el || !ref || !ref.parentNode) return ref;
@@ -7536,10 +7532,12 @@
     if (panel) panel.classList.remove('lockpanel--cta');
 
     if (state.unlocked) {
-      /* 결제로 열린 기기 — 바로가기는 달력 바로 아래, '적용됨' 박스·번호 안내는 cal__note 아래 */
+      /* 결제로 열린 기기 — 바로가기는 달력 바로 아래, '적용됨' 박스·번호 안내는 달력 아래 꼬리
+         (안내 문구 #calNote 가 달력 위로 올라가 2026-11-23 5차 — 기준점은 '이 캘린더 보는 법' 아래로) */
       careUnderCalendar();
-      if (note && note.parentNode === parent) {
-        var r1 = note;
+      var tail = $('#howto') || $('#diaryBookBtn');
+      if (tail && tail.parentNode === parent) {
+        var r1 = tail;
         [ask, lockBtn, panel, tie].forEach(function (el) { r1 = put(el, r1); });
       }
       return;

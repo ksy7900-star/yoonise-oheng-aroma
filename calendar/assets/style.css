@@ -3800,6 +3800,9 @@ body[data-trial="off"] .day--past.day--t-gray { background: rgba(180, 83, 9, .05
 .cal__dow span { font-size: 10px; }
 .card--cal .calfilter { margin: 12px 2px 2px; }
 .cal__note { margin-top: 14px; }
+/* 달력 위로 올라간 안내 (2026-11-23 5차) — 요약 줄과 붙어 서고, 필터·그리드와는 살짝 띄운다 */
+.card--cal .cal__note--top { margin-top: 8px; }
+.card--cal .cal__note--top + .calfilter { margin-top: 8px; }
 
 /* ── ① 모바일: 달력이 화면 가로를 다 쓰고, 칸이 넉넉해진다 ──── */
 @media (max-width: 640px) {
@@ -4941,21 +4944,38 @@ a.quickbar__b { color: #7C3AED; border-color: rgba(124, 58, 237, .2); background
   .talis-banner__reveal.is-on { animation: none; opacity: 1; transform: none; filter: none; }
 }
 
-/* 확대 팝업 안에서 톡 눌렀을 때 뜨는 문구 — 배너와 같은 6초 호흡 */
+/* 확대 팝업에서 기운을 받을 때 — 부적 그림 위 중앙에 은은하게 떠오르는 문구 (2026-11-23 5차)
+   예전엔 '오늘 기운 받기' 버튼 아래에 있어서 부적을 보는 눈에 닿지 않았다.
+   → .talis-showcase 안에 겹쳐 두어(자리를 차지하지 않는다) 한 화면 크기는 그대로 두고,
+     배너와 같은 6초 호흡으로 천천히 나타났다 사라진다. */
 .talis-phrase {
-  margin: 12px auto 0; max-width: 300px; text-align: center; text-wrap: balance;
-  font-family: var(--serif); font-size: 14.5px; line-height: 1.65; letter-spacing: -.02em;
-  color: #8E6B2C;
-  opacity: 0; transform: translateY(4px); filter: blur(2.6px);
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0; padding: 0 13%;
+  text-align: center; text-wrap: balance;
+  font-family: var(--serif); font-size: 14px; line-height: 1.62; letter-spacing: -.01em;
+  color: #FDF4E0;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .72), 0 0 3px rgba(0, 0, 0, .55);
+  pointer-events: none;
+  isolation: isolate;          /* 먹빛 veil(::before)이 부적 위·글자 아래에 머물게 */
+  opacity: 0; filter: blur(2.6px);
+}
+/* 글자 뒤에 옅게 깔리는 먹빛 — 부적 그림 위에서도 글씨가 읽히게 */
+.talis-phrase::before {
+  content: ""; position: absolute; left: 50%; top: 50%; z-index: -1;
+  width: 108%; height: 5.2em; transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(9, 5, 2, .80), rgba(9, 5, 2, .52) 56%, rgba(9, 5, 2, 0));
+  filter: blur(5px);
 }
 .talis-phrase.is-on { animation: talisPhraseIn 6s cubic-bezier(.4, 0, .32, 1) forwards; }
 @keyframes talisPhraseIn {
-  0%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
-  5%   { opacity: 0; transform: translateY(4px); filter: blur(2.6px); }
-  33%  { opacity: 1; transform: translateY(0); filter: none; }
-  66%  { opacity: 1; transform: translateY(0); filter: none; }
-  96%  { opacity: 0; transform: translateY(2px); filter: blur(2px); }
-  100% { opacity: 0; transform: translateY(2px); filter: blur(2px); }
+  0%   { opacity: 0; filter: blur(2.6px); }
+  5%   { opacity: 0; filter: blur(2.6px); }
+  33%  { opacity: 1; filter: none; }
+  66%  { opacity: 1; filter: none; }
+  96%  { opacity: 0; filter: blur(2px); }
+  100% { opacity: 0; filter: blur(2px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .talis-phrase.is-on { animation: none; opacity: 1; transform: none; filter: none; }
@@ -5256,6 +5276,11 @@ body.is-lite .cal__note {
   border-radius: 14px; padding: 12px 14px;
   font-size: 11.5px; line-height: 1.65;
 }
+/* 달력 위 안내 — 처음 보는 자리라 과하지 않게, 달력을 밀어내지 않을 만큼만 (2026-11-23 5차) */
+body.is-lite .cal__note--top {
+  margin-top: 8px; padding: 8px 12px;
+  border-radius: 12px; font-size: 11px; line-height: 1.62;
+}
 
 /* ==========================================================
    2026-11-23 2차 — 저녁 1초 체크 · 액운 태우기 아래 두 칸
@@ -5382,8 +5407,8 @@ body.is-lite .day__badge--lite { white-space: nowrap; overflow: hidden; }
   .modal__dialog--talis .talis-modal__mantra { margin-top: 4px; }
   .modal__dialog--talis .talis-modal__why--verse { margin-top: 8px; font-size: 13.2px; line-height: 1.68; }
   .modal__dialog--talis .talis-bless-btn { margin-top: 10px; padding: 13px 18px; }
-  /* 기운을 받을 때 뜨는 문구 자리를 미리 비워 둔다 — 문구가 떠도 화면이 밀리지 않게 */
-  .modal__dialog--talis .talis-phrase { margin-top: 7px; font-size: 13px; line-height: 1.5; min-height: 3em; }
+  /* 기운 문구는 부적 위에 겹쳐 있어 자리를 비워 둘 필요가 없다 (2026-11-23 5차) */
+  .modal__dialog--talis .talis-phrase { font-size: 13px; line-height: 1.55; }
   .modal__dialog--talis .talis-bless__note { margin-top: 6px; }
   .modal__dialog--talis .modal__done-btn { margin-top: 8px; padding: 12px 18px; }
 }
@@ -5393,7 +5418,7 @@ body.is-lite .day__badge--lite { white-space: nowrap; overflow: hidden; }
   .modal__dialog--talis .talis-modal__name { margin-top: 6px; font-size: 16.5px; }
   .modal__dialog--talis .talis-modal__why--verse { margin-top: 6px; font-size: 12.6px; line-height: 1.62; }
   .modal__dialog--talis .talis-bless-btn { margin-top: 8px; padding: 12px 16px; }
-  .modal__dialog--talis .talis-phrase { font-size: 12.2px; margin-top: 6px; min-height: 3.1em; }
+  .modal__dialog--talis .talis-phrase { font-size: 12.2px; line-height: 1.5; }
 }
 @media (max-height: 700px) {
   .modal__dialog--talis .modal__sub,

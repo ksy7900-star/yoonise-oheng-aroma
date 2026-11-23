@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261123f">
+<link rel="stylesheet" href="assets/style.css?v=20261123g">
 </head>
 <body>
 
@@ -294,6 +294,10 @@
       <p class="cal__summary" id="calSummary"></p>
       <p class="cal__nightrec" id="calNightRec" hidden></p>
 
+      <!-- 달력 위 한 줄 안내 — 달력을 처음 보는 자리에서 무엇을 하는지 바로 보이게 (2026-11-23 5차: 아래에서 위로)
+           무료 체험·전체 오픈 상태에 따라 calendar.js 가 이 자리의 문구를 바꿔 쓴다. -->
+      <p class="cal__note cal__note--top" id="calNote">궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.</p>
+
       <!-- 모아보기 — 2.0 에서는 3색(조심·기운UP·실속)으로 (2026-11-23).
            예전 2분류(조심할 날·좋은 날) 버튼도 지우지 않고 감춰 둔다 — 바로 복구 가능 -->
       <div class="calfilter" id="calFilter" role="group" aria-label="달력에서 모아보기">
@@ -409,8 +413,6 @@
         <p class="howto__free howto__free--ritual">부적은 <b>기운이 크게 흔들리거나 경고등이 켜진 날</b>(딱지가 붙은 날)에만 짠 하고 나타나요. 그날의 부적을 팝업에서 <b>1.5초 동안 지긋이</b> 누르면 금빛 링이 한 바퀴 차며 기운이 열리고, 아래 한지 인주 패드의 <b>붉은 낙관 도장(護)</b>을 손가락으로 <b>끌어다 부적 위에 찍으면</b> 그날의 캐릭터 부적 스티커가 달력 칸에 조용히 새겨져요.</p>
         <p class="howto__free">날짜를 누르면 팝업 아래 <b>✨ 오늘의 1줄 성찰</b>이 함께 나와요. 한 줄을 남긴 날은 달력 칸에 <b>작은 펜 점</b>이 찍혀요.</p>
       </details>
-
-      <p class="cal__note" id="calNote">궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.</p>
 
       <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
       <button type="button" class="diarybook v2-parked" id="diaryBookBtn">
@@ -731,11 +733,11 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261123f"></script>
-<script src="assets/manse.js?v=20261123f"></script>
-<script src="assets/timing.js?v=20261123f"></script>
-<script src="assets/chars.js?v=20261123f"></script>
-<script src="assets/calendar.js?v=20261123f"></script>
-<script src="assets/pwa.js?v=20261123f"></script>
+<script src="vendor/lunar.js?v=20261123g"></script>
+<script src="assets/manse.js?v=20261123g"></script>
+<script src="assets/timing.js?v=20261123g"></script>
+<script src="assets/chars.js?v=20261123g"></script>
+<script src="assets/calendar.js?v=20261123g"></script>
+<script src="assets/pwa.js?v=20261123g"></script>
 </body>
 </html>
