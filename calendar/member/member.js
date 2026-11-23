@@ -331,16 +331,23 @@
     if (!sb) { toast('로그인 연결을 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return; }
     var btn = el || $('#loginBtn');
     if (btn) { btn.classList.add('is-busy'); btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 이동 중…</span>'; }
+    /* 로그인 창을 열지 못했을 때 — 버튼 이름을 제자리로 (grow 카드 버튼은 문구가 다르다) */
+    function restore() {
+      if (!btn) return;
+      btn.classList.remove('is-busy');
+      if (btn.id === 'growShareBtn') { updateGrow(); return; }
+      btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span>';
+    }
     sb.auth.signInWithOAuth({
       provider: 'kakao',
       options: { redirectTo: location.origin === 'https://ksy7900-star.github.io' ? LIVE_BASE : (location.origin + location.pathname) }
     }).then(function (r) {
       if (r && r.error) {
-        if (btn) { btn.classList.remove('is-busy'); btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span>'; }
+        restore();
         toast('카카오 로그인을 열지 못했어요: ' + (r.error.message || ''));
       }
     }, function (err) {
-      if (btn) { btn.classList.remove('is-busy'); btn.innerHTML = '<span class="btn__ic" aria-hidden="true">💬</span><span>카카오로 시작하기</span>'; }
+      restore();
       toast('카카오 로그인을 열지 못했어요: ' + ((err && err.message) || ''));
     });
   }
@@ -714,6 +721,7 @@
         }
       }
     }
+    updateGrow();          // 케미 결과의 grow 카드 — 로그인·추천 숫자가 바뀌면 바로 따라온다
   }
 
   /* ── 화면: 초대 링크 ────────────────────────────── */
@@ -2087,27 +2095,32 @@
     html += '<p class="sect-h">2027 정미년 · ' + esc(amul.name) + ' (' + R.hanja + ')</p>';
     html += '<h3 class="sect-t">저장해서 올리는 카드</h3>';
     html += '<div class="amulbox" id="amulBox"></div>';
+    /* 부적 바로 아래 두 버튼 (2026-11-23 7차 김나영 님)
+       '다시'는 걷어 내고 → 맨 아래 작은 '다른 사람과 케미 다시 보기' 글자 링크로만 남긴다.
+       [이미지로 저장] + [친구에게 보내기](강조) — 보내기는 부적 그림과 통합 링크를 한 번에 넘긴다. */
     html += '<div class="btn-row">'
-      + '<button type="button" class="btn btn--gold btn--wide" id="saveAmulBtn">이미지로 저장</button>'
-      + '<button type="button" class="btn btn--ghost" id="againBtn">다시</button>'
+      + '<button type="button" class="btn btn--ghost" id="saveAmulBtn">이미지로 저장</button>'
+      + '<button type="button" class="btn btn--kakao btn--wide" id="shareAmulBtn">친구에게 보내기</button>'
       + '</div>';
-    html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
+    html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요.</p>';
 
-    /* ── 결과 바로 아래 두 갈래 (2026-11-23 6차 김나영 님) ──────────────
-       ① 친구 초대 1/3/5/7 로 '내 사주 타이밍 달력'을 무료로 넓히기
+    /* ── 결과 바로 아래 두 갈래 (2026-11-23 7차 김나영 님) ──────────────
+       ① 친구 초대 1/3/5/7 — 로그인했으면 '현재 N명 달성' + [내 링크 바로 보내기]
+          (케미 링크 + 내 초대 코드가 한 주소로 합쳐진 링크 1개)
        ② 인스타 피드·릴스에 올리기 → 달력 +1개월 · 버튼 하나로 태그 복사 + 인스타 열기
        결과를 다 본 자리에서 한 장씩 — 가격표·배너는 넣지 않는다. */
     html += '<section class="grow" aria-label="내 사주 타이밍 달력 더 열기">'
       + '<div class="grow__card">'
       + '<p class="grow__lb">🎁 무료로 달력 넓히기</p>'
       + '<p class="grow__t">친구를 초대하면 <b>내 사주 타이밍 달력</b>이 더 열려요</p>'
+      + '<p class="grow__stat" id="growStat" hidden></p>'
       + '<ul class="grow__ladder">'
       + '<li><b>1명</b><span>내 사주 타이밍 달력 +1개월</span></li>'
       + '<li><b>3명</b><span>내 사주 타이밍 달력 +3개월</span></li>'
       + '<li><b>5명</b><span>내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인</span></li>'
       + '<li><b>7명</b><span>내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)</span></li>'
       + '</ul>'
-      + '<button type="button" class="btn btn--gold btn--wide" data-invite-jump>내 초대 링크 만들기 →</button>'
+      + '<button type="button" class="btn btn--gold btn--wide" id="growShareBtn">내 링크 바로 보내기</button>'
       + '</div>'
       + '<div class="grow__card grow__card--insta">'
       + '<p class="grow__lb">📸 인스타 올리기 · +1개월</p>'
@@ -2117,10 +2130,8 @@
       + '</div>'
       + '</section>';
 
-    html += '<div class="btn-row">'
-      + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
-      + '</div>';
-    /* 결과를 본 직후 — 윤이세사주 채널 추가(원터치). 친구 초대는 위 grow 카드가 맡는다 */
+    /* 결과를 본 직후 — 윤이세사주 채널 추가(원터치). 친구 초대는 위 grow 카드가 맡는다.
+       7차: '내 2027년 케미 링크 보내기' 버튼은 [친구에게 보내기]·[내 링크 바로 보내기]와 같은 일이라 걷어 냈다. */
     html += '<div class="chemi__more">'
       + '<a class="btn btn--gold" href="' + KAKAO_CHANNEL_ADD + '" target="_blank" rel="noopener">'
       + '<span aria-hidden="true">💬</span> 윤이세사주 채널 추가하기</a>'
@@ -2132,15 +2143,8 @@
         + '<a href="../../apply/">부딪히는 지점, 내 사주 전체로 딱 한 가지만 짚어 보고 싶다면 '
         + '→ <b>1:1 원포인트 상담 보기</b></a></p>';
     }
-
-    html += '<p class="note">링크에는 <b>내 사주 정보만</b> 담겨요 — 상대 사주는 담기지 않아요.</p>';
-    html += '<div class="brandmark brandmark--card">'
-      + '<span class="brandmark__ic" aria-hidden="true">🌙</span>'
-      + '<span class="brandmark__t">내 사주 타이밍 달력</span>'
-      + '<span class="brandmark__sep" aria-hidden="true">·</span>'
-      + '<span class="brandmark__b">윤이세사주</span>'
-      + '<span class="brandmark__h">(@life.saju_yoonise)</span>'
-      + '</div>';
+    /* 맨 끝 — 결과 아래는 여기서 끝난다(7차). '다시'는 이 작은 글자 링크 하나뿐. */
+    html += '<p class="chemi__again"><button type="button" id="againLink">다른 사람과 케미 다시 보기</button></p>';
 
     box.innerHTML = html;
     box.hidden = false;
@@ -2170,8 +2174,19 @@
       saveAmul(cv, rel, aName, bName);
     });
 
-    var sh = $('#shareChemiBtn');
-    if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
+    /* [친구에게 보내기] — 방금 그린 부적 PNG + 통합 링크(케미+내 초대 코드)를 한 번에 */
+    var sendB = $('#shareAmulBtn');
+    if (sendB) sendB.addEventListener('click', function () {
+      shareAmul(cv, a, rel, aName, bName);
+    });
+
+    /* [내 링크 바로 보내기] — 로그인 전이면 카카오 연결부터 */
+    var growB = $('#growShareBtn');
+    if (growB) growB.addEventListener('click', function () {
+      if (!state.user) { onLogin(null, growB); return; }
+      onShareMyLink(a);
+    });
+    updateGrow();
 
     /* 📸 태그 복사 + 인스타 열기 — 한 버튼 (2026-11-23 6차) */
     var ig = $('#instaGoBtn');
@@ -2182,21 +2197,7 @@
       });
     });
 
-    /* 🎁 친구 초대하고 혜택 받기 — 결과에서 STEP 2 · 내 사다리 / STEP 3 · 초대 링크로 올라간다.
-       4차(2026-11-23): 로그인 카드가 결과 아래로 내려갔으니, 로그인 전이면 STEP 1 로그인으로 먼저 데려간다. */
-    var jump = box.querySelector('[data-invite-jump]');
-    if (jump) jump.addEventListener('click', function () {
-      var target = (state.user ? doc.getElementById('ladderCard') : doc.getElementById('authCard'))
-        || doc.getElementById('ladderCard') || doc.getElementById('inviteCard');
-      if (!target) return;
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      target.classList.remove('is-jump');
-      void target.offsetWidth;
-      target.classList.add('is-jump');
-      setTimeout(function () { target.classList.remove('is-jump'); }, 1800);
-    });
-
-    var ag = $('#againBtn');
+    var ag = $('#againLink');
     if (ag) ag.addEventListener('click', function () {
       box.hidden = true;
       $('#chemiCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2952,10 +2953,18 @@
     ctx.restore();
   }
 
-  function saveAmul(cv, rel, aName, bName) {
-    var fname = '2027-' + (rel === 'love' ? '사랑부적' : '우정부적') + '-' + (aName || '나') + (bName ? '-' + bName : '') + '.png';
+  function amulFname(rel, aName, bName) {
+    return '2027-' + (rel === 'love' ? '사랑부적' : '우정부적') + '-' + (aName || '나') + (bName ? '-' + bName : '') + '.png';
+  }
+
+  /* PNG 를 내려받기 — quiet: 토스트 없이(공유 안 되는 환경에서 이미지도 함께 떨어뜨릴 때) */
+  function saveAmul(cv, rel, aName, bName, quiet) {
+    var fname = amulFname(rel, aName, bName);
     function fail() {
-      toast('저장이 막히면 카드를 길게 눌러 저장해 주세요.');
+      if (!quiet) toast('저장이 막히면 카드를 길게 눌러 저장해 주세요.');
+    }
+    function done() {
+      if (!quiet) toast('이미지로 저장했어요 — 사진첩에서 확인해 주세요.');
     }
     try {
       if (cv.toBlob) {
@@ -2970,7 +2979,7 @@
           aEl.click();
           doc.body.removeChild(aEl);
           setTimeout(function () { URL.revokeObjectURL(url); }, 6000);
-          toast('이미지로 저장했어요 — 사진첩에서 확인해 주세요.');
+          done();
         }, 'image/png');
         return;
       }
@@ -2978,8 +2987,96 @@
       var a2 = doc.createElement('a');
       a2.href = url2; a2.download = fname;
       doc.body.appendChild(a2); a2.click(); doc.body.removeChild(a2);
-      toast('이미지로 저장했어요 — 사진첩에서 확인해 주세요.');
+      done();
     } catch (e) { fail(); }
+  }
+
+  /* ── [친구에게 보내기] — 부적 PNG + 통합 링크(케미 + 내 초대 코드) ──────
+     · 파일 공유가 되는 폰(카톡·안드로이드·iOS): navigator.share({ files, text })
+       → 친구가 받는 건 그림 1장과, 그 안에 든 링크 1개(누르면 우리 둘 케미 + 내 초대 실적).
+     · 파일 공유가 안 되는 곳(PC·인앱 브라우저): 이미지를 저장하고 링크를 클립보드에 넣은 뒤
+       "링크가 복사됐어요! 이미지와 함께 카톡에 붙여넣어 보내 주세요" 로 안내한다. */
+  function shareAmul(cv, ch, rel, aName, bName) {
+    var url = chemiLink(ch);
+    var text = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.\n' + url;
+
+    function fallback() {
+      copyText(text).then(function (ok) {
+        saveAmul(cv, rel, aName, bName, true);
+        toast(ok
+          ? '링크가 복사됐어요! 이미지와 함께 카톡에 붙여넣어 보내 주세요'
+          : '이미지를 저장했어요. 링크는 화면에서 길게 눌러 복사해 주세요.');
+      });
+    }
+
+    function tryShare(blob) {
+      try {
+        var file = null;
+        try { file = new File([blob], amulFname(rel, aName, bName), { type: 'image/png' }); } catch (e) { file = null; }
+        if (!file || !navigator.share || !navigator.canShare || !navigator.canShare({ files: [file] })) {
+          fallback(); return;
+        }
+        navigator.share({
+          title: '2027년 ' + (rel === 'love' ? '사랑' : '우정') + ' 부적 · ' + (aName || '나') + (bName ? ' · ' + bName : ''),
+          text: text,
+          files: [file]
+        }).catch(function (err) {
+          if (err && err.name === 'AbortError') return;   // 사용자가 공유 창을 닫았을 뿐
+          fallback();
+        });
+      } catch (e) { fallback(); }
+    }
+
+    try {
+      if (cv.toBlob) { cv.toBlob(function (blob) { if (blob) tryShare(blob); else fallback(); }, 'image/png'); return; }
+    } catch (e) {}
+    fallback();
+  }
+
+  /* ── [내 링크 바로 보내기] — 링크 하나(케미 + 초대)로 초대와 케미를 같이 ── */
+  function onShareMyLink(ch) {
+    if (!state.user) { onLogin(null, $('#growShareBtn')); return; }
+    if (!myCode()) {
+      loadProfile();
+      toast('내 초대 코드를 준비하는 중이에요 — 잠시 뒤 다시 눌러 주세요.');
+      return;
+    }
+    var url = chemiLink(ch);
+    var text = '2027년 사주 달력 같이 보자 🌙\n'
+      + '내 링크로 들어오면 ' + FRIEND_GIFT + ' 받고, 우리 둘 2027년 케미도 볼 수 있대.\n'
+      + url;
+    if (navigator.share) {
+      navigator.share({ title: '윤이세 2027 타이밍 캘린더', text: text, url: url }).then(function () {}, function () {
+        copyText(text).then(function (ok) { toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); });
+      });
+      return;
+    }
+    copyText(text).then(function (ok) {
+      toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.');
+    });
+  }
+
+  /* ── grow 카드의 내 추천 현황 + 버튼 이름 ───────────
+     로그인 전: [카카오로 연결하고 내 링크 받기] / 로그인 후: '현재 N명 달성' + [내 링크 바로 보내기]
+     숫자는 서버(referrals)가 준 값만 — 지어내지 않는다. */
+  function updateGrow() {
+    var btn = $('#growShareBtn'), stat = $('#growStat');
+    if (btn) btn.textContent = state.user ? '내 링크 바로 보내기' : '카카오로 연결하고 내 링크 받기';
+    if (!stat) return;
+    if (!state.user) { stat.hidden = true; stat.innerHTML = ''; return; }
+    if (state.demo !== null) { stat.hidden = false; stat.innerHTML = '미리보기 숫자예요'; return; }
+    if (state.db !== 'live') {
+      stat.hidden = false;
+      stat.textContent = state.db === 'unavailable'
+        ? '내 추천 명수를 다시 확인하는 중이에요'
+        : '내 추천 명수를 불러오는 중…';
+      return;
+    }
+    var n = state.invited, LAD = ladderFor(state.paidTier), next = null;
+    for (var i = 0; i < LAD.length; i++) if (n < LAD[i].n) { next = LAD[i]; break; }
+    stat.hidden = false;
+    stat.innerHTML = '현재 <b>' + n + '명</b> 달성'
+      + (next ? ' · 다음 칸 ' + next.n + '명까지 <b>' + (next.n - n) + '명</b>' : ' · 사다리 끝까지 왔어요');
   }
 
   /* ── 케미: 링크 ─────────────────────────────────── */
@@ -3014,19 +3111,10 @@
     return LIVE_BASE + q;
   }
 
-  function onShareChemin(ch) {
-    var url = chemiLink(ch);
-    var text = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.\n' + url;
-    if (navigator.share) {
-      navigator.share({ title: '2027년 케미', text: text, url: url }).then(function () {}, function () {
-        copyText(text).then(function (ok) { toast(ok ? '케미 링크를 복사했어요.' : '복사가 안 됐어요.'); });
-      });
-      return;
-    }
-    copyText(text).then(function (ok) {
-      toast(ok ? '케미 링크를 복사했어요. 친구에게 붙여 넣기만 하세요.' : '복사가 안 됐어요.');
-    });
-  }
+  /* ── 케미 링크 — 언제나 내 초대 코드를 함께 싣는다 (2026-11-23 7차)
+     친구가 이 링크 하나로 ① 우리 둘 케미를 보고 ② 내 초대 실적에 붙는다.
+     '내 초대 링크'와 '내 케미 링크'가 따로 있으면 헷갈린다 — 주소는 하나만 보낸다. */
+  function onShareChemin(ch) { onShareMyLink(ch); }
 
   /* ── 케미: 실행 ─────────────────────────────────── */
   function runChemin(force) {

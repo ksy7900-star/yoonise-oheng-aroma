@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261123h">
+<link rel="stylesheet" href="member.css?v=20261123i">
 </head>
 <body>
 
@@ -188,11 +188,12 @@
   <section class="card" id="chemiResult" hidden aria-live="polite"></section>
 
   <!-- 결과 아래 — ① 친구 초대(1/3/5/7) ② 인스타 올리기(+1개월) 는 결과 카드 안(.grow),
-       그 아래 ③ 내 2027년 케미 링크 보내기 · 윤이세사주 채널 추가하기 → ④ 카카오 연결·초대 링크.
-       6차(2026-11-23): 인스타 안내를 결과 안 한 카드로 합쳤다 — 아래 따로 두던 인스타 인증 카드는 걷어냈다. -->
+       그 아래 ③ 윤이세사주 채널 추가하기 → ④ (낮은 점수만) 상담 한 줄 → ⑤ 맨 끝 '다른 사람과 케미 다시 보기'.
+       7차(2026-11-23 김나영 님): 링크를 1개로 합치고, 결과 아래 길게 붙던 STEP 1~3 카드는 화면에서 감춘다(.v2-parked).
+       코드는 그대로 살려 둔다 — 로그인·사다리·초대 계산은 이 카드들이 계속 맡는다. -->
 
   <!-- ───────── STEP 1 · 로그인 (케미 결과를 본 뒤에 나온다) ───────── -->
-  <section class="card" id="authCard">
+  <section class="card v2-parked" id="authCard">
     <p class="card__eyebrow">STEP 1 · 내 계정</p>
     <h2 class="card__title" id="authTitle">카카오로 연결하면 끝나요</h2>
     <p class="card__sub" id="authSub">닉네임과 이메일만 받아요. 두 사람 케미 결과는 이 앱에서만 열 수 있어요.</p>
@@ -236,7 +237,7 @@
   </section>
 
   <!-- ───────── STEP 2 · 사다리 ───────── -->
-  <section class="card" id="ladderCard">
+  <section class="card v2-parked" id="ladderCard">
     <p class="card__eyebrow">STEP 2 · 내 사다리</p>
     <h2 class="card__title" id="ladderTitle">친구가 들어오면, 한 칸씩</h2>
     <!-- 결제자는 기간 대신 상담 할인권 사다리 하나만 (2026-11-22) -->
@@ -275,7 +276,7 @@
   </section>
 
   <!-- ───────── STEP 3 · 초대 링크 ───────── -->
-  <section class="card" id="inviteCard">
+  <section class="card v2-parked" id="inviteCard">
     <p class="card__eyebrow">STEP 3 · 초대 링크</p>
     <h2 class="card__title">한 번만 복사해서 보내면 돼요</h2>
     <p class="card__sub">친구가 내 링크로 들어와 로그인하면, 두 사람 모두에게 혜택이 붙어요.</p>
@@ -307,11 +308,11 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- 계산 엔진(달력과 같은 파일) -->
-<script src="../vendor/lunar.js?v=20261123h"></script>
-<script src="../assets/manse.js?v=20261123h"></script>
-<script src="../assets/timing.js?v=20261123h"></script>
+<script src="../vendor/lunar.js?v=20261123i"></script>
+<script src="../assets/manse.js?v=20261123i"></script>
+<script src="../assets/timing.js?v=20261123i"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261123h"></script>
+<script src="member.js?v=20261123i"></script>
 </body>
 </html>

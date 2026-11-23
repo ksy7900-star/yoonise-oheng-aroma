@@ -800,6 +800,14 @@ a { color: inherit; }
   background: #F6EFE1; color: #8A5A16;
   font-size: 11px; font-weight: 800;
 }
+/* 내 추천 현황 — 로그인했으면 '현재 N명 달성 · 다음 칸까지 N명' 한 줄 (2026-11-23 7차) */
+.grow__stat {
+  margin: 8px 0 4px; padding: 8px 11px; border-radius: 11px;
+  background: #FDF6E7; border: 1px solid rgba(180, 83, 9, .18);
+  font-size: 12.5px; line-height: 1.5; color: #7C2D12; letter-spacing: -.02em;
+}
+.grow__stat b { color: var(--gold-deep); font-weight: 800; }
+.grow__card .btn--gold { margin-top: 0; }
 .grow .btn { min-height: 46px; font-size: 13.5px; font-weight: 700; }
 .grow .btn-row { margin-top: 10px; }
 .grow .btn-row .btn { font-size: 12.5px; }
@@ -886,6 +894,19 @@ a { color: inherit; }
   padding-bottom: 1px;
 }
 .chemi__consult a b { font-weight: 800; color: #8A5A16; }
+
+/* 결과 맨 끝 — '다른 사람과 케미 다시 보기' 작은 글자 링크 하나 (2026-11-23 7차) */
+.chemi__again { margin-top: 16px; text-align: center; }
+.chemi__again button {
+  background: none; border: 0; padding: 8px 6px; margin: 0;
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--mute);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.chemi__again button:active { opacity: .6; }
+
+/* 7차 — 결과 아래 중복 카드(STEP 1 로그인 · STEP 2 내 사다리 · STEP 3 초대 링크)는
+   코드는 남기고 화면에서만 감춘다. 되살릴 때는 이 클래스만 떼면 된다. */
+.v2-parked { display: none !important; }
 
 /* ── 스토리 이벤트 안내 ─────────────────────────────── */
 .sub-h {
