@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="member.css?v=20261123g">
+<link rel="stylesheet" href="member.css?v=20261123h">
 </head>
 <body>
 
@@ -187,53 +187,9 @@
   <!-- ───────── 케미 결과 ───────── -->
   <section class="card" id="chemiResult" hidden aria-live="polite"></section>
 
-  <!-- 결과 아래 — ① 무료로 달력 넓히기(1/3/5/7) ② 인스타 스토리 공유 는 결과 카드 안(.grow),
-       그 아래 ③ 인스타 인증 안내 → ④ 카카오 연결·초대 링크 세 카드 순서 (2026-11-23 4차) -->
-  <!-- ───────── 인스타 인증 (피드·릴스 · 1개월 무료 · 단일 이벤트) ───────── -->
-  <section class="card" id="storyGiftCard">
-    <p class="card__eyebrow">인스타 인증</p>
-    <h2 class="card__title">타이밍 달력,<br>무료로 즐기는 법</h2>
-    <p class="card__sub"><b>케미 카드 · 우정·사랑 부적 · 달력 · 액운 태우기 화면</b> 중 2장 이상을 인스타 <b>피드·릴스</b>에 올려 주세요.</p>
-
-    <div class="gift">
-      <span class="gift__ic" aria-hidden="true">🎁</span>
-      <span class="gift__b">인스타에 사진 2장 이상 → <b>내 사주 타이밍 달력 1개월 무료</b> · 계정당 1회, 지우지 않고 계속 두는 게시물이면 돼요.</span>
-    </div>
-
-    <p class="sub-h">올리는 방법 <span class="sub-h__opt">3단계</span></p>
-    <ol class="steps steps--easy">
-      <li><b>1</b><span>결과 화면 <strong>2장 이상</strong> 캡처</span></li>
-      <li><b>2</b><span>인스타 <strong>피드·릴스</strong>에 올리며 <strong>아래 문구 한 번에 복사</strong> → 그대로 붙여넣기</span></li>
-      <li><b>3</b><span>올린 화면 캡처 → 카톡 <strong>윤이세사주</strong>로 보내기</span></li>
-    </ol>
-
-    <div class="capbox">
-      <p class="capbox__lb">복사할 문구 <span>계정 태그 + 해시태그 8종</span></p>
-      <p class="capbox__text" id="capText"></p>
-      <div class="btn-row">
-        <button type="button" class="btn btn--gold btn--wide" id="copyCapBtn">문구 한 번에 복사</button>
-        <a class="btn btn--ghost" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">인스타 열기</a>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <a class="btn btn--ghost btn--wide" id="chAddOneTap" href="https://pf.kakao.com/_hxfbCG/friend" target="_blank" rel="noopener noreferrer"><span class="btn__ic" aria-hidden="true">💬</span>윤이세사주 채널 추가하기</a>
-    </div>
-
-    <div class="btn-row">
-      <a class="btn btn--kakao btn--wide" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">카톡 채널로 보내기</a>
-    </div>
-
-    <p class="fine">전체 공개 계정만 인증돼요 · 계정당 1회 · 게시물은 지우지 말고 계속 남겨 주세요. 같은 캡처를 두 번 쓰거나 이미 받은 계정으로 다시 보내면 지급되지 않아요. 사주·생년월일은 가리고 올리셔도 인증됩니다.</p>
-
-    <div class="brandmark brandmark--card">
-      <span class="brandmark__ic" aria-hidden="true">🌙</span>
-      <span class="brandmark__t">내 사주 타이밍 달력</span>
-      <span class="brandmark__sep" aria-hidden="true">·</span>
-      <span class="brandmark__b">윤이세사주</span>
-      <span class="brandmark__h">(@life.saju_yoonise)</span>
-    </div>
-  </section>
+  <!-- 결과 아래 — ① 친구 초대(1/3/5/7) ② 인스타 올리기(+1개월) 는 결과 카드 안(.grow),
+       그 아래 ③ 내 2027년 케미 링크 보내기 · 윤이세사주 채널 추가하기 → ④ 카카오 연결·초대 링크.
+       6차(2026-11-23): 인스타 안내를 결과 안 한 카드로 합쳤다 — 아래 따로 두던 인스타 인증 카드는 걷어냈다. -->
 
   <!-- ───────── STEP 1 · 로그인 (케미 결과를 본 뒤에 나온다) ───────── -->
   <section class="card" id="authCard">
@@ -351,11 +307,11 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- 계산 엔진(달력과 같은 파일) -->
-<script src="../vendor/lunar.js?v=20261123g"></script>
-<script src="../assets/manse.js?v=20261123g"></script>
-<script src="../assets/timing.js?v=20261123g"></script>
+<script src="../vendor/lunar.js?v=20261123h"></script>
+<script src="../assets/manse.js?v=20261123h"></script>
+<script src="../assets/timing.js?v=20261123h"></script>
 <!-- 회원·추천 (Supabase) — 늦게 떠도 케미 계산은 그대로 돌아가게 async -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
-<script src="member.js?v=20261123g"></script>
+<script src="member.js?v=20261123h"></script>
 </body>
 </html>

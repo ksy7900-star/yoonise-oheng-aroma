@@ -128,9 +128,11 @@
   }
   var FRIEND_GIFT = '5일 체험 + 액운 태우기 1회';
   var HASHTAGS = '#내사주타이밍달력 #2027신년운세 #2027사주 #사주달력 #액운태우기 #윤이세사주 #2027타이밍캘린더 #새해운세';
-  var HASHTAG_LIST = ['#내사주타이밍달력', '#2027신년운세', '#2027사주', '#사주달력', '#액운태우기', '#윤이세사주', '#2027타이밍캘린더', '#새해운세'];
   var INSTA = 'life.saju_yoonise';
-  var CAPTION = '@' + INSTA + '\n' + HASHTAGS;   // 인스타에 그대로 붙여넣는 한 덩어리
+  // 인스타에 그대로 붙여넣는 한 덩어리 — 계정 태그 한 줄 + 짧은 추천 한 줄 + 해시태그 (2026-11-23 6차)
+  var REC_LINE = '2027년 조심할 달·밀어붙일 달을 내 사주로 뽑아 봤어요. 친구랑 겹쳐 보면 더 재밌어요 🌙';
+  var CAPTION = '@' + INSTA + '\n' + REC_LINE + '\n' + HASHTAGS;
+  var INSTA_WEB = 'https://www.instagram.com/';
 
   var state = {
     user: null, session: null, profile: null,
@@ -163,6 +165,29 @@
   }
 
   /* ── 클립보드 ───────────────────────────────────── */
+  /* ── 인스타 열기 ─────────────────────────────────
+     폰: 앱 스킴(instagram://app) 먼저 → 앱이 없으면 웹으로.
+     웹·PC: 새 창. 어느 쪽이든 버튼 누른 흐름 안에서 끝나게 한다. */
+  function openInstagram() {
+    var ua = (navigator.userAgent || '');
+    var mobile = /Android|iPhone|iPad|iPod/i.test(ua);
+    if (!mobile) {
+      var w = window.open(INSTA_WEB, '_blank', 'noopener');
+      if (!w) location.href = INSTA_WEB;
+      return;
+    }
+    var left = false;
+    function onLeave() { left = true; }
+    doc.addEventListener('visibilitychange', onLeave);
+    window.addEventListener('pagehide', onLeave);
+    setTimeout(function () {
+      doc.removeEventListener('visibilitychange', onLeave);
+      window.removeEventListener('pagehide', onLeave);
+      if (!left && doc.visibilityState === 'visible') location.href = INSTA_WEB;
+    }, 1100);
+    try { location.href = 'instagram://app'; } catch (e) { location.href = INSTA_WEB; }
+  }
+
   function copyText(text) {
     return new Promise(function (resolve) {
       if (navigator.clipboard && global.isSecureContext) {
@@ -2064,10 +2089,10 @@
       + '</div>';
     html += '<p class="story__cap">카드를 길게 눌러 저장해도 돼요. 친구·연인을 바꿔 보면 부적 이름과 그림이 달라져요 — 돌려서 모아 보세요.</p>';
 
-    /* ── 결과 바로 아래 두 갈래 (2026-11-23 3차 김나영 님) ──────────────
+    /* ── 결과 바로 아래 두 갈래 (2026-11-23 6차 김나영 님) ──────────────
        ① 친구 초대 1/3/5/7 로 '내 사주 타이밍 달력'을 무료로 넓히기
-       ② 인스타 스토리에 @life.saju_yoonise 태그 → 달력 +1개월
-       결과를 다 본 자리에서 조용히 한 장씩 — 가격표·배너는 넣지 않는다. */
+       ② 인스타 피드·릴스에 올리기 → 달력 +1개월 · 버튼 하나로 태그 복사 + 인스타 열기
+       결과를 다 본 자리에서 한 장씩 — 가격표·배너는 넣지 않는다. */
     html += '<section class="grow" aria-label="내 사주 타이밍 달력 더 열기">'
       + '<div class="grow__card">'
       + '<p class="grow__lb">🎁 무료로 달력 넓히기</p>'
@@ -2081,22 +2106,12 @@
       + '<button type="button" class="btn btn--gold btn--wide" data-invite-jump>내 초대 링크 만들기 →</button>'
       + '</div>'
       + '<div class="grow__card grow__card--insta">'
-      + '<p class="grow__lb">📸 인스타 스토리 공유</p>'
-      + '<p class="grow__t">스토리에 올리고 <b>@' + INSTA + '</b> 를 태그해 주세요</p>'
-      + '<p class="grow__d">인증하면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요. 방금 만든 케미 카드나 달력 화면을 그대로 올리면 돼요.</p>'
-      + '<div class="btn-row">'
-      + '<button type="button" class="btn btn--ghost" id="growCopyCap">올릴 문구 복사</button>'
-      + '<a class="btn btn--ghost" href="#storyGiftCard">인증 방법</a>'
-      + '</div>'
+      + '<p class="grow__lb">📸 인스타 올리기 · +1개월</p>'
+      + '<p class="grow__t">인스타 <b>피드·릴스</b>에 결과 화면을 올리면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요</p>'
+      + '<button type="button" class="btn btn--gold btn--wide" id="instaGoBtn">📸 태그 복사하고 인스타 올리기</button>'
+      + '<p class="grow__d">올린 화면은 카톡 <b>윤이세사주</b>로 보내 주세요 · 계정당 1회</p>'
       + '</div>'
       + '</section>';
-
-    /* 낮은 조합(60~77점)에만 — 부적 아래 조용한 상담 한 줄. 가격표·배너 없이 (2026-11-22) */
-    if (scoreIsLow(score)) {
-      html += '<p class="chemi__consult">'
-        + '<a href="../../apply/">부딪히는 지점, 내 사주 전체로 딱 한 가지만 짚어 보고 싶다면 '
-        + '→ <b>1:1 원포인트 상담 보기</b></a></p>';
-    }
 
     html += '<div class="btn-row">'
       + '<button type="button" class="btn btn--kakao btn--wide" id="shareChemiBtn">내 2027년 케미 링크 보내기</button>'
@@ -2106,8 +2121,15 @@
       + '<a class="btn btn--gold" href="' + KAKAO_CHANNEL_ADD + '" target="_blank" rel="noopener">'
       + '<span aria-hidden="true">💬</span> 윤이세사주 채널 추가하기</a>'
       + '</div>';
-    html += '<p class="note">보내는 링크에는 <b>내 사주 정보만</b>(생년월일·시각·성별) 담겨요. 상대방 사주는 담기지 않아요. '
-      + '친구가 링크를 열고 자기 사주를 넣으면 같은 비교가 그쪽 화면에서 만들어집니다.</p>';
+    /* 낮은 조합(60~77점)에만 — 마지막 채널 추가 아래 조용한 상담 한 줄.
+       6차(2026-11-23): ① 초대 ② 인스타 ③ 케미 링크·채널 추가 흐름을 끊지 않게 아래로 내렸다. */
+    if (scoreIsLow(score)) {
+      html += '<p class="chemi__consult">'
+        + '<a href="../../apply/">부딪히는 지점, 내 사주 전체로 딱 한 가지만 짚어 보고 싶다면 '
+        + '→ <b>1:1 원포인트 상담 보기</b></a></p>';
+    }
+
+    html += '<p class="note">링크에는 <b>내 사주 정보만</b> 담겨요 — 상대 사주는 담기지 않아요.</p>';
     html += '<div class="brandmark brandmark--card">'
       + '<span class="brandmark__ic" aria-hidden="true">🌙</span>'
       + '<span class="brandmark__t">내 사주 타이밍 달력</span>'
@@ -2147,11 +2169,12 @@
     var sh = $('#shareChemiBtn');
     if (sh) sh.addEventListener('click', function () { onShareChemin(a); });
 
-    /* 📸 인스타에 올릴 문구 복사 — 결과 아래 인스타 카드에서 바로 */
-    var gc = $('#growCopyCap');
-    if (gc) gc.addEventListener('click', function () {
+    /* 📸 태그 복사 + 인스타 열기 — 한 버튼 (2026-11-23 6차) */
+    var ig = $('#instaGoBtn');
+    if (ig) ig.addEventListener('click', function () {
       copyText(CAPTION).then(function (ok) {
-        toast(ok ? '인스타 문구를 복사했어요. 스토리에 붙여넣으세요.' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요.');
+        toast(ok ? '복사됐어요! 인스타 열리면 붙여넣고 올려 주세요' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요');
+        setTimeout(openInstagram, ok ? 520 : 0);
       });
     });
 
@@ -3145,22 +3168,11 @@
     var btn = $('#chemiBtn');
     if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); runChemin(); });
 
-    var cap = $('#copyCapBtn');
-    if (cap) cap.addEventListener('click', function () {
-      copyText(CAPTION).then(function (ok) {
-        toast(ok ? '인스타 문구를 복사했어요. 그대로 붙여넣으세요.' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요.');
-      });
-    });
-
     // 입력이 바뀌면 이전 결과는 숨긴다(숫자가 어긋나 보이지 않게)
     ['meName', 'youName'].forEach(function (id) {
       var el = $('#' + id);
       if (el) el.addEventListener('input', hideResult);
     });
-
-    var ct = $('#capText');
-    if (ct) ct.innerHTML = '<b>@' + esc(INSTA) + '</b>' +
-      HASHTAG_LIST.map(function (t) { return '<i>' + esc(t) + '</i>'; }).join('');
 
     renderAuth(); renderLadder(); renderInvite(); renderRefBanner();
     initAuth();
