@@ -142,21 +142,18 @@
   }
 
   /* ── 개인 전용 입장 코드 (1결제 = 1번호, 2026-11-21부터) ──────────────────
-     결제한 손님의 **휴대폰 번호**(결제할 때 넣은 번호)에 비밀 salt 서명을 묶은 코드입니다.
-     기본은 **6자리 간단 코드** — 등급 글자 1 + 숫자 5자리.
+     결제한 손님의 **휴대폰 번호**(결제할 때 넣은 번호)에 비밀 서명을 묶은 6자리 코드입니다.
 
-       D21744
-         P/A/D/M  상품 등급 — P 1년 패스 · A 올인원 · D 성찰 에디션 · M 1개월(30일) 이용권
-         21744    서명 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + 아래 CODE_SALT 로 계산
-                  → 사주를 넣지 않아도 되고, 사장님이 번호만 발급기에 넣으면 3초에 코드가 나온다
+       P21744
+         P/A/D/M  상품 등급 — P 1년 전체 · A 올인원(옛) · D 성찰(옛) · M 1개월(30일) 이용권
+         21744    서명 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + 서버에만 있는 비밀값
 
      → 손님은 [휴대폰 번호 + 6자리 코드]를 함께 넣는다. 번호와 코드가 맞으면 바로 열린다.
        번호가 다르면 숫자가 맞지 않아 열리지 않는다. (코드를 남에게 옮겨도 번호를 모르면 못 연다)
      → 예전(사주 기반) 6자리 코드와 18자리 코드(YS-P-791025F-K7QM3)도 계속 열린다(호환).
      → 나영 님 전용 발급기: calendar/yoon-key/ (비밀번호 4자리로 잠금).
-     ★ 아래 CODE_SALT·서명 함수는 그 발급기와 반드시 똑같이 맞춰야 한다(발급기를 고치면 여기도 같이). */
-  var CODE_SALT = 'yoonise-2027-timing-9f3a';
-  var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';   // 0·1·I·L·O 를 뺀 31자 (손으로 옮겨도 덜 틀리게)
+     ★ 2026-11-24 — 코드 계산식·비밀값(CODE_SALT)은 이 파일에서 지우고 서버로 옮겼다.
+       여기서는 모양만 보고, 진짜 확인은 verifyCodeRemote → Supabase verify_entry_code 가 한다. */
   var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary', M: 'month' };
   var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D', month: 'M' };
   var TIER_NAME = { pass: '1년 전체 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 이용권' };
@@ -684,12 +681,72 @@
     trialStartMemo = v;
     return v;
   }
+  /* ── 🎁 친구 초대 보상 기간 자동 해금 (2026-11-24) ─────────────────────
+     친구 추천을 달성한 손님은 서버(entitlements)에 보상 기간이 쌓인다
+     (1명 +2주 · 3명 +1개월 · 5명 +3개월 · 7명 +6개월). 달력에 들어올 때 그 기간을 읽어
+     그날까지 자동으로 열어 준다 — 카톡으로 코드를 받지 않아도 된다.
+     · 카카오 로그인 세션이 있을 때만 서버에 묻는다(없으면 조용히 7일 체험 그대로).
+     · 서버에 닿지 않으면 지난번에 받아 둔 날짜로만 판단하고, 화면은 그대로 뜬다.
+     · 이미 코드로 열린 기기는 건드리지 않는다(state.unlocked 가 우선). */
+  var BONUS_KEY = 'yoonise.timing.bonusUntil.v1';
+  var bonusMemo = null;
+  function loadBonusMemo() {
+    try {
+      var o = JSON.parse(localStorage.getItem(BONUS_KEY) || 'null');
+      bonusMemo = (o && /^\d{4}-\d{2}-\d{2}$/.test(o.until || '')) ? o : null;
+    } catch (e) { bonusMemo = null; }
+  }
+  function bonusUntil() { return (bonusMemo && bonusMemo.until) ? bonusMemo.until : ''; }
+  function bonusActive() {
+    var u = bonusUntil();
+    return !!u && !!state.todayISO && u >= state.todayISO && !state.unlocked;
+  }
+  function syncReferralBonus() {
+    if (!hasSbSession()) return;
+    loadSbLib(function (lib) {
+      if (!lib || !lib.createClient) return;
+      try {
+        if (!sbClient) {
+          sbClient = lib.createClient(SB_URL, SB_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+          });
+        }
+        sbClient.auth.getSession().then(function (r) {
+          var u = r && r.data && r.data.session && r.data.session.user;
+          if (!u) return;
+          sbClient.rpc('my_referral_bonus').then(function (res) {
+            var d = res && res.data;
+            if (!d || d.ok === false) return;
+            var until = String(d.until || '');
+            var prev = bonusUntil();
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(until)) {
+              bonusMemo = null;
+              try { localStorage.removeItem(BONUS_KEY); } catch (e) { }
+            } else {
+              bonusMemo = { until: until, refs: d.referrals || 0, days: d.days_left || 0 };
+              try { localStorage.setItem(BONUS_KEY, JSON.stringify(bonusMemo)); } catch (e) { }
+            }
+            if (prev !== until) {
+              syncTrialState();
+              renderCalendar();
+              renderYearSummary();
+              renderChemiBanner();
+            }
+          }, function () { });
+        }, function () { });
+      } catch (e) { }
+    });
+  }
+
   /** 무료 구간 { start, end } — 기기 시계가 뒤로 가 첫 방문일이 미래로 보이면 오늘부터로 본다 */
   function trialWindow() {
     var start = trialStartISO();
     if (!start) return null;
     if (start > state.todayISO) start = state.todayISO;
-    return { start: start, end: T.addDays(start, FREE_DAYS - 1) };
+    var end = T.addDays(start, FREE_DAYS - 1);
+    var b = bonusUntil();                       // 친구 초대 보상 — 그날까지는 잠그지 않는다
+    if (b && b > end) end = b;
+    return { start: start, end: end };
   }
   /** 무료 7일을 다 썼는가 — 코드를 넣지 않은 채 8일째가 되면 참 */
   function trialOver() {
@@ -710,6 +767,21 @@
     var mode = TEST_OPEN_ALL ? 'off'
       : ((!FREE_TRIAL_ENABLED || state.unlocked) ? 'off' : (trialOver() ? 'over' : 'on'));
     document.body.setAttribute('data-trial', mode);
+
+    /* 🎁 친구 초대 보상 — 그날까지 열려 있으면 '7일 무료' 문구 대신 보상 만료일을 보여 준다 */
+    var bonus = bonusActive();
+    document.body.classList.toggle('has-bonus', bonus);
+    var bb = $('#bonusBar');
+    if (bb) {
+      if (bonus) {
+        var bu = bonusUntil().split('-');
+        bb.innerHTML = '🎁 친구 초대 보상으로 <b>' + bu[0] + '년 ' + parseInt(bu[1], 10) + '월 ' + parseInt(bu[2], 10) + '일</b>까지 달력이 열려 있어요';
+        bb.hidden = false;
+      } else {
+        bb.hidden = true;
+        bb.innerHTML = '';
+      }
+    }
     var strip = $('#calTrialOver');
     if (strip) strip.hidden = mode !== 'over';      // 달력 위 잠금 안내 한 줄
     /* 달력 위 '1년 전체 열기 · 14,900원' 큰 버튼 — 체험이 끝난 기기에만 보인다.
@@ -1010,111 +1082,71 @@
     try { localStorage.setItem(STAMP_KEY, JSON.stringify(state.stamps)); } catch (e) {}
   }
 
-  /* ── 개인 코드 서명 — 발급기와 똑같은 계산 ───────────────────────── */
-  function fnv1a(str) {
-    var h = 0x811c9dc5;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 0x01000193) >>> 0;
-    }
-    return h >>> 0;
-  }
-  /** 서명 5자 — 상품 등급 · 생년월일(YYMMDD) · 성별 + 비밀 SALT (예전 18자리 코드용) */
-  function codeSign(letter, ymd, gender) {
-    var base = CODE_SALT + '|' + letter + '|' + ymd + '|' + gender;
-    var h1 = fnv1a(base), h2 = fnv1a(base + '#2');
-    var n = h1 % 28629151;          // 31^5 — 다섯 자리에 담을 수 있는 경우의 수
-    var out = '';
-    for (var i = 0; i < 5; i++) {
-      out += CODE_ALPHA.charAt((n % 31 + ((h2 >>> (i * 3)) & 31)) % 31);
-      n = Math.floor(n / 31);
-    }
-    return out;
-  }
-  /** 32비트 마무리 섞기 — 숫자 5자리 서명이 고르게 퍼지도록 */
-  function mix32(h) {
-    h = h >>> 0;
-    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
-    h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
-    h ^= h >>> 16;
-    return h >>> 0;
-  }
-  /** 6자리 간단 코드의 숫자 5자리 — 결제하신 휴대폰 번호(숫자만) + 상품 + SALT. 10000~99999 */
-  function codeDigits(letter, phone) {
-    var base = CODE_SALT + '|p|' + letter + '|' + phone;
-    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#pd')) % 90000);
-  }
-  /** 예전(2026-11-21 이전) 사주 기반 6자리의 숫자 5자리 — 테스트로 발급한 코드를 계속 열기 위한 호환 계산.
-      지금은 쓰지 않지만 지우면 그때 코드가 잠긴다. */
-  function codeDigitsSaju(letter, ymd, gender) {
-    var base = CODE_SALT + '|6|' + letter + '|' + ymd + '|' + gender;
-    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#6d')) % 90000);
-  }
-  function formatCode(letter, ymd, gender, sign) {
-    return 'YS-' + letter + '-' + ymd + gender + '-' + sign;
-  }
-  /** 코드 문자열 → { status, ... } · status 로 무엇이 잘못됐는지 구분한다
-     ok        번호(또는 예전 사주)와 코드가 맞음 → 열 수 있다
-     empty     아무것도 안 넣음
-     format    6자리도 예전 18자리도 아닌 모양
-     bad       예전 18자리 모양이지만 서명이 틀림
-     needphone 6자리 코드인데 휴대폰 번호를 안 넣음 (번호 + 코드가 한 쌍)
-     mismatch  6자리 코드인데 그 번호로 계산한 숫자와 다름 (다른 번호이거나 잘못 옮긴 코드)
-     ※ ctx = { phone, ymd, gender } — phone 은 결제하신 휴대폰 번호(숫자만),
-        ymd·gender 는 예전 사주 기반 코드를 계속 열기 위한 지금 사주 값 */
-  function parseCode(v, ctx) {
-    ctx = ctx || {};
+  /* ── 입장 코드 확인은 서버가 한다 (2026-11-24) ────────────────────────────
+     예전엔 이 파일 안에 CODE_SALT 와 계산식이 그대로 있어, 소스를 보면 누구나
+     유료 코드를 위조할 수 있었다(미스터리 쇼퍼 지적). 이제 SALT 는 Supabase 안에만 있고,
+     확인은 서버 함수 verify_entry_code 하나로 한다. 이 파일에는 SALT 도 계산식도 없다.
+     · 처음 한 번만 서버에 물어보고, 통과한 코드는 지금처럼 이 기기에 저장돼 오프라인에서도 열린다.
+     · 서버에 닿지 않으면 '지금은 확인이 잠시 안 된다'고만 알리고, 엉뚱하게 열어 주지 않는다. */
+  /** 코드 모양만 본다 — 진짜 확인은 verifyCodeRemote */
+  function shapeOfCode(v) {
     var n = normCode(v);
     if (!n) return { status: 'empty' };
     var legacy = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
     if (legacy) {
-      if (codeSign(legacy[1], legacy[2], legacy[3]) !== legacy[4]) return { status: 'bad' };
       return {
-        status: 'ok', legacy: true,
+        status: 'shape', legacy: true,
         code: formatCode(legacy[1], legacy[2], legacy[3], legacy[4]),
-        tier: CODE_TIER_OF_LETTER[legacy[1]], letter: legacy[1],
-        ymd: legacy[2], gender: legacy[3]
+        letter: legacy[1], ymd: legacy[2], gender: legacy[3]
       };
     }
     var simple = /^([PADM])(\d{5})$/.exec(n);
     if (!simple) return { status: 'format' };
-    var letter = simple[1];
-    var phone = ctx.phone || '';
-    if (phone) {
-      if (codeDigits(letter, phone) === simple[2]) {
-        return {
-          status: 'ok', legacy: false,
-          code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
-          phone: phone
-        };
-      }
-      /* 예전 사주 기반 6자리 — 그때 사주와 지금 사주가 같으면 계속 열어 준다 */
-      if (ctx.ymd && codeDigitsSaju(letter, ctx.ymd, ctx.gender) === simple[2]) {
-        return {
-          status: 'ok', legacy: false,
-          code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
-          ymd: ctx.ymd, gender: ctx.gender
-        };
-      }
-      return { status: 'mismatch', letter: letter, phone: phone };
-    }
-    if (!ctx.ymd) return { status: 'needphone', letter: letter };
-    if (codeDigitsSaju(letter, ctx.ymd, ctx.gender) === simple[2]) {
-      return {
-        status: 'ok', legacy: false,
-        code: letter + simple[2], tier: CODE_TIER_OF_LETTER[letter], letter: letter,
-        ymd: ctx.ymd, gender: ctx.gender
-      };
-    }
-    return { status: 'mismatch', letter: letter };
+    return { status: 'shape', legacy: false, code: simple[1] + simple[2], letter: simple[1] };
+  }
+  /** 서버(RPC verify_entry_code)로 진짜 코드인지 확인 — parseCode 와 같은 모양으로 돌려준다 */
+  function verifyCodeRemote(code, ctx, cb) {
+    ctx = ctx || {};
+    var body = {
+      p_code: String(code || ''),
+      p_phone: ctx.phone || null,
+      p_ymd: ctx.ymd || null,
+      p_gender: ctx.gender || null
+    };
+    var done = false;
+    function finish(p) { if (done) return; done = true; cb(p); }
+    if (!window.fetch) { finish({ status: 'offline' }); return; }
+    var ctrl = null, opt = {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify(body)
+    };
+    try {
+      if (window.AbortController) { ctrl = new AbortController(); opt.signal = ctrl.signal; }
+      fetch(SB_URL + '/rest/v1/rpc/verify_entry_code', opt).then(function (res) {
+        return res.text().then(function (t) {
+          if (!res.ok) { finish({ status: 'offline' }); return; }
+          var d = null;
+          try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+          finish(d && d.status ? d : { status: 'offline' });
+        });
+      }, function () { finish({ status: 'offline' }); });
+      if (ctrl) setTimeout(function () { finish({ status: 'offline' }); }, 9000);
+    } catch (e) { finish({ status: 'offline' }); }
   }
   /** 코드가 맞지 않을 때 — 무엇이 문제인지에 맞춰 한 줄로 알려 준다 */
   function codeErrorText(p) {
+    if (p.status === 'offline') return '지금은 코드 확인이 잠시 안 돼요 — 연결을 확인하고 다시 눌러 주세요.';
     if (p.status === 'needphone') return '결제하신 휴대폰 번호도 함께 넣어 주세요 — 번호와 6자리 코드가 맞아야 열려요.';
     if (p.status === 'mismatch') {
       return p.phone
         ? '번호와 코드가 맞지 않아요. 결제하실 때 넣은 번호와 카톡으로 받은 6자리를 다시 확인해 주세요.'
-        : '코드가 지금 사주(' + (p.id ? p.id.label : '') + ')와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
+        : '코드가 지금 사주와 맞지 않아요. 코드를 받으신 분의 생년월일·성별을 그대로 넣어야 열려요.';
     }
     if (p.status === 'format') return '6자리 코드를 넣어 주세요 — 카톡으로 받은 코드를 그대로 넣으면 돼요. (예: A73914)';
     if (p.status === 'empty') return '카톡으로 받은 입장 코드를 넣어 주세요. (예: A73914)';
@@ -4590,12 +4622,12 @@
   }
 
   /** 🎁 친구 초대 혜택 카드 — 결제를 망설이는 손님을 바로 초대 루프로 (2026-11-21 김나영 님 확정)
-      사다리(2026-11-23 3차 확정): 1명 +1개월 · 3명 +3개월 · 5명 +6개월+상담 1만원 · 7명 1년 전체+원포인트 반값
+      사다리(2026-11-23 저녁 확정 · 11-24 적용): 1명 +2주 · 3명 +1개월 · 5명 +3개월+상담 1만원 · 7명 +6개월+원포인트 반값
       문구는 '초대·케미' 대신 무엇을 하는 곳인지 바로 보이게 (2026-11-22) */
   function inviteCardHTML(cls) {
     return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
-      '<p class="invitecard__d"><b>1명</b> +1개월 · <b>3명</b> +3개월 · <b>5명</b> +6개월+상담 1만원 · <b>7명</b> 1년 전체+반값</p>' +
+      '<p class="invitecard__d"><b>1명</b> +2주 · <b>3명</b> +1개월 · <b>5명</b> +3개월+상담 1만원 · <b>7명</b> +6개월+반값</p>' +
       '<a class="invitecard__go" href="' + memberHref() + '">친구 초대하고 케미테스트 하러 가기 →</a>' +
       '</div>';
   }
@@ -4755,9 +4787,9 @@
   /* ── 초대 사다리 문구 — 1 / 3 / 5 / 7 (2026-11-23 3차 김나영 님 확정) ──
      무료·결제자 사다리를 하나로 통일했다. 상품 이름은 '내 사주 타이밍 달력'.
      세부 단계는 /calendar/member/ 사다리에서 그대로 보여 준다. */
-  var LADDER_TEXT_FREE = '1명 +1개월 · 3명 +3개월 · 5명 +6개월+상담 1만원 · 7명 1년 전체+상담 반값';
+  var LADDER_TEXT_FREE = '1명 +2주 · 3명 +1개월 · 5명 +3개월+상담 1만원 · 7명 +6개월+상담 반값';
   var INVITE_PAID_TITLE = '🎁 친구 초대하면 <b>내 사주 타이밍 달력</b>이 더 열려요';
-  var INVITE_PAID_SUB = '1명 +1개월 · 3명 +3개월 · 단계별 혜택 보기';
+  var INVITE_PAID_SUB = '1명 +2주 · 3명 +1개월 · 단계별 혜택 보기';
 
   /** ✨ 케미테스트 배너 — "친구/연인과 2027년 우리 케미 점수는?" (2026-11-22 김나영 님 확정)
       제목은 결제 여부와 상관없이 케미 점수 호기심 — 아래 한 줄만 결제자/미결제자로 갈린다. */
@@ -8112,7 +8144,9 @@
     renderYearSummary();
     renderBurnCard();
   }
+  var unlockBusy = false;
   function tryUnlock() {
+    if (unlockBusy) return;
     var inp = $('#lockCode'), msg = $('#lockMsg'), panel = $('#lockPanel');
     var v = inp ? inp.value : '';
     /* 이미 열려 있는 기기에서 빈 칸으로 '열기'만 누른 경우 — 빈칸 오류가 아니라 상태를 알려 준다 */
@@ -8127,53 +8161,68 @@
     var phoneInp = $('#lockPhone');
     var phone = mobileOf(phoneInp ? phoneInp.value : '');
     var id = currentIdentity();
-    /* 6자리 코드는 [결제하신 휴대폰 번호 + 상품] 서명 — 번호와 코드가 맞으면 바로 열린다.
-       (예전 사주 기반 6자리·18자리 코드도 계속 열린다) */
-    var p = parseCode(v, { phone: phone, ymd: id && id.ymd, gender: id && id.gender });
-    if (p.status !== 'ok') {
-      if (msg) { msg.textContent = codeErrorText(p); msg.classList.remove('is-ok'); }
+
+    /* 1) 모양 검사 — 6자리(등급 글자 + 숫자 5) 또는 예전 18자리 */
+    var shape = shapeOfCode(v);
+    if (shape.status !== 'shape') {
+      if (msg) { msg.textContent = codeErrorText(shape); msg.classList.remove('is-ok'); }
       if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
       vibrate([40, 30, 60]);
-      if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+      if (inp) { try { inp.focus(); inp.select(); } catch (e) { } }
       return;
     }
-    /* 예전 사주 기반 코드 — 코드에 적힌 생년월일·성별이 지금 사주와 다르면 열지 않고 그대로 잠가 둔다 */
-    if (!p.phone && p.ymd && (!id || id.ymd !== p.ymd || id.gender !== p.gender)) {
-      cannotUseCode(p);
-      return;
-    }
-    saveUnlock({ code: p.code, tier: p.tier, phone: p.phone || '', ymd: p.ymd || '', gender: p.gender || '' });
-    syncPaidTier(p.tier);          // 로그인한 회원이면 DB 등급도 같이 (실패는 조용히 무시)
-    if (p.phone) rememberPhone(p.phone);
-    state.mismatch = null;
-    var who = unlockTargetLabel(p);
-    if (msg) {
-      msg.textContent = p.tier === 'diary'
-        ? '🔓 성찰 에디션 확인됐어요 — ' + who + '로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
+
+    /* 2) 진짜 확인은 서버가 — 응답을 기다리는 동안 버튼을 잠근다 */
+    unlockBusy = true;
+    if (msg) { msg.textContent = '코드 확인 중…'; msg.classList.remove('is-ok'); }
+    verifyCodeRemote(shape.code, { phone: phone, ymd: id && id.ymd, gender: id && id.gender }, function (p) {
+      unlockBusy = false;
+      if (!p || p.status !== 'ok') {
+        if (msg) { msg.textContent = codeErrorText(p || { status: 'offline' }); msg.classList.remove('is-ok'); }
+        if (panel) { panel.classList.remove('is-shake'); void panel.offsetWidth; panel.classList.add('is-shake'); }
+        vibrate([40, 30, 60]);
+        if (inp) { try { inp.focus(); inp.select(); } catch (e) { } }
+        return;
+      }
+
+      /* 예전 사주 기반 코드 — 코드에 적힌 생년월일·성별이 지금 사주와 다르면 열지 않고 그대로 잠가 둔다 */
+      if (!p.phone && p.ymd && (!id || id.ymd !== p.ymd || id.gender !== p.gender)) {
+        cannotUseCode(p);
+        return;
+      }
+      saveUnlock({ code: p.code, tier: p.tier, phone: p.phone || '', ymd: p.ymd || '', gender: p.gender || '' });
+      syncPaidTier(p.tier);          // 로그인한 회원이면 DB 등급도 같이 (실패는 조용히 무시)
+      if (p.phone) rememberPhone(p.phone);
+      state.mismatch = null;
+      var who = unlockTargetLabel(p);
+      if (msg) {
+        msg.textContent = p.tier === 'diary'
+          ? '🔓 성찰 코드 확인됐어요 — ' + who + '로 달력 전체 + 365일 성찰 다이어리까지 열렸습니다.'
+          : (p.tier === 'allinone'
+            ? '🔓 올인원 코드 확인됐어요 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
+            : (p.tier === 'month'
+              ? '🔓 1개월 이용권 확인됐어요 — ' + who + '로 ' + koDate(state.code && state.code.until) + '까지 달력 전체가 열렸습니다.'
+              : '🔓 1년 전체 패스 확인됐어요 — ' + who + '로 2026년 11월부터 2027년 12월까지 열렸습니다.'));
+        msg.classList.add('is-ok');
+      }
+      if (inp) inp.value = '';
+      syncLockUI();
+      render();
+      toast(p.tier === 'diary'
+        ? '🔓 성찰 코드 — ' + who + '로 다이어리까지 열렸어요'
         : (p.tier === 'allinone'
-          ? '🔓 올인원 확인됐어요 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기가 열렸습니다.'
+          ? '🔓 올인원 코드 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기'
           : (p.tier === 'month'
-            ? '🔓 1개월 이용권 확인됐어요 — ' + who + '로 ' + koDate(state.code && state.code.until) + '까지 달력 전체가 열렸습니다.'
-            : '🔓 1년 패스 확인됐어요 — ' + who + '로 2026년 11월부터 2027년 12월까지 열렸습니다.'));
-      msg.classList.add('is-ok');
-    }
-    if (inp) inp.value = '';
-    syncLockUI();
-    render();
-    toast(p.tier === 'diary'
-      ? '🔓 성찰 에디션 — ' + who + '로 다이어리까지 열렸어요'
-      : (p.tier === 'allinone'
-        ? '🔓 올인원 — ' + who + '로 달력 전체 + 매일 1회 액운 태우기'
-        : (p.tier === 'month'
-          ? '🔓 1개월 이용권 — ' + koDate(state.code && state.code.until) + '까지 열렸어요'
-          : '🔓 1년 패스 확인 — ' + who + '로 전체 날짜가 열렸어요')));
-    sfxOpen();
-    /* 열렸으면 잠시 뒤 패널을 접어 달력이 드러나게 — 배지는 초록으로 남는다 */
-    setTimeout(function () {
-      if (!state.unlocked) return;
-      var nowPanel = $('#lockPanel');
-      if (nowPanel && !nowPanel.hidden) closeLockPanel();
-    }, 1500);
+            ? '🔓 1개월 이용권 — ' + koDate(state.code && state.code.until) + '까지 열렸어요'
+            : '🔓 1년 전체 패스 — ' + who + '로 전체 날짜가 열렸어요')));
+      sfxOpen();
+      /* 열렸으면 잠시 뒤 패널을 접어 달력이 드러나게 — 배지는 초록으로 남는다 */
+      setTimeout(function () {
+        if (!state.unlocked) return;
+        var nowPanel = $('#lockPanel');
+        if (nowPanel && !nowPanel.hidden) closeLockPanel();
+      }, 1500);
+    });
   }
   function lockAgain() {
     saveUnlock(null);
@@ -8196,7 +8245,9 @@
     }
     /* 2.0 단순화 화면 — 🔑 입장 코드 입력칸은 메인 화면에 드러내지 않는다 (2026-11-23 김나영 님 확정)
        결제 팝업 맨 아래 '이미 입장 코드가 있으신가요?'를 누를 때만 openLockPanel 이 열어 준다. */
+    loadBonusMemo();       // 친구 초대 보상 기간(지난번에 받아 둔 값) — 화면부터 바로 맞춘다
     syncTrialState();
+    syncReferralBonus();   // 로그인했다면 서버에서 보상 기간을 새로 읽어 자동 해금
     syncInviteCopy();      // 친구 초대 링크(?ref=)로 온 손님 — '3일' 문구를 5일로, 웰컴 팝업에 보너스 한 줄 (2026-11-21)
     syncMemberLinks();     // 초대 코드로 들어온 손님이 케미 화면으로 넘어갈 때 코드가 따라가게 (2026-11-22)
     syncInviteConnect();   // 초대받은 친구 — 연결 전이면 달력 맨 위에 '카카오 3초 연결' 줄 (2026-11-22)

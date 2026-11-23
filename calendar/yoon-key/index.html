@@ -121,6 +121,23 @@ select{
   font-size:10px; font-weight:700; color:var(--ink-2); font-family:inherit;
 }
 .note{margin:6px 2px 0; font-size:10.5px; line-height:1.7; color:var(--mute)}
+
+/* ── 📋 상담·작명 신청서 목록 (2026-11-24) ── */
+.consult{margin:0; padding:0; list-style:none}
+.consult li{border:1px solid var(--hair-soft); border-radius:14px; padding:11px 12px; margin-bottom:9px; background:#fff}
+.consult summary{cursor:pointer; list-style:none; display:flex; flex-direction:column; gap:3px}
+.consult summary::-webkit-details-marker{display:none}
+.consult .c-top{display:flex; align-items:center; gap:6px}
+.consult .c-kind{font-size:9.5px; font-weight:800; letter-spacing:.02em; padding:2px 7px; border-radius:99px;
+  background:var(--gold-soft); color:var(--gold-deep)}
+.consult .c-kind--saju{background:#E0F2FE; color:#075985}
+.consult .c-kind--naming{background:#EDE9FE; color:#5B21B6}
+.consult .c-when{margin-left:auto; font-size:10px; color:var(--mute); font-variant-numeric:tabular-nums}
+.consult .c-who{font-size:12.5px; font-weight:700; color:var(--ink)}
+.consult .c-sub{font-size:10.5px; color:var(--mute)}
+.consult pre{margin:10px 0 0; padding:10px; border-radius:10px; background:#F8FAFC; border:1px solid var(--hair-soft);
+  white-space:pre-wrap; word-break:break-word; font-family:inherit; font-size:11px; line-height:1.75; color:var(--ink-2)}
+
 .check2{display:flex; gap:8px; margin-top:10px}
 .check2 input{
   flex:1; min-width:0; border:1px solid var(--hair); border-radius:12px; padding:11px 12px;
@@ -260,7 +277,8 @@ body.locked{overflow:hidden}
 
   <div class="tabs" role="tablist" aria-label="관리자 화면">
     <button type="button" id="tabBtnIssue" class="is-on" role="tab" aria-selected="true" aria-controls="tabIssue">🔑 코드 발급</button>
-    <button type="button" id="tabBtnMembers" role="tab" aria-selected="false" aria-controls="tabMembers">👥 가입자 현황</button>
+    <button type="button" id="tabBtnConsults" role="tab" aria-selected="false" aria-controls="tabConsults">📋 신청서</button>
+    <button type="button" id="tabBtnMembers" role="tab" aria-selected="false" aria-controls="tabMembers">👥 가입자</button>
   </div>
 
   <div id="tabIssue" role="tabpanel" aria-labelledby="tabBtnIssue">
@@ -273,23 +291,16 @@ body.locked{overflow:hidden}
 
     <span class="lb">상품</span>
     <div class="prods" id="prods" role="group" aria-label="상품">
+      <button type="button" class="prod" data-tier="pass">
+        <span><span class="prod__l">🎟️ 1년 전체 패스</span><span class="prod__s">2026년 11월 ~ 2027년 12월 전체 · 14,900원</span></span>
+        <span class="prod__p">P</span>
+      </button>
       <button type="button" class="prod" data-tier="month">
         <span><span class="prod__l">🗓️ 1개월 (30일)</span><span class="prod__s">인스타 인증 선물 · 달력 전체 30일</span></span>
         <span class="prod__p">M</span>
       </button>
-      <button type="button" class="prod" data-tier="pass">
-        <span><span class="prod__l">🎟️ 1년 패스</span><span class="prod__s">달력 전체 + 1년 수호 부적</span></span>
-        <span class="prod__p">P</span>
-      </button>
-      <button type="button" class="prod" data-tier="allinone">
-        <span><span class="prod__l">👑 올인원</span><span class="prod__s">패스 + 매일 부적 + 액운 태우기 무제한</span></span>
-        <span class="prod__p">A</span>
-      </button>
-      <button type="button" class="prod" data-tier="diary">
-        <span><span class="prod__l">✨ 성찰 에디션</span><span class="prod__s">올인원 + 365일 1줄 성찰 다이어리</span></span>
-        <span class="prod__p">D</span>
-      </button>
     </div>
+    <p class="note" style="margin:8px 0 0">옛 상품(올인원·성찰) 코드는 더 만들지 않아요 — 이미 받은 코드는 그대로 열립니다.</p>
 
     <p class="err" id="err" role="alert" hidden></p>
     <button type="button" class="go" id="makeBtn">코드 만들기</button>
@@ -329,6 +340,25 @@ body.locked{overflow:hidden}
 
   </div><!-- /tabIssue -->
 
+  <div id="tabConsults" role="tabpanel" aria-labelledby="tabBtnConsults" hidden>
+
+    <div class="stats">
+      <div class="stat"><span class="stat__k">전체 신청서</span><span class="stat__v" id="cTotal">–</span></div>
+      <div class="stat"><span class="stat__k">오늘 접수</span><span class="stat__v" id="cToday">–</span></div>
+    </div>
+
+    <section class="card">
+      <div class="card__bar">
+        <h2 class="card__title">상담·작명 신청서<span class="card__n" id="cCount"></span></h2>
+        <button type="button" class="refresh" id="cReload">새로고침</button>
+      </div>
+      <p class="state" id="cState">불러오는 중…</p>
+      <ul class="consult" id="cList" hidden></ul>
+    </section>
+
+    <p class="note">손님이 <b>/apply/</b> 에서 접수 버튼을 누르는 순간 이기에 바로 쌓아요. 카톡에 붙여넣지 않아도 신청 내용은 여기 남습니다. 최신 200건.</p>
+  </div><!-- /tabConsults -->
+
   <div id="tabMembers" role="tabpanel" aria-labelledby="tabBtnMembers" hidden>
 
     <div class="stats">
@@ -357,58 +387,45 @@ body.locked{overflow:hidden}
 (function () {
   'use strict';
 
-  /* ── 달력(assets/calendar.js)과 반드시 같은 값·같은 계산 ─────────────────
-     코드는 6자리 — 등급 글자(P/A/D) + 숫자 5자리.  예) D21744
-     숫자는 손님의 **휴대폰 번호(숫자만)** + 상품 + CODE_SALT 로 계산한다. (2026-11-21부터 사주 대신 번호)
-     (예전 18자리 코드 YS-P-791025F-K7QM3 와 그때 만든 사주 기반 6자리는 달력에서 계속 열린다 — 호환용 계산기를 남겨 둔다.) */
-  var CODE_SALT = 'yoonise-2027-timing-9f3a';
-  var CODE_ALPHA = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  /* ── 코드 계산은 이제 서버에만 있다 (2026-11-24) ─────────────────────
+     예전엔 이 페이지와 달력 JS 안에 CODE_SALT 와 계산식이 그대로 들어 있어,
+     사이트 소스를 보면 누구나 코드를 위조할 수 있었다(미스터리 쇼퍼 지적).
+     지금은 SALT 가 Supabase 안에만 있고, 코드 만들기·확인은 서버 함수로 부른다.
+       · 만들기  issue_entry_code(p_pin, p_letter, p_phone)  — 0428 비밀번호 필요
+       · 확인    verify_entry_code(p_code, p_phone)          — 손님·관리자 공통
+     이 페이지에는 SALT 도 계산식도 남기지 않는다. */
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 공개 전제 키
   var CODE_TIER_OF_LETTER = { P: 'pass', A: 'allinone', D: 'diary', M: 'month' };
   var CODE_LETTER_OF_TIER = { pass: 'P', allinone: 'A', diary: 'D', month: 'M' };
-  var TIER_NAME = { pass: '1년 패스', allinone: '올인원', diary: '성찰 에디션', month: '1개월 (30일)' };
+  var TIER_NAME = { pass: '1년 전체 패스', allinone: '올인원(옛)', diary: '성찰(옛)', month: '1개월 (30일)' };
   var MONTH_DAYS = 30;   // 1개월 이용권 — 달력에서 코드를 넣은 날부터 30일 (달력 assets/calendar.js 와 같은 값)
 
-  function fnv1a(str) {
-    var h = 0x811c9dc5;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 0x01000193) >>> 0;
-    }
-    return h >>> 0;
+  /** 서버 함수 호출 — { ok, data, err } 로 돌려준다 */
+  function sbRpc(name, body) {
+    var opt = {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify(body || {})
+    };
+    return fetch(SB_URL + '/rest/v1/rpc/' + name, opt).then(function (res) {
+      return res.text().then(function (text) {
+        var d = null;
+        try { d = text ? JSON.parse(text) : null; } catch (e) { d = null; }
+        if (res.ok) return d;
+        var msg = (d && (d.message || d.hint)) || ('HTTP ' + res.status);
+        var e = new Error(msg);
+        e.pin = /pin/i.test(msg);
+        throw e;
+      });
+    });
   }
-  function mix32(h) {
-    h = h >>> 0;
-    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
-    h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
-    h ^= h >>> 16;
-    return h >>> 0;
-  }
-  /** 6자리 코드의 숫자 5자리 — 손님 휴대폰 번호(숫자만) + 상품 + SALT */
-  function codeDigits(letter, phone) {
-    var base = CODE_SALT + '|p|' + letter + '|' + phone;
-    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#pd')) % 90000);
-  }
-  /** 예전(2026-11-21 이전) 사주 기반 6자리 — 옛 테스트 코드를 확인만 할 수 있게 남겨 둔다 */
-  function codeDigitsSaju(letter, ymd, gender) {
-    var base = CODE_SALT + '|6|' + letter + '|' + ymd + '|' + gender;
-    return String(10000 + mix32(fnv1a(base) ^ fnv1a(base + '#6d')) % 90000);
-  }
-  /** 예전 18자리 코드의 서명 5자 — 확인용 */
-  function codeSign(letter, ymd, gender) {
-    var base = CODE_SALT + '|' + letter + '|' + ymd + '|' + gender;
-    var h1 = fnv1a(base), h2 = fnv1a(base + '#2');
-    var n = h1 % 28629151;
-    var out = '';
-    for (var i = 0; i < 5; i++) {
-      out += CODE_ALPHA.charAt((n % 31 + ((h2 >>> (i * 3)) & 31)) % 31);
-      n = Math.floor(n / 31);
-    }
-    return out;
-  }
-  /** 6자리 간단 코드 — 예) D21744 */
-  function makeCode(letter, phone) {
-    return letter + codeDigits(letter, phone);
-  }
+
   function normCode(s) { return String(s == null ? '' : s).replace(/[\s\-_]/g, '').toUpperCase(); }
   /** '010-9999-1234' · '01099991234' · '010 9999 1234' → '01099991234' (휴대폰만) */
   function mobileOf(v) {
@@ -485,21 +502,37 @@ body.locked{overflow:hidden}
     if (!state.tier) { err.hidden = false; err.textContent = '상품을 골라 주세요.'; return; }
 
     var letter = CODE_LETTER_OF_TIER[state.tier];
-    state.phone = phone;
-    state.code = { code: makeCode(letter, phone), tier: state.tier, phone: phone };
+    var pin = '';
+    try { pin = window.YoonKeyPin ? (window.YoonKeyPin.get() || '') : ''; } catch (e) { pin = ''; }
+    if (!pin) { err.hidden = false; err.textContent = '비밀번호가 만료됐어요 — 🔒 잠그기를 누른 뒤 4자리를 다시 넣고 한 번 더 시도해 주세요.'; return; }
 
-    $('#outCard').hidden = false;
-    $('#outWho').innerHTML = '손님 번호 · <b>' + fmtPhone(phone) + '</b>';
-    $('#outCode').textContent = state.code.code;
-    $('#outMeta').innerHTML = TIER_NAME[state.tier] + ' · ' + fmtPhone(phone) + ' 번호 전용' +
-      '<br>손님이 캘린더 🔑 칸에 <b>이 번호 + ' + state.code.code + '</b>를 넣으면 바로 열려요.' +
-      (state.tier === 'month'
-        ? '<br>손님이 코드를 넣은 날부터 <b>' + MONTH_DAYS + '일</b> 열리고, ' + MONTH_DAYS + '일이 지나면 다시 잠겨요.'
-        : '') +
-      '<br>번호를 바꿔 넣으면 열리지 않아요 — 결제할 때 넣은 번호 그대로 알려 주세요.';
-    $('#outMsg').textContent = '';
-    saveHist(state.code);
-    $('#outCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var btn = $('#makeBtn');
+    btn.disabled = true; btn.textContent = '코드 만드는 중…';
+    sbRpc('issue_entry_code', { p_pin: pin, p_letter: letter, p_phone: phone }).then(function (d) {
+      btn.disabled = false; btn.textContent = '코드 만들기';
+      if (!d || !d.code) { err.hidden = false; err.textContent = '코드를 만들지 못했어요 — 잠시 뒤 다시 시도해 주세요.'; return; }
+      state.phone = phone;
+      state.code = { code: d.code, tier: state.tier, phone: phone };
+
+      $('#outCard').hidden = false;
+      $('#outWho').innerHTML = '손님 번호 · <b>' + fmtPhone(phone) + '</b>';
+      $('#outCode').textContent = state.code.code;
+      $('#outMeta').innerHTML = TIER_NAME[state.tier] + ' · ' + fmtPhone(phone) + ' 번호 전용' +
+        '<br>손님이 달력에서 잠긴 날짜를 누른 뒤 <b>‘이미 입장 코드가 있으신가요?’</b>에 <b>이 번호 + ' + state.code.code + '</b>를 넣으면 바로 열려요.' +
+        (state.tier === 'month'
+          ? '<br>손님이 코드를 넣은 날부터 <b>' + MONTH_DAYS + '일</b> 열리고, ' + MONTH_DAYS + '일이 지나면 다시 잠겨요.'
+          : '') +
+        '<br>번호를 바꿔 넣으면 열리지 않아요 — 결제할 때 넣은 번호 그대로 알려 주세요.';
+      $('#outMsg').textContent = '';
+      saveHist(state.code);
+      $('#outCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, function (e) {
+      btn.disabled = false; btn.textContent = '코드 만들기';
+      err.hidden = false;
+      err.textContent = (e && e.pin)
+        ? '서버가 비밀번호를 받아들이지 않았어요 — 🔒 잠그고 4자리를 다시 넣어 주세요.'
+        : '코드를 만들지 못했어요 — 연결을 확인하고 다시 시도해 주세요.';
+    });
   }
 
   /* ── 카톡에 붙일 안내 문구 ─────────────────────── */
@@ -521,11 +554,12 @@ body.locked{overflow:hidden}
          '입장 코드: ' + c.code + '  (6자리)'];
     return open.concat([
       '',
-      '1) 캘린더 열기: https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/',
+      '1) 달력 열기: https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/',
       '2) 생년월일·성별을 넣고 "내 타이밍 캘린더 열기"',
-      '3) 달력 아래 🔑 입장 코드 입력에',
+      '3) 달력에서 잠긴 날짜(또는 맨 아래 "1년 전체 바로 열기")를 누른 뒤,',
+      '   결제창 맨 아래 "이미 입장 코드가 있으신가요?"를 눌러 주세요.',
       '   · 휴대폰 번호: ' + fmtPhone(c.phone),
-      '   · 입장 코드: 위 6자리',
+      '   · 입장 코드: ' + c.code + '  (6자리)',
       '   두 칸을 넣으면 바로 열립니다.',
       '',
       '번호와 코드가 한 쌍이라, 번호가 다르면 열리지 않아요. 번호를 바꾸셨다면 이 채팅으로 알려 주세요.',
@@ -594,34 +628,43 @@ body.locked{overflow:hidden}
     var phone = mobileOf($('#checkPhone').value);
     if (!n) { out.innerHTML = '코드를 넣어 주세요. (예: A73914)'; return; }
 
-    var legacy = /^YS([PAD])(\d{6})([MF])([2-9A-Z]{5})$/.exec(n);
-    if (legacy) {
-      if (codeSign(legacy[1], legacy[2], legacy[3]) !== legacy[4]) {
+    out.innerHTML = '확인하는 중…';
+    sbRpc('verify_entry_code', { p_code: n, p_phone: phone || null, p_ymd: null, p_gender: null }).then(function (d) {
+      var st = (d && d.status) || '';
+      if (st === 'ok' && d.legacy) {
+        out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[d.letter]] + '</b> · ' + ownerLabel(d.ymd, d.gender) + ' 전용<br>' +
+          '예전 18자리 형식이지만 달력에서는 그대로 열려요. 손님 사주(생년월일·성별)가 이와 같아야 열립니다.';
+        return;
+      }
+      if (st === 'ok' && d.phone) {
+        out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[d.letter]] + '</b> · ' + fmtPhone(d.phone) + ' 번호 전용<br>' +
+          '번호와 코드가 맞아요 — 손님이 달력 결제창 맨 아래 ‘이미 입장 코드가 있으신가요?’에 그대로 넣으면 열립니다.';
+        return;
+      }
+      if (st === 'ok') {
+        out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[d.letter]] + '</b> · ' + ownerLabel(d.ymd, d.gender) + ' 사주 전용(옛 코드)<br>' +
+          '손님이 그 생년월일·성별을 넣으면 달력에서 열립니다.';
+        return;
+      }
+      if (st === 'needphone') {
+        out.innerHTML = 'ℹ️ 6자리 코드는 <b>손님 휴대폰 번호</b>와 함께 확인해요. 위에 번호를 먼저 넣어 주세요.';
+        return;
+      }
+      if (st === 'mismatch') {
+        out.innerHTML = (phone
+          ? '❌ 이 번호(' + fmtPhone(phone) + ')의 <b>' + TIER_NAME[CODE_TIER_OF_LETTER[d.letter]] + '</b> 코드가 아니에요.<br>'
+          : '❌ 코드가 맞지 않아요.<br>') +
+          '번호나 코드를 다시 확인해 주세요. (2026-11-21 이전에 사주로 만든 6자리 코드는 여기서 확인되지 않지만 달력에서는 계속 열립니다.)';
+        return;
+      }
+      if (st === 'bad') {
         out.innerHTML = '❌ 예전 18자리 코드의 서명이 맞지 않아요. 코드를 다시 확인해 주세요.';
         return;
       }
-      out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[legacy[1]]] + '</b> · ' + ownerLabel(legacy[2], legacy[3]) + ' 전용<br>' +
-        '예전 18자리 형식이지만 달력에서는 그대로 열려요. 손님 사주(생년월일·성별)가 이와 같아야 열립니다.';
-      return;
-    }
-
-    var simple = /^([PADM])(\d{5})$/.exec(n);
-    if (!simple) {
       out.innerHTML = '❌ 6자리 코드(P·A·D·M 한 글자 + 숫자 5자리) 또는 예전 18자리 코드를 넣어 주세요.';
-      return;
-    }
-    if (!phone) {
-      out.innerHTML = 'ℹ️ 6자리 코드는 <b>손님 휴대폰 번호</b>와 함께 확인해요. 위에 번호를 먼저 넣어 주세요.';
-      return;
-    }
-    if (codeDigits(simple[1], phone) !== simple[2]) {
-      /* 예전 사주 기반 6자리일 수 있다 — 번호로는 확인되지 않는다고 알려 준다 */
-      out.innerHTML = '❌ 이 번호(' + fmtPhone(phone) + ')의 <b>' + TIER_NAME[CODE_TIER_OF_LETTER[simple[1]]] + '</b> 코드가 아니에요.<br>' +
-        '번호나 코드를 다시 확인해 주세요. (2026-11-21 이전에 사주로 만든 6자리 코드는 여기서 확인되지 않지만 달력에서는 계속 열립니다.)';
-      return;
-    }
-    out.innerHTML = '✅ <b>' + TIER_NAME[CODE_TIER_OF_LETTER[simple[1]]] + '</b> · ' + fmtPhone(phone) + ' 번호 전용<br>' +
-      '번호와 코드가 맞아요 — 달력 🔑 칸에 그대로 넣으면 열립니다.';
+    }, function () {
+      out.innerHTML = '❌ 확인하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.';
+    });
   }
 
   init();
@@ -808,11 +851,13 @@ body.locked{overflow:hidden}
   var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
   var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';   // publishable — 공개 전제 키
   var $ = function (s) { return document.querySelector(s); };
+  /* 2026-11-24 — 지금 파는 상품은 '1년 전체' 하나라, 옛 등급명(성찰 에디션·올인원)은 모두
+     '1년 전체'로 보여 준다. (옛 코드로 열린 기기도 같은 상품으로 센다) */
   var TIER = {
-    pass:     { name: '1년 패스',    cls: 'badge--pass' },
-    allinone: { name: '올인원',      cls: 'badge--allinone' },
-    diary:    { name: '성찰 에디션', cls: 'badge--diary' },
-    month:    { name: '1개월',       cls: 'badge--pass' }
+    pass:     { name: '1년 전체', cls: 'badge--pass' },
+    allinone: { name: '1년 전체', cls: 'badge--allinone' },
+    diary:    { name: '1년 전체', cls: 'badge--diary' },
+    month:    { name: '1개월',    cls: 'badge--pass' }
   };
   var FREE = { name: '무료', cls: 'badge--free' };
   var MSG_NOT_YET = '아직 DB 연결 전이에요 — 마이그레이션 실행 후 바로 표시됩니다';
@@ -862,15 +907,17 @@ body.locked{overflow:hidden}
 
   /* ── 탭 전환 ───────────────────────────────────── */
   function showTab(which) {
-    var members = which === 'members';
-    var bi = $('#tabBtnIssue'), bm = $('#tabBtnMembers');
-    $('#tabIssue').hidden = members;
-    $('#tabMembers').hidden = !members;
-    bi.classList.toggle('is-on', !members);
-    bm.classList.toggle('is-on', members);
-    bi.setAttribute('aria-selected', members ? 'false' : 'true');
-    bm.setAttribute('aria-selected', members ? 'true' : 'false');
-    if (members) load();
+    var w = (which === 'members' || which === 'consults') ? which : 'issue';
+    var btn = { issue: $('#tabBtnIssue'), consults: $('#tabBtnConsults'), members: $('#tabBtnMembers') };
+    var panel = { issue: $('#tabIssue'), consults: $('#tabConsults'), members: $('#tabMembers') };
+    Object.keys(panel).forEach(function (k) {
+      if (!panel[k] || !btn[k]) return;
+      panel[k].hidden = (k !== w);
+      btn[k].classList.toggle('is-on', k === w);
+      btn[k].setAttribute('aria-selected', k === w ? 'true' : 'false');
+    });
+    if (w === 'members') load();
+    if (w === 'consults') loadConsults();
   }
 
   /* ── 서버 호출 — 함수 하나만 ─────────────────────── */
@@ -1018,6 +1065,117 @@ body.locked{overflow:hidden}
     $('#mState').hidden = true;
   }
 
+  /* ══ 📋 상담·작명 신청서 (2026-11-24) ══════════════════════════════════
+     손님이 /apply/ 에서 접수 버튼을 누르면 consult_requests 에 한 줄이 쌓인다.
+     손님이 카톡에 붙여넣는 걸 깜빡해도 여기서 내용을 그대로 볼 수 있다.
+     · 읽기는 PIN 확인이 붙은 SECURITY DEFINER 함수 admin_consults(p_pin) 하나뿐.
+     · 손님 쪽 표는 '넣기'만 열려 있어 이 화면 밖에서는 아무도 읽을 수 없다. */
+  var cBusy = false, cHas = false;
+
+  function rpcConsults(pin) {
+    var opt = {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
+      },
+      body: JSON.stringify({ p_pin: pin })
+    };
+    return fetch(SB_URL + '/rest/v1/rpc/admin_consults', opt).then(function (res) {
+      return res.text().then(function (text) {
+        var body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) { }
+        if (res.ok && body && body.ok !== false) return body;
+        var msg = (body && (body.message || body.hint)) || ('HTTP ' + res.status);
+        var e = new Error(msg);
+        e.pin = /pin/i.test(msg);
+        throw e;
+      });
+    });
+  }
+
+  function cState(html, sub) {
+    var st = $('#cState');
+    st.innerHTML = html + (sub ? '<br><span class="state__sub">' + sub + '</span>' : '');
+    st.hidden = false;
+    $('#cList').hidden = true;
+  }
+
+  function cKindName(kind, mode) {
+    if (kind === 'naming') return mode === 'baby' ? '신생아 작명' : '개명';
+    if (kind === 'saju') return '시그니처 리딩';
+    return '원포인트 리딩';
+  }
+
+  function loadConsults() {
+    if (cBusy) return;
+    var pin = '';
+    try { pin = window.YoonKeyPin ? (window.YoonKeyPin.get() || '') : ''; } catch (e) { pin = ''; }
+    if (!pin) {
+      $('#cTotal').textContent = '–'; $('#cToday').textContent = '–';
+      $('#cCount').textContent = '';
+      cState('비밀번호가 아직 없어요', '🔒 잠그기를 누른 뒤 4자리를 다시 넣으면 신청서를 볼 수 있어요.');
+      return;
+    }
+    cBusy = true;
+    var rl = $('#cReload');
+    rl.disabled = true; rl.textContent = '불러오는 중…';
+    if (!cHas) { $('#cTotal').textContent = '–'; $('#cToday').textContent = '–'; cState('불러오는 중…'); }
+    rpcConsults(pin).then(function (d) {
+      cBusy = false; cHas = true;
+      rl.disabled = false; rl.textContent = '새로고침';
+      renderConsults(d);
+    }, function (err) {
+      cBusy = false; cHas = false;
+      rl.disabled = false; rl.textContent = '새로고침';
+      cState(err && err.pin ? '비밀번호가 서버와 맞지 않아요' : '신청서를 불러오지 못했어요',
+        err && err.pin ? '🔒 잠그기를 누른 뒤 4자리를 다시 넣어 주세요.' : '연결을 확인하고 새로고침을 눌러 주세요.');
+    });
+  }
+
+  function renderConsults(d) {
+    var s = (d && d.summary) || {};
+    var list = (d && d.requests) || [];
+    $('#cTotal').textContent = num(s.total);
+    $('#cToday').textContent = num(s.today);
+    $('#cCount').textContent = list.length ? ' · ' + list.length : '';
+    var ul = $('#cList');
+    if (!list.length) {
+      cState('아직 접수된 신청서가 없어요', '손님이 /apply/ 에서 접수 버튼을 누르면 여기에 바로 한 줄씩 쌓여요.');
+      return;
+    }
+    ul.innerHTML = list.map(function (r) {
+      var when = kstMD(r.created_at) + ' ' + kstHM(r.created_at);
+      var kind = String(r.kind || '');
+      var cls = kind === 'saju' ? ' c-kind--saju' : (kind === 'naming' ? ' c-kind--naming' : '');
+      var who = '';
+      try {
+        var lines = (r.payload && r.payload.lines) || [];
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i] && (lines[i].k === '성함' || lines[i].k === '아기 생년월일시')) { who = lines[i].v || ''; break; }
+        }
+        if (!who) {
+          for (var j = 0; j < lines.length; j++) {
+            if (lines[j] && lines[j].k === '연락처 또는 입금자명') { who = lines[j].v || ''; break; }
+          }
+        }
+      } catch (e) { who = ''; }
+      return '<li><details>' +
+        '<summary>' +
+          '<span class="c-top"><span class="c-kind' + cls + '">' + esc(cKindName(kind, r.name_mode)) + '</span>' +
+          '<span class="c-when">' + esc(when) + '</span></span>' +
+          '<span class="c-who">' + esc(who || '이름 없음') + '</span>' +
+          '<span class="c-sub">' + esc(r.product || '') + (r.contact ? ' · ' + esc(r.contact) : '') + '</span>' +
+        '</summary>' +
+        '<pre>' + esc(r.body || '') + '</pre>' +
+        '</details></li>';
+    }).join('');
+    ul.hidden = false;
+    $('#cState').hidden = true;
+  }
+
   function stamp(d) {
     var at = (d && d.generated_at) || '';
     $('#mStamp').textContent = ' · ' + kstHM(at) + ' 기준';
@@ -1025,19 +1183,24 @@ body.locked{overflow:hidden}
 
   /* ── 붙이기 ────────────────────────────────────── */
   $('#tabBtnIssue').addEventListener('click', function () { showTab('issue'); });
+  $('#tabBtnConsults').addEventListener('click', function () { showTab('consults'); });
   $('#tabBtnMembers').addEventListener('click', function () { showTab('members'); });
   $('#mReload').addEventListener('click', load);
+  $('#cReload').addEventListener('click', loadConsults);
   $('.tabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    var members = !$('#tabMembers').hidden;
-    var next = members ? 'issue' : 'members';
+    var order = ['issue', 'consults', 'members'];
+    var now = $('#tabIssue').hidden ? ($('#tabConsults').hidden ? 'members' : 'consults') : 'issue';
+    var i = order.indexOf(now);
+    var next = order[(i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
     e.preventDefault();
     showTab(next);
-    $(next === 'members' ? '#tabBtnMembers' : '#tabBtnIssue').focus();
+    var b = { issue: '#tabBtnIssue', consults: '#tabBtnConsults', members: '#tabBtnMembers' }[next];
+    try { $(b).focus(); } catch (err) { }
   });
 
   /* 콘솔 확인용 */
-  window.YoonAdmin = { show: showTab, load: load };
+  window.YoonAdmin = { show: showTab, load: load, loadConsults: loadConsults };
 })();
 </script>
 

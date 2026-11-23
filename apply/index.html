@@ -9,7 +9,7 @@
 <meta name="format-detection" content="telephone=no">
 <meta property="og:type" content="website">
 <meta property="og:title" content="상담 신청서 · 윤이세사주">
-<meta property="og:description" content="상품 고르고 결제 → 신청서 적고 카톡 접수. 두 걸음이면 끝나요.">
+<meta property="og:description" content="상품 고르고 결제 → 신청서 적으면 접수 끝. 두 걸음이면 끝나요.">
 <meta property="og:locale" content="ko_KR">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
 <!-- 카드결제 JS 연동 — 휴대폰 번호를 실어 보내 연락처 입력 화면을 건너뛴다 (defer: 첫 화면을 막지 않게) -->
@@ -332,6 +332,26 @@ a { color: inherit; }
 .kakaobar a span { font-size: 10px; line-height: 1.45; color: rgba(25, 22, 0, .62); text-align: center; }
 .kakaobar a:active { transform: translateY(1px) scale(.995); }
 
+/* ── 접수 완료 카드 (2026-11-24) — 신청서가 서버에 저장되면 이 카드 하나만 남긴다 ── */
+.done {
+  margin-top: 16px; padding: 26px 20px 22px; border-radius: 22px; text-align: center;
+  background: #FFFFFF; border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 20px 36px -28px rgba(15, 23, 42, .5);
+}
+.done__ic { display: block; font-size: 34px; line-height: 1; margin-bottom: 12px; }
+.done__t { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
+.done__d { margin: 10px 0 0; font-size: 13px; line-height: 1.75; color: #475569; word-break: keep-all; }
+.done__d b { color: var(--ink); font-weight: 800; }
+.done__go {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 18px; padding: 15px 16px; border-radius: 16px; text-decoration: none;
+  background: var(--kakao); color: #1E293B; font-size: 14.5px; font-weight: 800; letter-spacing: -.02em;
+  box-shadow: 0 12px 24px -16px rgba(150, 120, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.done__go:active { transform: translateY(1px); }
+.done__n { margin: 12px 0 0; font-size: 10.5px; line-height: 1.6; color: var(--mute); }
+.done--warn { border-color: #FCD34D; background: #FFFBEB; }
+
 .copybox { margin-top: 9px; }
 .copybox textarea {
   width: 100%; height: 132px; padding: 11px 12px; border-radius: 13px;
@@ -379,7 +399,7 @@ a { color: inherit; }
 
   <!-- 💳 결제하러 다녀온 손님 — 맨 위에서 '신청서 → 카톡 접수' 한 걸음을 다시 내밀기 (2026-11-21) -->
   <div class="payback" id="payBack" hidden>
-    <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면, 아래 신청서에 사주 정보를 적고 카톡으로 접수해 주세요.</span></p>
+    <span class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat">결제를 마치셨다면, 아래 신청서에 사주 정보를 적고 접수 버튼만 눌러 주세요.</span></p>
     <div class="payback__row">
       <button type="button" class="payback__go" id="payBackGo">📝 신청서 적고 접수하기</button>
       <button type="button" class="payback__x" id="payBackX">아직 결제 전이에요</button>
@@ -389,7 +409,7 @@ a { color: inherit; }
   <header class="head">
     <p class="head__eyebrow">YOONISE · APPLY</p>
     <h1 class="head__title">상담 <em>신청서</em></h1>
-    <p class="head__sub">상품을 고르고 <b>바로 결제</b>한 뒤,<br>아래 신청서에 사주를 적어 카톡으로 보내면 접수 끝이에요.</p>
+    <p class="head__sub">상품을 고르고 <b>바로 결제</b>한 뒤,<br>아래 신청서에 사주를 적으면 접수 끝이에요.</p>
   </header>
 
   <ol class="flow">
@@ -445,7 +465,7 @@ a { color: inherit; }
         <b>🏦 계좌이체</b><span>SC제일은행 504-20-454146<br>김나영(엔와이트레이드)</span><em>눌러서 계좌번호 복사</em>
       </button>
     </div>
-    <p class="pay__note" id="payNote">결제를 마치면 아래 신청서를 채우고 노란 버튼을 눌러 주세요. 결제창이 안 보이면 <a id="payFallback" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener">여기 누르기 →</a></p>
+    <p class="pay__note" id="payNote">결제를 마치면 아래 신청서를 채우고 <b>접수 버튼</b>을 눌러 주세요. 결제창이 안 보이면 <a id="payFallback" href="https://www.payapp.kr/L/z4ovI1" target="_blank" rel="noopener">여기 누르기 →</a></p>
   </section>
 
   <!-- ── STEP 2 · 상담 신청서 (결제 다음) ─────────────────────── -->
@@ -455,7 +475,7 @@ a { color: inherit; }
   </div>
 
   <section class="cform" aria-labelledby="formHead">
-    <p class="cform__head" id="formHead">📝 상담 신청서 <span id="formHint">여섯 칸을 채우고, 맨 아래 노란 버튼을 누르면 접수 끝이에요</span></p>
+    <p class="cform__head" id="formHead">📝 상담 신청서 <span id="formHint">여섯 칸을 채우고, 맨 아래 버튼을 누르면 접수 끝이에요</span></p>
 
     <!-- 개명·작명 상품에서만 — [개명] / [신생아 작명] 가르는 토글 (기본: 개명) -->
     <div class="namemode" id="nameMode" role="group" aria-label="신청 종류" hidden>
@@ -566,15 +586,24 @@ a { color: inherit; }
     <p class="cform__msg" id="formMsg" role="alert" hidden></p>
   </section>
 
-  <div class="kakaobar">
+  <div class="kakaobar" id="kakaobar">
     <a id="kakaoGo" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">
-      <b>💬 신청서 완료 · 카톡으로 접수하기</b>
-      <span>누르면 신청 내용이 복사돼요 — 카톡에 붙여넣기만 하면 접수 끝</span>
+      <b>📩 신청서 접수하기</b>
+      <span>누르면 신청서가 바로 접수돼요 — 복사·붙여넣기 없이 끝나요</span>
     </a>
   </div>
 
+  <!-- 접수 완료 — 서버 저장이 끝나면 이 카드 하나만 남긴다 (2026-11-24) -->
+  <section class="done" id="doneCard" hidden aria-live="polite">
+    <span class="done__ic" aria-hidden="true">🎉</span>
+    <h2 class="done__t" id="doneTitle">신청서 접수가 끝났어요!</h2>
+    <p class="done__d" id="doneMsg">카톡으로 <b>‘신청했어요’</b> 한 마디만 남겨 주세요.<br>접수 확인하고 일정·진행 방법을 바로 안내드릴게요.</p>
+    <a class="done__go" id="doneKakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카톡 열기</a>
+    <p class="done__n" id="doneNote">신청서는 이미 접수됐어요 — 카톡에 붙여넣을 필요 없어요.</p>
+  </section>
+
   <div class="copybox" id="copybox" hidden>
-    <p>아래 내용을 길게 눌러 복사한 뒤 카톡에 붙여넣어 주세요.</p>
+    <p id="copyHint">아래 내용을 길게 눌러 복사한 뒤 카톡에 붙여넣어 주세요.</p>
     <textarea id="copyText" readonly></textarea>
   </div>
 
@@ -582,7 +611,8 @@ a { color: inherit; }
     <li>결제 확인은 <b>카드결제면 결제할 때 넣은 휴대폰 번호</b>, <b>계좌이체면 입금자명</b>으로 대조해요.</li>
     <li>결제 전에 신청서를 먼저 적어 두어도 괜찮아요 — 두 칸의 순서는 상관없어요.</li>
     <li>접수 순서대로 카톡에서 일정과 진행 방법을 안내해 드려요.</li>
-    <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 저장되지 않아요.</li>
+    <li>신청서는 <b>접수 버튼을 누르는 순간 바로 접수</b>돼요 — 카톡에는 ‘신청했어요’ 한 마디만 남겨 주세요.</li>
+    <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 남지 않아요.</li>
   </ul>
 
   <p class="foot">
@@ -599,6 +629,10 @@ a { color: inherit; }
 
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   var BANK = '504-20-454146';
+  /* 신청서 자동 접수 (2026-11-24) — publishable 키는 공개 전제 키.
+     이 표는 '넣기'만 열려 있고 읽기는 0428 의 admin_consults(PIN) 로만 된다. */
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';
 
   /* 상품 3종 — 탭을 고르면 아래 문구·금액·결제 링크·질문 칸 이름이 함께 바뀐다
      (2026-11-23 §97: 불릿 3줄을 걷어 내고 김나영 님 확정 문구 한 문단만 남겼다) */
@@ -1208,29 +1242,123 @@ a { color: inherit; }
   window.addEventListener('blur', function () { sawBlur = true; });
   document.addEventListener('visibilitychange', function () { if (document.hidden) sawBlur = true; });
 
-  /* ── 노란 버튼: 확인 → 복사 → 카톡 ─────── */
+  /* ── 노란 버튼: 확인 → 서버 접수 → 완료 카드 ───────
+     2026-11-24: 복사→붙여넣기 안내를 걷어 냈다. 누르는 순간 신청서가 서버에 저장되고,
+     손님은 완료 카드의 💬 카톡 열기 로 '신청했어요' 한 마디만 남기면 된다.
+     서버 저장이실패해도 카톡으로 가는 길은 막지 않는다(그때만 예쁜 복사본을 보여 준다). */
+  function fieldLines() {
+    var p = prod();
+    var naming = state.type === 'naming';
+    var baby = naming && state.nameMode === 'baby';
+    var out = [{ k: '상품', v: p.name + ' (' + p.price + ')' }];
+    if (naming) out.push({ k: '신청 종류', v: baby ? '신생아 작명' : '개명' });
+
+    if (baby) {
+      out.push({ k: '아기 생년월일시', v: babyLine() });
+      out.push({ k: '아기 양력·음력·윤달', v: calLabel(state.chips.calBaby) });
+      out.push({ k: '아기 성별', v: genderLabel(state.chips.genderBaby) });
+      out.push({ k: '아버지 한자 성', v: $('fBabySur').value.trim() });
+      out.push({ k: '아버지 사주', v: birthLine($('fDadBirth')) + ' · ' + calLabel(state.chips.calDad) });
+      out.push({ k: '어머니 사주', v: birthLine($('fMomBirth')) + ' · ' + calLabel(state.chips.calMom) });
+      out.push({ k: '돌림자', v: state.chips.dol === 'yes' ? '사용함 — ' + $('fDol').value.trim() : '사용 안 함' });
+      var sib = $('fSib').value.trim();
+      if (sib) out.push({ k: '다른 자녀', v: sib });
+    } else {
+      out.push({ k: '성함', v: $('fName').value.trim() });
+      if (naming) out.push({ k: '주민등록상 한자', v: $('fHanja').value.trim() });
+      out.push({ k: '생년월일시', v: birthLine($('fBirth')) });
+      out.push({ k: '양력·음력·윤달', v: calLabel(state.chips.calMe) });
+      out.push({ k: '성별', v: genderLabel(state.chips.genderMe) });
+      var q = $('fQ').value.trim();
+      if (q) out.push({ k: p.qLabel, v: q });
+    }
+    out.push({ k: '연락처 또는 입금자명', v: $('fWho').value.trim() });
+    var ph = mobileOf($('fPhone').value);
+    if (ph) out.push({ k: '결제 휴대폰', v: $('fPhone').value.trim() });
+    return out;
+  }
+
+  /** 신청서 한 건을 서버에 저장 — 성공 여부만 돌려준다(예외는 전부 삼킴) */
+  function submitRequest(row, cb) {
+    var done = false;
+    function finish(ok) { if (done) return; done = true; cb(!!ok); }
+    if (!window.fetch) { finish(false); return; }
+    var ctrl = null, opt = {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(row)
+    };
+    try {
+      if (window.AbortController) { ctrl = new AbortController(); opt.signal = ctrl.signal; }
+      fetch(SB_URL + '/rest/v1/consult_requests', opt).then(function (res) { finish(res.ok); }, function () { finish(false); });
+      if (ctrl) setTimeout(function () { if (!done) { try { ctrl.abort(); } catch (e) { } finish(false); } }, 6500);
+    } catch (e) { finish(false); }
+  }
+
+  /** 접수 완료 화면 — 신청서·접수 버튼을 감추고 완료 카드 하나만 남긴다 */
+  function showDone(ok, text) {
+    var form = document.querySelector('.cform');
+    var sep = document.querySelector('.step--sep');
+    var flow = document.querySelector('.flow');
+    if (form) form.hidden = true;
+    if (sep) sep.hidden = true;
+    if (flow) flow.hidden = true;
+    var bar = $('kakaobar'); if (bar) bar.hidden = true;
+    var pb = $('payBack'); if (pb) pb.hidden = true;
+    var card = $('doneCard');
+    if (!card) return;
+    card.classList.toggle('done--warn', !ok);
+    card.hidden = false;
+    if (!ok) {
+      $('doneTitle').textContent = '마지막 한 걸음만 남았어요';
+      $('doneMsg').innerHTML = '자동 접수가 지금 막혔어요 — 아래 내용을 카톡에 붙여넣어 주시면 바로 접수돼요.';
+      $('doneNote').textContent = '보내 주신 내용을 보고 일정과 진행 방법을 안내드릴게요.';
+      $('copyHint').textContent = '아래 내용을 길게 눌러 복사한 뒤 카톡에 붙여넣어 주세요.';
+      $('copyText').value = text;
+      $('copybox').hidden = false;
+      try { $('copyText').focus(); $('copyText').select(); } catch (e) { }
+    }
+    try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { }
+    try { if (navigator.vibrate) navigator.vibrate(24); } catch (e) { }
+  }
+
+  var submitting = false;
   $('kakaoGo').addEventListener('click', function (e) {
     e.preventDefault();
+    if (submitting) return;
     var miss = missing();
     if (miss) { warn(miss.el, miss.msg); return; }
+    submitting = true;
     var text = orderText();
-    copyText(text, function (copied) {
-      if (copied) {
+    copyText(text, function () { });   /* 예비 복사 — 손님에게는 보여 주지 않는다 */
+    var row = {
+      kind: state.type,
+      name_mode: state.type === 'naming' ? state.nameMode : null,
+      product: prod().name + ' ' + prod().price,
+      body: text,
+      payload: { lines: fieldLines() },
+      contact: ($('fWho').value.trim() || $('fPhone').value.trim() || ''),
+      page: location.href
+    };
+    submitRequest(row, function (ok) {
+      submitting = false;
+      if (ok) {
         $('copybox').hidden = true;
         storeClear();      /* 접수를 마쳤으니 되살릴 값도 남기지 않는다 */
         payWaitClear();
-        $('payBack').hidden = true;
-        toast('✅ 신청 내용을 복사했어요 — 카톡에 붙여넣고 보내 주세요');
-        setTimeout(function () { goNoRef(KAKAO); }, 90);
       } else {
-        /* 복사가 막힌 브라우저 — 내용을 화면에 남기고 카톡 링크를 직접 누르게 한다 */
-        $('copyText').value = text;
-        $('copybox').hidden = false;
-        toast('카톡에 붙여넣을 내용을 아래에 준비했어요 — 길게 눌러 복사해 주세요');
-        try { $('copyText').focus(); $('copyText').select(); } catch (e2) { }
+        storeClear();
+        payWaitClear();
       }
+      showDone(ok, text);
+      toast(ok ? '✅ 신청서 접수 완료 — 카톡으로 한 마디만 남겨 주세요' : '접수 내용을 준비했어요 — 카톡에 붙여넣어 주세요');
     });
-    try { if (navigator.vibrate) navigator.vibrate(18); } catch (e3) { }
   });
 
   /* ── 카드결제 ─────────────────────────────

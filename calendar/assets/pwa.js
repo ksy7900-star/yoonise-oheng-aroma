@@ -135,22 +135,33 @@
     }).join('') + '</ol>';
   }
 
+  /** 안드로이드 크롬으로 바로 여는 intent 주소 — 카톡 인앱에서 ⋮ 메뉴를 헤매지 않게 (2026-11-24) */
+  function chromeIntent() {
+    var u = PAGE_URL.replace(/^https?:\/\//, '');
+    return 'intent://' + u + '#Intent;scheme=https;package=com.android.chrome;end';
+  }
   function contentFor(kind) {
     if (kind === 'inapp') {
       var where = isKakao() ? '카톡' : '네이버';
-      var toBrowser = isIOS() ? '사파리' : '크롬(또는 삼성 인터넷)';
-      // 카톡은 메뉴를 거치지 않고 바로 기본 브라우저로 넘기는 길을 먼저 준다 (안드로이드·iOS 둘 다)
-      var extBtn = isKakao()
+      var toBrowser = isIOS() ? '사파리' : '크롬';
+      /* 2026-11-24 — 안드로이드 카톡에서는 '크롬으로 바로 열기' 원터치 버튼 하나만 크게 둔다.
+         iOS 는 기존처럼 카톡의 '브라우저에서 열기' 로 넘긴다. */
+      var chromeBtn = (isKakao() && isAndroid())
+        ? '<a class="install__copy install__ext install__chrome" href="' + chromeIntent() + '" data-install-chrome>' +
+          '<span aria-hidden="true">🌐</span> 크롬으로 바로 열기 →</a>'
+        : '';
+      var extBtn = (!chromeBtn && isKakao())
         ? '<button type="button" class="install__copy install__ext" data-install-external>' +
           '<span aria-hidden="true">↗</span> 브라우저에서 열기</button>'
         : '';
       return '<p class="install__eyebrow">INSTALL</p>' +
         '<h2 class="install__t" id="installTitle">' + where + ' 안에선 설치 창이 안 떠요</h2>' +
-        '<p class="install__d">우측 메뉴(<b>⋮</b> / <b>···</b>)에서 <b>\'다른 브라우저로 열기\'</b>를 누른 뒤 꺼내 두세요.<br>' +
-        '열린 ' + toBrowser + ' 화면에서 한 번 더 누르면 끝이에요.</p>' +
-        extBtn +
+        '<p class="install__d">' + (chromeBtn
+          ? '아래 <b>크롬으로 바로 열기</b>를 누르면 크롬에서 열려요.<br>크롬에서 한 번 더 누르면 홈 화면에 꺼내 둘 수 있어요.'
+          : '우측 메뉴(<b>⋮</b> / <b>···</b>)에서 <b>\'다른 브라우저로 열기\'</b>를 누른 뒤 꺼내 두세요.<br>열린 ' + toBrowser + ' 화면에서 한 번 더 누르면 끝이에요.') + '</p>' +
+        chromeBtn + extBtn +
         '<p class="install__hint">버튼이 안 열리면 아래 주소를 복사해 ' + toBrowser + ' 주소창에 붙여 넣어 주세요.</p>' +
-        (extBtn ? COPY_BTN_SUB : COPY_BTN);
+        ((chromeBtn || extBtn) ? COPY_BTN_SUB : COPY_BTN);
     }
     if (kind === 'ios') {
       return '<p class="install__eyebrow">INSTALL · iPhone</p>' +

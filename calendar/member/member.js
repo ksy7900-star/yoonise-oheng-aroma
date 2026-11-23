@@ -74,18 +74,18 @@
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
   var EL_MOTHER = { 화: '목', 토: '화', 금: '토', 수: '금', 목: '수' };  // 나를 생하는 오행
 
-  /* ── 최종 확정 사다리 (2026-11-23 3차 김나영 님 확정) — 1 / 3 / 5 / 7 ─────────
-     상품 이름은 '내 사주 타이밍 달력'으로 통일(검색·바이럴 태그와 같은 말).
-       · 1명 내 사주 타이밍 달력 +1개월
-       · 3명 내 사주 타이밍 달력 +3개월
-       · 5명 내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인
-       · 7명 내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)
-     Supabase referral_rules 테이블은 보상 스위치를 켤 때 이 숫자로 함께 맞춘다. */
+  /* ── 최종 확정 사다리 (2026-11-23 저녁 김나영 님 확정 · 2026-11-24 적용) — 1 / 3 / 5 / 7 ──
+     '1명 +1개월'은 너무 쉬워서 결제 없이 한 달씩만 쓰는 사람이 생긴다 → 한 칸씩 조였다.
+       · 1명 내 사주 타이밍 달력 +2주(14일)
+       · 3명 내 사주 타이밍 달력 +1개월(30일)
+       · 5명 내 사주 타이밍 달력 +3개월(90일) + 1:1 상담 1만원 할인
+       · 7명 내 사주 타이밍 달력 +6개월(180일) + 1:1 원포인트 상담 반값(50%)
+     Supabase referral_rules 도 같은 숫자(1/3/5/7 · 14/30/90/180일)로 맞춰 두었다. */
   var LADDER = [
-    { n: 1, title: '내 사주 타이밍 달력 +1개월', sub: '지금부터 한 달을 통째로 열어 드려요' },
-    { n: 3, title: '내 사주 타이밍 달력 +3개월', sub: '석 달을 통째로 열어 드려요' },
-    { n: 5, title: '내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인', sub: '반년을 열고, 상담은 1만원 빼 드려요' },
-    { n: 7, title: '내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)', sub: '2026년 11월~2027년 12월 전부 · 49,000원 → 24,500원' }
+    { n: 1, title: '내 사주 타이밍 달력 +2주(14일)', sub: '지금부터 2주를 통째로 열어 드려요' },
+    { n: 3, title: '내 사주 타이밍 달력 +1개월(30일)', sub: '한 달을 통째로 열어 드려요' },
+    { n: 5, title: '내 사주 타이밍 달력 +3개월(90일) + 1:1 상담 1만원 할인', sub: '석 달을 열고, 상담은 1만원 빼 드려요' },
+    { n: 7, title: '내 사주 타이밍 달력 +6개월(180일) + 1:1 원포인트 상담 반값(50%)', sub: '반년을 열고, 원포인트 상담 49,000원 → 24,500원' }
   ];
 
   /* ── 결제자 안내 (2026-11-23 5차) ─────────────────────────────
@@ -218,8 +218,8 @@
 
   /* ── 초대 코드·링크 ─────────────────────────────── */
   function myCode() { return (state.profile && state.profile.invite_code) || ''; }
-  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 7일 체험·액운 1회가 바로 열리고,
-     케미는 보내는 사람이 '케미 링크'로 따로 보낸다(chemiLink → /calendar/member/?chemi=...). 2026-11-22 */
+  /* 친구가 받는 초대 링크는 달력 메인(/calendar/?ref=코드)이다 — 7일 체험·액운 1회가 바로 열린다.
+     2026-11-24부터 보내는 링크는 언제나 이 하나(?ref=)뿐 — 케미 사주(?chemi=)는 주소에 싣지 않는다. */
   function myLink(withCode) {
     var code = myCode();
     if (code && withCode !== false) return CALENDAR_LIVE_BASE + '?ref=' + encodeURIComponent(code);
@@ -229,9 +229,7 @@
     return myCode() ? CALENDAR_LIVE_BASE + '?ref=' + encodeURIComponent(myCode()) : CALENDAR_LIVE_BASE + '?ref=내코드';
   }
   function shareLine() {
-    return '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.\n'
-      + myLink();
+    return SHARE_TEXT + '\n' + myLink();
   }
 
   /* ── 로그인 (Supabase) ──────────────────────────── */
@@ -2146,10 +2144,7 @@
       + '<p class="grow__t">친구를 초대하면 <b>내 사주 타이밍 달력</b>이 더 열려요</p>'
       + '<p class="grow__stat" id="growStat" hidden></p>'
       + '<ul class="grow__ladder">'
-      + '<li><b>1명</b><span>내 사주 타이밍 달력 +1개월</span></li>'
-      + '<li><b>3명</b><span>내 사주 타이밍 달력 +3개월</span></li>'
-      + '<li><b>5명</b><span>내 사주 타이밍 달력 +6개월 + 1:1 상담 1만원 할인</span></li>'
-      + '<li><b>7명</b><span>내 사주 타이밍 달력 2027년 1년 전체 + 1:1 원포인트 상담 반값(50%)</span></li>'
+      + LADDER.map(function (r) { return '<li><b>' + r.n + '명</b><span>' + esc(r.title) + '</span></li>'; }).join('')
       + '</ul>'
       + '<button type="button" class="btn btn--gold btn--wide" id="growShareBtn">내 링크 바로 보내기</button>'
       + '</div>'
@@ -3022,44 +3017,86 @@
     } catch (e) { fail(); }
   }
 
-  /* ── [친구에게 보내기] — 통합 링크 하나(케미 + 내 초대 코드) ──────────────
-     2026-11-23 실기기 제보(#17252): 예전엔 부적 PNG를 files로 같이 넘겼는데,
-     안드로이드·iOS 카톡은 files가 있으면 그림만 받고 text·url을 잘라 버렸다.
-     → 이제 그림 없이 { title, text, url }만 넘긴다. 그림 저장은 바로 옆 [이미지로 저장] 몫.
-     · text 안에 주소를 또 넣지 않는다 — 안드로이드 크롬이 text와 url을 붙여 보내서
-       링크가 두 개로 찍힌다. 주소는 url 한 곳에만 싣는다.
-     · navigator.share가 없는 곳(PC·인앱 브라우저): 링크를 클립보드에 넣고 토스트로 안내.
-     · 로그인 전(!state.user)에도 보내기를 막지 않는다 — 우리 둘 케미는 그대로 열리고
-       내 초대 코드만 빠진다. 버튼 아래 한 줄(#shareAmulNote)이 그 사실을 미리 알린다. */
-  function shareAmul(ch) {
-    var url = chemiLink(ch);
-    var line = '나랑 2027년 케미 보자 😊 내 사주 넣어 뒀어. 네 사주 넣으면 바로 겹쳐 볼 수 있어.';
-    var copyAll = line + '\n' + url;
+  /* ══ 카톡 공유 (2026-11-24 김나영 님 확정) ══════════════════════════════════
+     · 이름 박힌 개인 케미 부적은 옆의 [이미지로 저장]으로 소장한다.
+     · [친구에게 보내기]·[내 링크 바로 보내기]는 **?chemi=(생년월일시) 없이**
+       안전한 초대 링크(?ref=내코드) 하나만 보낸다 — 받는 사람 사주가 주소에 남지 않는다.
+     · 카카오 SDK 가 있으면 공식 피드(대표 부적 그림 + 문구 + 링크 버튼)로,
+       없으면 navigator.share(문구 + 링크 1개), 그것도 없으면 복사로 떨어진다. */
+  var KAKAO_JS_KEY = '24485cf462cb3fa08ecc21117bb3b6e4';   // 카카오 디벨로퍼스 앱 1660074 · JavaScript 키
+  var SHARE_TEXT = '2027년 내 사주 타이밍 달력 나도 보고 있는데 꽤 잘 맞아서 공유해. 행운 부적도 무료래!';
+  var SHARE_IMG_BASE = CALENDAR_LIVE_BASE.replace(/\/calendar\/?$/, '/calendar/assets/share/');
+  var SHARE_IMG = {
+    friend: SHARE_IMG_BASE + 'friend.jpg',
+    love: SHARE_IMG_BASE + 'love.jpg',
+    luck: SHARE_IMG_BASE + 'luck.jpg'
+  };
 
-    function fallback() {
-      copyText(copyAll).then(function (ok) {
-        toast(ok
-          ? '링크가 복사됐어요 — 카톡에 붙여넣어 보내 주세요.'
-          : '링크를 화면에서 길게 눌러 복사해 주세요.');
-      });
-    }
-
-    if (!navigator.share) { fallback(); return; }
+  /** 카카오 SDK 준비 — 없으면 null (일반 공유로 떨어진다) */
+  function kakaoSdk() {
     try {
-      navigator.share({
-        title: '내 사주 타이밍 달력',
-        text: line,
-        url: url
-      }).then(function () {}, function (err) {
-        if (err && err.name === 'AbortError') return;   // 사용자가 공유 창을 닫았을 뿐
-        fallback();
-      });
-    } catch (e) { fallback(); }
+      var K = window.Kakao;
+      if (!K || !K.Share || !K.init) return null;
+      if (typeof K.isInitialized === 'function' && !K.isInitialized()) K.init(KAKAO_JS_KEY);
+      return K;
+    } catch (e) { return null; }
   }
 
-  /* ── [내 링크 바로 보내기] — 링크 하나(케미 + 초대)로 초대와 케미를 같이 ──
-     2026-11-23 (#17281 · 캐처 6960): text 끝에 주소를 또 넣어 카톡에 긴 URL이 두 번 찍렸다.
-     → text는 문구만, 주소는 url 한 곳에만. 클립보드로 떨어질 때만 문구+주소를 합쳐 복사한다. */
+  /** 공유 링크 — 초대 코드만 담은 달력 주소 (케미 사주는 담지 않는다) */
+  function inviteShareLink(ch) {
+    return myLink();
+  }
+
+  /** 카톡/일반 공유 실행 — rel 은 friend·love·luck */
+  function shareInvite(rel) {
+    var url = myLink();
+    var K = kakaoSdk();
+    if (K) {
+      try {
+        K.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: '2027 내 사주 타이밍 달력',
+            description: SHARE_TEXT,
+            imageUrl: SHARE_IMG[rel] || SHARE_IMG.luck,
+            link: { mobileWebUrl: url, webUrl: url }
+          },
+          buttons: [{ title: '내 달력 보기', link: { mobileWebUrl: url, webUrl: url } }]
+        });
+        return;
+      } catch (e) { /* 아래 일반 공유로 */ }
+    }
+    if (navigator.share) {
+      try {
+        navigator.share({ title: '2027 내 사주 타이밍 달력', text: SHARE_TEXT, url: url })
+          .then(function () {}, function (err) {
+            if (err && err.name === 'AbortError') return;
+            copyShareFallback(url);
+          });
+        return;
+      } catch (e) { }
+    }
+    copyShareFallback(url);
+  }
+
+  function copyShareFallback(url) {
+    copyText(SHARE_TEXT + '\n' + url).then(function (ok) {
+      toast(ok ? '링크가 복사됐어요 — 카톡에 붙여넣어 보내 주세요.' : '링크를 화면에서 길게 눌러 복사해 주세요.');
+    });
+  }
+
+  /* ── [친구에게 보내기] — 초대 링크 하나만 (2026-11-24) ──────────────────────
+     2026-11-23 실기기 제보(#17252): 예전엔 부적 PNG를 files로 같이 넘겼는데,
+     안드로이드·iOS 카톡은 files가 있으면 그림만 받고 text·url을 잘라 버렸다.
+     → 그림은 [이미지로 저장] 몫으로 두고, 보내기는 링크 하나만.
+     · ?chemi=(생년월일시)는 이제 싣지 않는다 — 받는 사람 사주가 주소에 남지 않게.
+     · 로그인 전에도 보내기를 막지 않는다(내 초대 코드만 빠진다). */
+  function shareAmul(ch) {
+    shareInvite(relNow() === 'love' ? 'love' : 'friend');
+  }
+
+  /* ── [내 링크 바로 보내기] — 초대 링크 하나 (2026-11-24) ─────────────────────
+     문구는 확정본 한 줄, 링크는 ?ref= 하나. 케미 사주(?chemi=)는 싣지 않는다. */
   function onShareMyLink(ch) {
     if (!state.user) { onLogin(null, $('#growShareBtn')); return; }
     if (!myCode()) {
@@ -3067,19 +3104,7 @@
       toast('내 초대 코드를 준비하는 중이에요 — 잠시 뒤 다시 눌러 주세요.');
       return;
     }
-    var url = chemiLink(ch);
-    var line = '2027년 사주 달력 같이 보자 🌙\n'
-      + '내 링크로 들어오면 ' + FRIEND_GIFT + '가 열리고, 우리 둘 2027년 케미도 볼 수 있어.';
-    function fallback() {
-      copyText(line + '\n' + url).then(function (ok) {
-        toast(ok ? '링크를 복사했어요 — 친구에게 붙여넣기만 하세요.' : '복사가 안 됐어요. 잠시 뒤 다시 눌러 주세요.');
-      });
-    }
-    if (!navigator.share) { fallback(); return; }
-    navigator.share({ title: '내 사주 타이밍 달력', text: line, url: url }).then(function () {}, function (err) {
-      if (err && err.name === 'AbortError') return;
-      fallback();
-    });
+    shareInvite('luck');
   }
 
   /* ── grow 카드의 내 추천 현황 + 버튼 이름 ───────────
@@ -3127,20 +3152,6 @@
       timeKnown: ch.p.timeKnown, hh: ch.p.hh, mm: ch.p.mm, name: ch.p.name
     };
   }
-
-  function chemiLink(ch) {
-    var p = shareableOf(ch);
-    var q = '?chemi=' + encodeChemin(p) + '&from=' + encodeURIComponent(p.name || '친구')
-      + '&rel=' + encodeURIComponent(relNow());
-    var code = myCode();
-    if (code) q += '&ref=' + encodeURIComponent(code);
-    return LIVE_BASE + q;
-  }
-
-  /* ── 케미 링크 — 언제나 내 초대 코드를 함께 싣는다 (2026-11-23 7차)
-     친구가 이 링크 하나로 ① 우리 둘 케미를 보고 ② 내 초대 실적에 붙는다.
-     '내 초대 링크'와 '내 케미 링크'가 따로 있으면 헷갈린다 — 주소는 하나만 보낸다. */
-  function onShareChemin(ch) { onShareMyLink(ch); }
 
   /* ── 케미: 실행 ─────────────────────────────────── */
   function runChemin(force) {
