@@ -4014,6 +4014,7 @@
   function renderCalendar() {
     var v = state.view;
     _planCache = {};                 // 사주·달이 바뀌면 그 달의 3색 배치를 다시 잡는다
+    _kindOrder = {};                 // 카드 배정 순서(monthKindOrder)도 같은 이유로 함께 비운다
     $('#calYear').textContent = v.y;
     $('#calTitle').textContent = v.m + '월';
 
