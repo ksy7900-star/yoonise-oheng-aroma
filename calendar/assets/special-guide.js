@@ -299,7 +299,19 @@
       '<div class="sgift__acts">' +
       '<button type="button" class="sgift__buy" data-shop="pass">' + ctaBuy('gift') + '</button>' +
       '<button type="button" class="sgift__more" id="specialGiftMore">혜택 자세히 보기</button>' +
-      '</div>';
+      '</div>' +
+      /* 72시간 안에 바로 결제하고 싶은 분 — 같은 혜택 안내 안의 작은 보조 선택지.
+         새 팝업 없이 기존 페이앱 1년 패스 주소로 바로 간다(#18832). */
+      quickBuyHTML();
+  }
+
+  /* 72시간 안에 바로 결제하는 작은 길 — 혜택 카드 안에만 둔다 (#18832) */
+  function quickBuyHTML() {
+    var c = window.YoonCalendar;
+    var url = (c && typeof c.passPayUrl === 'function') ? c.passPayUrl() : '';
+    if (!url) return '';
+    return '<a class="sgift__quick" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
+      '지금 바로 구매하기 · 14,900원 <span aria-hidden="true">→</span></a>';
   }
 
   function paintClock() {

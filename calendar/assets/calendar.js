@@ -902,7 +902,14 @@
     var gift = phase === 'gift';
     var footCard = !!(sf && !sf.hidden);
     if (sfGuide) sfGuide.hidden = !(gift && footCard);
-    if (pfGuide) pfGuide.hidden = !(gift && !footCard);
+    /* ② 72시간이 지난 무료 체험 중 — 버튼 아래에 14,900원만 또박또박 (#18832)
+       특별 선물이 끝난 뒤라 '증정' 문구는 붙이지 않는다. */
+    if (pfGuide) {
+      pfGuide.hidden = !((gift && !footCard) || phase === 'trial');
+      pfGuide.textContent = gift
+        ? '2027년 전체 이용권 14,900원 · 첫 72시간 구매 시 특별 가이드 증정'
+        : '2027년 전체 이용권 14,900원';
+    }
   }
   /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구를 FREE_DAYS·액운 보너스에 맞춰 주고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
@@ -4358,9 +4365,10 @@
         yearBox.innerHTML =
           '2027년은 ' + rel + '. ' + owner + ' 사주에서는 ' + line +
           (ms ? '<br>특히 <b class="hk-hl">' + ms + '</b>엔 ' + doLine : '');
-        /* 접힘 상태에서도 급소가 뭐지 궁금하게 — 조심할 달만 요약 줄에 작게 */
+        /* 접힘 상태에서 조심할 달만 요약 줄에 작게 (#18832 — 카드 제목은 '나의 2027년 핵심 사주 해석'
+           하나로 두고, '급소'는 제목 자리에 세우지 않는다) */
         var peekEl = $('#hookFoldPeek');
-        if (peekEl) peekEl.textContent = ms ? '급소 ' + ms : '';
+        if (peekEl) peekEl.textContent = ms ? '조심할 달 ' + ms : '';
       }
     }
   }
@@ -5479,6 +5487,7 @@
     if (card) card.classList.toggle('is-cal-closed', !open);
     if (btn) {
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.classList.toggle('is-open', open);   /* 펼친 뒤 '달력 접기'는 한 톤 가라앉힌다 (#18832) */
       btn.innerHTML = open
         ? '달력 접기 <span aria-hidden="true">↑</span>'
         : '이번 달 중요한 날 보기 <span aria-hidden="true">→</span>';
@@ -9679,7 +9688,9 @@
     openNoRef: openNoRef,
     /* 🏷️ 구매 유도 버튼 문구 — special-guide.js 의 특별 선물 카드 버튼도 같은 이름표를 쓴다 (#18672) */
     ctaCopy: function (phase) { return CTA_COPY[phase] || CTA_COPY.trial; },
-    syncCtaCopy: syncCtaCopy
+    syncCtaCopy: syncCtaCopy,
+    /* 🎁 특별 선물 카드의 작은 '지금 바로 구매하기' — 기존 페이앱 1년 패스 주소 그대로 (#18832) */
+    passPayUrl: function () { return PAYAPP_PASS_URL; }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

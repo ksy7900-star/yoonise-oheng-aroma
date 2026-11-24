@@ -5752,6 +5752,17 @@ body.has-bonus .js-trial{ display: none !important; }
   font-family:inherit; font-size:12px; font-weight:700; color:var(--ink-2);
 }
 .sgift__more:active{transform:translateY(1px)}
+/* 작은 보조 선택지 — 72시간 안에 바로 결제하는 길 (#18832) */
+.sgift__quick{
+  display:inline-flex; align-items:center; gap:4px;
+  margin-top:11px; padding:2px 0; border:0; background:none;
+  font-family:inherit; font-size:11.5px; font-weight:700;
+  letter-spacing:-.01em; color:var(--gold-deep);
+  text-decoration:underline; text-underline-offset:3px;
+  text-decoration-color:rgba(165,101,15,.4);
+}
+.sgift__quick span{font-size:11px}
+.sgift__quick:active{opacity:.72}
 
 /* [필수] 개인정보 동의 — 신청 단계에서만 나온다 (2026-11-24) */
 .sgift__consent{
@@ -6016,12 +6027,12 @@ body.has-sgift #passFoot{display:none !important}
 .hkfold__sum::-webkit-details-marker { display: none; }
 .hkfold__sum::marker { content: ""; }
 .hkfold__t {
-  flex: none; font-family: var(--sans); font-size: 10.5px; font-weight: 800;
-  letter-spacing: .12em; color: #8E5A4A;
+  flex: none; font-family: var(--sans); font-size: 12.5px; font-weight: 800;
+  letter-spacing: .01em; color: var(--navy);
 }
 .hkfold__peek {
   margin-left: auto; min-width: 0;
-  font-size: 10.5px; font-weight: 700; letter-spacing: -.02em; color: #A2988A;
+  font-size: 10px; font-weight: 700; letter-spacing: -.02em; color: #A2988A;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .hkfold__peek:empty { display: none; }
@@ -6254,8 +6265,9 @@ body:not(.is-result) #heroJump { display: none !important; }
 .hkn.is-done .hkn__go { color: #3C5F46; }
 .hkn.is-done .hkn__d { color: #5C7263; }
 
-/* 접이식 제목이 길어졌다 — 자간을 줄여 한 줄에 담는다 */
-.hkfold__t { font-size: 11px; letter-spacing: .035em; }
+/* 접이식 제목이 길어졌다 — 자간을 줄여 한 줄에 담는다.
+   2026-11-24 #18832: 카드 대표 제목은 '나의 2027년 핵심 사주 해석' 하나로 보이게 키운다. */
+.hkfold__t { font-size: 12.5px; letter-spacing: .01em; }
 
 /* ── ③ 이번 달 나의 타이밍 ─────────────────────────────────────── */
 .monthspec {
@@ -6269,14 +6281,24 @@ body:not(.is-result) #heroJump { display: none !important; }
 }
 .monthspec .cal__summary { margin: 6px 0 0; text-align: left; }
 .monthspec__go {
-  display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 7px; padding: 5px 2px; border: 0; background: none;
-  font-family: var(--sans); font-size: 11.5px; font-weight: 800;
-  letter-spacing: -.02em; color: #2A5F3B; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 9px 14px 10px;
+  border: 1px solid rgba(27, 41, 64, .92); border-radius: 999px;
+  background: var(--navy); color: #FFF8EA;
+  box-shadow: 0 1px 2px rgba(27, 41, 64, .16), inset 0 1px 0 rgba(255, 255, 255, .10);
+  font-family: var(--sans); font-size: 12.5px; font-weight: 800;
+  letter-spacing: -.02em; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
 }
+.monthspec__go span { font-size: 12px; color: #F7CA79; }
+/* 펼친 뒤 '달력 접기'는 같은 버튼 모양이되 한 톤 가라앉힌다 */
+.monthspec__go.is-open {
+  background: #FFFDF8; border-color: rgba(27, 41, 64, .22); color: var(--navy);
+  box-shadow: none;
+}
+.monthspec__go.is-open span { color: #9A7B3E; }
 .monthspec__go:active { transform: translateY(1px); }
-.monthspec__go span { font-size: 11px; }
 
 /* `이번 달 중요한 날 보기` → 달력 그리드가 잠깐 반짝인다(스크롤만으로는 어디인지 모를 때) */
 #calGrid.is-spot { animation: calSpot 1.5s ease; border-radius: 14px; }
@@ -6289,7 +6311,7 @@ body:not(.is-result) #heroJump { display: none !important; }
 @media (max-width: 430px) {
   .hk__title { font-size: 16.5px; line-height: 1.44; }
   .hk__brief { font-size: 13.6px; line-height: 1.84; }
-  .hkfold__t { font-size: 10.6px; letter-spacing: .02em; }
+  .hkfold__t { font-size: 12px; letter-spacing: .005em; }
   .monthspec { margin-top: 10px; padding: 12px 12px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -6376,7 +6398,7 @@ body:not(.is-result) #heroJump { display: none !important; }
 #calCard.is-cal-closed .cal__note--top { display: none !important; }
 #calCard.is-cal-closed { padding-bottom: 16px; }
 .monthspec__go { gap: 6px; }
-.monthspec__go[aria-expanded="true"] { color: #8F5B12; }
+.monthspec__go[aria-expanded="true"] { color: var(--navy); }
 #calCard.is-cal-closed .monthspec { margin-bottom: 0; }
 /* #18624 — 접힌 동안에는 월 이동 화살표를 숨긴다(자리는 남겨 월 제목 가운데 정렬 유지).
    달력을 펼치면 그대로 돌아온다 — 월 변경 기능 자체는 그대로 둔다. */
