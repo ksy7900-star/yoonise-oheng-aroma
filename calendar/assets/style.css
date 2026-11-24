@@ -6181,3 +6181,110 @@ body.is-result .hero__sub { display: none; }
 body:has(.modal:not([hidden])) .qnav { opacity: 0; pointer-events: none; }
 /* 제목 아래 3개 바로가기는 결과 화면(body.is-result)에서만 — 입력 전·수정 화면에서는 숨긴다 */
 body:not(.is-result) #heroJump { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   2026-11-24 #18370 『최종 통합 수정·보완 지시서』
+   ① TODAY · 오늘의 운세 브리핑 — 제목 1줄 + 본문 3~5문장 + `오늘 상세 운세 보기`
+   ② 나의 1초 체크 — TODAY 본문보다 작은 보조 카드(.hkn)
+   ③ 이번 달 나의 타이밍 — 달력 위 요약 블록(.monthspec)
+   본문에는 어떤 잘림(text-overflow·line-clamp)도 두지 않는다 — 문장을 그대로 보여 준다.
+   ══════════════════════════════════════════════════════════════════════ */
+.hk__title {
+  margin: 7px 0 0;
+  font-family: var(--serif); font-size: 17.5px; font-weight: 700;
+  line-height: 1.45; letter-spacing: -.035em; color: #1E1B16; word-break: keep-all;
+}
+.hk__brief {
+  margin: 10px 0 0;
+  font-family: var(--sans); font-size: 14px; line-height: 1.86;
+  letter-spacing: -.012em; color: #2E2A24; word-break: keep-all;
+  overflow: visible; max-height: none; -webkit-line-clamp: unset;
+}
+.hk__sent {
+  margin: 0 0 7px; padding: 0;
+  overflow: visible; max-height: none; white-space: normal;
+  -webkit-line-clamp: unset; text-overflow: clip;
+}
+.hk__sent:last-child { margin-bottom: 0; }
+.hk__sent .hk-name { font-weight: 800; color: #8C3A2A; }
+.hk__more--wide { align-self: stretch; justify-content: flex-end; padding: 6px 2px 2px; }
+
+/* ── 🌙 나의 1초 체크 — 작고 조용한 보조 카드 ───────────────────── */
+.hkn {
+  display: block; width: 100%; margin: 0 0 14px; padding: 12px 14px 13px;
+  text-align: left; font-family: var(--sans); cursor: pointer;
+  background: #FBF7EE; border: 1px solid rgba(199, 154, 78, .26);
+  border-radius: 14px; color: #5F5648;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .18s ease, border-color .18s ease, transform .14s ease;
+}
+.hkn:active { transform: scale(.995); }
+.hkn__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hkn__t {
+  min-width: 0; font-size: 11.5px; font-weight: 800;
+  letter-spacing: .01em; color: #8A6B37;
+}
+.hkn__st {
+  flex: none; padding: 3px 9px 4px; border-radius: 999px;
+  background: #FFFFFF; border: 1px solid rgba(199, 154, 78, .38);
+  font-size: 10px; font-weight: 800; letter-spacing: -.02em; color: #9A7B3E;
+  white-space: nowrap;
+}
+.hkn__d {
+  display: block; margin: 6px 0 0;
+  font-size: 11.5px; line-height: 1.65; color: #7A7164; word-break: keep-all;
+}
+.hkn__go {
+  display: block; margin-top: 8px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: -.02em; color: #8C3A2A;
+}
+.hkn.is-done { background: #F2F7F1; border-color: rgba(74, 124, 89, .28); }
+.hkn.is-done .hkn__t { color: #3F6B4E; }
+.hkn.is-done .hkn__st { color: #3F6B4E; border-color: rgba(74, 124, 89, .32); }
+.hkn.is-done .hkn__go { color: #3C5F46; }
+.hkn.is-done .hkn__d { color: #5C7263; }
+
+/* 접이식 제목이 길어졌다 — 자간을 줄여 한 줄에 담는다 */
+.hkfold__t { font-size: 11px; letter-spacing: .035em; }
+
+/* ── ③ 이번 달 나의 타이밍 ─────────────────────────────────────── */
+.monthspec {
+  margin: 12px 0 2px; padding: 13px 14px 11px;
+  background: #FBF7EE; border: 1px solid rgba(31, 27, 22, .07);
+  border-radius: 15px;
+}
+.monthspec__t {
+  margin: 0; font-family: var(--sans); font-size: 11px; font-weight: 800;
+  letter-spacing: .08em; color: #8E5A4A;
+}
+.monthspec .cal__summary { margin: 6px 0 0; text-align: left; }
+.monthspec__go {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 7px; padding: 5px 2px; border: 0; background: none;
+  font-family: var(--sans); font-size: 11.5px; font-weight: 800;
+  letter-spacing: -.02em; color: #2F5838; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.monthspec__go:active { transform: translateY(1px); }
+.monthspec__go span { font-size: 11px; }
+
+/* `이번 달 중요한 날 보기` → 달력 그리드가 잠깐 반짝인다(스크롤만으로는 어디인지 모를 때) */
+#calGrid.is-spot { animation: calSpot 1.5s ease; border-radius: 14px; }
+@keyframes calSpot {
+  0%   { box-shadow: 0 0 0 0 rgba(199, 154, 78, 0); }
+  28%  { box-shadow: 0 0 0 4px rgba(199, 154, 78, .30); }
+  100% { box-shadow: 0 0 0 0 rgba(199, 154, 78, 0); }
+}
+
+@media (max-width: 430px) {
+  .hk__title { font-size: 16.5px; line-height: 1.44; }
+  .hk__brief { font-size: 13.6px; line-height: 1.84; }
+  .hkfold__t { font-size: 10.6px; letter-spacing: .02em; }
+  .monthspec { margin-top: 10px; padding: 12px 12px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hkn, .monthspec__go { transition: none; }
+  #calGrid.is-spot { animation: none; }
+}
+/* TODAY 카드와 1초 체크 카드 사이 — 구분선은 점선 한 줄만 (2026-11-24) */
+.hk--today { border-bottom: 0; padding-bottom: 4px; }
