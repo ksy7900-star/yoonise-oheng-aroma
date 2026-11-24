@@ -598,7 +598,7 @@
         time_known: !!(res.input && res.input.timeKnown),
         solar: { y: res.solar.y, m: res.solar.m, d: res.solar.d },
         pillars: { year: pil(p.year), month: pil(p.month), day: pil(p.day), time: pil(p.time) },
-        day_master: { gan: d.gan, element: M.GAN_EL[d.ganIndex], hun: M.GAN_HUN[d.ganIndex] },
+        day_master: { gan: d.gan, gan_ko: M.GAN_KO[d.ganIndex], element: M.GAN_EL[d.ganIndex], hun: M.GAN_HUN[d.ganIndex] },
         counts: counts,
         percents: res.percents || {},
         strongest: sorted.slice(0, 2),
