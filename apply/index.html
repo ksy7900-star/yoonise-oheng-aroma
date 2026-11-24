@@ -19,7 +19,8 @@
    윤이세 — 상담·작명 전용 신청서 (/apply/)
    1안 색감: 화이트 · 딥네이비(#1E293B) · 에메랄드/코랄 · 노란 카톡 (2026-11-21)
    순서 개편 (2026-11-22): ① 상품 고르고 결제(위) → ② 신청서 접수(아래)
-   2026-11-24: 접수는 서버 자동 저장 — 손님은 복사·붙여넣기 없이 카톡에 한 마디만.
+   2026-11-24: 접수는 서버 자동 저장 — 저장이 끝나면 접수 완료 안내만 남기고,
+   카톡은 문의하고 싶을 때 여는 선택 버튼으로 둔다(카톡에 적는 것을 접수 절차로 요구하지 않는다).
    ========================================================== */
 :root {
   --bg: #FAFBFD;
@@ -594,13 +595,14 @@ a { color: inherit; }
     </a>
   </div>
 
-  <!-- 접수 완료 — 서버 저장이 끝나면 이 카드 하나만 남긴다 (2026-11-24) -->
+  <!-- 접수 완료 — 서버 저장이 '성공한 경우에만' 이 카드를 띄운다 (2026-11-24)
+       저장이 실패하면 showDone(false) 가 제목·문구를 '마지막 한 걸음' 안내로 바꾼다. -->
   <section class="done" id="doneCard" hidden aria-live="polite">
     <span class="done__ic" aria-hidden="true">🎉</span>
-    <h2 class="done__t" id="doneTitle">신청서 접수가 끝났어요!</h2>
-    <p class="done__d" id="doneMsg">카톡으로 <b>‘신청했어요’</b> 한 마디만 남겨 주세요.<br>접수 확인하고 일정·진행 방법을 바로 안내드릴게요.</p>
-    <a class="done__go" id="doneKakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카톡 열기</a>
-    <p class="done__n" id="doneNote">신청서는 이미 접수됐어요 — 카톡에 붙여넣을 필요 없어요.</p>
+    <h2 class="done__t" id="doneTitle">신청서 접수 완료</h2>
+    <p class="done__d" id="doneMsg">신청이 정상적으로 접수되었습니다. 확인 후 카카오톡으로 안내드리겠습니다.</p>
+    <a class="done__go" id="doneKakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카톡으로 문의하기 (선택)</a>
+    <p class="done__n" id="doneNote">접수는 이미 끝났어요 — 카톡은 궁금한 점이 있을 때만 열어 주세요.</p>
   </section>
 
   <div class="copybox" id="copybox" hidden>
@@ -612,7 +614,7 @@ a { color: inherit; }
     <li>결제 확인은 <b>카드결제면 결제할 때 넣은 휴대폰 번호</b>, <b>계좌이체면 입금자명</b>으로 대조해요.</li>
     <li>결제 전에 신청서를 먼저 적어 두어도 괜찮아요 — 두 칸의 순서는 상관없어요.</li>
     <li>접수 순서대로 카톡에서 일정과 진행 방법을 안내해 드려요.</li>
-    <li>신청서는 <b>접수 버튼을 누르는 순간 바로 접수</b>돼요 — 카톡에는 ‘신청했어요’ 한 마디만 남겨 주세요.</li>
+    <li>신청서는 <b>접수 버튼을 누르는 순간 바로 접수</b>돼요 — 접수 뒤에 따로 카톡에 보내실 내용은 없어요.</li>
     <li>적어 주신 내용은 신청서 접수에만 쓰고, 이 화면에는 남지 않아요.</li>
   </ul>
 
@@ -766,7 +768,7 @@ a { color: inherit; }
     var what = $('payBackWhat');
     if (what) {
       what.textContent = (p ? p.name + ' ' + p.price + ' 결제를 마치셨다면, ' : '') +
-        '아래 신청서에 사주 정보를 적고 카톡으로 접수해 주세요.';
+        '아래 신청서에 사주 정보를 적고 맨 아래 접수 버튼을 눌러 주세요.';
     }
     bar.hidden = false;
   }
@@ -1243,9 +1245,10 @@ a { color: inherit; }
   document.addEventListener('visibilitychange', function () { if (document.hidden) sawBlur = true; });
 
   /* ── 접수 버튼: 확인 → 서버 접수 → 완료 카드 ───────
-     2026-11-24: 복사→붙여넣기 안내를 걷어 냈다. 누르는 순간 신청서가 서버에 저장되고,
-     손님은 완료 카드의 💬 카톡 열기 로 '신청했어요' 한 마디만 남기면 된다.
-     서버 저장이실패해도 카톡으로 가는 길은 막지 않는다(그때만 예쁜 복사본을 보여 준다). */
+     2026-11-24: 복사→붙여넣기 안내를 걷어 냈다. 누르는 순간 신청서가 서버에 저장된다.
+     접수 완료 안내는 '서버 저장 성공'일 때만 띄우고, 완료 카드의 💬 카톡 버튼은
+     문의하고 싶을 때만 여는 선택 버튼이다.
+     서버 저장이 실패하면 접수 완료 문구 없이 '마지막 한 걸음' 안내 + 복사본을 보여 준다. */
   function fieldLines() {
     var p = prod();
     var naming = state.type === 'naming';
@@ -1301,7 +1304,9 @@ a { color: inherit; }
     } catch (e) { finish(false); }
   }
 
-  /** 접수 완료 화면 — 신청서·접수 버튼을 감추고 완료 카드 하나만 남긴다 */
+  /** 접수 완료 화면 — 신청서·접수 버튼을 감추고 완료 카드 하나만 남긴다
+      ok=true  : 서버 저장 성공 — 접수 완료 안내(카톡은 선택 문의)
+      ok=false : 저장 실패 — 접수 완료 문구를 절대 쓰지 않고 '마지막 한 걸음' 안내만 */
   function showDone(ok, text) {
     var form = document.querySelector('.cform');
     var sep = document.querySelector('.step--sep');
@@ -1315,10 +1320,17 @@ a { color: inherit; }
     if (!card) return;
     card.classList.toggle('done--warn', !ok);
     card.hidden = false;
-    if (!ok) {
+    var kakao = $('doneKakao');
+    if (ok) {
+      $('doneTitle').textContent = '신청서 접수 완료';
+      $('doneMsg').textContent = '신청이 정상적으로 접수되었습니다. 확인 후 카카오톡으로 안내드리겠습니다.';
+      $('doneNote').textContent = '접수는 이미 끝났어요 — 카톡은 궁금한 점이 있을 때만 열어 주세요.';
+      if (kakao) kakao.textContent = '💬 카톡으로 문의하기 (선택)';
+    } else {
       $('doneTitle').textContent = '마지막 한 걸음만 남았어요';
       $('doneMsg').innerHTML = '자동 접수가 지금 막혔어요 — 아래 내용을 카톡에 붙여넣어 주시면 바로 접수돼요.';
       $('doneNote').textContent = '보내 주신 내용을 보고 일정과 진행 방법을 안내드릴게요.';
+      if (kakao) kakao.textContent = '💬 카톡 열기';
       $('copyHint').textContent = '아래 내용을 길게 눌러 복사한 뒤 카톡에 붙여넣어 주세요.';
       $('copyText').value = text;
       $('copybox').hidden = false;
@@ -1357,7 +1369,7 @@ a { color: inherit; }
         payWaitClear();
       }
       showDone(ok, text);
-      toast(ok ? '✅ 신청서 접수 완료 — 카톡으로 한 마디만 남겨 주세요' : '접수 내용을 준비했어요 — 카톡에 붙여넣어 주세요');
+      toast(ok ? '✅ 신청이 정상적으로 접수되었습니다' : '접수 내용을 준비했어요 — 카톡에 붙여넣어 주세요');
     });
   });
 
