@@ -6368,3 +6368,6 @@ body:not(.is-result) #heroJump { display: none !important; }
 .monthspec__go { gap: 6px; }
 .monthspec__go[aria-expanded="true"] { color: #8A5A16; }
 #calCard.is-cal-closed .monthspec { margin-bottom: 0; }
+/* #18624 — 접힌 동안에는 월 이동 화살표를 숨긴다(자리는 남겨 월 제목 가운데 정렬 유지).
+   달력을 펼치면 그대로 돌아온다 — 월 변경 기능 자체는 그대로 둔다. */
+#calCard.is-cal-closed .cal__head .navbtn { visibility: hidden; pointer-events: none; }

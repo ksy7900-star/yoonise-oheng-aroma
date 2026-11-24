@@ -165,8 +165,9 @@
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
   var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 7일은 이 날부터 고정
-  var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';
-  var CAL_FOLD_KEY = 'yoonise.timing.calFold.v1';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 마지막 선택 기억 (#18494)   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
+  var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
+  var CAL_FOLD_KEY = 'yoonise.timing.calFold.v2';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 사용자가 버튼으로 고른 상태만 기억, 저장값이 없으면 접힘 (#18624)
+  var CAL_FOLD_LEGACY_KEY = 'yoonise.timing.calFold.v1';   // #18494 '기본 펼침' 시절 키 — 값은 읽지 않고 지우기만 한다 (#18624)
   var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
@@ -5369,11 +5370,14 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════
-     2026-11-24 #18494 — '이번 달 나의 타이밍'에서 달력 접기·펼치기
+     2026-11-24 #18494 → #18624 — '이번 달 나의 타이밍'에서 달력 접기·펼치기
      · 요약(⚠️·⚡·🌿 일수)은 늘 보이고, 달력 본문(#calBody)만 접힌다.
-     · 처음(저장값 없음)은 펼침 — 첫 사주 입력 직후 달력이 바로 보이게.
-       그 뒤에는 사용자가 마지막에 고른 상태를 localStorage 에 기억한다.
+     · 처음(저장값 없음)은 **접힘** — 사주를 넣은 직후에도 요약만 보이고 달력은 접혀 있다 (#18624).
+       사용자가 '이번 달 중요한 날 보기 / 달력 접기' 버튼으로 고른 상태만 localStorage 에 기억한다.
+     · #18494 기본 펼침 시절의 옛 키(calFold.v1)는 읽지 않고 지운다 — 테스트 기기에 남은
+       '펼침(1)' 값이 새 기본값(접힘)을 덮지 않게 하려는 것.
      · 접힌 채로 하단 고정 메뉴 '달력'·상단 '타이밍 달력'을 누르면 먼저 펼치고 그 자리로 간다.
+       이 자동 펼침은 기억하지 않는다(기본값은 계속 접힘) — 기억은 접기/펼치기 버튼으로 고른 것만.
      · 달력 자체(색·필터·월 이동·날짜 팝업·잠금·결제)는 하나도 새로 만들지 않는다.
      ══════════════════════════════════════════════════════════════════ */
   var calFoldMemo = null;
@@ -5381,6 +5385,11 @@
     if (calFoldMemo !== null) return calFoldMemo;
     var v = null;
     try { v = localStorage.getItem(CAL_FOLD_KEY); } catch (e) { v = null; }
+    if (v === null) {
+      /* #18624 — 옛 키(v1)는 '기본 펼침' 시절 값이라 버린다. 기기에 남은 '1' 이
+         새 기본값(접힘)을 덮어 처음 화면이 계속 펼쳐 보이던 문제를 막는다. */
+      try { localStorage.removeItem(CAL_FOLD_LEGACY_KEY); } catch (e) { }
+    }
     calFoldMemo = (v === '1') ? true : (v === '0' ? false : null);
     return calFoldMemo;
   }
@@ -5417,17 +5426,24 @@
       }
     }
   }
-  function calToggleFold() { calSetFold(!($('#calBody') && !$('#calBody').hidden), true, true); }
+  function calToggleFold() {
+    var open = !!($('#calBody') && !$('#calBody').hidden);
+    /* 접을 때만 스크롤을 맞춘다(문서가 짧아져 화면이 튀는 것을 막는다).
+       펼칠 때는 누른 자리에서 그대로 아래로 열리게 두어 '달력 접기' 버튼이 계속 보이게 한다 (#18624). */
+    calSetFold(!open, true, open);
+  }
   function calInitFold() {
     var stored = calFoldStored();
-    calSetFold(stored === null ? true : stored, false, false);   // 저장값이 없으면 펼침
+    calSetFold(stored === null ? false : stored, false, false);   // #18624 — 저장값이 없으면 접힘
   }
 
   function jumpToSection(kind) {
     /* #18405 — 기능 카드는 접힌 채 시작한다. 그 카드로 가라는 요청이면 먼저 펼친다. */
     if (kind === 'burn' || kind === 'care' || kind === 'duo') accOpenOnly(kind);
-    /* #18494 — 달력은 접혀 있어도 '달력'을 눌렀으면 먼저 펼친다 */
-    if (kind === 'cal') calSetFold(true, true, false);
+    /* #18494 — 달력은 접혀 있어도 '달력'을 눌렀으면 먼저 펼친다.
+       #18624 — 이 자동 펼침은 저장하지 않는다. 기본값은 계속 '접힘'이고,
+       기억은 접기/펼치기 버튼으로 사용자가 고른 것만 남긴다. */
+    if (kind === 'cal') calSetFold(true, false, false);
     var target = kind === 'burn' ? $('#burnCard')
       : (kind === 'care' ? $('#careCard') : (kind === 'duo' ? $('#duoCard') : null));
     if (!target && kind === 'cal') {
@@ -8878,7 +8894,7 @@
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
     accInit();                                // #18405 — 기능 카드는 기본 접힘
-    calInitFold();                            // #18494 — 달력 접힘은 마지막 선택(없으면 펼침)
+    calInitFold();                            // #18624 — 달력은 기본 접힘(사용자가 고른 상태만 기억)
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
     if (LITE_MODE) { document.body.classList.add('is-lite'); toggleNatal(false); }   // 2.0 첫 화면 — 원국표는 접힌 채로 시작
     else {

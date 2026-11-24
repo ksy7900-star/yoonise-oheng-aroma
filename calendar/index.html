@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124t">
+<link rel="stylesheet" href="assets/style.css?v=20261124u">
 </head>
 <body>
 
@@ -352,7 +352,7 @@
       <div class="monthspec" id="monthSpec">
         <p class="monthspec__t">이번 달 나의 타이밍</p>
         <p class="cal__summary" id="calSummary"></p>
-        <button type="button" class="monthspec__go" id="monthSpecGo" aria-expanded="true" aria-controls="calBody">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
+        <button type="button" class="monthspec__go" id="monthSpecGo" aria-expanded="false" aria-controls="calBody">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
       </div>
       <p class="cal__nightrec" id="calNightRec" hidden></p>
 
@@ -367,10 +367,11 @@
         <span class="passbar__ar" aria-hidden="true">→</span>
       </button>
 
-      <!-- ▤ 달력 본문 — '이번 달 중요한 날 보기 / 달력 접기'로 접고 편다 (#18494)
+      <!-- ▤ 달력 본문 — '이번 달 중요한 날 보기 / 달력 접기'로 접고 편다 (#18494 · #18624)
+           처음 상태는 **접힘**(hidden) — 사주를 넣은 직후에도 요약만 보인다 (#18624).
            요약(#monthSpec)과 결제 버튼(#passBar)은 늘 보이고, 이 안의 달력·모아보기·잠금만 숨는다.
            달력 자체는 새로 만들지 않고 이 자리에서 보이기만 한다 — 색·필터·월 이동·날짜 팝업은 그대로. -->
-      <div class="calbody" id="calBody">
+      <div class="calbody" id="calBody" hidden>
 
       <!-- 모아보기 — 2.0 에서는 3색(조심·기운UP·실속)으로 (2026-11-23).
            예전 2분류(조심할 날·좋은 날) 버튼도 지우지 않고 감춰 둔다 — 바로 복구 가능 -->
@@ -944,12 +945,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124t"></script>
-<script src="assets/manse.js?v=20261124t"></script>
-<script src="assets/timing.js?v=20261124t"></script>
-<script src="assets/chars.js?v=20261124t"></script>
-<script src="assets/calendar.js?v=20261124t"></script>
-<script src="assets/special-guide.js?v=20261124t"></script>
-<script src="assets/pwa.js?v=20261124t"></script>
+<script src="vendor/lunar.js?v=20261124u"></script>
+<script src="assets/manse.js?v=20261124u"></script>
+<script src="assets/timing.js?v=20261124u"></script>
+<script src="assets/chars.js?v=20261124u"></script>
+<script src="assets/calendar.js?v=20261124u"></script>
+<script src="assets/special-guide.js?v=20261124u"></script>
+<script src="assets/pwa.js?v=20261124u"></script>
 </body>
 </html>
