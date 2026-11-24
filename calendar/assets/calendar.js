@@ -855,21 +855,23 @@
     el.hidden = !trialGuideOpen();
   }
 
-  /* ── 🏷️ 구매 유도 버튼 이름표 — 고객 상태 4가지 (2026-11-24 김나영 님 #18672) ─────────────
+  /* ── 🏷️ 구매 유도 버튼 이름표 — 고객 상태 4가지 (2026-11-24 김나영 님 #18672)
      ① 첫 사주 입력 후 72시간 이내      : '특별 선물과 전체 이용권 보기 →' + 아래 한 줄 안내
      ② 72시간이 지난 뒤 7일 무료 체험 중 : '2027년 전체 이용권 살펴보기 →'
-     ③ 7일 무료 체험이 끝난 뒤          : '달력 계속 이용하기 · 14,900원 →'
+     ③ 7일 무료 체험이 끝난 뒤          : '달력 계속 이용하기 →'
      ④ 이미 결제한 고객                 : 구매 버튼 없음 — 기존 이용권 활성 표시(전용 배지·코드 안내)만
 
+     · 2026-11-24y #18925 — 일반 화면에는 이용권 금액(14,900원·29,000원·하루 40원)을 쓰지 않는다.
+       가격은 고객이 직접 '구매 안내' 버튼을 눌러 연 기존 결제 설명창(shopModal) 안에서만 보인다.
      · 바꾸는 것은 버튼 이름표와 그 아래 한 줄뿐이다.
        버튼이 여는 결제 안내 팝업·팝업 안 결제 버튼·페이앱 링크·가격(14,900원)·상품은 그대로다.
      · 어느 버튼이 어느 상태에 보이는지도 기존 그대로다
        (#passBar = 체험 종료 상태에서 달력 위 / #passFoot = 체험 중 맨 아래 한 줄 /
         특별 선물 기간에는 special-guide.js 의 특별 선물 카드가 그 자리를 맡는다). */
   var CTA_COPY = {
-    gift:  { buy: '특별 선물과 전체 이용권 보기 →', note: '2027년 전체 이용권 14,900원 · 첫 72시간 구매 시 특별 가이드 증정' },
+    gift:  { buy: '특별 선물과 전체 이용권 보기 →', note: '첫 72시간 구매 시 특별 가이드 증정' },
     trial: { buy: '2027년 전체 이용권 살펴보기 →', note: '' },
-    over:  { buy: '달력 계속 이용하기 · 14,900원 →', note: '' },
+    over:  { buy: '달력 계속 이용하기 →', note: '' },
     paid:  { buy: '', note: '' }
   };
   /** 지금 화면의 구매 유도 단계 — ''(사주 전) | 'gift' | 'trial' | 'over' | 'paid' */
@@ -890,25 +892,25 @@
     var sfGuide = $('#specialFootGuide'), pfGuide = $('#passFootGuide');
 
     if (pbT) {
-      pbT.innerHTML = phase === 'over' ? '달력 계속 이용하기 · <b>14,900원</b>'
+      pbT.innerHTML = phase === 'over' ? '달력 계속 이용하기'
         : (phase === 'gift' ? '특별 선물과 전체 이용권 보기'
         : (phase === 'trial' ? '2027년 전체 이용권 살펴보기' : pbT.innerHTML));
     }
     if (pf && CTA_COPY[phase] && CTA_COPY[phase].buy) pf.textContent = CTA_COPY[phase].buy;
     if (sgo) sgo.textContent = CTA_COPY.gift.buy;
 
-    /* ① 특별 선물 기간 — 버튼 아래 한 줄. 맨 아래 특별 선물 카드가 떠 있으면 그 아래에 두고,
-       카드가 없는 기기(서버에 닿지 못한 경우)에는 기존 한 줄 버튼 아래에 붙인다. */
+    /* ① 특별 선물 기간 — 버튼 아래 한 줄(증정 조건만, 금액 없음 #18925). 맨 아래 특별 선물 카드가 떠 있으면
+       그 아래에 두고, 카드가 없는 기기(서버에 닿지 못한 경우)에는 기존 한 줄 버튼 아래에 붙인다.
+       ② 72시간이 지난 무료 체험 중 — 금액 한 줄은 두지 않는다(#18925). 가격은 결제 설명창 안에서만. */
     var gift = phase === 'gift';
     var footCard = !!(sf && !sf.hidden);
-    if (sfGuide) sfGuide.hidden = !(gift && footCard);
-    /* ② 72시간이 지난 무료 체험 중 — 버튼 아래에 14,900원만 또박또박 (#18832)
-       특별 선물이 끝난 뒤라 '증정' 문구는 붙이지 않는다. */
+    if (sfGuide) {
+      sfGuide.hidden = !(gift && footCard);
+      sfGuide.textContent = CTA_COPY.gift.note;
+    }
     if (pfGuide) {
-      pfGuide.hidden = !((gift && !footCard) || phase === 'trial');
-      pfGuide.textContent = gift
-        ? '2027년 전체 이용권 14,900원 · 첫 72시간 구매 시 특별 가이드 증정'
-        : '2027년 전체 이용권 14,900원';
+      pfGuide.hidden = !(gift && !footCard);
+      pfGuide.textContent = CTA_COPY.gift.note;
     }
   }
   /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구를 FREE_DAYS·액운 보너스에 맞춰 주고 웰컴 팝업에 보너스 한 줄을 붙인다 */
@@ -1144,7 +1146,7 @@
         '<div class="ychip__inner" aria-hidden="true">' + inner + '</div>' +
         '<button type="button" class="ychip__lock" data-shop="pass" ' +
         'aria-label="1년 패스로 ' + (isBad ? '조심할 달' : '좋은 달') + '이 몇 월인지 확인하기">' +
-        '🔒 1년 패스(14,900원) 열고 확인</button>' +
+        '🔒 1년 전체 이용권 열고 확인</button>' +
         '</div>';
     }
 
@@ -4768,7 +4770,7 @@
     if (LITE_MODE) {
       /* 잠금(8일째 이후)에도 달력의 3색은 그대로 보인다 — 날짜를 눌렀을 때만 결제 안내가 나온다 */
       $('#calNote').innerHTML = (FREE_TRIAL_ENABLED && !state.unlocked && trialOver()
-        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 오늘·앞날은 <b>1년 전체 패스 14,900원</b>(하루 40원) 안내가 나오고, <b>지난 날은 그대로 열려요</b>.'
+        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 오늘·앞날은 <b>1년 전체 이용권</b> 안내가 나오고, <b>지난 날은 그대로 열려요</b>.'
         : '궁금한 날짜를 눌러 보세요 — <b>지난 날도</b> 그날 조심할 점과 챙길 점이 바로 나와요. (체험 7일이 지난 앞날은 여는 방법이 나와요.)') +
         '<br>저녁마다 오늘 하루를 1초 체크해 보세요. 내 흐름이 기록으로 남아요.';
     } else {

@@ -292,7 +292,7 @@
   function offerHTML() {
     return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
       '<h2 class="sgift__title" id="specialGiftTitle">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</h2>' +
-      '<p class="sgift__desc">첫 사주 입력 후 72시간 이내에 14,900원 이용권을 구매하시면, 윤이세가 직접 확인한 나만의 맞춤 운세 활용 가이드를 카카오톡으로 선물해 드립니다.</p>' +
+      '<p class="sgift__desc">첫 사주 입력 후 72시간 이내에 이용권을 구매하시면, 윤이세가 직접 확인한 나만의 맞춤 운세 활용 가이드를 카카오톡으로 선물해 드립니다.</p>' +
       '<p class="sgift__sub">7일 무료 체험은 그대로 이용할 수 있어요.</p>' +
       '<div class="sgift__clock"><span class="sgift__clock-k">특별 선물까지 남은 시간</span>' +
       '<b class="sgift__clock-v" id="specialGiftLeft">—</b></div>' +
@@ -300,18 +300,16 @@
       '<button type="button" class="sgift__buy" data-shop="pass">' + ctaBuy('gift') + '</button>' +
       '<button type="button" class="sgift__more" id="specialGiftMore">혜택 자세히 보기</button>' +
       '</div>' +
-      /* 72시간 안에 바로 결제하고 싶은 분 — 같은 혜택 안내 안의 작은 보조 선택지.
-         새 팝업 없이 기존 페이앱 1년 패스 주소로 바로 간다(#18832). */
+      /* 72시간 안에 결제를 보고 싶은 분 — 같은 혜택 안내 안의 작은 보조 선택지.
+         새 팝업 없이 기존 결제 설명창(shopModal · 1년 전체 패스)을 먼저 연다 (2026-11-24y #18925).
+         이용권 금액은 이 카드에 적지 않고, 결제 설명창 안에서만 보여 준다. */
       quickBuyHTML();
   }
 
-  /* 72시간 안에 바로 결제하는 작은 길 — 혜택 카드 안에만 둔다 (#18832) */
+  /* 72시간 안에 결제 안내를 여는 작은 길 — 혜택 카드 안에만 둔다 (#18832 → #18925) */
   function quickBuyHTML() {
-    var c = window.YoonCalendar;
-    var url = (c && typeof c.passPayUrl === 'function') ? c.passPayUrl() : '';
-    if (!url) return '';
-    return '<a class="sgift__quick" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
-      '지금 바로 구매하기 · 14,900원 <span aria-hidden="true">→</span></a>';
+    return '<button type="button" class="sgift__quick" data-shop="pass">' +
+      '1년 전체 이용권 보기 <span aria-hidden="true">→</span></button>';
   }
 
   function paintClock() {
@@ -576,7 +574,7 @@
       body.innerHTML =
         '<p class="sgiftm__eyebrow">GIFT · FIRST 3 DAYS</p>' +
         '<h2 class="sgiftm__title" id="specialModalTitle">윤이세가 직접 전하는<br><em>2027년 맞춤 운세 활용 가이드</em></h2>' +
-        '<p class="sgiftm__sub">첫 사주 입력 후 72시간 이내에 14,900원 이용권을 구매하신 분께, 다섯 가지로 정리한 맞춤 가이드를 카카오톡으로 보내 드립니다.</p>' +
+        '<p class="sgiftm__sub">첫 사주 입력 후 72시간 이내에 이용권을 구매하신 분께, 다섯 가지로 정리한 맞춤 가이드를 카카오톡으로 보내 드립니다.</p>' +
         '<ol class="sgiftm__list">' + GUIDE_FIVE.map(function (x, i) {
           return '<li><span class="sgiftm__n">' + (i + 1) + '</span><span class="sgiftm__b"><b>' + x[0] + '</b><span>' + x[1] + '</span></span></li>';
         }).join('') + '</ol>' +

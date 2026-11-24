@@ -5755,8 +5755,8 @@ body.has-bonus .js-trial{ display: none !important; }
 /* 작은 보조 선택지 — 72시간 안에 바로 결제하는 길 (#18832) */
 .sgift__quick{
   display:inline-flex; align-items:center; gap:4px;
-  margin-top:11px; padding:2px 0; border:0; background:none;
-  font-family:inherit; font-size:11.5px; font-weight:700;
+  margin-top:11px; padding:2px 0; border:0; background:none; cursor:pointer;
+  font-family:inherit; font-size:11.5px; font-weight:700; text-align:left;
   letter-spacing:-.01em; color:var(--gold-deep);
   text-decoration:underline; text-underline-offset:3px;
   text-decoration-color:rgba(165,101,15,.4);
