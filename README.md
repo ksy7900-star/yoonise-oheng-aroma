@@ -2813,7 +2813,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 
 ## §110. 🎁 첫 3일 결제 고객 특별 선물 — 통합 개발 (2026-11-24)
 
-자산: `calendar/assets/special-guide.js`(신규) · `calendar/assets/calendar.js` · `calendar/index.html` · `calendar/assets/style.css` · `calendar/yoon-key/index.html` · `calendar/member/index.html` · `calendar/sw.js` · Supabase(`fifynkkaeqcjlovesuop`) · 버전 **`20261124k`**
+자산: `calendar/assets/special-guide.js`(신규) · `calendar/assets/calendar.js` · `calendar/index.html` · `calendar/assets/style.css` · `calendar/yoon-key/index.html` · `calendar/member/index.html` · `calendar/sw.js` · Supabase(`fifynkkaeqcjlovesuop`) · 버전 **`20261124l`**
 
 ### 1. 이벤트와 혜택 이름
 - 이벤트: **첫 3일 결제 고객 특별 선물**
@@ -2854,7 +2854,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 새 6자리 PIN으로 교체했다. 값은 README·공개 코드·주석 어디에도 적지 않는다(해시는 서버 함수 안에만).
 - `admin_login`·`admin_dashboard`·`admin_consults`·`issue_entry_code`·새 특별 가이드 RPC 모두 새 PIN으로만 동작하고, 이전 PIN은 `pin_mismatch`로 거부되는 것을 확인했다.
 
-### 8. 검증 (로컬 + 라이브 `?v=20261124k` · 390×844 · Android UA · 콘솔/pageerror 0)
+### 8. 검증 (로컬 + 라이브 `?v=20261124l` · 390×844 · Android UA · 콘솔/pageerror 0)
 | 항목 | 결과 |
 | --- | --- |
 | 첫 방문(사주 입력 전) | 특별 선물 카드·결제 팝업 없음 |
