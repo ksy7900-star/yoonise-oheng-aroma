@@ -249,6 +249,64 @@ body.locked{overflow:hidden}
 .state b{color:var(--ink-2)}
 .state__sub{font-size:10px; color:#94A3B8; word-break:break-all}
 
+/* ── 🎁 특별 가이드 (2026-11-24) ───────────────────────────────────── */
+.tabs--4 button{font-size:10.5px; padding:10px 2px; letter-spacing:-.03em}
+.stats--4{grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px}
+.stats--4 .stat{padding:11px 4px 10px; border-radius:14px}
+.stats--4 .stat__k{font-size:9px}
+.stats--4 .stat__v{font-size:19px}
+.sglist{margin:0; padding:0; list-style:none}
+.sglist li{border:1px solid var(--hair-soft); border-radius:14px; padding:11px 12px; margin-bottom:9px; background:#fff}
+.sglist button.sgitem{display:block; width:100%; text-align:left; border:0; background:none; padding:0; font-family:inherit}
+.sgrow{display:flex; align-items:center; gap:6px}
+.sgrow .sg-no{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; font-weight:800; color:var(--gold-deep)}
+.sgrow .sg-when{margin-left:auto; font-size:9.5px; color:var(--mute); font-variant-numeric:tabular-nums}
+.sgwho{display:block; margin-top:4px; font-size:12px; font-weight:700; color:var(--ink)}
+.sgsm{display:block; margin-top:2px; font-size:10px; color:var(--mute); line-height:1.6}
+.sgbadge{display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:99px; font-size:9px; font-weight:800; letter-spacing:-.01em}
+.sgbadge--eligible{background:#FEF3C7; color:#92400E}
+.sgbadge--submitted{background:#E0F2FE; color:#075985}
+.sgbadge--preparing{background:#EDE9FE; color:#5B21B6}
+.sgbadge--delivered{background:#E6F7F1; color:#047857}
+.sgbadge--cancelled{background:#F1F5F9; color:#64748B}
+.sgbadge--review{background:#FFF1F2; color:#BE123C}
+.sgdetail__head{display:flex; align-items:flex-start; gap:8px; margin-bottom:10px}
+.sgdetail__no{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:15px; font-weight:800; color:var(--gold-deep)}
+.sgdetail__x{margin-left:auto; border:1px solid var(--hair); background:#fff; border-radius:8px; padding:4px 8px; font-family:inherit; font-size:10px; color:var(--mute)}
+.sgmeta{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:10px 0 0}
+.sgmeta div{padding:8px 9px; border-radius:10px; background:#F8FAFC; border:1px solid var(--hair-soft)}
+.sgmeta span{display:block; font-size:9px; color:var(--mute); font-weight:700}
+.sgmeta b{display:block; margin-top:2px; font-size:10.5px; color:var(--ink-2); font-weight:700; line-height:1.45; word-break:break-all}
+.sgsnap{margin:12px 0 0; padding:11px 12px; border-radius:12px; background:#FFFDF7; border:1px solid rgba(180,83,9,.16)}
+.sgsnap b{font-size:10.5px; color:#92400E}
+.sgsnap p{margin:5px 0 0; font-size:10.5px; line-height:1.7; color:var(--ink-2); word-break:keep-all}
+.sgsnap .sgpillars{display:flex; gap:4px; margin-top:7px}
+.sgsnap .sgpillar{flex:1; text-align:center; padding:6px 2px; border-radius:8px; background:#fff; border:1px solid var(--hair-soft)}
+.sgsnap .sgpillar span{display:block; font-size:8px; color:var(--mute)}
+.sgsnap .sgpillar b{display:block; font-family:var(--serif); font-size:14px; color:var(--ink); letter-spacing:0}
+.sgedit{margin-top:14px}
+.sgedit label{display:block; font-size:10.5px; font-weight:800; color:var(--ink-2); margin:0 0 6px}
+.sgedit textarea{
+  width:100%; min-height:320px; box-sizing:border-box; resize:vertical;
+  border:1px solid var(--hair); border-radius:12px; padding:12px;
+  font-family:inherit; font-size:11.5px; line-height:1.75; color:var(--ink); background:#fff;
+  word-break:keep-all;
+}
+.sgedit textarea:focus{outline:none; border-color:rgba(180,83,9,.55); box-shadow:0 0 0 3px rgba(180,83,9,.10)}
+.sgforbid{margin:7px 0 0; font-size:10px; line-height:1.6; color:#BE123C; font-weight:700}
+.sgbtns{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:10px}
+.sgbtns button{
+  border:1px solid var(--hair); background:#fff; border-radius:11px; padding:10px 6px;
+  font-family:inherit; font-size:10.5px; font-weight:800; color:var(--ink-2); letter-spacing:-.02em;
+}
+.sgbtns button.primary{background:#1E293B; border-color:#1E293B; color:#fff}
+.sgbtns button.gold{background:#FEF3C7; border-color:rgba(180,59,9,.25); color:#92400E}
+.sgbtns button.warn{background:#FFF1F2; border-color:rgba(190,18,60,.22); color:#BE123C}
+.sgbtns button[disabled]{opacity:.42}
+.sgbtns button.full{grid-column:1 / -1}
+.sgedit__date{display:block; margin-top:4px; font-size:9.5px; color:var(--mute)}
+.sgedit__date b{color:var(--ink-2)}
+@media (max-width:380px){ .tabs--4 button{font-size:9.5px} }
 </style>
 </head>
 <body class="locked">
@@ -275,10 +333,11 @@ body.locked{overflow:hidden}
     <p class="head__sub">나영 님만 쓰는 페이지예요. 이 주소는 손님에게 보내지 말고, 만든 코드만 카톡으로 전해 주세요.<br>코드는 <b>6자리</b>(예: D21744) — 손님 <b>휴대폰 번호 + 상품</b>으로 만들어요. 사주는 넣지 않습니다.</p>
   </header>
 
-  <div class="tabs" role="tablist" aria-label="관리자 화면">
+  <div class="tabs tabs--4" role="tablist" aria-label="관리자 화면">
     <button type="button" id="tabBtnIssue" class="is-on" role="tab" aria-selected="true" aria-controls="tabIssue">🔑 코드 발급</button>
     <button type="button" id="tabBtnConsults" role="tab" aria-selected="false" aria-controls="tabConsults">📋 신청서</button>
     <button type="button" id="tabBtnMembers" role="tab" aria-selected="false" aria-controls="tabMembers">👥 가입자</button>
+    <button type="button" id="tabBtnSpecial" role="tab" aria-selected="false" aria-controls="tabSpecial">🎁 특별 가이드</button>
   </div>
 
   <div id="tabIssue" role="tabpanel" aria-labelledby="tabBtnIssue">
@@ -380,7 +439,47 @@ body.locked{overflow:hidden}
     <p class="note">회원 DB(profiles)에서 바로 읽어 온 값이에요. 최신 가입 순 · 이 화면은 나영 님만 볼 수 있고, 손님에게는 보이지 않습니다.<span id="mStamp"></span></p>
   </div><!-- /tabMembers -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <div id="tabSpecial" role="tabpanel" aria-labelledby="tabBtnSpecial" hidden>
+
+    <div class="stats stats--4">
+      <div class="stat"><span class="stat__k">신청 가능</span><span class="stat__v" id="sgEligible">–</span></div>
+      <div class="stat"><span class="stat__k">접수</span><span class="stat__v" id="sgSubmitted">–</span></div>
+      <div class="stat"><span class="stat__k">준비 중</span><span class="stat__v" id="sgPreparing">–</span></div>
+      <div class="stat"><span class="stat__k">전달 완료</span><span class="stat__v" id="sgDelivered">–</span></div>
+    </div>
+
+    <section class="card">
+      <div class="card__bar">
+        <h2 class="card__title">🎁 특별 가이드 신청<span class="card__n" id="sgCount"></span></h2>
+        <button type="button" class="refresh" id="sgReload">새로고침</button>
+      </div>
+      <p class="state" id="sgState">불러오는 중…</p>
+      <ul class="sglist" id="sgList" hidden></ul>
+    </section>
+
+    <section class="card" id="sgDetail" hidden></section>
+
+    <section class="card">
+      <h2 class="card__title">자격 직접 부여</h2>
+      <p class="note" style="margin:0 0 10px">옛 코드·기기 변경·결제 시각 보정처럼 자동 판정이 어려운 경우에만 씁니다. 부여하면 신청번호가 바로 발급되고, 고객 화면에 신청 카드가 열립니다.</p>
+      <label class="lb" for="sgGrantCode">유료 코드 (P/A/D 6자리 또는 옛 18자리)</label>
+      <input class="phone" id="sgGrantCode" type="text" autocomplete="off" spellcheck="false" placeholder="예: P12345">
+      <label class="lb" for="sgGrantPhone">손님 휴대폰 번호</label>
+      <input class="phone" id="sgGrantPhone" type="tel" inputmode="numeric" maxlength="13" placeholder="010-1234-5678">
+      <label class="lb" for="sgGrantUid">기기 키 client_uid (선택)</label>
+      <input class="phone" id="sgGrantUid" type="text" autocomplete="off" spellcheck="false" placeholder="고객 화면·신청 내역의 g-… 값">
+      <label class="lb" for="sgGrantPaid">결제 확인 시각 (선택 · 비우면 지금)</label>
+      <input class="phone" id="sgGrantPaid" type="datetime-local">
+      <label class="lb" for="sgGrantNote">메모 (선택)</label>
+      <input class="phone" id="sgGrantNote" type="text" autocomplete="off" placeholder="예: 페이앱 입금 확인 후 부여">
+      <p class="err" id="sgGrantMsg" role="alert" hidden></p>
+      <button type="button" class="go" id="sgGrantBtn">자격 부여 · 신청번호 발급</button>
+    </section>
+
+    <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.</p>
+  </div><!-- /tabSpecial -->
+
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261124k<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 </div>
 
 <script>
@@ -937,9 +1036,9 @@ body.locked{overflow:hidden}
 
   /* ── 탭 전환 ───────────────────────────────────── */
   function showTab(which) {
-    var w = (which === 'members' || which === 'consults') ? which : 'issue';
-    var btn = { issue: $('#tabBtnIssue'), consults: $('#tabBtnConsults'), members: $('#tabBtnMembers') };
-    var panel = { issue: $('#tabIssue'), consults: $('#tabConsults'), members: $('#tabMembers') };
+    var w = (which === 'members' || which === 'consults' || which === 'special') ? which : 'issue';
+    var btn = { issue: $('#tabBtnIssue'), consults: $('#tabBtnConsults'), members: $('#tabBtnMembers'), special: $('#tabBtnSpecial') };
+    var panel = { issue: $('#tabIssue'), consults: $('#tabConsults'), members: $('#tabMembers'), special: $('#tabSpecial') };
     Object.keys(panel).forEach(function (k) {
       if (!panel[k] || !btn[k]) return;
       panel[k].hidden = (k !== w);
@@ -948,6 +1047,7 @@ body.locked{overflow:hidden}
     });
     if (w === 'members') load();
     if (w === 'consults') loadConsults();
+    if (w === 'special' && window.YoonSpecialAdmin) window.YoonSpecialAdmin.load();
   }
 
   /* ── 서버 호출 — 함수 하나만 ─────────────────────── */
@@ -1228,22 +1328,513 @@ body.locked{overflow:hidden}
   $('#tabBtnIssue').addEventListener('click', function () { showTab('issue'); });
   $('#tabBtnConsults').addEventListener('click', function () { showTab('consults'); });
   $('#tabBtnMembers').addEventListener('click', function () { showTab('members'); });
+  $('#tabBtnSpecial').addEventListener('click', function () { showTab('special'); });
   $('#mReload').addEventListener('click', load);
   $('#cReload').addEventListener('click', loadConsults);
   $('.tabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    var order = ['issue', 'consults', 'members'];
-    var now = $('#tabIssue').hidden ? ($('#tabConsults').hidden ? 'members' : 'consults') : 'issue';
+    var order = ['issue', 'consults', 'members', 'special'];
+    var now = $('#tabIssue').hidden ? ($('#tabConsults').hidden ? ($('#tabMembers').hidden ? 'special' : 'members') : 'consults') : 'issue';
     var i = order.indexOf(now);
     var next = order[(i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
     e.preventDefault();
     showTab(next);
-    var b = { issue: '#tabBtnIssue', consults: '#tabBtnConsults', members: '#tabBtnMembers' }[next];
+    var b = { issue: '#tabBtnIssue', consults: '#tabBtnConsults', members: '#tabBtnMembers', special: '#tabBtnSpecial' }[next];
     try { $(b).focus(); } catch (err) { }
   });
 
   /* 콘솔 확인용 */
   window.YoonAdmin = { show: showTab, load: load, loadConsults: loadConsults };
+})();
+</script>
+
+<!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
+<script>
+(function () {
+  'use strict';
+
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';
+  var $ = function (s) { return document.querySelector(s); };
+
+  var ST = {
+    eligible:       { label: '신청 가능', cls: 'eligible' },
+    submitted:      { label: '신청 접수', cls: 'submitted' },
+    awaiting_draft: { label: '리포트 생성 대기', cls: 'preparing' },
+    draft_ready:    { label: 'AI 초안 생성 완료', cls: 'preparing' },
+    reviewing:      { label: '운영자 검토 중', cls: 'preparing' },
+    delivered:      { label: '전달 완료', cls: 'delivered' },
+    cancelled:      { label: '취소 또는 확인 필요', cls: 'cancelled' }
+  };
+  var FORBIDDEN = ['반드시 성공한다', '무조건 돈이 들어온다', '큰 사고가 발생한다',
+    '특정 시기에 질병이 발생한다', '사주 때문에 실패할 수밖에 없다'];
+
+  var data = null, current = null, busy = false;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function kst(iso, withTime) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    var p = new Date(d.getTime() + 9 * 3600 * 1000);
+    var s = pad2(p.getUTCMonth() + 1) + '.' + pad2(p.getUTCDate());
+    if (withTime !== false) s += ' ' + pad2(p.getUTCHours()) + ':' + pad2(p.getUTCMinutes());
+    return s;
+  }
+  function pin() {
+    try { return window.YoonKeyPin ? (window.YoonKeyPin.get() || '') : ''; } catch (e) { return ''; }
+  }
+  function rpc(name, body) {
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(body || {})
+    };
+    return fetch(SB_URL + '/rest/v1/rpc/' + name, opt).then(function (res) {
+      return res.text().then(function (t) {
+        var d = null;
+        try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+        if (!res.ok) throw new Error((d && (d.message || d.hint)) || ('HTTP ' + res.status));
+        if (d && d.ok === false && /^pin_/.test(d.error || '')) throw new Error(d.error);
+        return d || {};
+      });
+    });
+  }
+  function busyBtn(b, on, text) {
+    if (!b) return;
+    b.disabled = !!on;
+    if (on && text) { b.setAttribute('data-t', b.textContent); b.textContent = text; }
+    else if (!on && b.getAttribute('data-t')) { b.textContent = b.getAttribute('data-t'); b.removeAttribute('data-t'); }
+  }
+  function msg(t, bad) {
+    var st = $('#sgState');
+    if (!st) return;
+    st.innerHTML = esc(t);
+    st.hidden = false;
+    st.style.color = bad ? '#BE123C' : '';
+  }
+
+  /* ── 목록 ─────────────────────────────────────────── */
+  function load() {
+    if (busy) return;
+    var p = pin();
+    if (!p) { msg('비밀번호가 아직 없어요 — 🔒 잠그기를 누른 뒤 6자리를 다시 넣어 주세요.', true); return; }
+    busy = true;
+    var rb = $('#sgReload');
+    busyBtn(rb, true, '불러오는 중…');
+    rpc('admin_special_guides', { p_pin: p }).then(function (d) {
+      busy = false; busyBtn(rb, false);
+      data = d || {};
+      render();
+      if (current && current.claim_no) {
+        var again = find(current.claim_no);
+        if (again) openDetail(again);
+      }
+    }, function (err) {
+      busy = false; busyBtn(rb, false);
+      msg(err && err.message === 'pin_locked'
+        ? '비밀번호 시도가 너무 많아 잠시 잠겼어요. 10분 뒤에 다시 시도해 주세요.'
+        : ('불러오지 못했어요 · ' + (err && err.message ? err.message : '연결을 확인해 주세요')), true);
+    });
+  }
+
+  function render() {
+    var c = (data && data.counts) || {};
+    $('#sgEligible').textContent = c.eligible == null ? '–' : c.eligible;
+    $('#sgSubmitted').textContent = c.submitted == null ? '–' : c.submitted;
+    $('#sgPreparing').textContent = c.preparing == null ? '–' : c.preparing;
+    $('#sgDelivered').textContent = c.delivered == null ? '–' : c.delivered;
+    var list = (data && data.requests) || [];
+    $('#sgCount').textContent = list.length ? ' ' + list.length : '';
+    var ul = $('#sgList'), st = $('#sgState');
+    if (!list.length) {
+      ul.hidden = true; ul.innerHTML = '';
+      msg('아직 신청이 없어요. 고객이 유료 코드를 넣고 72시간 안에 결제한 경우 여기에 자동으로 쌓입니다.');
+      return;
+    }
+    st.hidden = true;
+    ul.innerHTML = list.map(function (r) {
+      var s = ST[r.status] || ST.eligible;
+      var who = (r.saju_snapshot && r.saju_snapshot.name) ? r.saju_snapshot.name + ' 님' : (r.phone_or_email || '이름 없음');
+      var flags = [];
+      if (r.within_72h) flags.push('72시간 O'); else flags.push('72시간 X');
+      if (r.needs_review) flags.push('확인 필요');
+      if (r.apply_clicked_at) flags.push('카톡 신청 누름');
+      return '<li><button type="button" class="sgitem" data-no="' + esc(r.claim_no || '') + '">' +
+        '<span class="sgrow"><span class="sgbadge sgbadge--' + (r.needs_review && r.status === 'cancelled' ? 'review' : s.cls) + '">' + esc(s.label) + '</span>' +
+        '<span class="sg-no">' + esc(r.claim_no || '(번호 없음)') + '</span>' +
+        '<span class="sg-when">' + kst(r.created_at) + '</span></span>' +
+        '<span class="sgwho">' + esc(who) + '</span>' +
+        '<span class="sgsm">' + flags.join(' · ') + ' · 결제 ' + kst(r.paid_at) + ' · 첫 사주 ' + kst(r.first_saju_at) + '</span>' +
+        '</button></li>';
+    }).join('');
+    ul.hidden = false;
+  }
+
+  function find(no) {
+    var list = (data && data.requests) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].claim_no === no) return list[i];
+    return null;
+  }
+
+  /* ── 상세 ─────────────────────────────────────────── */
+  function openDetail(r) {
+    if (!r) return;
+    current = r;
+    var box = $('#sgDetail');
+    var s = ST[r.status] || ST.eligible;
+    var snap = r.saju_snapshot || null;
+    var draft = r.admin_edited || r.ai_draft || '';
+    var hasDraft = !!(r.admin_edited || r.ai_draft);
+
+    var pillars = '';
+    if (snap && snap.pillars) {
+      ['year', 'month', 'day', 'time'].forEach(function (k) {
+        var x = snap.pillars[k];
+        pillars += '<span class="sgpillar"><span>' + ({ year: '년', month: '월', day: '일', time: '시' }[k]) + '</span>' +
+          '<b>' + (x ? esc(x.gan) + esc(x.zhi) : '—') + '</b></span>';
+      });
+    }
+
+    var counts = '';
+    if (snap && snap.counts) {
+      counts = ['목', '화', '토', '금', '수'].map(function (k) {
+        return k + ' ' + (snap.counts[k] == null ? 0 : snap.counts[k]);
+      }).join(' · ');
+    }
+    var groups = '';
+    if (snap && snap.ten_groups) {
+      groups = Object.keys(snap.ten_groups).filter(function (k) { return snap.ten_groups[k]; })
+        .map(function (k) { return k + ' ' + snap.ten_groups[k]; }).join(' · ');
+    }
+    var daeun = '';
+    if (snap && snap.daeun) {
+      daeun = '대운 ' + snap.daeun.direction + ' · ' + snap.daeun.start_age + '세부터 · ' +
+        (snap.daeun.list || []).slice(0, 3).map(function (x) { return x.age + '세 ' + x.gan + x.zhi; }).join(' / ');
+    }
+    var seun = '';
+    if (snap && snap.seun) {
+      seun = '2027 ' + snap.seun.gan + snap.seun.zhi + ' · ' + snap.seun.ten +
+        (snap.seun.chung_day ? ' · 일지 충' : '') + (snap.seun.hap_day ? ' · 일지 합' : '') +
+        (snap.seun.hyeong_day ? ' · 일지 형' : '');
+    }
+
+    var canConfirm = !r.confirmed_at && r.status !== 'delivered';
+    var canPrepare = ['submitted', 'awaiting_draft', 'draft_ready'].indexOf(r.status) >= 0;
+    var canDeliver = !!r.approved_at && r.status !== 'delivered' && hasDraft;
+
+    box.innerHTML =
+      '<div class="sgdetail__head"><div><span class="sgbadge sgbadge--' + (r.needs_review && r.status === 'cancelled' ? 'review' : s.cls) + '">' + esc(s.label) + '</span>' +
+      '<p class="sgdetail__no" style="margin:6px 0 0">' + esc(r.claim_no || '(번호 없음)') + '</p></div>' +
+      '<button type="button" class="sgdetail__x" id="sgClose">닫기</button></div>' +
+      '<div class="sgmeta">' +
+      '<div><span>첫 사주 입력 (서버)</span><b>' + kst(r.first_saju_at) + '</b></div>' +
+      '<div><span>결제 확인 시각</span><b>' + kst(r.paid_at) + '</b></div>' +
+      '<div><span>코드 입력 시각</span><b>' + kst(r.code_entered_at) + '</b></div>' +
+      '<div><span>72시간 안 결제</span><b>' + (r.within_72h ? '예' : '아니오') + (r.eligibility_source === 'admin' ? ' · 직접 부여' : '') + '</b></div>' +
+      '<div><span>연락처</span><b>' + esc(r.phone_or_email || '—') + '</b></div>' +
+      '<div><span>기기 키 (client_uid)</span><b>' + esc(r.client_uid || '—') + '</b></div>' +
+      '</div>' +
+      (snap ? '<div class="sgsnap"><b>' + esc(snap.name || '이름 없음') + ' · ' + esc(snap.gender || '') + ' · ' +
+        esc((snap.solar && (snap.solar.y + '.' + snap.solar.m + '.' + snap.solar.d)) || '') + (snap.time_known ? '' : ' · 시간 모름') + '</b>' +
+        '<div class="sgpillars">' + pillars + '</div>' +
+        '<p>일간 ' + esc((snap.day_master && snap.day_master.gan) || '') + ' · 오행 ' + esc(counts) + '</p>' +
+        '<p>십성 ' + esc(groups || '—') + '</p>' +
+        '<p>' + esc(daeun || '대운 자료 없음') + '</p>' +
+        '<p>' + esc(seun || '2027 세운 자료 없음') + '</p>' +
+        (r.needs_review ? '<p style="color:#BE123C;font-weight:700">확인 필요 · ' + esc(r.review_note || '결제 시각을 확인해 주세요') + '</p>' : '') +
+        '</div>' : '<p class="note">사주 계산 자료가 없습니다. 고객이 코드를 다시 넣으면 함께 저장됩니다.</p>') +
+      '<div class="sgedit"><label for="sgDraft">가이드 본문 (AI 초안 → 윤이세 수정)</label>' +
+      '<textarea id="sgDraft" spellcheck="false" placeholder="위의 ‘AI 초안 다시 만들기’를 누르면 5가지 구성으로 초안이 채워집니다.">' + esc(draft) + '</textarea>' +
+      '<p class="sgforbid" id="sgForbid" hidden></p>' +
+      '<span class="sgedit__date">승인 ' + kst(r.approved_at) + ' · 전달 ' + kst(r.delivered_at) + '</span></div>' +
+      '<div class="sgbtns">' +
+      '<button type="button" class="gold" id="sgGen"' + (snap ? '' : ' disabled') + '>AI 초안 다시 만들기</button>' +
+      '<button type="button" class="primary" id="sgSave">초안 저장</button>' +
+      '<button type="button" class="primary" id="sgApprove"' + (hasDraft ? '' : ' disabled') + '>승인</button>' +
+      '<button type="button" class="gold" id="sgCopy"' + (hasDraft ? '' : ' disabled') + '>카톡 복붙용 복사</button>' +
+      (canConfirm ? '<button type="button" class="full" id="sgConfirm">접수 확인 (고객에게 접수 완료 표시)</button>' : '') +
+      (canPrepare ? '<button type="button" class="full" id="sgPrepare">준비 중으로 표시</button>' : '') +
+      (r.status !== 'delivered' && r.status !== 'cancelled' ? '<button type="button" class="full" id="sgDeliver"' + (canDeliver ? '' : ' disabled') + '>전달 완료 (카톡 발송 후)</button>' : '') +
+      (r.status !== 'cancelled' ? '<button type="button" class="warn full" id="sgCancel">취소 또는 확인 필요로 표시</button>' : '<button type="button" class="full" id="sgReopen">되돌리기</button>') +
+      '</div>' +
+      (!canDeliver && r.status !== 'delivered' ? '<p class="note" style="text-align:center">전달 완료는 <b>승인</b> 뒤에만 누를 수 있어요.</p>' : '');
+
+    box.hidden = false;
+    checkForbidden();
+    try { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { }
+  }
+
+  function checkForbidden() {
+    var ta = $('#sgDraft'), box = $('#sgForbid');
+    if (!ta || !box) return;
+    var t = ta.value || '';
+    var hit = FORBIDDEN.filter(function (w) { return t.indexOf(w) >= 0; });
+    if (hit.length) {
+      box.hidden = false;
+      box.textContent = '고객에게 보내면 안 되는 표현이 들어 있어요: ' + hit.join(' / ');
+    } else {
+      box.hidden = true;
+      box.textContent = '';
+    }
+  }
+
+  /* ── 카톡 복붙용 ──────────────────────────────────── */
+  function messageText(r) {
+    var body = (r.admin_edited || r.ai_draft || '').trim();
+    if (!body) return '';
+    return '[윤이세 2027년 맞춤 운세 활용 가이드]\n신청번호: ' + (r.claim_no || '') + '\n\n' + body;
+  }
+  function copy(text, done) {
+    if (!text) { done(false); return; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+        return;
+      }
+    } catch (e) { }
+    done(false);
+  }
+
+  /* ── 5가지 구성 초안 — 실제 만세력 값으로만 만든다 ─────────
+     · 금지 표현 5종은 쓰지 않는다. · 달력 월별 운세·부적 문구를 재사용하지 않는다. */
+  var EL = {
+    목: { d: '새로 시작하고 관계를 넓히는 결', a: '아침 산책 10분과 새로 시작할 일 하나를 적어 두는 일' },
+    화: { d: '표현하고 결정하는 결', a: '미뤄 둔 연락 한 통을 먼저 보내는 일, 하고 싶은 말을 짧게 정리해 두는 일' },
+    토: { d: '중심을 잡고 쌓아 가는 결', a: '책상 한 칸을 비우고 이번 달 기준을 한 줄로 적어 두는 일' },
+    금: { d: '매듭짓고 기준을 세우는 결', a: '안 쓰는 구독 하나를 정리하고 지출을 한 번에 훑어보는 일' },
+    수: { d: '흐름을 읽고 마음을 가라앉히는 결', a: '잠들기 전 오늘의 감정을 한 줄 적는 일, 답장을 초안에 넣어 두고 아침에 보내는 일' }
+  };
+  var GROUP_ADVICE = {
+    '비겁': '내 페이스와 동료의 힘을 함께 쓰는 자리에서 힘이 납니다. 혼자 다 짊어지기보다 역할을 나누면 일이 가벼워집니다.',
+    '식상': '만들고 표현하는 자리에서 성과가 남습니다. 머릿속에만 두지 말고 하나씩 꺼내 보여 주시면 좋습니다.',
+    '재성': '돈은 쫓기보다 흐름을 만들 때 붙습니다. 들어오는 돈과 새는 돈을 같은 장부에 적어 보시면 감이 잡힙니다.',
+    '관성': '일과 책임에서 기준을 세울 때 힘이 실립니다. 약속과 서류를 문서로 남기는 습관이 특히 도움이 됩니다.',
+    '인성': '배우고 정리하는 시간이 판단의 바탕이 됩니다. 새로 벌이기 전에 이미 아는 것을 한 번 정리해 보세요.'
+  };
+  var TEN_ACTION = {
+    '비견': '내 속도를 지키되, 동료에게 먼저 손을 내밀어 보기',
+    '겁재': '경쟁보다 함께하는 자리를 먼저 찾아보기',
+    '식신': '만들어 둔 것을 하나씩 세상에 내놓기',
+    '상관': '하고 싶은 말은 한 번 더 다듬어서 전하기',
+    '편재': '움직이는 돈은 그때그때 기록으로 남기기',
+    '정재': '새로 벌이기보다 새는 곳을 먼저 막기',
+    '편관': '책임질 일을 하나로 좁혀 집중하기',
+    '정관': '서류와 약속을 문서로 남기기',
+    '편인': '직감이 왔을 때 근거 한 줄을 함께 적어 두기',
+    '정인': '배운 것 중 하나만 골라 오래 써 보기'
+  };
+
+  function makeDraft(s) {
+    if (!s) return '';
+    var L = [];
+    var day = s.day_master || {};
+    var seun = s.seun || {};
+    var strong = (s.strongest && s.strongest[0]) || null;
+    var weak = (s.weakest && s.weakest[0]) || null;
+    var name = s.name ? s.name + ' 님' : '고객님';
+
+    L.push('『윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드』');
+    L.push('');
+    L.push('안녕하세요, 윤이세입니다.');
+    L.push(name + '의 사주를 2027년 정미년의 흐름과 함께 읽어 보았습니다. 다섯 가지로 나누어, 올해 어디에 힘을 주면 좋을지 정리해 드립니다.');
+    L.push('');
+
+    L.push('1. 2027년의 큰 흐름');
+    if (seun.gan) {
+      L.push('2027년은 ' + seun.gan + seun.zhi + '년입니다. ' + (day.gan || '') + ' 일간을 기준으로 보면 ' +
+        (seun.ten || '한 해의 기운') + '의 결이 바탕에 깔립니다. ' + ((EL[seun.gan_el] || {}).d || '') + '이 함께 들어와, 한 해의 중심이 그쪽으로 조금 기울어집니다.');
+      if (seun.chung_day) {
+        L.push('해의 지지가 일지와 부딪히는 자리라, 관계와 생활의 판이 한 번 정리되는 느낌이 올 수 있습니다. 그럴수록 큰 결정은 하루만 두고 다시 보시길 권합니다.');
+      } else if (seun.hap_day) {
+        L.push('해의 지지가 일지와 합을 이루는 자리라, 사람과 일이 자연스럽게 이어지기 쉽습니다. 먼저 손을 내미는 쪽이 조금 더 유리합니다.');
+      } else {
+        L.push('해의 지지는 일지와 크게 부딪히지 않아, 평소의 리듬을 지키며 쌓아 가기 좋은 해입니다. 급하게 판을 바꾸기보다 이미 가진 것을 단단히 하는 쪽이 잘 맞습니다.');
+      }
+    } else {
+      L.push('2027년은 정미(丁未)년입니다. 큰 흐름은 담담하게 이어지되, 해의 끝에서 한 번 정리하는 결이 있습니다.');
+    }
+    L.push('');
+
+    L.push('2. 타고난 결과 보완할 결');
+    if (strong) {
+      L.push('여덟 글자에서 가장 또렷한 결은 ' + strong + '입니다. ' + ((EL[strong] || {}).d || '') + '이 타고난 힘의 중심에 있습니다.');
+    }
+    if (weak && weak !== strong) {
+      L.push('반면 ' + weak + '의 결은 상대적으로 담백하게 자리하고 있습니다. 억지로 채우기보다 ' +
+        ((EL[weak] || {}).a || '생활 속 작은 습관') + '처럼 작은 습관을 곁에 두면 균형이 한결 편안해집니다.');
+    }
+    L.push('지장간의 숨은 글자까지 함께 보면 결이 조금 달라질 수 있어, 큰 흐름으로만 참고해 주세요.');
+    L.push('');
+
+    L.push('3. 일·돈·관계에서 챙길 것');
+    var g = s.ten_groups || {};
+    var ranked = Object.keys(g).filter(function (k) { return g[k]; }).sort(function (a, b) { return g[b] - g[a]; });
+    if (ranked.length) {
+      L.push('십성으로 보면 ' + ranked.slice(0, 2).join('과 ') + '의 결이 자주 보입니다.');
+      ranked.slice(0, 2).forEach(function (k) { L.push(GROUP_ADVICE[k] || ''); });
+    } else {
+      L.push('일과 돈, 관계는 한쪽으로 치우치기보다 균형을 잡아 가는 쪽이 편안합니다. 무엇을 먼저 할지 정할 때는 지금 가장 자주 쓰는 힘을 기준으로 삼아 보세요.');
+    }
+    L.push('');
+
+    L.push('4. 2027년에 힘이 실리는 시기');
+    var months = s.months || [];
+    function monthLabel(m) { return m === 1 ? '2028년 1월' : m + '월'; }
+    var warn = months.filter(function (m) { return m.chung_day; }).map(function (m) { return monthLabel(m.month); });
+    var good = months.filter(function (m) { return m.hap_day; }).map(function (m) { return monthLabel(m.month); });
+    if (warn.length) {
+      L.push(warn.join('·') + '에는 일정과 관계를 한 번 더 확인하는 편이 좋습니다. 서두른 결정보다 확인이 먼저인 달입니다.');
+    } else {
+      L.push('크게 부딪히는 달은 없습니다. 대신 한 해 전체의 리듬을 차분히 이어 가시면 좋습니다.');
+    }
+    if (good.length) {
+      L.push(good.join('·') + '에는 먼저 움직이거나 제안하기 좋은 결이 있습니다. 미뤄 둔 일을 꺼내기에 좋은 때입니다.');
+    }
+    L.push('이것은 달의 큰 흐름만 짚은 것이고, 날짜별 표시는 달력에서 따로 봐 주세요.');
+    L.push('');
+
+    L.push('5. 윤이세가 전하는 활용법');
+    if (weak) L.push('· ' + ((EL[weak] || {}).a || '생활 속 작은 습관') + '.');
+    if (seun.ten && TEN_ACTION[seun.ten]) L.push('· ' + TEN_ACTION[seun.ten] + '.');
+    L.push('· 중요한 결정은 한 번에 몰아서 하지 말고, 하루를 두고 다시 보기.');
+    L.push('');
+    L.push('이 가이드는 정해진 미래를 말하는 글이 아닙니다. 2027년의 흐름을 조금 더 편하게 타기 위한 참고로 읽어 주세요. 궁금한 점은 카카오톡으로 남겨 주시면 이어서 답해 드리겠습니다.');
+    L.push('');
+    L.push('— 윤이세');
+    return L.filter(function (x) { return x !== null && x !== undefined; }).join('\n');
+  }
+
+  /* ── 동작 ─────────────────────────────────────────── */
+  function act(action, extra) {
+    if (!current || !current.claim_no || busy) return;
+    busy = true;
+    var body = { p_pin: pin(), p_claim_no: current.claim_no, p_action: action };
+    if (extra && extra.note) body.p_note = extra.note;
+    rpc('admin_special_guide_action', body).then(function (d) {
+      busy = false;
+      if (!d || !d.ok) { alert('바꾸지 못했어요 · ' + ((d && d.error) || '다시 시도해 주세요')); return; }
+      if (extra && extra.keep) { current.status = d.status; current.approved_at = d.approved_at; current.delivered_at = d.delivered_at; openDetail(current); }
+      load();
+      if (action === 'confirm' && window.YoonCalendarToast) window.YoonCalendarToast('접수 완료로 바꿨어요');
+    }, function (err) {
+      busy = false;
+      alert('바꾸지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  }
+
+  function saveDraft(approve) {
+    if (!current || !current.claim_no || busy) return;
+    var ta = $('#sgDraft');
+    var text = ta ? ta.value : '';
+    if (approve && !text.trim()) { alert('먼저 가이드 본문을 채워 주세요.'); return; }
+    busy = true;
+    rpc('admin_special_guide_save', {
+      p_pin: pin(), p_claim_no: current.claim_no,
+      p_ai_draft: current.ai_draft || '', p_admin_edited: text, p_approve: !!approve
+    }).then(function (d) {
+      busy = false;
+      if (!d || !d.ok) { alert('저장하지 못했어요 · ' + ((d && d.error) || '')); return; }
+      current.admin_edited = text;
+      current.status = d.status;
+      current.approved_at = d.approved_at;
+      openDetail(current);
+      load();
+    }, function (err) {
+      busy = false;
+      alert('저장하지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  }
+
+  function grant() {
+    var code = ($('#sgGrantCode').value || '').trim();
+    var phone = ($('#sgGrantPhone').value || '').replace(/[^0-9]/g, '');
+    var uid = ($('#sgGrantUid').value || '').trim();
+    var paid = ($('#sgGrantPaid').value || '').trim();
+    var note = ($('#sgGrantNote').value || '').trim();
+    var m = $('#sgGrantMsg');
+    function bad(t) { m.hidden = false; m.textContent = t; }
+    if (!/^([PADM][0-9]{5}|YS[PAD][0-9]{6}[MF][2-9A-Z]{5})$/i.test(code.replace(/[\s\-_]/g, '').toUpperCase())) {
+      bad('유료 코드 모양을 확인해 주세요. (예: P12345)'); return;
+    }
+    if (!/^01[016789][0-9]{7,8}$/.test(phone)) { bad('손님 휴대폰 번호를 확인해 주세요.'); return; }
+    var btn = $('#sgGrantBtn');
+    busyBtn(btn, true, '부여 중…');
+    rpc('admin_special_guide_grant', {
+      p_pin: pin(), p_code: code, p_phone: phone, p_client_uid: uid || null,
+      p_paid_at: paid ? new Date(paid).toISOString() : null, p_note: note || null
+    }).then(function (d) {
+      busyBtn(btn, false);
+      if (!d || !d.ok) { bad('부여하지 못했어요 · ' + ((d && d.error) || '')); return; }
+      m.hidden = false;
+      m.textContent = '부여했어요 · 신청번호 ' + (d.claim_no || '') + ' · ' + (d.status || '');
+      $('#sgGrantCode').value = ''; $('#sgGrantPhone').value = ''; $('#sgGrantUid').value = '';
+      $('#sgGrantPaid').value = ''; $('#sgGrantNote').value = '';
+      load();
+    }, function (err) {
+      busyBtn(btn, false);
+      bad('부여하지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  }
+
+  /* ── 붙이기 ──────────────────────────────────────── */
+  function bind() {
+    var root = $('#tabSpecial');
+    if (!root) return;
+    root.addEventListener('click', function (e) {
+      var it = e.target.closest('.sgitem');
+      if (it) { openDetail(find(it.getAttribute('data-no'))); return; }
+      if (e.target.closest('#sgClose')) { $('#sgDetail').hidden = true; current = null; return; }
+      var id = (e.target.closest('button') || {}).id;
+      if (id === 'sgGen') {
+        var d = current ? makeDraft(current.saju_snapshot) : '';
+        var ta = $('#sgDraft');
+        if (ta) { ta.value = d; checkForbidden(); }
+        if (d) saveDraftAfterGen(d);
+        return;
+      }
+      if (id === 'sgSave') { saveDraft(false); return; }
+      if (id === 'sgApprove') { saveDraft(true); return; }
+      if (id === 'sgCopy') {
+        var txt = current ? messageText(current) : '';
+        copy(txt, function (ok) { alert(ok ? '카톡에 붙여 넣을 전체 문구를 복사했어요.' : '복사가 막혀 있어요 — 본문을 길게 눌러 직접 복사해 주세요.'); });
+        return;
+      }
+      if (id === 'sgConfirm') { act('confirm'); return; }
+      if (id === 'sgPrepare') { act('awaiting_draft'); return; }
+      if (id === 'sgDeliver') { act('deliver'); return; }
+      if (id === 'sgCancel') { act('cancel', { note: '운영자 취소' }); return; }
+      if (id === 'sgReopen') { act('reopen'); return; }
+    });
+    root.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'sgDraft') checkForbidden();
+    });
+    $('#sgReload').addEventListener('click', load);
+    $('#sgGrantBtn').addEventListener('click', grant);
+  }
+
+  /* 초안을 만든 직후 한 번 저장해 두어 새로고침해도 남게 */
+  function saveDraftAfterGen(text) {
+    if (!current || !current.claim_no) return;
+    rpc('admin_special_guide_save', {
+      p_pin: pin(), p_claim_no: current.claim_no,
+      p_ai_draft: text, p_admin_edited: null, p_approve: false
+    }).then(function (d) {
+      if (d && d.ok) {
+        current.ai_draft = text; current.status = d.status;
+        load();
+      }
+    }, function () { });
+  }
+
+  window.YoonSpecialAdmin = { load: load };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 })();
 </script>
 

@@ -5664,3 +5664,221 @@ body.is-lite .day__badge--lite { white-space: nowrap; overflow: hidden; }
 }
 .bonusbar b{ color: #78350F; font-weight: 800; }
 body.has-bonus .js-trial{ display: none !important; }
+
+/* ==========================================================
+   🎁 첫 3일 결제 고객 특별 선물 (2026-11-24)
+   · 맨 위 카드 + 맨 아래 구매 버튼 위 안내 — 두 곳만.
+   · 차분한 톤: 빨간 경고·깜빡임 없음. 골드 포인트는 얇게만.
+   ========================================================== */
+.sgift{
+  position:relative; margin:14px 0 4px; padding:20px 18px 18px;
+  border-radius:22px;
+  background:linear-gradient(180deg,#FFFDF7 0%,#FFFFFF 62%);
+  border:1px solid rgba(180,83,9,.22);
+  box-shadow:0 12px 30px -26px rgba(15,23,42,.55);
+}
+.sgift[hidden]{display:none !important}
+.sgift::before{
+  content:""; position:absolute; left:0; top:18px; bottom:18px; width:3px;
+  border-radius:0 3px 3px 0;
+  background:linear-gradient(180deg,#F7CA79,#B45309);
+}
+.sgift__body{min-width:0}
+.sgift__x{
+  position:absolute; top:9px; right:9px; z-index:2;
+  width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--hair-soft); background:rgba(255,255,255,.9);
+  color:var(--mute); font-size:12px; line-height:1;
+}
+.sgift__x:active{transform:scale(.94)}
+.sgift__label{
+  margin:0 0 7px; padding-right:32px;
+  font-size:9.5px; font-weight:800; letter-spacing:.14em;
+  color:var(--gold);
+}
+.sgift__title{
+  margin:0; padding-right:26px;
+  font-family:var(--serif); font-size:19px; font-weight:600;
+  line-height:1.45; letter-spacing:-.02em; color:var(--ink);
+  word-break:keep-all;
+}
+.sgift__desc{
+  margin:9px 0 0; font-size:12.5px; line-height:1.78;
+  color:var(--ink-2); word-break:keep-all;
+}
+.sgift__sub{
+  margin:6px 0 0; font-size:11.5px; line-height:1.65;
+  color:var(--mute); word-break:keep-all;
+}
+.sgift__clock{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  margin-top:13px; padding:11px 13px; border-radius:13px;
+  background:#F8FAFC; border:1px solid var(--hair-soft);
+}
+.sgift__clock-k{font-size:10.5px; font-weight:600; color:var(--mute); letter-spacing:-.01em}
+.sgift__clock-v{
+  font-size:12.5px; font-weight:800; color:var(--navy);
+  font-variant-numeric:tabular-nums; letter-spacing:-.01em; white-space:nowrap;
+}
+.sgift__acts{display:flex; flex-direction:column; gap:8px; margin-top:12px}
+.sgift__buy{
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; padding:14px 12px; border-radius:14px; border:0;
+  background:var(--navy); color:#FFFFFF;
+  font-family:inherit; font-size:13px; font-weight:800; letter-spacing:-.02em;
+  line-height:1.35; text-align:center; text-decoration:none;
+}
+.sgift__buy:active{transform:translateY(1px)}
+.sgift__more{
+  width:100%; padding:11px 12px; border-radius:12px;
+  background:#FFFFFF; border:1px solid var(--hair);
+  font-family:inherit; font-size:12px; font-weight:700; color:var(--ink-2);
+}
+.sgift__more:active{transform:translateY(1px)}
+.sgift__toggle{
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; margin:12px 0 2px; padding:11px 12px;
+  border-radius:13px; border:1px dashed rgba(180,83,9,.34);
+  background:#FFFDF7; color:#92400E;
+  font-family:inherit; font-size:11.5px; font-weight:700; letter-spacing:-.01em;
+}
+.sgift__toggle[hidden]{display:none !important}
+.sgift__toggle:active{transform:translateY(1px)}
+
+/* 신청 카드 — 4단계 */
+.sgift__steps{
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px;
+  margin:14px 0 0; padding:0; list-style:none;
+}
+.sgift__step{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:9px 3px 8px; border-radius:11px;
+  background:#F8FAFC; border:1px solid var(--hair-soft);
+  text-align:center;
+}
+.sgift__step-n{
+  display:flex; align-items:center; justify-content:center;
+  width:20px; height:20px; border-radius:50%;
+  background:#E2E8F0; color:#64748B;
+  font-size:10px; font-weight:800;
+}
+.sgift__step-t{font-size:10px; font-weight:700; color:var(--mute); letter-spacing:-.02em; line-height:1.3}
+.sgift__step.is-done{background:#F1F5F9; border-color:#CBD5E1}
+.sgift__step.is-done .sgift__step-n{background:var(--navy); color:#fff}
+.sgift__step.is-done .sgift__step-t{color:var(--ink-2)}
+.sgift__step.is-now{background:#FFFBEB; border-color:rgba(180,83,9,.28)}
+.sgift__step.is-now .sgift__step-n{background:var(--gold); color:#fff; box-shadow:0 0 0 3px rgba(180,83,9,.13)}
+.sgift__step.is-now .sgift__step-t{color:#92400E}
+.sgift__no{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:13px; padding:11px 12px; border-radius:12px;
+  background:#F8FAFC; border:1px solid var(--hair-soft);
+}
+.sgift__no span{font-size:10.5px; font-weight:700; color:var(--mute)}
+.sgift__no b{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:13px; font-weight:800; color:var(--gold-deep); letter-spacing:.02em;
+}
+.sgift__copy{
+  margin-left:auto; padding:5px 9px; border-radius:8px;
+  border:1px solid var(--hair); background:#fff;
+  font-family:inherit; font-size:10.5px; font-weight:700; color:var(--ink-2);
+}
+.sgift__state{
+  margin:10px 0 0; font-size:12px; line-height:1.7; color:var(--ink-2);
+  word-break:keep-all;
+}
+.sgift__state b{color:var(--ink)}
+.sgift__hint{
+  margin:8px 0 0; font-size:10.5px; line-height:1.65; color:var(--mute);
+  word-break:keep-all;
+}
+.sgift__claim-only{display:none}
+
+/* 맨 아래 — 구매 버튼 바로 위 */
+.sgift-foot{
+  margin:30px 0 0; padding-top:20px;
+  border-top:1px solid var(--hair-soft);
+  text-align:center;
+}
+.sgift-foot[hidden]{display:none !important}
+.sgift-foot__label{
+  margin:0 0 5px; font-size:9.5px; font-weight:800; letter-spacing:.14em;
+  color:var(--gold);
+}
+.sgift-foot__title{
+  margin:0; font-family:var(--serif); font-size:14px; font-weight:600;
+  line-height:1.55; color:var(--ink); word-break:keep-all;
+}
+.sgift-foot__desc{
+  margin:7px 0 0; font-size:11px; line-height:1.7; color:var(--ink-2);
+  word-break:keep-all;
+}
+.sgift-foot__note{
+  margin:5px 0 0; font-size:10.5px; line-height:1.6; color:var(--mute);
+}
+.sgift-foot__go{
+  margin-top:11px; padding:8px 4px;
+  background:none; border:0;
+  font-family:inherit; font-size:12.5px; font-weight:800;
+  color:var(--gold-deep); letter-spacing:-.01em;
+  text-decoration:underline; text-underline-offset:3px;
+}
+.sgift-foot__go:active{transform:translateY(1px)}
+/* 특별 선물 안내가 맨 아래에 있으면 기존 한 줄 버튼은 겹치지 않게 숨긴다 */
+body.has-sgift #passFoot{display:none !important}
+
+/* 혜택 자세히 보기 팝업 */
+.modal__dialog--sgift{max-width:404px}
+.sgiftm__eyebrow{
+  margin:0; padding-right:44px;
+  font-size:9px; font-weight:800; letter-spacing:.2em; color:var(--gold);
+}
+.sgiftm__title{
+  margin:9px 0 0; padding-right:12px;
+  font-family:var(--serif); font-size:21px; font-weight:600;
+  line-height:1.42; letter-spacing:-.025em; color:var(--ink);
+  word-break:keep-all;
+}
+.sgiftm__title em{font-style:normal; color:var(--gold-deep)}
+.sgiftm__sub{
+  margin:10px 0 0; font-size:12px; line-height:1.75; color:var(--ink-2);
+  word-break:keep-all;
+}
+.sgiftm__list{
+  margin:16px 0 0; padding:0; list-style:none;
+  display:flex; flex-direction:column; gap:9px;
+}
+.sgiftm__list li{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:11px 12px; border-radius:13px;
+  background:#F8FAFC; border:1px solid var(--hair-soft);
+}
+.sgiftm__n{
+  flex:0 0 20px; width:20px; height:20px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#FFFFFF; border:1px solid rgba(180,83,9,.32);
+  color:var(--gold-deep); font-size:10px; font-weight:800;
+}
+.sgiftm__b{min-width:0}
+.sgiftm__b b{display:block; font-size:12px; font-weight:800; color:var(--ink); letter-spacing:-.02em}
+.sgiftm__b span{display:block; margin-top:2px; font-size:11px; line-height:1.65; color:var(--ink-2); word-break:keep-all}
+.sgiftm__how{
+  margin:14px 0 0; padding:12px 13px; border-radius:13px;
+  background:#FFFBEB; border:1px solid rgba(180,83,9,.18);
+}
+.sgiftm__how b{display:block; font-size:11px; font-weight:800; color:#92400E}
+.sgiftm__how span{display:block; margin-top:4px; font-size:10.5px; line-height:1.7; color:#78350F; word-break:keep-all}
+.sgiftm__note{
+  margin:9px 0 0; text-align:center;
+  font-size:10.5px; color:var(--mute);
+}
+.modal--sgift .sgift__buy{margin-top:15px}
+
+@media (max-width:380px){
+  .sgift{padding:18px 15px 16px}
+  .sgift__title{font-size:17.5px}
+  .sgift__step-t{font-size:9.5px}
+  .sgiftm__title{font-size:19px}
+}

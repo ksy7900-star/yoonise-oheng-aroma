@@ -606,6 +606,9 @@
         }
         $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         maybeAutoGuide();     // 달력이 처음 열린 기기라면 사용법 팝업 한 번
+        /* 🎁 첫 3일 특별 선물 — '달력이 실제로 열린 시점'을 서버에 남기고 안내를 그린다.
+           입력창만 열거나 새로고침한 것으로는 바뀌지 않는다(서버가 client_uid 로 한 번만 기록). */
+        if (window.SpecialGuide) window.SpecialGuide.calendarOpened();
       } catch (err) {
         alertEl.hidden = false;
         alertEl.textContent = err && err.message ? err.message : '입력을 다시 확인해 주세요.';
@@ -3943,6 +3946,8 @@
     renderCalendar();
     renderBurnCard();
     renderDuo();
+    /* 🎁 첫 3일 특별 선물 — 상태(미구매·유료·자격)에 맞춰 맨 위 카드와 맨 아래 안내만 다시 그린다 */
+    if (window.SpecialGuide) window.SpecialGuide.refresh();
   }
 
   /** 🔥 액운 태우기 아래 두 칸 — ① 케미테스트 ② 카카오 연결 → 2027 수호 부적 */
@@ -8830,6 +8835,10 @@
     if (openedFromSaved) {
       markWelcomeSeen();
       maybeAutoGuide();
+      /* 🎁 저장된 사주로 달력이 열린 기기 — 최초 입력 시각은 이미 서버에 있다.
+         여기서는 남은 시간·자격만 다시 확인한다(새로 기록하지 않는다).
+         이벤트 시작 전에 저장해 둔 사주(기존 고객)는 special-guide.js 가 savedAt 을 보고 제외한다. */
+      if (window.SpecialGuide) window.SpecialGuide.calendarOpened({ savedAt: saved.savedAt });
       /* 기존 방문자가 초대 링크로 처음 들어왔을 때 — 5일·액운 1회 적용 안내 (2026-11-22) */
       inviteArrival = planInviteNotice(openedFromInvite);
       showInviteNotice(900);
@@ -8876,6 +8885,22 @@
       payBackCheck();
     }
   }
+
+  /* 🎁 첫 3일 특별 선물 — 이 화면의 상태를 assets/special-guide.js 에 넘긴다 (2026-11-24)
+     · special-guide.js 는 여기서 받은 사주·코드 상태로만 배너와 신청 카드를 그린다.
+     · 결제 팝업은 기존 openShop('pass') 를 그대로 쓴다 — 결제 흐름을 새로 만들지 않는다. */
+  window.YoonCalendar = {
+    get: function () {
+      return {
+        res: state.res, unlocked: state.unlocked, tier: state.tier,
+        code: state.code, todayISO: state.todayISO
+      };
+    },
+    openShop: function (kind) { openShop(kind); },
+    toast: toast,
+    copyText: copyText,
+    openNoRef: openNoRef
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
