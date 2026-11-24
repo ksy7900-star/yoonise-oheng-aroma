@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124ab">
+<link rel="stylesheet" href="assets/style.css?v=20261124ac">
 </head>
 <body>
 
@@ -262,9 +262,12 @@
          날짜 시드로 만든다 — 말줄임·한 줄 축약 없이 문장을 그대로 보여 준다.
          색·제목·할 일은 같은 날짜 팝업(liteDayText)과 같은 카드를 쓰므로 서로 어긋나지 않는다.
 
-         아래 `나의 1초 체크`는 TODAY 본문보다 작은 보조 영역으로 내린다 —
-         아침엔 TODAY가 주인공, 저녁엔 1초 체크가 할 일이 되게. -->
+         3단 구성(2026-11-24 #19801 · #19841): TODAY 메인 카드 → 2027 접이식 카드
+         → 저녁 한 줄 기록 카드. 아침엔 TODAY가 주인공, 저녁엔 기록 카드가 할 일이 되게. -->
     <section class="hook3" id="hook3" aria-label="내 사주로 본 오늘과 2027년" hidden>
+      <!-- ① TODAY — 독립 메인 카드 (2026-11-24 #19801 · #19841)
+           기존 한 카드 안에 붙어 있던 TODAY를 떼어 내 가장 크게 강조한다.
+           문구는 calendar.js 가 그대로 채운다 — 운세 문장·계산은 건드리지 않는다. -->
       <article class="hk hk--today" id="todayCard">
         <div class="hk__top">
           <p class="hk__label hk__label--today">TODAY · 오늘의 운세 브리핑</p>
@@ -277,23 +280,15 @@
         </div>
       </article>
 
-      <!-- 🌙 나의 1초 체크 — 2026-11-24y #18925: TODAY와 '2027 핵심 사주 해석' 사이에서 화면에서만 감춘다.
-           (기록을 마치면 상태·메모가 운세 읽는 흐름을 끊던 자리. 기능은 지우지 않고 보존한다.)
-           · 기록 입력·수정은 하단 `1초 체크` 메뉴와 상단 `저녁 기록`이 여는 오늘 팝업의 1초 체크 칸이 그대로 맡는다.
-           · 저장 키(yoonise.nightcheck.v1)·데이터 구조·날짜별 기록·수정 기능은 전혀 건드리지 않는다. -->
-      <button type="button" class="hkn v2-parked" id="todayNight" data-today-night>
-        <span class="hkn__top">
-          <span class="hkn__t">🌙 나의 1초 체크</span>
-          <span class="hkn__st" id="todayNightState">오늘 기록 전</span>
-        </span>
-        <span class="hkn__d" id="todayNightWhat">오늘의 기분을 체크하고, 하루를 한 줄로 남겨보세요.</span>
-        <span class="hkn__go" id="todayNightGo" aria-hidden="true">오늘 기록하러 가기 →</span>
-      </button>
-
+      <!-- ② 나의 2027년 핵심 사주 해석 — TODAY 아래 독립 접이식 카드 (기본 접힘 · 2026-11-24 #19841)
+           접힌 채 제목·한 줄 요약·⌄ 만 보이고, 누르면 2027 고비 + 핵심이 그 자리에서 펼쳐진다.
+           해석 내용·계산은 그대로다. -->
       <details class="hkfold" id="hkFold">
         <summary class="hkfold__sum">
-          <span class="hkfold__t">나의 2027년 핵심 사주 해석</span>
-          <span class="hkfold__peek" id="hookFoldPeek"></span>
+          <span class="hkfold__txt">
+            <span class="hkfold__t">나의 2027년 핵심 사주 해석</span>
+            <span class="hkfold__peek" id="hookFoldPeek"></span>
+          </span>
           <span class="hkfold__ic" aria-hidden="true">⌄</span>
         </summary>
         <div class="hkfold__body">
@@ -307,6 +302,20 @@
           </article>
         </div>
       </details>
+
+      <!-- ③ 저녁엔 나의 하루 한 줄 기록 — 2027 카드 아래 독립 카드 (2026-11-24 #19841)
+           예전 `.v2-parked` 숨김을 풀어 이 카드 하나로 깔끔하게 노출한다. 기능은 복제하지 않는다.
+           카드를 누르면 지금처럼 오늘 날짜 팝업이 열리고 그 안 1초 체크 칸으로 내려간다
+           (data-today-night · yoonise.nightcheck.v1 · 날짜별 기록·수정 로직 그대로). -->
+      <button type="button" class="hkn" id="todayNight" data-today-night>
+        <span class="hkn__top">
+          <span class="hkn__ic" aria-hidden="true">🌙</span>
+          <span class="hkn__t">저녁엔 나의 하루 한 줄 기록</span>
+          <span class="hkn__st" id="todayNightState">오늘 기록 전</span>
+        </span>
+        <span class="hkn__d" id="todayNightWhat">오늘 기분은 어땠나요? 하루를 짧게 남겨보세요.</span>
+        <span class="hkn__cta"><span class="hkn__go" id="todayNightGo" aria-hidden="true">✏️ 1초 체크 · 한 줄 기록하기 →</span></span>
+      </button>
     </section>
 
     <!-- ───────── 🧭 4칸 바로가기 바 — 사주를 넣은 뒤 어디서든 1초 만에 (2026-11-22) ─────────
@@ -966,12 +975,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124ab"></script>
-<script src="assets/manse.js?v=20261124ab"></script>
-<script src="assets/timing.js?v=20261124ab"></script>
-<script src="assets/chars.js?v=20261124ab"></script>
-<script src="assets/calendar.js?v=20261124ab"></script>
-<script src="assets/special-guide.js?v=20261124ab"></script>
-<script src="assets/pwa.js?v=20261124ab"></script>
+<script src="vendor/lunar.js?v=20261124ac"></script>
+<script src="assets/manse.js?v=20261124ac"></script>
+<script src="assets/timing.js?v=20261124ac"></script>
+<script src="assets/chars.js?v=20261124ac"></script>
+<script src="assets/calendar.js?v=20261124ac"></script>
+<script src="assets/special-guide.js?v=20261124ac"></script>
+<script src="assets/pwa.js?v=20261124ac"></script>
 </body>
 </html>

@@ -4332,12 +4332,12 @@
     if (dateEl) dateEl.textContent = info ? info.m + '월 ' + info.d + '일 ' + DOW_KO[info.dow] + '요일' : '';
     renderTodayNight();
 
-    // ①-2 나의 2027년 핵심 사주 해석 — 첫 사주 입력 당일은 펼침, 다음 날부터는 접힘
-    //      (사용자가 직접 접고 펴는 건 그대로 둔다 — data-auto 는 페이지당 한 번만 쓴다)
+    // ①-2 나의 2027년 핵심 사주 해석 — 오늘(첫날) 포함 늘 접힌 상태로 시작한다
+    //      (2026-11-24 #19841 — 예전에는 첫 사주 입력 당일만 펼쳐 두었다.
+    //       사용자가 직접 접고 펴는 건 그대로 둔다 — data-auto 는 페이지당 한 번만 쓴다)
     var fold = $('#hkFold');
     if (fold && fold.getAttribute('data-auto') !== '1') {
-      var firstDay = firstSajuISO();
-      fold.open = !!(firstDay && firstDay === state.todayISO);
+      fold.open = false;
       fold.setAttribute('data-auto', '1');
     }
 
@@ -4359,7 +4359,7 @@
         /* 접힘 상태에서 조심할 달만 요약 줄에 작게 (#18832 — 카드 제목은 '나의 2027년 핵심 사주 해석'
            하나로 두고, '급소'는 제목 자리에 세우지 않는다) */
         var peekEl = $('#hookFoldPeek');
-        if (peekEl) peekEl.textContent = ms ? '조심할 달 ' + ms : '';
+        if (peekEl) peekEl.textContent = '한 해의 흐름과 고비' + (ms ? ' · 조심할 달 ' + ms : '');
       }
     }
   }
@@ -4387,10 +4387,10 @@
     chip.classList.toggle('is-done', done);
     if (st) st.textContent = done ? '오늘 기록 완료' : '오늘 기록 전';
     var go = $('#todayNightGo');
-    if (go) go.textContent = done ? '오늘 기록 고치기 →' : '오늘 기록하러 가기 →';
+    if (go) go.textContent = done ? '오늘 기록 보기 · 수정 →' : '✏️ 1초 체크 · 한 줄 기록하기 →';
     if (what) {
       var memo = rec && rec.memo ? String(rec.memo) : '';
-      what.textContent = done ? (label + (memo ? ' · “' + memo + '”' : '')) : '오늘의 기분을 체크하고, 하루를 한 줄로 남겨보세요.';
+      what.textContent = done ? (label + (memo ? ' · “' + memo + '”' : '')) : '오늘 기분은 어땠나요? 하루를 짧게 남겨보세요.';
     }
     var aria = done
       ? '나의 1초 체크 오늘 기록 완료 — ' + label + '. 누르면 오늘 팝업에서 고치기'
