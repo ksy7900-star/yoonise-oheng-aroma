@@ -121,6 +121,12 @@
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function mod(n, m) { return ((n % m) + m) % m; }
+  /** 양력에 실제로 있는 날짜인가 — 2월 30일·평년 2월 29일 같은 값을 미리 막는다 */
+  function validSolarDate(y, m, d) {
+    if (!(y >= 1900 && y <= 2100) || m < 1 || m > 12 || d < 1 || d > 31) return false;
+    var t = new Date(Date.UTC(y, m - 1, d));
+    return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+  }
 
   function ganZhiOf(index) {
     var i = mod(index, 60);
@@ -246,7 +252,7 @@
       lunarY = y; lunarM = m; lunarD = d; lunarLeap = !!opts.leap;
       lunarText = (opts.leap ? '윤' : '') + m + '월 ' + d + '일';
     } else {
-      if (m < 1 || m > 12 || d < 1 || d > 31) throw new Error('생년월일을 다시 확인해 주세요.');
+      if (!validSolarDate(y, m, d)) throw new Error('양력 ' + y + '년 ' + m + '월 ' + d + '일은 존재하지 않는 날짜입니다. 생년월일을 다시 확인해 주세요.');
       var sol;
       try {
         sol = Solar.fromYmdHms(y, m, d, 12, 0, 0);
@@ -275,7 +281,7 @@
       lonMin = (135 - lon) * 4;      // 표준자오선 135°E와의 차이(분)
     }
     var dstMin = opts.dst ? 60 : 0;
-    var shiftMin = Math.round(lonMin) + dstMin;   // 실제 태양시 = 표준시 - shiftMin
+    var shiftMin = Math.round(lonMin) + dstMin;   // 진태양시 벽시계 = 표준시 - shiftMin (일주·시주용)
 
     // 보정된 벽시계 시각 (일주·시주 계산용)
     var localMs = Date.UTC(solarY, solarM - 1, solarD, hh, mm, 0);
@@ -283,8 +289,12 @@
     var cd = new Date(correctedMs);
     var cY = cd.getUTCFullYear(), cM = cd.getUTCMonth() + 1, cD = cd.getUTCDate(), cH = cd.getUTCHours(), cMi = cd.getUTCMinutes();
 
-    // ---- 연주·월주: 절입 시각 비교 (한국 표준시 절대시각) ----
-    var birthEpoch = localMs - 9 * 3600 * 1000 - shiftMin * 60000; // UTC epoch
+    /* ---- 연주·월주: 절입 시각 비교 (한국 표준시 절대시각) ----
+       절입 비교에는 **서머타임 보정만** 뺀다. 진태양시(경도)는 벽시계를 경도만큼 옮겨 보는
+       표기일 뿐, 출생한 순간 자체를 옮기는 것이 아니다. 경도분까지 빼면 절입 직후(서울 32분 안)
+       출생자의 월주가 한 달 앞으로 어긋난다 — 2026-11-24 전수 점검에서 1979-11-08 입동 09:33 /
+       09:50 서울 출생이 `을해월`(정답) 대신 `갑술월`로 나오던 문제. */
+    var birthEpoch = localMs - 9 * 3600 * 1000 - dstMin * 60000; // UTC epoch (서머타임만 보정)
     var jie = buildJie(solarY);
     var ym = yearMonthFor(birthEpoch, jie);
     var lastJie = ym.lastJie, nextJie = ym.nextJie;

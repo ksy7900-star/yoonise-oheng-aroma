@@ -497,7 +497,17 @@
     $('#editBtn').addEventListener('click', openForm);
     // 저장된 정보 지우기 — 사주만이 아니라 이 앱의 모든 기록(액운 태우기 횟수·무료 체험 시작일·
     // 열린 코드·성찰·저녁 체크·초대 표시)을 함께 지우고 처음 화면으로 돌아간다 (2026-11-23 #16839)
-    $('#clearBtn').addEventListener('click', function () { clearAllAppData(); location.reload(); });
+    /* 저장된 정보 지우기 — 한 번 누르면 사주·1초 체크·액운 횟수·열린 코드가 모두 사라지고
+       되돌릴 수 없다. 손가락이 스칠 수 있는 자리라 한 번 확인을 받는다 (2026-11-24 QA). */
+    $('#clearBtn').addEventListener('click', function () {
+      var ok = true;
+      try {
+        ok = window.confirm('저장된 정보를 모두 지울까요?\n사주·1초 체크 기록·액운 태우기 횟수·열린 입장 코드까지 이 기기에서 지워지고, 되돌릴 수 없어요.');
+      } catch (e) { ok = true; }
+      if (!ok) return;
+      clearAllAppData();
+      location.reload();
+    });
     $('#prevMonth').addEventListener('click', function () { shiftMonth(-1); });
     $('#nextMonth').addEventListener('click', function () { shiftMonth(1); });
   }

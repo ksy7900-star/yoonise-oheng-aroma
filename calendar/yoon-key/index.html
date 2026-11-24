@@ -257,10 +257,10 @@ body.locked{overflow:hidden}
   <div class="gate__box">
     <div class="gate__ico" aria-hidden="true">🔒</div>
     <h1 class="gate__title">윤이세 전용<br>코드 발급기</h1>
-    <p class="gate__sub">비밀번호 4자리를 눌러 주세요</p>
+    <p class="gate__sub">비밀번호 6자리를 눌러 주세요</p>
     <input id="pin" class="gate__pin" type="password" inputmode="numeric" pattern="[0-9]*"
-           maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false"
-           enterkeyhint="go" aria-label="비밀번호 4자리" placeholder="••••">
+           maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false"
+           enterkeyhint="go" aria-label="비밀번호 6자리" placeholder="••••••">
     <p class="gate__err" id="gateErr" role="alert"></p>
     <button type="button" class="gate__btn" id="gateBtn">열기</button>
     <p class="gate__foot">나영 님만 쓰는 페이지예요.<br>비밀번호는 이 화면에서만 확인해요.</p>
@@ -391,7 +391,7 @@ body.locked{overflow:hidden}
      예전엔 이 페이지와 달력 JS 안에 CODE_SALT 와 계산식이 그대로 들어 있어,
      사이트 소스를 보면 누구나 코드를 위조할 수 있었다(미스터리 쇼퍼 지적).
      지금은 SALT 가 Supabase 안에만 있고, 코드 만들기·확인은 서버 함수로 부른다.
-       · 만들기  issue_entry_code(p_pin, p_letter, p_phone)  — 0428 비밀번호 필요
+       · 만들기  issue_entry_code(p_pin, p_letter, p_phone)  — 관리자 비밀번호 필요
        · 확인    verify_entry_code(p_code, p_phone)          — 손님·관리자 공통
      이 페이지에는 SALT 도 계산식도 남기지 않는다. */
   var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
@@ -417,7 +417,16 @@ body.locked{overflow:hidden}
       return res.text().then(function (text) {
         var d = null;
         try { d = text ? JSON.parse(text) : null; } catch (e) { d = null; }
-        if (res.ok) return d;
+        if (res.ok) {
+          /* 잠금·불일치는 200 + { ok:false, error:'pin_...' } 로 온다 (서버가 시도 횟수를 남기려고 예외를 쓰지 않는다) */
+          if (d && d.ok === false && d.error) {
+            var e0 = new Error(d.error);
+            e0.pin = /^pin_/.test(d.error);
+            e0.locked = d.error === 'pin_locked';
+            throw e0;
+          }
+          return d;
+        }
         var msg = (d && (d.message || d.hint)) || ('HTTP ' + res.status);
         var e = new Error(msg);
         e.pin = /pin/i.test(msg);
@@ -504,7 +513,7 @@ body.locked{overflow:hidden}
     var letter = CODE_LETTER_OF_TIER[state.tier];
     var pin = '';
     try { pin = window.YoonKeyPin ? (window.YoonKeyPin.get() || '') : ''; } catch (e) { pin = ''; }
-    if (!pin) { err.hidden = false; err.textContent = '비밀번호가 만료됐어요 — 🔒 잠그기를 누른 뒤 4자리를 다시 넣고 한 번 더 시도해 주세요.'; return; }
+    if (!pin) { err.hidden = false; err.textContent = '비밀번호가 만료됐어요 — 🔒 잠그기를 누른 뒤 6자리를 다시 넣고 한 번 더 시도해 주세요.'; return; }
 
     var btn = $('#makeBtn');
     btn.disabled = true; btn.textContent = '코드 만드는 중…';
@@ -530,7 +539,7 @@ body.locked{overflow:hidden}
       btn.disabled = false; btn.textContent = '코드 만들기';
       err.hidden = false;
       err.textContent = (e && e.pin)
-        ? '서버가 비밀번호를 받아들이지 않았어요 — 🔒 잠그고 4자리를 다시 넣어 주세요.'
+        ? ((e && e.locked) ? '시도가 너무 많아 잠시 잠겼어요 — 10분 뒤에 다시 시도해 주세요.' : '서버가 비밀번호를 받아들이지 않았어요 — 🔒 잠그고 6자리를 다시 넣어 주세요.')
         : '코드를 만들지 못했어요 — 연결을 확인하고 다시 시도해 주세요.';
     });
   }
@@ -674,14 +683,16 @@ body.locked{overflow:hidden}
 <script>
 (function () {
   'use strict';
-  /* ── 비밀번호는 소스에 평문으로 두지 않는다 — SHA-256 해시로만 비교 ──
-     PIN_HASH = SHA-256('yoonise:key:v1|' + 비밀번호)
-     crypto.subtle 이 없는 곳(file:// 로 열 때 등)을 위해 같은 SHA-256 을 순수 JS 로도 계산한다. */
-  var PIN_PREFIX = 'yoonise:key:v1|';
-  var PIN_HASH = 'b7eaee75f69d8bedb809fa1796681cd65af08c453fb41106e806ff1b6656e003';
-  var PIN_LEN = 4;
+  /* ── 비밀번호는 이 화면에서 확인하지 않는다 — 서버(admin_login)만 안다 (2026-11-24) ──
+     예전엔 해시를 이 파일에 두고 브라우저에서 비교했는데, 공개 페이지라 6자리 해시는
+     소스를 보고 금방 풀린다. 이제 확인·시도 제한(10분에 5회)을 서버가 하고,
+     맞으면 이 탭 세션에만 비밀번호를 기억해 나머지 관리자 호출에 그대로 쓴다. */
+  var PIN_LEN = 6;
   var SKEY = 'yoonise.key.open.v1';
-  /* 비밀번호는 해시로만 비교하지만, '가입자 현황' 탭은 서버(admin_dashboard)에 PIN 을 보내야 한다.
+  /* 서버 확인용 — 공개 전제인 publishable 키. 비밀번호 자체는 어디에도 적지 않는다. */
+  var SB_URL = 'https://fifynkkaeqcjlovesuop.supabase.co';
+  var SB_KEY = 'sb_publishable_JzSUlMOH9s38aer6y1BVEg_rHcQLGxF';
+  /* '가입자 현황' 탭은 서버(admin_dashboard)에 PIN 을 보내야 한다.
      이 탭을 닫으면 지워지고, 🔒 잠그기를 누르면 바로 지운다. (localStorage 아님 — 탭 세션에만) */
   var PKEY = 'yoonise.key.pin.v1';
   function rememberPin(v) { try { sessionStorage.setItem(PKEY, v); } catch (e) {} }
@@ -773,6 +784,7 @@ body.locked{overflow:hidden}
   var busy = false;
 
   function openApp(pin) {
+    err.textContent = '';
     gate.hidden = true;
     document.body.classList.remove('locked');
     app.hidden = false;
@@ -804,14 +816,32 @@ body.locked{overflow:hidden}
     if (v.length !== PIN_LEN || busy) return;
     busy = true;
     btn.disabled = true;
-    sha256Hex(PIN_PREFIX + v).then(function (h) {
-      busy = false;
-      btn.disabled = false;
-      if (h === PIN_HASH) openApp(v); else fail();
+    err.textContent = '확인 중…';
+    var opt = {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ p_pin: v })
+    };
+    fetch(SB_URL + '/rest/v1/rpc/admin_login', opt).then(function (res) {
+      return res.text().then(function (text) {
+        var d = null;
+        try { d = text ? JSON.parse(text) : null; } catch (e) { d = null; }
+        busy = false;
+        btn.disabled = false;
+        if (res.ok && d && d.ok === true) { openApp(v); return; }
+        var code = (d && d.error) || '';
+        if (code === 'pin_locked') {
+          err.textContent = '시도가 너무 많아 잠시 잠겼어요 — 10분 뒤에 다시 시도해 주세요.';
+          inp.value = '';
+          return;
+        }
+        fail();
+      });
     }, function () {
       busy = false;
       btn.disabled = false;
-      fail();
+      err.textContent = '지금은 확인이 안 돼요 — 연결을 확인하고 다시 시도해 주세요.';
     });
   }
 
@@ -832,7 +862,7 @@ body.locked{overflow:hidden}
   if (already) openApp();
 
   /* 확인용(콘솔 테스트) — 해시 계산기만 내보낸다. 비밀번호는 어디에도 없다. */
-  window.YoonKey = { sha256Hex: sha256Hex, sha256HexSync: sha256HexSync, pinHash: PIN_HASH };
+  window.YoonKey = { sha256Hex: sha256Hex, sha256HexSync: sha256HexSync };
   /* '가입자 현황' 탭이 서버에 보낼 PIN — 이 탭 세션에만 있는 값 */
   window.YoonKeyPin = { get: pinOf, set: rememberPin, clear: forgetPin };
 })();
@@ -842,7 +872,7 @@ body.locked{overflow:hidden}
 /* ── 상단 탭 · 가입자 현황 (2026-11-22) ──────────────────────────────────
    · '🔑 코드 발급'은 이 브라우저 안에서만 계산하고, '👥 가입자 현황'만 서버에서 읽는다.
    · 서버에서 부르는 것은 함수 하나 — public.admin_dashboard(p_pin).
-     publishable(anon) 키로 부르고, PIN 은 잠금 화면에서 넣은 4자리를 이 탭 세션에만 기억해 둔
+     publishable(anon) 키로 부르고, PIN 은 잠금 화면에서 넣은 6자리를 이 탭 세션에만 기억해 둔
      window.YoonKeyPin 값을 그대로 보낸다(평문은 저장하지 않고, 잠그면 바로 지운다).
    · 함수가 아직 없으면(PGRST202) 화면은 '아직 DB 연결 전'이라고만 알려 주고,
      코드 발급기는 서버와 상관없이 그대로 쓴다. */
@@ -945,6 +975,12 @@ body.locked{overflow:hidden}
         var body = null;
         try { body = text ? JSON.parse(text) : null; } catch (e) {}
         if (res.ok) {
+          if (body && body.ok === false && /^pin_/.test(body.error || '')) {
+            var ep = new Error(body.error);
+            ep.kind = 'pin';
+            ep.locked = body.error === 'pin_locked';
+            throw ep;
+          }
           if (!body || body.ok === false) { var e0 = new Error('bad shape'); e0.kind = 'shape'; throw e0; }
           return body;
         }
@@ -975,7 +1011,8 @@ body.locked{overflow:hidden}
       setState(MSG_NOT_YET,
         'Supabase 대시보드 → SQL Editor 에서 밀린 마이그레이션을 한 번 실행하면 여기에 바로 나타나요.');
     } else if (k === 'pin') {
-      setState('비밀번호가 서버와 맞지 않아요', '🔒 잠그기를 누른 뒤 4자리를 다시 넣어 주세요.');
+      setState(err && err.locked ? '비밀번호 시도가 너무 많아 잠시 잠겼어요' : '비밀번호가 서버와 맞지 않아요',
+        err && err.locked ? '10분 뒤에 다시 시도해 주세요. 그동안은 코드 발급 화면도 잠깁니다.' : '🔒 잠그기를 누른 뒤 6자리를 다시 넣어 주세요.');
     } else if (k === 'net') {
       setState('서버에 닿지 않아요', '연결을 확인하고 새로고침을 눌러 주세요.');
     } else {
@@ -993,7 +1030,7 @@ body.locked{overflow:hidden}
       hasData = false;
       resetNumbers();
       setState('비밀번호가 아직 없어요',
-        '🔒 잠그기를 누른 뒤 4자리를 다시 넣으면 여기서 가입자를 볼 수 있어요.');
+        '🔒 잠그기를 누른 뒤 6자리를 다시 넣으면 여기서 가입자를 볼 수 있어요.');
       return;
     }
     busy = true;
@@ -1088,6 +1125,12 @@ body.locked{overflow:hidden}
         var body = null;
         try { body = text ? JSON.parse(text) : null; } catch (e) { }
         if (res.ok && body && body.ok !== false) return body;
+        if (body && body.ok === false && /^pin_/.test(body.error || '')) {
+          var ep = new Error(body.error);
+          ep.pin = true;
+          ep.locked = body.error === 'pin_locked';
+          throw ep;
+        }
         var msg = (body && (body.message || body.hint)) || ('HTTP ' + res.status);
         var e = new Error(msg);
         e.pin = /pin/i.test(msg);
@@ -1116,7 +1159,7 @@ body.locked{overflow:hidden}
     if (!pin) {
       $('#cTotal').textContent = '–'; $('#cToday').textContent = '–';
       $('#cCount').textContent = '';
-      cState('비밀번호가 아직 없어요', '🔒 잠그기를 누른 뒤 4자리를 다시 넣으면 신청서를 볼 수 있어요.');
+      cState('비밀번호가 아직 없어요', '🔒 잠그기를 누른 뒤 6자리를 다시 넣으면 신청서를 볼 수 있어요.');
       return;
     }
     cBusy = true;
@@ -1131,7 +1174,7 @@ body.locked{overflow:hidden}
       cBusy = false; cHas = false;
       rl.disabled = false; rl.textContent = '새로고침';
       cState(err && err.pin ? '비밀번호가 서버와 맞지 않아요' : '신청서를 불러오지 못했어요',
-        err && err.pin ? '🔒 잠그기를 누른 뒤 4자리를 다시 넣어 주세요.' : '연결을 확인하고 새로고침을 눌러 주세요.');
+        err && err.pin ? (err.locked ? '10분 뒤에 다시 시도해 주세요.' : '🔒 잠그기를 누른 뒤 6자리를 다시 넣어 주세요.') : '연결을 확인하고 새로고침을 눌러 주세요.');
     });
   }
 
