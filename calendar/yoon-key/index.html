@@ -284,6 +284,44 @@ body.locked{overflow:hidden}
 .sgsnap .sgpillar{flex:1; text-align:center; padding:6px 2px; border-radius:8px; background:#fff; border:1px solid var(--hair-soft)}
 .sgsnap .sgpillar span{display:block; font-size:8px; color:var(--mute)}
 .sgsnap .sgpillar b{display:block; font-family:var(--serif); font-size:14px; color:var(--ink); letter-spacing:0}
+/* ── 만세력 카드 (2026-11-25) — 전통 만세력 배열: 시 | 일 | 월 | 년 ── */
+.sgmc{margin:12px 0 0; padding:11px 10px 12px; border-radius:14px; background:#FFFDF7; border:1px solid rgba(180,83,9,.16)}
+.sgmc__top{display:flex; align-items:baseline; flex-wrap:wrap; gap:6px; margin:0 0 7px}
+.sgmc__top b{font-size:11px; color:#92400E; letter-spacing:-.01em}
+.sgmc__top span{font-size:9px; color:var(--mute); font-weight:700}
+.sgmc__row{display:grid; gap:4px; margin-top:3px}
+.sgmc__row--4{grid-template-columns:repeat(4,1fr)}
+.sgmc__row--8{grid-template-columns:repeat(8,1fr); gap:3px; margin-top:2px}
+.sgmc__row--7{grid-template-columns:repeat(7,1fr); gap:3px; margin-top:2px}
+.sgmc__row--pos{margin-top:2px}
+.sgmc__pos{display:block; text-align:center; font-size:8px; font-weight:700; color:var(--mute)}
+.sgmc__ten,.sgmc__ten2{display:block; text-align:center; font-size:9px; font-weight:800; color:#7A4A0B; background:#F7EEDC; border-radius:7px; padding:3px 0; letter-spacing:-.02em}
+.sgmc__ten--day{background:#EFE0C0; color:#6B3A05}
+.sgmc__ten--na{color:var(--mute); background:#F1F2F4}
+.sgmc__ten2{background:none; color:#7A4A0B; padding:2px 0}
+.sgmc__hz{display:block; text-align:center; font-family:var(--serif); font-size:21px; line-height:1.2; font-weight:600; border-radius:8px; padding:4px 0; letter-spacing:0}
+.sgmc__hz--na{color:#C7CBD1; background:#F6F7F9}
+.sgmc__hid{display:flex; justify-content:center; gap:2px}
+.sgmc__hid i{font-style:normal; font-family:var(--serif); font-size:10px; background:none; padding:0 1px; opacity:.85}
+.sgmc__na{color:#C7CBD1}
+.sgmc__row--hid{margin-top:4px}
+.sgmc__note{margin:6px 0 0; font-size:8.5px; color:var(--mute); font-weight:700; text-align:center}
+.mc-목{background:#EDF7E8; color:#33693D}
+.mc-화{background:#FCE9EE; color:#A93B57}
+.mc-토{background:#FAF0D9; color:#7E5D22}
+.mc-금{background:#EFF1F4; color:#4A5461}
+.mc-수{background:#E8F1F9; color:#2C5C83}
+.sgmc__cap{margin:11px 0 0; font-size:10px; font-weight:800; color:#7A4A0B; display:flex; align-items:baseline; gap:5px}
+.sgmc__cap span{font-size:8.5px; font-weight:700; color:var(--mute)}
+.sgmc__du,.sgmc__sy{display:block; text-align:center; border:1px solid var(--hair-soft); border-radius:7px; background:#fff; padding:3px 0 2px}
+.sgmc__du i,.sgmc__sy i{display:block; font-style:normal; font-size:8px; font-weight:700; color:var(--mute)}
+.sgmc__du b,.sgmc__sy b{display:block; font-family:var(--serif); font-size:12px; font-weight:600; letter-spacing:0; margin-top:1px}
+.sgmc__du b span,.sgmc__sy b span{display:inline-block; border-radius:3px; padding:0 1px; margin:0 .3px}
+.sgmc__sy u{display:block; text-decoration:none; font-size:7.5px; color:var(--mute); margin-top:1px}
+.sgmc__du.is-now{border-color:rgba(180,83,9,.8); background:#FDF3E3; box-shadow:0 0 0 2px rgba(180,83,9,.10)}
+.sgmc__sy.is-guide{border-color:rgba(180,83,9,.8); background:#FDF3E3}
+.sgmc__sy.is-now{background:#EEF3F9; border-color:#C7D6E6}
+.sgmc__warn{margin:8px 0 0; font-size:10px; font-weight:800; color:#BE123C; line-height:1.6}
 .sgedit{margin-top:14px}
 .sgedit label{display:block; font-size:10.5px; font-weight:800; color:var(--ink-2); margin:0 0 6px}
 .sgedit textarea{
@@ -479,7 +517,7 @@ body.locked{overflow:hidden}
     <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261124u<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125f<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 </div>
 
 <script>
@@ -1349,7 +1387,7 @@ body.locked{overflow:hidden}
 </script>
 
 <!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
-<script src="../assets/special-guide-draft.js?v=20261124u"></script>
+<script src="../assets/special-guide-draft.js?v=20261125f"></script>
 <script>
 (function () {
   'use strict';
@@ -1484,6 +1522,106 @@ body.locked{overflow:hidden}
     return null;
   }
 
+  /* ── 만세력 카드 (2026-11-25) ─────────────────────────
+     전통 만세력 배열: 시 | 일 | 월 | 년 — 오른쪽이 년주, 왼쪽에서 두 번째가 일원(일간).
+     · 위에서부터 천간 십성 → 천간 → 지지 → 지지 십성 → 지장간 → 대운 → 세운.
+     · 값은 서버에 저장된 사주 스냅샷(만세력 엔진 manse.js 산출물)만 쓴다. 계산을 다시 하지 않는다.
+     · 여기서만 쓰는 표는 manse.js 의 같은 표(지장간·오행·60갑자)를 옮겨 온 것이고,
+       저장된 스냅샷에 없는 지장간 글자와 세운 간지를 화면에 얹는 데만 쓴다.
+     · 오행 개수·십성 개수 요약 줄은 표시하지 않는다(대표 지시 2026-11-25). */
+  var MC_GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  var MC_ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  var MC_GAN_EL = { '甲': '목', '乙': '목', '丙': '화', '丁': '화', '戊': '토', '己': '토', '庚': '금', '辛': '금', '壬': '수', '癸': '수' };
+  var MC_HIDDEN = {
+    '子': ['癸'], '丑': ['己', '癸', '辛'], '寅': ['甲', '丙', '戊'], '卯': ['乙'],
+    '辰': ['戊', '乙', '癸'], '巳': ['丙', '戊', '庚'], '午': ['丁', '己'], '未': ['己', '丁', '乙'],
+    '申': ['庚', '壬', '戊'], '酉': ['辛'], '戌': ['戊', '辛', '丁'], '亥': ['壬', '甲']
+  };
+  var MC_POS = [['time', '시'], ['day', '일'], ['month', '월'], ['year', '년']];
+
+  function mcCh(ch, el, big) {
+    if (!ch) return '<span class="sgmc__na">—</span>';
+    return '<span class="' + (big ? 'sgmc__hz ' : '') + 'mc-' + (el || '토') + '">' + esc(ch) + '</span>';
+  }
+  var MC_ZHI_EL = { '子': '수', '丑': '토', '寅': '목', '卯': '목', '辰': '토', '巳': '화', '午': '화', '未': '토', '申': '금', '酉': '금', '戌': '토', '亥': '수' };
+  function mcGz(gan, zhi) {
+    return '<b>' + mcCh(gan, MC_GAN_EL[gan]) + mcCh(zhi, MC_ZHI_EL[zhi]) + '</b>';
+  }
+  function mcYearGz(y) {
+    var i = ((Number(y) - 4) % 60 + 60) % 60;
+    return { gan: MC_GAN[i % 10], zhi: MC_ZHI[i % 12] };
+  }
+
+  function manseCard(snap, r) {
+    if (!snap || !snap.pillars) return '';
+    var solarY = snap.solar && snap.solar.y ? Number(snap.solar.y) : 0;
+    var age2027 = solarY ? 2027 - solarY + 1 : 0;
+    var ageNow = solarY ? (new Date().getFullYear() - solarY + 1) : 0;
+
+    /* 시 | 일 | 월 | 년 */
+    var pos = MC_POS.map(function (x) { return '<span class="sgmc__pos">' + x[1] + '</span>'; }).join('');
+    var tenG = '', gan = '', zhi = '', tenZ = '', hid = '';
+    MC_POS.forEach(function (x) {
+      var k = x[0], p = snap.pillars[k] || null, isDay = k === 'day';
+      if (!p) {
+        tenG += '<span class="sgmc__ten sgmc__ten--na">—</span>';
+        gan += '<span class="sgmc__hz sgmc__hz--na">—</span>';
+        zhi += '<span class="sgmc__hz sgmc__hz--na">—</span>';
+        tenZ += '<span class="sgmc__ten2">—</span>';
+        hid += '<span class="sgmc__hid">—</span>';
+        return;
+      }
+      tenG += '<span class="sgmc__ten' + (isDay ? ' sgmc__ten--day' : '') + '">' + esc(isDay ? '일원' : (p.ten_gan || '—')) + '</span>';
+      gan += mcCh(p.gan, p.gan_el || MC_GAN_EL[p.gan], true);
+      zhi += mcCh(p.zhi, p.zhi_el || MC_ZHI_EL[p.zhi], true);
+      tenZ += '<span class="sgmc__ten2">' + esc(p.ten_zhi || '—') + '</span>';
+      hid += '<span class="sgmc__hid">' + (MC_HIDDEN[p.zhi] || []).map(function (h) {
+        return '<i class="mc-' + (MC_GAN_EL[h] || '토') + '">' + esc(h) + '</i>';
+      }).join('') + '</span>';
+    });
+
+    /* 대운 — 오른쪽이 시작(어린 나이), 왼쪽이 먼 나이. 지금 대운 강조 */
+    var du = snap.daeun || {};
+    var list = (du.list || []).slice().reverse();
+    var nowAge = -1;
+    (du.list || []).forEach(function (x) { if (age2027 && x.age <= age2027 && x.age > nowAge) nowAge = x.age; });
+    var duHtml = '';
+    if (list.length) {
+      duHtml = '<p class="sgmc__cap">대운 <span>' + esc(du.direction || '') + (du.start_age != null ? ' · ' + du.start_age + '세부터' : '') + '</span></p>' +
+        '<div class="sgmc__row sgmc__row--8">' + list.map(function (x) {
+          return '<span class="sgmc__du' + (x.age === nowAge ? ' is-now' : '') + '">' +
+            '<i>' + esc(String(x.age)) + '</i>' + mcGz(x.gan, x.zhi) + '</span>';
+        }).join('') + '</div>';
+    }
+
+    /* 세운 — 올해 앞뒤로 이어 보이게. 2027(가이드 해)은 금색, 올해는 옅은 회청색 */
+    var nowY = new Date().getFullYear();
+    var years = [];
+    for (var y = nowY - 2; y <= nowY + 4; y++) years.push(y);
+    var syHtml = '<p class="sgmc__cap">세운 <span>한 해씩 오는 흐름</span></p>' +
+      '<div class="sgmc__row sgmc__row--7">' + years.map(function (yy) {
+        var gz = mcYearGz(yy);
+        var cls = yy === 2027 ? ' is-guide' : (yy === nowY ? ' is-now' : '');
+        return '<span class="sgmc__sy' + cls + '"><i>' + yy + '</i>' + mcGz(gz.gan, gz.zhi) +
+          '<u>' + (solarY ? (yy - solarY + 1) : '') + '</u></span>';
+      }).join('') + '</div>';
+
+    return '<div class="sgmc">' +
+      '<div class="sgmc__top"><b>' + esc(snap.name || '이름 없음') + ' · ' + esc(snap.gender || '') + ' · ' +
+      esc((snap.solar && (snap.solar.y + '.' + snap.solar.m + '.' + snap.solar.d)) || '') +
+      (snap.time_known ? '' : ' · 시간 모름') + '</b>' +
+      '</div>' +
+      '<div class="sgmc__row sgmc__row--4 sgmc__row--pos">' + pos + '</div>' +
+      '<div class="sgmc__row sgmc__row--4">' + tenG + '</div>' +
+      '<div class="sgmc__row sgmc__row--4">' + gan + '</div>' +
+      '<div class="sgmc__row sgmc__row--4">' + zhi + '</div>' +
+      '<div class="sgmc__row sgmc__row--4">' + tenZ + '</div>' +
+      '<div class="sgmc__row sgmc__row--4 sgmc__row--hid">' + hid + '</div>' +
+      '<p class="sgmc__note">지장간 · 지지 속에 숨어 있는 기운</p>' +
+      duHtml + syHtml +
+      '</div>';
+  }
+
   /* ── 상세 ─────────────────────────────────────────── */
   function openDetail(r) {
     if (!r) return;
@@ -1494,37 +1632,7 @@ body.locked{overflow:hidden}
     var draft = r.admin_edited || r.ai_draft || '';
     var hasDraft = !!(r.admin_edited || r.ai_draft);
 
-    var pillars = '';
-    if (snap && snap.pillars) {
-      ['year', 'month', 'day', 'time'].forEach(function (k) {
-        var x = snap.pillars[k];
-        pillars += '<span class="sgpillar"><span>' + ({ year: '년', month: '월', day: '일', time: '시' }[k]) + '</span>' +
-          '<b>' + (x ? esc(x.gan) + esc(x.zhi) : '—') + '</b></span>';
-      });
-    }
-
-    var counts = '';
-    if (snap && snap.counts) {
-      counts = ['목', '화', '토', '금', '수'].map(function (k) {
-        return k + ' ' + (snap.counts[k] == null ? 0 : snap.counts[k]);
-      }).join(' · ');
-    }
-    var groups = '';
-    if (snap && snap.ten_groups) {
-      groups = Object.keys(snap.ten_groups).filter(function (k) { return snap.ten_groups[k]; })
-        .map(function (k) { return k + ' ' + snap.ten_groups[k]; }).join(' · ');
-    }
-    var daeun = '';
-    if (snap && snap.daeun) {
-      daeun = '대운 ' + snap.daeun.direction + ' · ' + snap.daeun.start_age + '세부터 · ' +
-        (snap.daeun.list || []).slice(0, 3).map(function (x) { return x.age + '세 ' + x.gan + x.zhi; }).join(' / ');
-    }
-    var seun = '';
-    if (snap && snap.seun) {
-      seun = '2027 ' + snap.seun.gan + snap.seun.zhi + ' · ' + snap.seun.ten +
-        (snap.seun.chung_day ? ' · 일지 충' : '') + (snap.seun.hap_day ? ' · 일지 합' : '') +
-        (snap.seun.hyeong_day ? ' · 일지 형' : '');
-    }
+    var card = manseCard(snap, r);
 
     var canConfirm = !r.confirmed_at && r.status !== 'delivered';
     var canPrepare = ['submitted', 'awaiting_draft', 'draft_ready'].indexOf(r.status) >= 0;
@@ -1543,15 +1651,9 @@ body.locked{overflow:hidden}
       '<div><span>신청 동의 시각</span><b>' + (r.consent_at ? kst(r.consent_at) : '<span style="color:#BE123C">동의 기록 없음</span>') + '</b></div>' +
       '<div><span>기기 키 (client_uid)</span><b>' + esc(r.client_uid || '—') + '</b></div>' +
       '</div>' +
-      (snap ? '<div class="sgsnap"><b>' + esc(snap.name || '이름 없음') + ' · ' + esc(snap.gender || '') + ' · ' +
-        esc((snap.solar && (snap.solar.y + '.' + snap.solar.m + '.' + snap.solar.d)) || '') + (snap.time_known ? '' : ' · 시간 모름') + '</b>' +
-        '<div class="sgpillars">' + pillars + '</div>' +
-        '<p>일간 ' + esc((snap.day_master && snap.day_master.gan) || '') + ' · 오행 ' + esc(counts) + '</p>' +
-        '<p>십성 ' + esc(groups || '—') + '</p>' +
-        '<p>' + esc(daeun || '대운 자료 없음') + '</p>' +
-        '<p>' + esc(seun || '2027 세운 자료 없음') + '</p>' +
-        (r.needs_review ? '<p style="color:#BE123C;font-weight:700">확인 필요 · ' + esc(r.review_note || '결제 시각을 확인해 주세요') + '</p>' : '') +
-        '</div>' : '<p class="note">사주 계산 자료가 없습니다. 고객이 코드를 다시 넣으면 함께 저장됩니다.</p>') +
+      (snap ? card +
+        (r.needs_review ? '<p class="sgmc__warn">확인 필요 · ' + esc(r.review_note || '결제 시각을 확인해 주세요') + '</p>' : '')
+        : '<p class="note">사주 계산 자료가 없습니다. 고객이 코드를 다시 넣으면 함께 저장됩니다.</p>') +
       '<div class="sgedit"><label for="sgDraft">가이드 본문 (AI 초안 → 윤이세 수정)</label>' +
       '<textarea id="sgDraft" spellcheck="false" placeholder="위의 ‘AI 초안 다시 만들기’를 누르면 5가지 구성으로 초안이 채워집니다.">' + esc(draft) + '</textarea>' +
       '<p class="sgforbid" id="sgForbid" hidden></p>' +
