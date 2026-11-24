@@ -357,6 +357,32 @@ body.locked{overflow:hidden}
 .sgsign__name{margin:0; font-family:var(--serif); font-size:15px; font-weight:600; color:var(--ink); letter-spacing:.02em}
 .sgsign__note{margin:9px 0 0; font-size:10px; line-height:1.7; color:var(--mute); font-weight:600}
 .sgsign__dl{display:inline-block; margin-top:9px; padding:9px 14px; border-radius:11px; border:1px solid var(--hair); background:#fff; font-size:10.5px; font-weight:800; color:var(--ink-2); text-decoration:none}
+/* ── ✍️ 서비스용 감정서 직접 만들기 (2026-11-25) ── */
+.svc-sub{margin:-4px 0 14px; font-size:10.5px; line-height:1.7; color:var(--mute)}
+.svc-in{
+  width:100%; border:1px solid var(--hair); border-radius:12px; padding:12px;
+  font-family:inherit; font-size:14px; font-weight:600; color:var(--ink); background:#fff;
+}
+.svc-in:focus{outline:none; border-color:rgba(180,83,9,.55); box-shadow:0 0 0 3px rgba(180,83,9,.12)}
+.svc-in[disabled]{background:#F8FAFC; color:var(--mute)}
+.svc-adv{margin-top:16px; border:1px solid var(--hair-soft); border-radius:12px; padding:0 12px; background:#FCFDFF}
+.svc-adv summary{cursor:pointer; list-style:none; padding:11px 0; font-size:11px; font-weight:800; color:var(--ink-2); letter-spacing:-.02em}
+.svc-adv summary::-webkit-details-marker{display:none}
+.svc-adv summary span{font-weight:600; color:var(--mute); letter-spacing:-.01em}
+.svc-adv[open]{padding-bottom:12px}
+.svc-out{margin-top:6px}
+.svc-pillars{margin:6px 0 0; display:flex; gap:4px; flex-wrap:wrap; font-size:9.5px; font-weight:700; color:var(--mute)}
+.svc-pillars span{padding:3px 7px; border-radius:7px; background:#F8FAFC; border:1px solid var(--hair-soft)}
+.svc-pillars b{font-family:var(--serif); font-size:11.5px; font-weight:600; color:var(--ink); margin-left:2px; letter-spacing:0}
+.svc-recent{margin-top:16px}
+.svc-recent__hd{margin:0 0 4px; font-size:10.5px; font-weight:800; color:var(--ink-2)}
+.svc-recent__hd span{font-weight:600; color:var(--mute)}
+.svc-recent .list li{padding:0; border-bottom:1px solid var(--hair-soft)}
+.svc-recent .list li:last-child{border-bottom:0}
+.svc-recent__open{display:flex; align-items:baseline; gap:6px; width:100%; text-align:left; border:0; background:none; padding:9px 0; font-family:inherit; font-size:10.5px; color:var(--mute)}
+.svc-recent__open b{font-size:11.5px; font-weight:700; color:var(--ink)}
+.svc-recent__open i{font-style:normal; font-size:9.5px; color:var(--mute); margin-left:auto; font-variant-numeric:tabular-nums}
+.svc-recent__clear{margin-top:8px; border:1px solid var(--hair); background:#fff; border-radius:9px; padding:6px 10px; font-family:inherit; font-size:10px; font-weight:700; color:var(--mute)}
 @media (max-width:380px){ .tabs--4 button{font-size:9.5px} }
 </style>
 </head>
@@ -527,10 +553,81 @@ body.locked{overflow:hidden}
       <button type="button" class="go" id="sgGrantBtn">자격 부여 · 신청번호 발급</button>
     </section>
 
+    <section class="card" id="svcCard">
+      <h2 class="card__title">서비스용 감정서 직접 만들기</h2>
+      <p class="svc-sub">신청 건이 없어도 이름·생년월일만 있으면 같은 뼈대의 감정서를 바로 만듭니다. 여기서 만든 글은 서버에 저장되지 않고, 최근 5건만 이 브라우저에 남아요.</p>
+
+      <label class="lb" for="svcName">이름</label>
+      <input class="svc-in" id="svcName" type="text" maxlength="12" autocomplete="off" placeholder="예: 김나영">
+
+      <span class="lb">달력</span>
+      <div class="seg" id="svcCal" role="group" aria-label="달력">
+        <button type="button" class="is-on" data-cal="solar" aria-pressed="true">양력</button>
+        <button type="button" data-cal="lunar" aria-pressed="false">음력</button>
+        <button type="button" data-cal="leap" aria-pressed="false">음력(윤달)</button>
+      </div>
+
+      <label class="lb" for="svcBirth">생년월일</label>
+      <input class="svc-in" id="svcBirth" type="date" min="1900-01-01" max="2026-12-31">
+
+      <label class="lb" for="svcTime">태어난 시각</label>
+      <input class="svc-in" id="svcTime" type="time" step="60">
+      <label class="check"><input type="checkbox" id="svcTimeUnknown"><span>시각은 몰라요 — 년·월·일 6글자로 봅니다</span></label>
+
+      <span class="lb">성별</span>
+      <div class="seg" id="svcGenderBox" role="group" aria-label="성별">
+        <button type="button" class="is-on" data-gender="F" aria-pressed="true">여</button>
+        <button type="button" data-gender="M" aria-pressed="false">남</button>
+      </div>
+
+      <details class="svc-adv">
+        <summary>시각 보정 <span>태어난 곳 · 진태양시 · 서머타임 · 자시 기준</span></summary>
+        <label class="lb" for="svcRegion">태어난 곳</label>
+        <select id="svcRegion"></select>
+        <label class="check"><input type="checkbox" id="svcTrueSolar"><span>진태양시 보정 (표준시 − (135° − 경도) × 4분)</span></label>
+        <label class="check"><input type="checkbox" id="svcDst"><span>서머타임 시기 출생 (−1시간 · 1987·1988년 여름)</span></label>
+        <label class="lb" for="svcZi">일주가 바뀌는 시각</label>
+        <select id="svcZi">
+          <option value="23">자시 시작(23:30) — 조자시설</option>
+          <option value="24">밤 12시(자정) — 정자시설</option>
+        </select>
+      </details>
+
+      <p class="err" id="svcErr" role="alert" hidden></p>
+      <button type="button" class="go" id="svcMake">감정서 만들기</button>
+
+      <div class="svc-out" id="svcOut" hidden>
+        <p class="sgedit__date" id="svcMeta"></p>
+        <p class="svc-pillars" id="svcPillars"></p>
+        <div class="sgedit" style="margin-top:10px">
+          <label for="svcDraft">감정서 본문 (고쳐서 보내세요)</label>
+          <textarea id="svcDraft" spellcheck="false" placeholder="‘감정서 만들기’를 누르면 여기에 채워집니다."></textarea>
+          <p class="sgforbid" id="svcForbid" hidden></p>
+        </div>
+        <div class="sgbtns">
+          <button type="button" class="primary" id="svcCopy">감정서 복사</button>
+          <button type="button" id="svcEmpty">본문 비우기</button>
+        </div>
+        <div class="sgsign">
+          <p class="sgsign__k">감정서 마지막 장</p>
+          <img class="sgsign__seal" src="../assets/yoonise-seal.png?v=20261125m" alt="윤이세 직인" width="720" height="381" loading="lazy">
+          <p class="sgsign__name">— 윤이세</p>
+          <p class="sgsign__note">카톡에 글을 붙여 넣은 뒤, 이 직인을 사진으로 한 장 더 보내면 마무리가 됩니다. 복사되는 글에는 이미지가 섞이지 않아요.</p>
+          <a class="sgsign__dl" href="../assets/yoonise-seal.png?v=20261125m" download="윤이세-직인.png">직인 이미지 저장</a>
+        </div>
+      </div>
+
+      <div class="svc-recent" id="svcRecent" hidden>
+        <p class="svc-recent__hd">최근 만든 감정서 <span>이 브라우저에만 · 최대 5개</span></p>
+        <ul class="list" id="svcRecentList"></ul>
+        <button type="button" class="svc-recent__clear" id="svcRecentClear">기록 지우기</button>
+      </div>
+    </section>
+
     <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125g<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125m<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 </div>
 
 <script>
@@ -1918,6 +2015,407 @@ body.locked{overflow:hidden}
   }
 
   window.YoonSpecialAdmin = { load: load };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+<!-- ✍️ 서비스용 감정서 직접 만들기 (2026-11-25) — 신청 건과 상관없이 이름·생년월일로 같은 감정서를 만든다
+     · 만세력은 달력 페이지와 같은 엔진(../assets/manse.js)을 그대로 쓴다. lunar.js 는 그 엔진이 쓰는 달력 자료다.
+     · 스냅샷 모양은 달력 페이지 assets/special-guide.js 의 buildSnapshot 과 같다 — 같은 SpecialGuideDraft.make() 에 넣는다.
+     · 서버에는 아무것도 쓰지 않는다. 최근 5건은 이 브라우저(localStorage)에만 남는다. -->
+<script src="../vendor/lunar.js?v=20261125m"></script>
+<script src="../assets/manse.js?v=20261125m"></script>
+<script>
+(function () {
+  'use strict';
+
+  var STORE = 'yoonise-svc-drafts-v1';
+  var MAX = 5;
+  var CAL_LABEL = { solar: '양력', lunar: '음력', leap: '음력(윤달)' };
+  var cal = 'solar', gender = 'F';
+  var recents = [];
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pad(n) { n = Number(n) || 0; return (n < 10 ? '0' : '') + n; }
+  function toast(t) {
+    if (window.YoonCalendarToast) { window.YoonCalendarToast(t); return; }
+    try { alert(t); } catch (e) { }
+  }
+
+  /* ── 사주 스냅샷 — assets/special-guide.js 의 buildSnapshot 과 같은 값 ─────────
+     신청 건의 saju_snapshot 과 모양이 같아서, SpecialGuideDraft.make() 에 그대로 넣는다. */
+  function buildSnapshot(res) {
+    try {
+      var M = window.Manse;
+      if (!M || !res || !res.pillars) return null;
+      var p = res.pillars, d = p.day;
+      var dayGan = d.ganIndex;
+
+      function pil(x) {
+        if (!x) return null;
+        return {
+          gan: x.gan, zhi: x.zhi, gan_el: M.GAN_EL[x.ganIndex], zhi_el: M.ZHI_EL[x.zhiIndex],
+          ten_gan: M.tenGodOf(dayGan, x.ganIndex), ten_zhi: M.tenGodOf(dayGan, M.GAN.indexOf(M.HIDDEN[x.zhi][0]))
+        };
+      }
+
+      /* 대운 — 월주에서 순행/역행. 3일=1년 근사로 시작 나이를 잡는다(참고용). */
+      var daeun = null;
+      try {
+        var yangYear = p.year.ganIndex % 2 === 0;
+        var male = res.input && res.input.gender === 'M';
+        var forward = (yangYear && male) || (!yangYear && !male);
+        var mIdx = 0;
+        for (var i = 0; i < 60; i++) if (M.ganZhiOf(i).text === p.month.text) { mIdx = i; break; }
+        var birth = Date.parse(String(res.apply && res.apply.correctedText || '').replace(/\./g, '-').replace(' ', 'T') + ':00+09:00');
+        var jieAt = forward ? (res.jieqi && res.jieqi.next && res.jieqi.next.at)
+                            : (res.jieqi && res.jieqi.prev && res.jieqi.prev.at);
+        var jie = jieAt ? Date.parse(String(jieAt).replace(/\./g, '-').replace(' ', 'T') + ':00+09:00') : NaN;
+        var startAge = 1;
+        if (!isNaN(birth) && !isNaN(jie)) startAge = Math.max(1, Math.round(Math.abs(jie - birth) / 86400000 / 3));
+        var list = [];
+        for (var k = 1; k <= 8; k++) {
+          var gz = M.ganZhiOf(((mIdx + (forward ? k : -k)) % 60 + 60) % 60);
+          list.push({
+            age: startAge + (k - 1) * 10,
+            gan: gz.gan, zhi: gz.zhi,
+            ten: M.tenGodOf(dayGan, gz.ganIndex)
+          });
+        }
+        daeun = { direction: forward ? '순행' : '역행', start_age: startAge, list: list };
+      } catch (e) { daeun = null; }
+
+      /* 2027 세운 + 달 흐름 */
+      var seun = null, months = [];
+      try {
+        var y2027 = 2023 % 60;                    /* 2027 - 4 = 2023 → 丁未 */
+        var sgz = M.ganZhiOf(y2027);
+        seun = {
+          year: 2027, gan: sgz.gan, zhi: sgz.zhi,
+          ten: M.tenGodOf(dayGan, sgz.ganIndex),
+          gan_el: M.GAN_EL[sgz.ganIndex], zhi_el: M.ZHI_EL[sgz.zhiIndex],
+          chung_day: (sgz.zhiIndex + 6) % 12 === d.zhiIndex,
+          hap_day: yukhap(sgz.zhiIndex) === d.zhiIndex,
+          hyeong_day: hyeongPair(sgz.zhiIndex, d.zhiIndex)
+        };
+        for (var mk = 0; mk < 12; mk++) {
+          var mi = (y2027 * 12 + (2 + mk)) % 60;   /* 寅월부터 */
+          var mgz = M.ganZhiOf(mi);
+          var mz = mgz.zhiIndex;                   /* 寅=2월 … 亥=11월 · 子=12월 · 丑=1월 */
+          var monthNo = mz === 0 ? 12 : (mz === 1 ? 1 : mz);
+          months.push({
+            month: monthNo,
+            gan: mgz.gan, zhi: mgz.zhi,
+            ten: M.tenGodOf(dayGan, mgz.ganIndex),
+            chung_day: (mgz.zhiIndex + 6) % 12 === d.zhiIndex,
+            hap_day: yukhap(mgz.zhiIndex) === d.zhiIndex
+          });
+        }
+      } catch (e) { }
+
+      var groups = { '비겁': 0, '식상': 0, '재성': 0, '관성': 0, '인성': 0 };
+      function groupOf(t) {
+        if (!t) return '';
+        if (/비견|겁재/.test(t)) return '비겁';
+        if (/식신|상관/.test(t)) return '식상';
+        if (/편재|정재/.test(t)) return '재성';
+        if (/편관|정관/.test(t)) return '관성';
+        if (/편인|정인|인성/.test(t)) return '인성';
+        return '';
+      }
+      var tenList = [];
+      ['year', 'month', 'day', 'time'].forEach(function (k) {
+        var x = pil(p[k]);
+        if (!x) return;
+        tenList.push({ pos: k, gan: x.gan, zhi: x.zhi, ten_gan: x.ten_gan, ten_zhi: x.ten_zhi });
+        var g1 = groupOf(x.ten_gan); if (g1) groups[g1] += 1;
+        var g2 = groupOf(x.ten_zhi); if (g2) groups[g2] += 1;
+      });
+
+      var counts = res.counts || {};
+      var sorted = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+
+      return {
+        v: 1,
+        built_at: new Date().toISOString(),
+        name: (res.input && res.input.name) || '',
+        gender: res.input && res.input.gender === 'M' ? '남' : '여',
+        time_known: !!(res.input && res.input.timeKnown),
+        solar: { y: res.solar.y, m: res.solar.m, d: res.solar.d },
+        pillars: { year: pil(p.year), month: pil(p.month), day: pil(p.day), time: pil(p.time) },
+        day_master: { gan: d.gan, gan_ko: M.GAN_KO[d.ganIndex], element: M.GAN_EL[d.ganIndex], hun: M.GAN_HUN[d.ganIndex] },
+        counts: counts,
+        percents: res.percents || {},
+        strongest: sorted.slice(0, 2),
+        weakest: sorted.slice(-2).reverse(),
+        ten_gods: tenList,
+        ten_groups: groups,
+        daeun: daeun,
+        seun: seun,
+        months: months,
+        jieqi: res.jieqi ? { prev: res.jieqi.prev, next: res.jieqi.next } : null
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+  function yukhap(i) {
+    var m = { 0: 1, 1: 0, 2: 11, 11: 2, 3: 10, 10: 3, 4: 9, 9: 4, 5: 8, 8: 5, 6: 7, 7: 6 };
+    return m[i];
+  }
+  function hyeongPair(a, b) {
+    /* 충추戌未 · 寅巳申 · 子卯 형 — 방향은 상관없이 짝만 본다 */
+    var g = [
+      [1, 10], [10, 1], [7, 10], [10, 7], [1, 7], [7, 1],
+      [2, 5], [5, 2], [2, 8], [8, 2], [5, 8], [8, 5],
+      [0, 3], [3, 0]
+    ];
+    for (var i = 0; i < g.length; i++) if (g[i][0] === a && g[i][1] === b) return true;
+    return false;
+  }
+
+  function computeSnapshot(o) {
+    var res = window.Manse.compute(o);
+    var snap = buildSnapshot(res);
+    if (!snap) throw new Error('사주 값을 정리하지 못했어요 — 입력을 다시 확인해 주세요.');
+    return { res: res, snap: snap };
+  }
+
+  /* ── 입력 → 감정서 ───────────────────────────── */
+  function collect() {
+    var birth = ($('svcBirth').value || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birth)) throw new Error('생년월일을 골라 주세요.');
+    var b = birth.split('-');
+    var unknown = $('svcTimeUnknown').checked;
+    var tv = ($('svcTime').value || '').trim();
+    if (!unknown && !/^\d{2}:\d{2}$/.test(tv)) {
+      throw new Error('태어난 시각을 넣어 주세요 — 모르면 ‘시각은 몰라요’에 체크해 주세요.');
+    }
+    var reg = window.Manse.REGIONS.filter(function (x) { return x.key === $('svcRegion').value; })[0];
+    return {
+      name: ($('svcName').value || '').trim(),
+      gender: gender,
+      calendar: cal === 'solar' ? 'solar' : 'lunar',
+      leap: cal === 'leap',
+      y: Number(b[0]), m: Number(b[1]), d: Number(b[2]),
+      timeKnown: !unknown,
+      hh: unknown ? 12 : Number(tv.slice(0, 2)),
+      mm: unknown ? 0 : Number(tv.slice(3, 5)),
+      ziRule: $('svcZi').value || '23',
+      trueSolar: $('svcTrueSolar').checked,
+      dst: $('svcDst').checked,
+      region: reg ? reg.key : 'seoul',
+      longitude: reg ? reg.lon : 126.98
+    };
+  }
+
+  function make() {
+    var err = $('svcErr');
+    err.hidden = true; err.textContent = '';
+    if (!window.Manse || !window.SpecialGuideDraft) {
+      err.hidden = false;
+      err.textContent = '계산 엔진을 불러오지 못했어요 — 새로고침한 뒤 다시 시도해 주세요.';
+      return;
+    }
+    var o, made, text = '';
+    try {
+      o = collect();
+      made = computeSnapshot(o);
+    } catch (e) {
+      err.hidden = false;
+      err.textContent = (e && e.message) ? e.message : '사주를 계산하지 못했어요 — 입력을 다시 확인해 주세요.';
+      return;
+    }
+    try { text = window.SpecialGuideDraft.make(made.snap) || ''; } catch (e) { text = ''; }
+    if (!text.trim()) {
+      err.hidden = false;
+      err.textContent = '감정서를 만들지 못했어요 — 입력을 다시 확인해 주세요.';
+      return;
+    }
+    show(made.res, o, text);
+    saveRecent(o, made.res, text);
+    toast('감정서를 만들었어요 — 고친 뒤 복사해 보내면 됩니다.');
+  }
+
+  function pillarHtml(res) {
+    var p = res.pillars;
+    return [['year', '년'], ['month', '월'], ['day', '일'], ['time', '시']].map(function (x) {
+      var v = p[x[0]];
+      return '<span>' + x[1] + '<b>' + (v ? esc(v.gan + v.zhi) : '—') + '</b></span>';
+    }).join('');
+  }
+
+  function metaText(o, res) {
+    var s = res.solar, l = res.lunar;
+    var parts = [
+      o.name || '이름 없음',
+      o.gender === 'M' ? '남' : '여',
+      s.y + '.' + s.m + '.' + s.d + ' (양력)',
+      '음력 ' + (l.text || ''),
+      o.timeKnown ? '태어난 시각 ' + pad(o.hh) + ':' + pad(o.mm) : '시각 모름'
+    ];
+    return parts.filter(Boolean).join(' · ');
+  }
+
+  function show(res, o, text, keep) {
+    $('svcMeta').textContent = keep && keep.meta ? keep.meta : metaText(o, res);
+    $('svcPillars').innerHTML = keep && keep.pillars ? keep.pillars : pillarHtml(res);
+    $('svcDraft').value = text;
+    $('svcOut').hidden = false;
+    checkForbidden();
+    try { $('svcOut').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { }
+  }
+
+  function checkForbidden() {
+    var ta = $('svcDraft'), box = $('svcForbid');
+    if (!ta || !box) return;
+    var words = (window.SpecialGuideDraft && window.SpecialGuideDraft.FORBIDDEN) || [];
+    var hit = words.filter(function (w) { return ta.value.indexOf(w) >= 0; });
+    box.hidden = !hit.length;
+    box.textContent = hit.length ? '그대로 보내면 안 되는 표현이 들어 있어요: ' + hit.join(' / ') : '';
+  }
+
+  function copyDraft() {
+    var t = ($('svcDraft').value || '').trim();
+    if (!t) { toast('먼저 감정서를 만들어 주세요.'); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () {
+        toast('감정서를 복사했어요 — 카톡에 붙여 넣으세요.');
+      }, selectDraft);
+      return;
+    }
+    selectDraft();
+  }
+  function selectDraft() {
+    var ta = $('svcDraft');
+    try { ta.focus(); ta.select(); } catch (e) { }
+    toast('복사가 막혀 있어요 — 본문을 길게 눌러 직접 복사해 주세요.');
+  }
+
+  /* ── 최근 5건 — 이 브라우저에만 ───────────────── */
+  function loadStore() {
+    try {
+      var raw = localStorage.getItem(STORE);
+      recents = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(recents)) recents = [];
+    } catch (e) { recents = []; }
+  }
+  function saveStore() {
+    try { localStorage.setItem(STORE, JSON.stringify(recents.slice(0, MAX))); } catch (e) { }
+  }
+  function saveRecent(o, res, text) {
+    var now = new Date();
+    var birth = o.y + '-' + pad(o.m) + '-' + pad(o.d);
+    var item = {
+      at: now.getTime(),
+      when: (now.getMonth() + 1) + '.' + now.getDate() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()),
+      name: o.name || '',
+      birth: birth,
+      calLabel: CAL_LABEL[cal] || '양력',
+      meta: $('svcMeta').textContent,
+      pillars: $('svcPillars').innerHTML,
+      text: text
+    };
+    recents = recents.filter(function (x) { return !(x && x.name === item.name && x.birth === item.birth); });
+    recents.unshift(item);
+    recents = recents.slice(0, MAX);
+    saveStore();
+    renderRecents();
+  }
+  function renderRecents() {
+    var box = $('svcRecent'), list = $('svcRecentList');
+    if (!box || !list) return;
+    if (!recents.length) { box.hidden = true; list.innerHTML = ''; return; }
+    box.hidden = false;
+    list.innerHTML = recents.map(function (r, i) {
+      return '<li><button type="button" class="svc-recent__open" data-i="' + i + '">' +
+        '<b>' + esc(r.name || '이름 없음') + '</b>' +
+        '<span>' + esc((r.calLabel || '') + ' ' + (r.birth || '')) + '</span>' +
+        '<i>' + esc(r.when || '') + '</i></button></li>';
+    }).join('');
+  }
+
+  function bind() {
+    var card = $('svcCard');
+    if (!card) return;
+
+    var sel = $('svcRegion');
+    if (window.Manse && sel) {
+      sel.innerHTML = window.Manse.REGIONS.map(function (r) {
+        return '<option value="' + r.key + '">' + esc(r.name) + '</option>';
+      }).join('');
+      sel.value = 'seoul';
+    }
+
+    $('svcCal').addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b || !b.getAttribute('data-cal')) return;
+      cal = b.getAttribute('data-cal');
+      Array.prototype.forEach.call(this.children, function (c) {
+        var on = c === b;
+        c.classList.toggle('is-on', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+    $('svcGenderBox').addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b || !b.getAttribute('data-gender')) return;
+      gender = b.getAttribute('data-gender');
+      Array.prototype.forEach.call(this.children, function (c) {
+        var on = c === b;
+        c.classList.toggle('is-on', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+    $('svcTimeUnknown').addEventListener('change', function () {
+      $('svcTime').disabled = this.checked;
+      if (this.checked) $('svcTime').value = '';
+    });
+    $('svcMake').addEventListener('click', make);
+    $('svcDraft').addEventListener('input', checkForbidden);
+    $('svcCopy').addEventListener('click', copyDraft);
+    $('svcEmpty').addEventListener('click', function () {
+      $('svcDraft').value = '';
+      checkForbidden();
+      try { $('svcDraft').focus(); } catch (e) { }
+    });
+    $('svcRecent').addEventListener('click', function (e) {
+      var b = e.target.closest('.svc-recent__open');
+      if (!b) return;
+      var r = recents[Number(b.getAttribute('data-i'))];
+      if (!r) return;
+      $('svcMeta').textContent = r.meta || '';
+      $('svcPillars').innerHTML = r.pillars || '';
+      $('svcDraft').value = r.text || '';
+      $('svcOut').hidden = false;
+      checkForbidden();
+      toast('최근에 만든 감정서를 불러왔어요.');
+    });
+    $('svcRecentClear').addEventListener('click', function () {
+      if (!recents.length) return;
+      if (!confirm('이 브라우저에 남은 최근 감정서 기록을 지울까요?')) return;
+      recents = [];
+      saveStore();
+      renderRecents();
+      toast('기록을 지웠어요.');
+    });
+
+    loadStore();
+    renderRecents();
+  }
+
+  /* 콘솔 확인용 — 같은 입력으로 감정서를 만들 수 있다 */
+  window.YoonSvcDraft = {
+    buildSnapshot: buildSnapshot,
+    draft: function (o) { return window.SpecialGuideDraft.make(computeSnapshot(o).snap); }
+  };
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })();
