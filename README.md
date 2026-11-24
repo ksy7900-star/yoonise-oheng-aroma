@@ -3509,9 +3509,9 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 승인은 `reviewing` 으로만 바뀐다 — 손님 앱의 4단계 표시는 3번째 칸(`준비 중`)에 머물다 `전달 완료` 를 눌러야 4번째로 간다. 가이드 본문은 승인 즉시 열린다.
 - 가이드를 고쳐 다시 승인하면 손님 앱도 다음 방문(또는 60초 폴링)에 고친 본문으로 바뀐다.
 
-## §128. ✍️ 감정서(특별 가이드 초안) — 짧게·사람 말투로 재세팅(v6) (?v=20261125k, 2026-11-25)
+## §128. ✍️ 감정서(특별 가이드 초안) — 짧게·사람 말투로 재세팅(v6) (?v=20261125l, 2026-11-25)
 
-자산: `calendar/assets/special-guide-draft.js`(v6) · `calendar/yoon-key/index.html`(`?v=` 한 줄) · 커밋 `956e3f1`·`003de66`·`1292ab0`
+자산: `calendar/assets/special-guide-draft.js`(v6) · `calendar/yoon-key/index.html`(`?v=` 한 줄) · 커밋 `956e3f1`·`003de66`·`1292ab0`·`0ced8e1`
 
 ### 1. 대표님 지적 (그대로)
 > `"72이시간 결제 하면 감정서 주는거에 아직 까지 ai느낌이고 설명이 너무길어"`
@@ -3541,9 +3541,9 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 뼈대 | 표제·인사·마음 짚기 도입·`님이 약해서가 아니에요`·서명 — 10명 모두 동일(고정 뼈대) |
 | 길이 | 1,255~1,420자 (카톡 한 메시지에 여유) |
 | 표본 문서 | `work/sg-v6/out-v6.md` · 점검 `work/sg-v6/audit.py` (quickjs 로 생성기 직접 실행) |
-| 배포본 | `calendar/assets/special-guide-draft.js` 라이브 SHA-256 동일(`acf3d52…`) · Pages build `built`(커밋 `1292ab0`) |
-| 라이브 페이지 | `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/yoon-key/?v=20261125k` HTTP 200 · 페이지 안에서 `SpecialGuideDraft.make()` 직접 호출 → 1,337자 · 금지어 0 — 통과 |
-| 캐시 | 파일만 바꾸면 `?v=20261125j` 를 캐시한 기기가 옛 본문을 받는다 — 그래서 `?v=20261125k` 로 올렸다 |
+| 배포본 | `calendar/assets/special-guide-draft.js` 라이브 SHA-256 동일(`248c3ad…`) · Pages build `built`(커밋 `0ced8e1`) |
+| 라이브 페이지 | `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/yoon-key/?v=20261125l` HTTP 200 · 페이지 안에서 `SpecialGuideDraft.make()` 직접 호출 → 1,337자 · 금지어 0 — 통과 |
+| 캐시 | 파일만 바꾸면 옛 `?v=` 를 캐시한 기기가 예전 본문을 받는다(실제로 `j` 로 확인) — 내용이 바뀔 때마다 `?v=` 를 올린다. 지금은 `?v=20261125l` |
 
 ### 4. 남은 것
 - **신청 없는 사람(지인·서비스 대상자)에게 보낼 감정서를 직접 만드는 화면은 아직 없다.** `/calendar/yoon-key/` 특별 가이드 탭은 실제 신청 건의 저장된 사주 스냅샷으로만 초안을 만든다(`자격 직접 부여`도 이미 발급된 유료 코드가 있어야 하고, 손님 기기가 사주를 넣어야 한다). 관리자 화면에서 이름·생년월일·시각·성별·양/음력을 직접 넣어 같은 초안을 만드는 길은 확인만 해 두었다 — 만세력 엔진(`../assets/manse.js`) → 스냅샷 → 초안이 DB 없이 그대로 돌아가는 것을 재현으로 확인(`work/sg-v6/admin_manual_probe.py`, 1,320자 생성). 화면을 붙일지는 대표님 확인 뒤.
