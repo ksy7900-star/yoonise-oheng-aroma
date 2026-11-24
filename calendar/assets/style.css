@@ -802,6 +802,16 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
   font-size: 11.5px; font-weight: 600; color: var(--gold);
 }
 
+/* 🏷️ 구매 유도 버튼 아래 한 줄 — ① 특별 선물 기간(72시간)에만 (2026-11-24 #18672)
+   버튼을 키우지 않고, 가격과 증정 조건만 차분하게 읽히게 둔다. */
+.cta-guide {
+  display: block; max-width: 330px; margin: 8px auto 0;
+  font-size: 11px; line-height: 1.62; color: var(--ink-2);
+  text-align: center; word-break: keep-all;
+}
+.cta-guide[hidden] { display: none !important; }
+.foot .cta-guide { margin-top: 6px; }
+
 /* ── 2027 1년 대표 수호 부적 — 대문 히어로 ────────────────
    2026-11-22 개편 · 부적이 배너 정가운데 크게 서고, 글은 위아래로만.
    오행마다 깊은 먹빛 배경과 오라가 다르다:

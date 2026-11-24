@@ -208,6 +208,24 @@
     if (foot) foot.hidden = true;
     if (tg) tg.hidden = true;
     document.body.classList.remove('has-sgift', 'has-sgift-claim');
+    ctaSync();
+  }
+
+  /* ── 🏷️ 구매 유도 버튼 이름표 (2026-11-24 #18672) ───────────────
+     특별 선물 카드 안의 구매 버튼도 달력의 다른 구매 버튼과 같은 문구를 쓴다.
+     카드 내용·위치·디자인은 그대로이고, 버튼 이름만 맞춘다.
+     카드가 떠고 지는 순간마다 calendar.js 가 버튼 아래 안내 한 줄을 다시 맞추게 한다. */
+  function ctaBuy(phase) {
+    var c = window.YoonCalendar;
+    if (c && typeof c.ctaCopy === 'function') {
+      var x = c.ctaCopy(phase);
+      if (x && x.buy) return x.buy;
+    }
+    return '특별 선물과 전체 이용권 보기 →';
+  }
+  function ctaSync() {
+    var c = window.YoonCalendar;
+    if (c && typeof c.syncCtaCopy === 'function') { try { c.syncCtaCopy(); } catch (e) { } }
   }
 
   function refresh() {
@@ -241,6 +259,7 @@
     if (foot) foot.hidden = true;
     if (tg) tg.hidden = true;
     document.body.classList.remove('has-sgift');
+    ctaSync();
   }
 
   function renderOffer() {
@@ -260,6 +279,7 @@
     }
     paintClock();
     startTick();
+    ctaSync();
     /* 사주를 막 넣은 직후 — 카드가 위에 끼어들어 화면 밖으로 밀리지 않게 한 번만 내려 준다 */
     if (mem.scrollNext) {
       mem.scrollNext = false;
@@ -277,7 +297,7 @@
       '<div class="sgift__clock"><span class="sgift__clock-k">특별 선물까지 남은 시간</span>' +
       '<b class="sgift__clock-v" id="specialGiftLeft">—</b></div>' +
       '<div class="sgift__acts">' +
-      '<button type="button" class="sgift__buy" data-shop="pass">특별 선물 받고 1년 전체 열기 · 14,900원</button>' +
+      '<button type="button" class="sgift__buy" data-shop="pass">' + ctaBuy('gift') + '</button>' +
       '<button type="button" class="sgift__more" id="specialGiftMore">혜택 자세히 보기</button>' +
       '</div>';
   }
@@ -361,6 +381,7 @@
       body.innerHTML = claimHTML(d, step);
     }
     startPoll(d);
+    ctaSync();
   }
 
   function claimHTML(d, step) {
@@ -548,7 +569,7 @@
           return '<li><span class="sgiftm__n">' + (i + 1) + '</span><span class="sgiftm__b"><b>' + x[0] + '</b><span>' + x[1] + '</span></span></li>';
         }).join('') + '</ol>' +
         '<p class="sgiftm__how"><b>이렇게 전해 드려요</b><span>사주 계산 자료를 바탕으로 초안을 만들고, 윤이세가 직접 읽고 고친 뒤 카카오톡으로 개별 전달합니다. 정해진 미래를 말하는 글이 아니라, 2027년의 흐름을 조금 더 편하게 타기 위한 참고입니다.</span></p>' +
-        '<button type="button" class="sgift__buy" id="specialModalBuy">특별 선물 받고 1년 전체 열기 · 14,900원</button>' +
+        '<button type="button" class="sgift__buy" id="specialModalBuy">' + ctaBuy('gift') + '</button>' +
         '<p class="sgiftm__note">7일 무료 체험은 그대로 이용할 수 있어요.</p>';
     }
     m.hidden = false;
@@ -790,7 +811,9 @@
     buildSnapshot: buildSnapshot,
     uid: ensureUid,
     offerActive: offerActive,
-    payGiftHTML: payGiftHTML
+    payGiftHTML: payGiftHTML,
+    /* 🏷️ 구매 유도 단계 — 'gift' = 첫 사주 입력 후 72시간 이내·미결제 (달력 버튼 이름표가 이 값을 먼저 본다) */
+    ctaPhase: function () { return offerActive() ? 'gift' : ''; }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);

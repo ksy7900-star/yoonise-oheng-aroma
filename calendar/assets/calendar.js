@@ -824,6 +824,57 @@
     if (pb) pb.hidden = (mode !== 'over');
     var pf = $('#passFoot');
     if (pf) pf.hidden = (mode !== 'on');
+    syncCtaCopy();                        // 구매 유도 버튼 이름표 — 고객 상태 4가지 (#18672)
+  }
+
+  /* ── 🏷️ 구매 유도 버튼 이름표 — 고객 상태 4가지 (2026-11-24 김나영 님 #18672) ─────────────
+     ① 첫 사주 입력 후 72시간 이내      : '특별 선물과 전체 이용권 보기 →' + 아래 한 줄 안내
+     ② 72시간이 지난 뒤 7일 무료 체험 중 : '2027년 전체 이용권 살펴보기 →'
+     ③ 7일 무료 체험이 끝난 뒤          : '달력 계속 이용하기 · 14,900원 →'
+     ④ 이미 결제한 고객                 : 구매 버튼 없음 — 기존 이용권 활성 표시(전용 배지·코드 안내)만
+
+     · 바꾸는 것은 버튼 이름표와 그 아래 한 줄뿐이다.
+       버튼이 여는 결제 안내 팝업·팝업 안 결제 버튼·페이앱 링크·가격(14,900원)·상품은 그대로다.
+     · 어느 버튼이 어느 상태에 보이는지도 기존 그대로다
+       (#passBar = 체험 종료 상태에서 달력 위 / #passFoot = 체험 중 맨 아래 한 줄 /
+        특별 선물 기간에는 special-guide.js 의 특별 선물 카드가 그 자리를 맡는다). */
+  var CTA_COPY = {
+    gift:  { buy: '특별 선물과 전체 이용권 보기 →', note: '2027년 전체 이용권 14,900원 · 첫 72시간 구매 시 특별 가이드 증정' },
+    trial: { buy: '2027년 전체 이용권 살펴보기 →', note: '' },
+    over:  { buy: '달력 계속 이용하기 · 14,900원 →', note: '' },
+    paid:  { buy: '', note: '' }
+  };
+  /** 지금 화면의 구매 유도 단계 — ''(사주 전) | 'gift' | 'trial' | 'over' | 'paid' */
+  function ctaPhaseNow() {
+    if (!state.res) return '';
+    if (TEST_OPEN_ALL || !FREE_TRIAL_ENABLED || state.unlocked) return 'paid';
+    var sg = window.SpecialGuide;
+    if (sg && typeof sg.ctaPhase === 'function') {
+      try { if (sg.ctaPhase() === 'gift') return 'gift'; } catch (e) {}
+    }
+    return trialOver() ? 'over' : 'trial';
+  }
+  /** 상태에 맞춰 구매 유도 버튼 이름표와 안내 한 줄을 맞춘다 */
+  function syncCtaCopy() {
+    var phase = ctaPhaseNow();
+    var pbT = $('#passBarT'), pf = $('#passFoot');
+    var sgo = $('#specialFootGo'), sf = $('#specialFoot');
+    var sfGuide = $('#specialFootGuide'), pfGuide = $('#passFootGuide');
+
+    if (pbT) {
+      pbT.innerHTML = phase === 'over' ? '달력 계속 이용하기 · <b>14,900원</b>'
+        : (phase === 'gift' ? '특별 선물과 전체 이용권 보기'
+        : (phase === 'trial' ? '2027년 전체 이용권 살펴보기' : pbT.innerHTML));
+    }
+    if (pf && CTA_COPY[phase] && CTA_COPY[phase].buy) pf.textContent = CTA_COPY[phase].buy;
+    if (sgo) sgo.textContent = CTA_COPY.gift.buy;
+
+    /* ① 특별 선물 기간 — 버튼 아래 한 줄. 맨 아래 특별 선물 카드가 떠 있으면 그 아래에 두고,
+       카드가 없는 기기(서버에 닿지 못한 경우)에는 기존 한 줄 버튼 아래에 붙인다. */
+    var gift = phase === 'gift';
+    var footCard = !!(sf && !sf.hidden);
+    if (sfGuide) sfGuide.hidden = !(gift && footCard);
+    if (pfGuide) pfGuide.hidden = !(gift && !footCard);
   }
   /** 친구 초대(?ref=)로 온 손님 — 화면에 박혀 있는 '7일' 문구를 FREE_DAYS·액운 보너스에 맞춰 주고 웰컴 팝업에 보너스 한 줄을 붙인다 */
   function syncInviteCopy() {
@@ -9589,7 +9640,10 @@
     openShop: function (kind) { openShop(kind); },
     toast: toast,
     copyText: copyText,
-    openNoRef: openNoRef
+    openNoRef: openNoRef,
+    /* 🏷️ 구매 유도 버튼 문구 — special-guide.js 의 특별 선물 카드 버튼도 같은 이름표를 쓴다 (#18672) */
+    ctaCopy: function (phase) { return CTA_COPY[phase] || CTA_COPY.trial; },
+    syncCtaCopy: syncCtaCopy
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
