@@ -6051,9 +6051,40 @@
       payClaimStart(true);
       return;
     }
-    /* 결제창을 다녀왔는데 주소가 사라진 경우(앱을 다시 연 경우) — 30분 안의 예약이면 조용히 한 번 확인 */
+    /* 결제창을 다녀왔는데 주소가 사라진 경우(앱을 다시 연 경우) — 30분 안의 예약이면 조금 더 기다려 보고,
+       오래된 예약(가삼계좌 입금 등)이면 조용히 한 번만 확인해서 열려 있으면 바로 연다. */
     var o = payOrderRead();
-    if (o && (Date.now() - Number(o.t)) < 30 * 60 * 1000) payClaimStart(false);
+    if (!o) return;
+    if ((Date.now() - Number(o.t)) < 30 * 60 * 1000) payClaimStart(false);
+    else payClaimOnce(o);
+  }
+  /** 조용한 재확인 — 오래된 예약이 남은 기기가 다시 열렸을 때 승인됐는지만 한 번 묻는다 (화면 없음) */
+  function payClaimOnce(o) {
+    if (!window.fetch || payClaimBusy || !o) return;
+    payClaimBusy = true;
+    var body = { p_phone: o.phone, p_order_no: o.order_no };
+    var uid = clientUid();
+    if (uid) body.p_client_uid = uid;
+    var snap = paySajuSnapshot();
+    if (snap) body.p_saju = snap;
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(body)
+    };
+    fetch(SB_URL + '/rest/v1/rpc/claim_paid_unlock', opt).then(function (res) {
+      return res.text().then(function (t) {
+        var d = null;
+        try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+        payClaimBusy = false;
+        if (d && d.ok && d.status === 'paid' && d.code && d.tier) {
+          payOrderClear();
+          applyPaidUnlock(d);
+        } else if (d && d.ok && d.status === 'canceled') {
+          payOrderClear();
+        }
+      });
+    }, function () { payClaimBusy = false; });
   }
   /** 페이앱 returnurl — 결제를 마치면 매출전표의 '확인'을 누를 때 이 달력으로 되돌아온다.
      돌아온 주소(?paid=1)를 보면 서버에 결제 승인을 확인해 바로 열어 준다. */
