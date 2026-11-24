@@ -165,7 +165,8 @@
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
   var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 7일은 이 날부터 고정
-  var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
+  var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';
+  var CAL_FOLD_KEY = 'yoonise.timing.calFold.v1';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 마지막 선택 기억 (#18494)   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
   var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
@@ -389,7 +390,7 @@
     return [STORE_KEY, MAIN_KEY, UNLOCK_KEY, LEGACY_UNLOCK_KEY, TRIAL_KEY, STAMP_KEY,
       DIARY_KEY, DIARY_TRY_KEY, NIGHT_KEY, WELCOME_KEY, GUIDE_KEY, PAYWAIT_KEY, PHONE_KEY,
       PICK_KEY, CARE_TRIAL_KEY, BURN_KEY, SOUND_KEY, REF_KEY, INVITED_KEY,
-      INVITE_NOTICE_KEY, FIRST_SAJU_KEY];
+      INVITE_NOTICE_KEY, FIRST_SAJU_KEY, CAL_FOLD_KEY];
   }
   function clearAllAppData() {
     var named = appDataKeys();
@@ -5367,9 +5368,66 @@
     });
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+     2026-11-24 #18494 — '이번 달 나의 타이밍'에서 달력 접기·펼치기
+     · 요약(⚠️·⚡·🌿 일수)은 늘 보이고, 달력 본문(#calBody)만 접힌다.
+     · 처음(저장값 없음)은 펼침 — 첫 사주 입력 직후 달력이 바로 보이게.
+       그 뒤에는 사용자가 마지막에 고른 상태를 localStorage 에 기억한다.
+     · 접힌 채로 하단 고정 메뉴 '달력'·상단 '타이밍 달력'을 누르면 먼저 펼치고 그 자리로 간다.
+     · 달력 자체(색·필터·월 이동·날짜 팝업·잠금·결제)는 하나도 새로 만들지 않는다.
+     ══════════════════════════════════════════════════════════════════ */
+  var calFoldMemo = null;
+  function calFoldStored() {
+    if (calFoldMemo !== null) return calFoldMemo;
+    var v = null;
+    try { v = localStorage.getItem(CAL_FOLD_KEY); } catch (e) { v = null; }
+    calFoldMemo = (v === '1') ? true : (v === '0' ? false : null);
+    return calFoldMemo;
+  }
+  function calFoldPaint() {
+    var body = $('#calBody'), btn = $('#monthSpecGo'), card = $('#calCard');
+    if (!body) return false;
+    var open = !body.hidden;
+    if (card) card.classList.toggle('is-cal-closed', !open);
+    if (btn) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.innerHTML = open
+        ? '달력 접기 <span aria-hidden="true">↑</span>'
+        : '이번 달 중요한 날 보기 <span aria-hidden="true">→</span>';
+      btn.setAttribute('aria-label', open ? '이번 달 달력 접기' : '이번 달 중요한 날 보기 — 달력 펼치기');
+    }
+    return open;
+  }
+  /** 접기/펼치기 — save 면 기억하고, scroll 이면 그 자리로 부드럽게 맞춘다 */
+  function calSetFold(open, save, scroll) {
+    var body = $('#calBody'), card = $('#calCard');
+    if (!body) return;
+    var was = !body.hidden;
+    if (was === !!open) { calFoldPaint(); return; }
+    body.hidden = !open;
+    if (save) { calFoldMemo = !!open; try { localStorage.setItem(CAL_FOLD_KEY, open ? '1' : '0'); } catch (e) { } }
+    calFoldPaint();
+    if (scroll && card) {
+      /* 접을 때 문서가 짧아져 스크롤이 튀지 않게 — 카드가 화면 위로 지나갔으면 카드 위로 붙인다 */
+      var top = card.getBoundingClientRect().top;
+      if (!open) { if (top < 0) jumpToEl(card); }
+      else {
+        var grid = $('#calGrid');
+        if (grid) jumpToEl(grid);
+      }
+    }
+  }
+  function calToggleFold() { calSetFold(!($('#calBody') && !$('#calBody').hidden), true, true); }
+  function calInitFold() {
+    var stored = calFoldStored();
+    calSetFold(stored === null ? true : stored, false, false);   // 저장값이 없으면 펼침
+  }
+
   function jumpToSection(kind) {
     /* #18405 — 기능 카드는 접힌 채 시작한다. 그 카드로 가라는 요청이면 먼저 펼친다. */
     if (kind === 'burn' || kind === 'care' || kind === 'duo') accOpenOnly(kind);
+    /* #18494 — 달력은 접혀 있어도 '달력'을 눌렀으면 먼저 펼친다 */
+    if (kind === 'cal') calSetFold(true, true, false);
     var target = kind === 'burn' ? $('#burnCard')
       : (kind === 'care' ? $('#careCard') : (kind === 'duo' ? $('#duoCard') : null));
     if (!target && kind === 'cal') {
@@ -8820,6 +8878,7 @@
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
     accInit();                                // #18405 — 기능 카드는 기본 접힘
+    calInitFold();                            // #18494 — 달력 접힘은 마지막 선택(없으면 펼침)
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
     if (LITE_MODE) { document.body.classList.add('is-lite'); toggleNatal(false); }   // 2.0 첫 화면 — 원국표는 접힌 채로 시작
     else {
@@ -9018,17 +9077,10 @@
       }
       var qn = e.target.closest('[data-qnav]');
       if (qn) { e.preventDefault(); onQuickNav(qn.getAttribute('data-qnav')); return; }
-      /* 이번 달 나의 타이밍 → 달력 날짜 그리드로 바로 (2026-11-24 #18370) */
+      /* 이번 달 나의 타이밍 → 달력 펼치기/접기 (2026-11-24 #18370 · #18494) */
       if (e.target.closest('#monthSpecGo')) {
         e.preventDefault();
-        var grid = $('#calGrid');
-        jumpToEl(grid);
-        if (grid) {
-          grid.classList.remove('is-spot');
-          void grid.offsetWidth;
-          grid.classList.add('is-spot');
-          setTimeout(function () { grid.classList.remove('is-spot'); }, 1500);
-        }
+        calToggleFold();
         return;
       }
       var hj = e.target.closest('[data-hjump]');

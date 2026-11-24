@@ -6357,3 +6357,14 @@ body:not(.is-result) #heroJump { display: none !important; }
 }
 .is-acc-open .acc__chev { background: rgba(199, 154, 78, .16); color: #8A6B37; }
 #burnCard .acc__chev, #careCard .acc__chev { position: relative; z-index: 2; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   2026-11-24 #18494 — '이번 달 나의 타이밍' 안의 달력 접기·펼치기
+   달력 자체는 그대로 두고 이 자리에서 보이기만 한다.
+   ══════════════════════════════════════════════════════════════════════ */
+.calbody[hidden] { display: none !important; }
+#calCard.is-cal-closed .cal__note--top { display: none !important; }
+#calCard.is-cal-closed { padding-bottom: 16px; }
+.monthspec__go { gap: 6px; }
+.monthspec__go[aria-expanded="true"] { color: #8A5A16; }
+#calCard.is-cal-closed .monthspec { margin-bottom: 0; }

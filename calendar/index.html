@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124s">
+<link rel="stylesheet" href="assets/style.css?v=20261124t">
 </head>
 <body>
 
@@ -327,7 +327,7 @@
     <section class="talis-banner v2-parked" id="talisBanner" aria-label="2027 나의 1년 대표 수호 부적"></section>
 
     <!-- 월간 타이밍 캘린더 — 이 페이지의 주인공 -->
-    <section class="card card--cal" aria-labelledby="calTitle">
+    <section class="card card--cal" id="calCard" aria-labelledby="calTitle">
       <!-- 사용법 다시 보기 — 첫 방문 팝업을 닫은 뒤에도 여기서 언제든 (2026-11-21)
            2.0 (2026-11-23): 5색 사용법·케미 링크는 감춤 -->
       <div class="cal__toolbar v2-parked">
@@ -352,7 +352,7 @@
       <div class="monthspec" id="monthSpec">
         <p class="monthspec__t">이번 달 나의 타이밍</p>
         <p class="cal__summary" id="calSummary"></p>
-        <button type="button" class="monthspec__go" id="monthSpecGo">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
+        <button type="button" class="monthspec__go" id="monthSpecGo" aria-expanded="true" aria-controls="calBody">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
       </div>
       <p class="cal__nightrec" id="calNightRec" hidden></p>
 
@@ -366,6 +366,11 @@
         <span class="passbar__t">🔓 1년 전체 열기 · <b>14,900원</b></span>
         <span class="passbar__ar" aria-hidden="true">→</span>
       </button>
+
+      <!-- ▤ 달력 본문 — '이번 달 중요한 날 보기 / 달력 접기'로 접고 편다 (#18494)
+           요약(#monthSpec)과 결제 버튼(#passBar)은 늘 보이고, 이 안의 달력·모아보기·잠금만 숨는다.
+           달력 자체는 새로 만들지 않고 이 자리에서 보이기만 한다 — 색·필터·월 이동·날짜 팝업은 그대로. -->
+      <div class="calbody" id="calBody">
 
       <!-- 모아보기 — 2.0 에서는 3색(조심·기운UP·실속)으로 (2026-11-23).
            예전 2분류(조심할 날·좋은 날) 버튼도 지우지 않고 감춰 둔다 — 바로 복구 가능 -->
@@ -494,6 +499,8 @@
         <span class="diarybook__txt">내 성찰 기록 보기</span>
         <span class="diarybook__n" id="diaryBookCount" hidden></span>
       </button>
+      </div>
+      <!-- /#calBody -->
     </section>
 
     <!-- ───────── 🧩 2×2 바로가기 — `다른 기능도 바로 이용해 보세요` (2026-11-24 #18284)
@@ -937,12 +944,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124s"></script>
-<script src="assets/manse.js?v=20261124s"></script>
-<script src="assets/timing.js?v=20261124s"></script>
-<script src="assets/chars.js?v=20261124s"></script>
-<script src="assets/calendar.js?v=20261124s"></script>
-<script src="assets/special-guide.js?v=20261124s"></script>
-<script src="assets/pwa.js?v=20261124s"></script>
+<script src="vendor/lunar.js?v=20261124t"></script>
+<script src="assets/manse.js?v=20261124t"></script>
+<script src="assets/timing.js?v=20261124t"></script>
+<script src="assets/chars.js?v=20261124t"></script>
+<script src="assets/calendar.js?v=20261124t"></script>
+<script src="assets/special-guide.js?v=20261124t"></script>
+<script src="assets/pwa.js?v=20261124t"></script>
 </body>
 </html>
