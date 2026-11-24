@@ -9191,6 +9191,11 @@
   function openLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
     if (!p) return;
+    /* 2026-11-25 — 코드 칸(#lockPanel)은 접히는 달력(#calBody) 안에 있다.
+       달력이 접힌 채면 hidden 만 풀어도 화면에 나타나지 않으므로 먼저 달력을 펼친다.
+       이 자동 펼침은 사용자가 고른 접힘 상태를 덮어쓰지 않는다(저장 안 함). */
+    var cbody = $('#calBody');
+    if (cbody && cbody.hidden) calSetFold(true, false, false);
     /* 2.0 화면에서 감춰 둔 클래스가 남아 있어도 코드 칸은 반드시 열린다.
        입력칸만 열고 위의 큰 '입장 코드 입력' 바(#lockBtn)는 띄우지 않는다 — 메인 화면을 깔끔하게 (2026-11-23) */
     if (p.classList.contains('v2-parked')) p.classList.remove('v2-parked');
