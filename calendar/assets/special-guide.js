@@ -41,7 +41,8 @@
     scrollNext: false,
     pollTimer: 0,
     tickTimer: 0,
-    modalOpen: false
+    modalOpen: false,
+    consentChecked: false    // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
   };
 
   function esc(s) {
@@ -170,6 +171,28 @@
   function eventActive() {
     var f = loadFirst();
     return !!(f && f.deadline_ms && Date.now() < f.deadline_ms);
+  }
+
+  /* ── 결제 팝업 안 특별 선물 카드 — 붙일 자격이 있을 때만 ────────
+     · 아직 결제하지 않은 손님 + 첫 사주 입력 72시간 이내일 때만 그린다.
+     · 72시간이 지났거나 이미 결제한 기기, 이벤트 시작 전부터 쓰던 기기에는 아무것도 넣지 않는다.
+     · 팝업의 결제 흐름(가격·번호·카드 버튼)은 그대로 두고 한 칸만 보탠다. */
+  function offerActive() {
+    var c = cal();
+    if (!c || !c.res) return false;
+    if (mem.preexisting) return false;
+    if (paidNow(c)) return false;                 // 이미 1년 패스가 열린 기기
+    if (c.unlocked || (c.tier && c.tier !== '')) return false;   // 선물 코드·추천 보상
+    if (!eventActive()) return false;             // 72시간 만료
+    return true;
+  }
+  function payGiftHTML() {
+    if (!offerActive()) return '';
+    return '<div class="shopgift" id="shopGift">' +
+      '<p class="shopgift__k">🎁 첫 3일 결제 고객 특별 혜택</p>' +
+      '<p class="shopgift__t">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</p>' +
+      '<p class="shopgift__d">72시간 이내 결제 시 무료 증정 · 카카오톡 개별 전달</p>' +
+      '</div>';
   }
 
   /* ── 화면 ─────────────────────────────────────────── */
@@ -384,19 +407,35 @@
     var noBox = '<div class="sgift__no"><span>신청번호</span><b id="specialClaimNo">' + esc(no) + '</b>' +
       '<button type="button" class="sgift__copy" id="specialCopyNo">복사</button></div>';
 
+    /* ── 개인정보 동의 — 일반 달력('기기에만 저장')과 별개 단계 ────────
+       특별 가이드는 이름·생년월일시·성별·사주 분석 데이터를 서버에 저장하고 운영자가 확인해야 만들 수 있다.
+       그 사실을 이 단계에서 따로 동의받고, 동의 시각을 서버에 남긴다(consent_at).
+       동의하지 않으면 신청 버튼이 진행되지 않고, 서버도 mark_applied 를 거부한다. */
+    var canApplyStep = !delivered && d.status === 'eligible';
+    var consented = !!d.consent_at || !!mem.consentChecked;
+    var consent = canApplyStep
+      ? '<label class="sgift__consent" for="sgiftConsent">' +
+        '<input type="checkbox" id="sgiftConsent" data-sgift-consent' + (consented ? ' checked' : '') + '>' +
+        '<span class="sgift__consent-t"><b>[필수]</b> 특별 가이드 제작·전달을 위해 이름·생년월일시·성별·사주 분석 데이터를 서버에 저장하고 윤이세 운영자가 확인하는 데 동의합니다</span>' +
+        '</label>' +
+        (d.consent_at ? '<p class="sgift__consent-n">동의한 시각은 서버에 함께 남습니다.</p>' : '')
+      : '';
+
     var btn = delivered
       ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기</a>'
-      : '<button type="button" class="sgift__buy" id="specialApply">' +
+      : '<button type="button" class="sgift__buy" id="specialApply"' + (canApplyStep && !consented ? ' disabled' : '') + '>' +
         (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기') + '</button>';
 
     var hint = delivered ? '' :
-      '<p class="sgift__hint">' + (applied
-        ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
-        : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.') + '</p>';
+      '<p class="sgift__hint">' + (canApplyStep && !consented
+        ? '위 동의에 체크하면 신청할 수 있어요.'
+        : (applied
+          ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
+          : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')) + '</p>';
 
     return head +
       '<ol class="sgift__steps">' + steps + '</ol>' +
-      noBox + statusLine + btn + hint;
+      noBox + statusLine + consent + btn + hint;
   }
 
   function startPoll(d) {
@@ -418,6 +457,15 @@
     var d = mem.claim;
     var c = cal();
     if (!d || !d.claim_no) return;
+    /* 동의 없이는 신청이 진행되지 않는다 — 화면(버튼 비활성)과 서버(mark_applied 거부)가 함께 막는다. */
+    if (d.status === 'eligible' && !d.consent_at && !mem.consentChecked) {
+      var box = $('#sgiftConsent');
+      if (box) { try { box.focus({ preventScroll: true }); } catch (e) { } }
+      if (window.YoonCalendar && window.YoonCalendar.toast) {
+        window.YoonCalendar.toast('아래 동의에 체크해야 신청할 수 있어요');
+      }
+      return;
+    }
     var code = (c && c.code) || {};
     var msg = [
       '[윤이세 특별 가이드 신청]',
@@ -434,22 +482,42 @@
       if (window.YoonCalendar && window.YoonCalendar.openNoRef) window.YoonCalendar.openNoRef(KAKAO);
       else window.open(KAKAO, '_blank', 'noopener');
     };
-    rpc('special_guide_mark_applied', { p_client_uid: ensureUid(), p_claim_no: d.claim_no })
-      .then(function (r) {
-        if (r && r.apply_clicked_at) {
-          mem.claim.apply_clicked_at = r.apply_clicked_at;
-        }
-        if (window.YoonCalendar && window.YoonCalendar.copyText) {
-          window.YoonCalendar.copyText(msg, go);
-        } else {
-          try { navigator.clipboard.writeText(msg).then(function () { go(true); }, function () { go(false); }); }
-          catch (e) { go(false); }
-        }
-        renderClaim();
-      }, function () {
-        if (window.YoonCalendar && window.YoonCalendar.copyText) window.YoonCalendar.copyText(msg, go);
-        else go(false);
-      });
+
+    var mark = function () {
+      rpc('special_guide_mark_applied', { p_client_uid: ensureUid(), p_claim_no: d.claim_no })
+        .then(function (r) {
+          if (r && r.apply_clicked_at) {
+            mem.claim.apply_clicked_at = r.apply_clicked_at;
+          }
+          if (window.YoonCalendar && window.YoonCalendar.copyText) {
+            window.YoonCalendar.copyText(msg, go);
+          } else {
+            try { navigator.clipboard.writeText(msg).then(function () { go(true); }, function () { go(false); }); }
+            catch (e) { go(false); }
+          }
+          renderClaim();
+        }, function () {
+          if (window.YoonCalendar && window.YoonCalendar.copyText) window.YoonCalendar.copyText(msg, go);
+          else go(false);
+        });
+    };
+
+    /* 동의 시각을 먼저 남기고 → 신청 표시 → 카톡 열기. 동의 기록이 실패하면 카톡을 열지 않는다. */
+    if (d.status === 'eligible' && !d.consent_at) {
+      rpc('special_guide_consent', { p_client_uid: ensureUid(), p_claim_no: d.claim_no, p_consent: true })
+        .then(function (r) {
+          if (!r || !r.ok || !r.consent_at) {
+            if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('동의 기록을 남기지 못했어요 — 잠시 뒤 다시 눌러 주세요');
+            return;
+          }
+          mem.claim.consent_at = r.consent_at;
+          mark();
+        }, function () {
+          if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('연결을 확인한 뒤 다시 눌러 주세요');
+        });
+      return;
+    }
+    mark();
   }
 
   function maskPhone(d) {
@@ -460,11 +528,11 @@
 
   /* ── 혜택 자세히 보기 팝업 ───────────────────────────── */
   var GUIDE_FIVE = [
-    ['2027년 한 해의 큰 흐름', '정미년의 기운이 내 사주와 만나는 지점을 먼저 짚어 드립니다.'],
-    ['타고난 결과 보완할 결', '여덟 글자에서 또렷한 힘과, 조금 더 챙기면 좋은 자리를 봅니다.'],
-    ['일·돈·관계에서 챙길 것', '내 힘이 어디에서 잘 쓰이고 어디에서 새는지 정리합니다.'],
-    ['2027년에 힘이 실리는 시기', '상반기·하반기의 큰 흐름과 움직이기 좋은 때를 짚어 드립니다.'],
-    ['윤이세가 직접 전하는 활용법', '생활에서 바로 해 볼 수 있는 세 가지로 마무리합니다.']
+    ['2027년 가장 집중해야 할 인생 영역', '한 해의 힘을 어디에 몰아야 남는지 한 곳으로 짚어 드립니다.'],
+    ['나에게 기회가 되는 상황과 활용 방법', '어떤 순간이 기회이고, 그때 어떻게 움직이면 좋은지 알려 드립니다.'],
+    ['반복적으로 주의해야 할 나의 행동 패턴', '좋은 흐름을 스스로 끊어 왔던 습관을 짚어 드립니다.'],
+    ['2027년을 위한 실천 조언 3가지', '생활에서 바로 해 볼 수 있는 세 가지로 마무리합니다.'],
+    ['윤이세가 전하는 개인 맞춤 응원 메시지', '사주를 읽은 사람으로서 꼭 전하고 싶은 한 마디를 담습니다.']
   ];
 
   function openModal() {
@@ -677,6 +745,22 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && mem.modalOpen) { e.preventDefault(); closeModal(); }
     });
+    /* [필수] 동의 체크 — 누를 때마다 신청 버튼과 안내 문구가 바뀐다 */
+    document.addEventListener('change', function (e) {
+      if (!e.target || e.target.id !== 'sgiftConsent') return;
+      mem.consentChecked = !!e.target.checked;
+      var b = $('#specialApply');
+      if (b) {
+        if (mem.consentChecked || (mem.claim && mem.claim.consent_at)) b.removeAttribute('disabled');
+        else b.setAttribute('disabled', '');
+      }
+      var h = $('#specialGift .sgift__hint');
+      if (h) {
+        h.textContent = mem.consentChecked
+          ? '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
+          : '위 동의에 체크하면 신청할 수 있어요.';
+      }
+    });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && mem.claim && mem.claim.claim_no) refresh();
     });
@@ -704,7 +788,9 @@
     calendarOpened: calendarOpened,
     refresh: refresh,
     buildSnapshot: buildSnapshot,
-    uid: ensureUid
+    uid: ensureUid,
+    offerActive: offerActive,
+    payGiftHTML: payGiftHTML
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);

@@ -5051,6 +5051,9 @@
       '<span class="payphone__hint">' + (consult
         ? '결제 확인에만 써요 · 이 기기에만 기억해요'
         : '결제 확인과 코드 발송에만 써요 · 이 기기에만 기억해요') + '</span>' +
+      (consult ? '' :
+        /* 결제 절차 한 줄 — 번호를 적은 김에 다음에 무슨 일이 일어나는지 한눈에 (2026-11-24) */
+        '<span class="payphone__flow"><b>결제 완료</b> → <b>입장 코드 확인</b>(카톡·화면) → <b>즉시 1년 전체 열림</b></span>') +
       '</label>';
   }
   function payPhoneVal() {
@@ -5593,7 +5596,10 @@
   function passShopCoreHTML() {
     return '<p class="shop__sub">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름 + 매일 1회 액운 태우기</p>' +
       passPriceHTML('2027 내 사주 타이밍 달력 · 1년 전체 패스') +
-      '<ul class="shop__list">' +
+      /* 🎁 첫 3일 결제 고객 특별 혜택 — 미결제 + 첫 사주 입력 72시간 이내일 때만 가격 카드 바로 아래 한 칸.
+         72시간이 지났거나 이미 결제한 기기에는 special-guide.js 가 빈 문자열을 돌려줘 아무것도 안 그린다. */
+      (window.SpecialGuide && window.SpecialGuide.payGiftHTML ? window.SpecialGuide.payGiftHTML() : '') +
+      '<ul class="shop__list shop__list--pass">' +
       '<li><b>2026년 11월 ~ 2027년 12월 14개월</b><span>내 사주로 하루씩, 날짜별 흐름을 전부</span></li>' +
       '<li><b>날짜별 조심 · 기운 UP · 실속</b><span>그날 피할 것과 챙길 것까지 한눈에</span></li>' +
       '<li><b>매일 1회 액운 태우기</b><span>하루 한 번, 적고 · 구기고 · 태워 보내기</span></li>' +
