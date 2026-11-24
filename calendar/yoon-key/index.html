@@ -2445,7 +2445,7 @@ body.locked{overflow:hidden}
     var footY = y + 54;
     var H = Math.ceil(footY + 70);
     var S = 2;                                  /* 고해상도(2배) — 1080 기준 폭 */
-    if (H * S > 8000) S = Math.max(1, Math.round((8000 / H) * 2) / 2);
+    if (H * S > 8000) S = Math.max(1, Math.floor((8000 / H) * 2) / 2);
 
     var cv = document.createElement('canvas');
     cv.width = Math.round(W * S);
@@ -2510,14 +2510,18 @@ body.locked{overflow:hidden}
 
   function canvasToBlob(cv) {
     return new Promise(function (res, rej) {
+      function fail() { rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.')); }
       try {
-        cv.toBlob(function (b) {
-          if (b && b.size > 0) res(b);
-          else rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.'));
-        }, 'image/png');
-      } catch (e) {
-        rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.'));
-      }
+        if (cv.toBlob) {
+          cv.toBlob(function (b) { if (b && b.size > 0) res(b); else fail(); }, 'image/png');
+          return;
+        }
+        /* toBlob 이 없는 옛 브라우저 — dataURL 을 직접 Blob 으로 */
+        var bin = atob(cv.toDataURL('image/png').split(',')[1]);
+        var u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        res(new Blob([u8], { type: 'image/png' }));
+      } catch (e) { fail(); }
     });
   }
 
