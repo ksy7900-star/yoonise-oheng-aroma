@@ -415,7 +415,6 @@
     if (!stem.hasDelay) L.push('거기다 ' + (overEl ? EL[overEl].delay : '해야 할 걸 알면서 "이따 하지" 하고 미루죠') + '.');
     if (lackEl && lackEl !== overEl && !stem.skipLack) L.push('그리고 ' + EL[lackEl].lackEmo + '.');
     L.push('2027년엔 그게 더 세져요. ' + ten.emt + '.');
-    L.push(nim + '이 약해서가 아니에요. 2027년이 그런 거예요.');
     L.push('');
 
     /* ── 1. 인생 영역 ─────────────────────────────────── */
