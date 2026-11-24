@@ -191,7 +191,7 @@
     return '<div class="shopgift" id="shopGift">' +
       '<p class="shopgift__k">🎁 첫 3일 결제 고객 특별 혜택</p>' +
       '<p class="shopgift__t">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</p>' +
-      '<p class="shopgift__d">72시간 이내 결제 시 무료 증정 · 카카오톡 개별 전달</p>' +
+      '<p class="shopgift__d">결제하시면 1년 달력이 바로 열리고, 72시간 맞춤 운세 가이드도 자동 접수돼요. 별도 신청 없이 카카오톡으로 보내드려요.</p>' +
       '</div>';
   }
 
@@ -397,8 +397,12 @@
   function claimHTML(d, step) {
     var delivered = d.status === 'delivered';
     var applied = !!d.apply_clicked_at;
+    /* 결제와 함께 자동 접수된 건 — 고객이 '신청하기'를 누른 적이 없다.
+       화면은 '자동 접수됐어요'로 열고, 신청 버튼 대신 선택형 카톡 채널 링크만 둔다. */
+    var auto = !delivered && step <= 1 && (d.eligibility_source === 'payment_auto' || d.auto_applied === true);
     var no = d.claim_no || '';
-    var steps = STEP_LABEL.map(function (label, i) {
+    var labels = auto ? ['자동 접수', '접수 완료', '준비 중', '전달 완료'] : STEP_LABEL;
+    var steps = labels.map(function (label, i) {
       var cls = i < step ? 'is-done' : (i === step ? 'is-now' : '');
       return '<li class="sgift__step ' + cls + '"><span class="sgift__step-n">' + (i + 1) + '</span>' +
         '<span class="sgift__step-t">' + label + '</span></li>';
@@ -414,18 +418,25 @@
           '<h2 class="sgift__title" id="specialGiftTitle">가이드를 준비하고 있어요</h2>' +
           '<p class="sgift__desc">윤이세가 사주를 직접 읽고 가이드를 고치는 중입니다.</p>' +
           '<p class="sgift__sub">준비가 끝나면 카카오톡으로 개별 전달해 드립니다.</p>'
-        : (step === 1
+        : (auto
           ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
-            '<h2 class="sgift__title" id="specialGiftTitle">신청이 접수되었습니다</h2>' +
-            '<p class="sgift__desc">윤이세가 신청 내용을 확인하고 있어요.</p>' +
-            '<p class="sgift__sub">가이드가 준비되면 카카오톡으로 개별 전달해 드립니다.</p>'
-          : '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
-            '<h2 class="sgift__title" id="specialGiftTitle">특별 선물 대상자로 확인되었습니다!</h2>' +
-            '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.</p>' +
-            '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 후 카카오톡으로 개별 전달해 드립니다.</p>'));
+            '<h2 class="sgift__title" id="specialGiftTitle">맞춤 운세 가이드가 자동 접수되었어요!</h2>' +
+            '<p class="sgift__desc">결제가 확인되어 별도 신청 없이 접수됐어요. 윤이세가 확인 후 카카오톡으로 보내드릴게요.</p>' +
+            '<p class="sgift__sub">보내드릴 때 카카오톡으로 연락드려요. 원하지 않으시면 카카오톡으로 알려 주세요.</p>'
+          : (step === 1
+            ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+              '<h2 class="sgift__title" id="specialGiftTitle">신청이 접수되었습니다</h2>' +
+              '<p class="sgift__desc">윤이세가 신청 내용을 확인하고 있어요.</p>' +
+              '<p class="sgift__sub">가이드가 준비되면 카카오톡으로 개별 전달해 드립니다.</p>'
+            : '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+              '<h2 class="sgift__title" id="specialGiftTitle">특별 선물 대상자로 확인되었습니다!</h2>' +
+              '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.</p>' +
+              '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 후 카카오톡으로 개별 전달해 드립니다.</p>')));
 
     var statusLine = '';
-    if (d.status === 'submitted') {
+    if (auto) {
+      statusLine = '<p class="sgift__state">🟢 자동 접수 완료 — 결제와 함께 접수됐어요. 가이드가 준비되면 카카오톡으로 보내 드립니다.</p>';
+    } else if (d.status === 'submitted') {
       statusLine = '<p class="sgift__state">신청이 접수되었습니다. 윤이세가 확인하고 있어요.</p>';
     } else if (step === 2) {
       statusLine = '<p class="sgift__state">지금 윤이세가 가이드를 준비하고 있어요. 준비되면 카카오톡으로 보내 드립니다.</p>';
@@ -454,15 +465,19 @@
 
     var btn = delivered
       ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기</a>'
-      : '<button type="button" class="sgift__buy" id="specialApply"' + (canApplyStep && !consented ? ' disabled' : '') + '>' +
-        (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기') + '</button>';
+      : (auto
+        ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기 (선택)</a>'
+        : '<button type="button" class="sgift__buy" id="specialApply"' + (canApplyStep && !consented ? ' disabled' : '') + '>' +
+          (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기') + '</button>');
 
     var hint = delivered ? '' :
-      '<p class="sgift__hint">' + (canApplyStep && !consented
-        ? '위 동의에 체크하면 신청할 수 있어요.'
-        : (applied
-          ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
-          : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')) + '</p>';
+      '<p class="sgift__hint">' + (auto
+        ? '가이드는 윤이세가 확인한 뒤 카카오톡으로 보내드려요. 문의는 카카오톡 채널로 남겨 주세요.'
+        : (canApplyStep && !consented
+          ? '위 동의에 체크하면 신청할 수 있어요.'
+          : (applied
+            ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
+            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'))) + '</p>';
 
     return head +
       '<ol class="sgift__steps">' + steps + '</ol>' +

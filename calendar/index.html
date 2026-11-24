@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124ae">
+<link rel="stylesheet" href="assets/style.css?v=20261125a">
 </head>
 <body>
 
@@ -225,6 +225,20 @@
       </div>
       <!-- 카톡에서 코드를 받아 돌아온 손님 — 1초 만에 입력칸으로 (2026-11-21) -->
       <button type="button" class="payback__code" id="payBackCode">🔑 코드 받았어요 · 바로 입력</button>
+    </div>
+
+    <!-- 💳 결제 확인 — 카드결제에서 돌아왔을 때 코드 입력 없이 바로 열어 준다 (2026-11-25) -->
+    <div class="paywait" id="payWait" hidden>
+      <div class="paywait__card" role="status" aria-live="polite">
+        <p class="paywait__ic" id="payWaitIc" aria-hidden="true">💳</p>
+        <h2 class="paywait__t" id="payWaitT">결제를 확인하고 있어요</h2>
+        <p class="paywait__d" id="payWaitD">보통 두세 초면 끝나요. 이 화면에서 잠시만 기다려 주세요.</p>
+        <div class="paywait__dots" id="payWaitDots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="paywait__acts" id="payWaitActs" hidden>
+          <button type="button" class="paywait__kakao" id="payWaitKakao">💬 카톡으로 코드 받기</button>
+          <button type="button" class="paywait__close" id="payWaitClose">닫기</button>
+        </div>
+      </div>
     </div>
 
     <div class="savedbar" id="savedBar">
@@ -991,12 +1005,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124ae"></script>
-<script src="assets/manse.js?v=20261124ae"></script>
-<script src="assets/timing.js?v=20261124ae"></script>
-<script src="assets/chars.js?v=20261124ae"></script>
-<script src="assets/calendar.js?v=20261124ae"></script>
-<script src="assets/special-guide.js?v=20261124ae"></script>
-<script src="assets/pwa.js?v=20261124ae"></script>
+<script src="vendor/lunar.js?v=20261125a"></script>
+<script src="assets/manse.js?v=20261125a"></script>
+<script src="assets/timing.js?v=20261125a"></script>
+<script src="assets/chars.js?v=20261125a"></script>
+<script src="assets/calendar.js?v=20261125a"></script>
+<script src="assets/special-guide.js?v=20261125a"></script>
+<script src="assets/pwa.js?v=20261125a"></script>
 </body>
 </html>

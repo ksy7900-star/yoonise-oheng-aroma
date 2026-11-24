@@ -5794,44 +5794,268 @@
     if (codeBtn) codeBtn.hidden = consultPay;     // 상담은 입장 코드가 없어요
     bar.hidden = false;
   }
-  /* 페이앱이 결제 완료 후 returnurl 로 되돌려 보낸 경우(?paid=1) —
-     결제하러 간 상품을 주소에 실어 두었으니, 세션이 끊겼어도 복귀 배너를 띄운다.
-     띄운 뒤에는 주소에서 paid=1 을 지워(새로고침해도 다시 뜨지 않게) 깔끔한 달력 주소로 되돌린다. */
-  function payReturnCheck() {
-    var q = '';
-    try { q = String(location.search || ''); } catch (e) { return; }
-    if (!/[?&]paid=1(&|$)/.test(q)) return;
-    var m = /[?&]o=([A-Za-z0-9-]+)/.exec(q);
-    var item = m ? decodeURIComponent(m[1]) : '';
-    if (!payWaitRead() && item && (payInfoOf(item) || /^care-/.test(item))) payWaitSave(item, '');
+  /* ── 결제하면 코드 입력 없이 바로 열린다 (2026-11-25) ─────────────────
+     ① 결제 직전에 서버에 일회성 주문 토큰(var2)을 예약한다 (payapp_prepare_order)
+     ② 페이앱이 결제 완료를 feedbackurl(Edge Function)로 서버에 알린다 → payapp_orders.state = 'paid'
+     ③ 이 화면이 돌아와(?paid=1) 그 토큰으로 "결제됐나"를 서버에 묻고(claim_paid_unlock),
+        확인되면 이 기기에 바로 열어 준다 — 6자리 코드도, 카톡 이동도 없다.
+     · 예약이 실패하거나 계좌이체·가상계좌처럼 서버 통보가 늦는 경우에는
+       지금까지처럼 카톡으로 코드를 받는 길이 그대로 남아 있다. */
+  var PAYORDER_KEY = 'yoonise.timing.payorder.v1';   // { item, phone, order_no, t } — 이 기기에만
+  var PAYORDER_MS = 7 * 24 * 60 * 60 * 1000;        // 일주일이 지난 예약은 잊는다
+  var PAYAPP_FEEDBACK_URL = SB_URL + '/functions/v1/payapp-feedback';
+  var payClaimBusy = false, payWaitTimer = 0, payWaitTries = 0;
+
+  /** 72시간 선물 신청서에 붙는 기기 키 — special-guide.js 와 같은 값 */
+  function clientUid() {
     try {
-      if (history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+      if (window.SpecialGuide && typeof SpecialGuide.uid === 'function') return SpecialGuide.uid();
     } catch (e) { }
+    try { return localStorage.getItem('yoonise.clientUid.v1') || ''; } catch (e) { return ''; }
   }
+  function paySajuSnapshot() {
+    try {
+      if (window.SpecialGuide && typeof SpecialGuide.buildSnapshot === 'function') return SpecialGuide.buildSnapshot(state.res);
+    } catch (e) { }
+    return null;
+  }
+  function payOrderSave(o) {
+    try { localStorage.setItem(PAYORDER_KEY, JSON.stringify(o)); } catch (e) { }
+  }
+  function payOrderRead() {
+    var o = null;
+    try { o = JSON.parse(localStorage.getItem(PAYORDER_KEY) || 'null'); } catch (e) { o = null; }
+    if (!o || !o.order_no || !o.phone || !o.t) return null;
+    if ((Date.now() - Number(o.t)) > PAYORDER_MS) { payOrderClear(); return null; }
+    return o;
+  }
+  function payOrderClear() { try { localStorage.removeItem(PAYORDER_KEY); } catch (e) { } }
+
+  /* 결제 예약 — 상품·금액은 서버가 정한다(브라우저가 보낸 금액은 쓰지 않는다) */
+  function payPrepareThen(item, phone, cb) {
+    var done = false;
+    function finish(o) { if (done) return; done = true; cb(o || null); }
+    if (!window.fetch) { finish(null); return; }
+    var body = { p_phone: phone, p_product: String(item) };
+    var uid = clientUid();
+    if (uid) body.p_client_uid = uid;
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(body)
+    };
+    var ctrl = null;
+    try { if (window.AbortController) { ctrl = new AbortController(); opt.signal = ctrl.signal; } } catch (e) { }
+    if (ctrl) setTimeout(function () { finish(null); }, 6000);   // 예약이 늦으면 예전 방식으로 연다
+    try {
+      fetch(SB_URL + '/rest/v1/rpc/payapp_prepare_order', opt).then(function (res) {
+        return res.text().then(function (t) {
+          var d = null;
+          try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+          finish(res.ok && d && d.ok && d.order_no ? d : null);
+        });
+      }, function () { finish(null); });
+    } catch (e) { finish(null); }
+  }
+
+  /* 결제창 열기 — 예약 토큰이 있으면 feedbackurl·var2 를 함께 보낸다 */
+  function payappLaunch(item, phone, info, order) {
+    PayApp.setTarget('_self');            /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
+    PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
+    var p = {
+      goodname: info.name,
+      price: String(order && order.price ? order.price : info.price),
+      recvphone: phone,                   /* 숫자만 — 결제 확인에 쓰는 번호 */
+      redirectpay: '1',                   /* 연락처 입력 화면 없이 결제수단 선택으로 직행 */
+      smsuse: 'n',                        /* 결제요청 문자는 보내지 않는다 */
+      charset: 'utf-8',
+      returnurl: payReturnUrl(item),      /* 결제 완료 후 이 달력으로 스스로 돌아온다 (뒤로가기 불필요) */
+      var1: String(item)                  /* 결제내역에서 상품 구분용 */
+    };
+    if (order && order.order_no) {
+      p.var2 = order.order_no;            /* 우리가 만든 일회성 주문 토큰 */
+      p.feedbackurl = PAYAPP_FEEDBACK_URL; /* 결제 완료를 서버가 먼저 받는다 */
+    }
+    /* skip_cstpage 는 넣지 않는다 — GitHub Pages 가 POST 를 405 로 막아 흰 화면이 된다 */
+    PayApp.setParam(p);
+    PayApp.payrequest();
+  }
+
   function payappGo(item, phone) {
     if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
     var info = payInfoOf(item);
     if (!info || !info.price || !phone) return false;
     payWaitSave(item, phone);
     rememberPhone(phone);
-    PayApp.setTarget('_self');            /* 팝업 대신 이 창 — 카톡 인앱 브라우저에서도 막히지 않게 */
-    PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
-    PayApp.setParam({
-      goodname: info.name,
-      price: String(info.price),
-      recvphone: phone,                   /* 숫자만 — 코드를 받으실 번호 */
-      redirectpay: '1',                   /* 연락처 입력 화면 없이 결제수단 선택으로 직행 */
-      smsuse: 'n',                        /* 결제요청 문자는 보내지 않는다 */
-      charset: 'utf-8',
-      returnurl: payReturnUrl(item),      /* 결제 완료 후 이 달력으로 스스로 돌아온다 (뒤로가기 불필요) */
-      var1: String(item)                  /* 결제내역에서 상품 구분용 */
+    if (!payPrepareSupported(item)) { payappLaunch(item, phone, info, null); return true; }
+    payPrepareThen(item, phone, function (order) {
+      if (order) payOrderSave({ item: String(item), phone: phone, order_no: order.order_no, t: Date.now() });
+      payappLaunch(item, phone, info, order);
     });
-    /* skip_cstpage 는 넣지 않는다 — GitHub Pages 가 POST 를 405 로 막아 흰 화면이 된다 */
-    PayApp.payrequest();
     return true;
   }
+  /* 자동 열림은 이용권 상품에만 — 1:1 상담은 신청서로 이어진다 */
+  function payPrepareSupported(item) { return !!payInfoOf(item) && !/^consult/.test(String(item)); }
+
+  /* ── 결제 확인 화면(오버레이) ─────────────────────────────── */
+  function payWaitUi(mode) {
+    var box = $('#payWait');
+    if (!box) return;
+    var ic = $('#payWaitIc'), t = $('#payWaitT'), d = $('#payWaitD');
+    var dots = $('#payWaitDots'), acts = $('#payWaitActs');
+    if (mode === 'hide') { box.hidden = true; return; }
+    box.hidden = false;
+    if (acts) acts.hidden = mode !== 'slow';
+    if (dots) dots.hidden = mode !== 'checking';
+    if (mode === 'checking') {
+      if (ic) ic.textContent = '💳';
+      if (t) t.textContent = '결제를 확인하고 있어요';
+      if (d) d.textContent = '보통 두세 초면 끝나요. 이 화면에서 잠시만 기다려 주세요.';
+    } else if (mode === 'paid') {
+      if (ic) ic.textContent = '🔓';
+      if (t) t.textContent = '1년 전체가 열렸어요';
+      if (d) d.textContent = '결제 확인 완료 — 2026년 11월부터 2027년 12월까지 전부 열렸어요.';
+    } else if (mode === 'canceled') {
+      if (ic) ic.textContent = '💳';
+      if (t) t.textContent = '결제가 취소됐어요';
+      if (d) d.textContent = '카드사 승인이 취소된 결제예요. 다시 결제하시면 바로 열어 드려요.';
+    } else if (mode === 'slow') {
+      if (ic) ic.textContent = '💳';
+      if (t) t.textContent = '결제 확인이 조금 늦어지고 있어요';
+      if (d) d.textContent = '카드사 승인이나 가상계좌 입금이 아직 도착하지 않았어요. 잠시 뒤 이 화면을 새로 고치면 그때 바로 열려요. 급하시면 카톡으로 코드를 받으셔도 됩니다.';
+    }
+  }
+  function payWaitAutoHide() {
+    clearTimeout(payWaitTimer);
+    payWaitTimer = setTimeout(function () { payWaitUi('hide'); }, 1600);
+  }
+
+  /** 결제 확인 → 열기 */
+  function payClaimStart(uiMode) {
+    var o = payOrderRead();
+    if (!o) {
+      if (uiMode) { payWaitUi('slow'); syncPayWaitKakao(''); }
+      return;
+    }
+    if (payClaimBusy) return;
+    payClaimBusy = true;
+    payWaitTries = 0;
+    if (uiMode) {
+      var pb0 = $('#payBack');       // 오버레이가 확인하는 동안 복귀 배너는 잠시 감춘다
+      if (pb0) pb0.hidden = true;
+      payWaitUi('checking');
+    }
+    payClaimStep(o, uiMode);
+  }
+  function payClaimStep(o, uiMode) {
+    if (!window.fetch) { payClaimDone(uiMode, null); return; }
+    var body = { p_phone: o.phone, p_order_no: o.order_no };
+    var uid = clientUid();
+    if (uid) body.p_client_uid = uid;
+    var snap = paySajuSnapshot();
+    if (snap) body.p_saju = snap;
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify(body)
+    };
+    fetch(SB_URL + '/rest/v1/rpc/claim_paid_unlock', opt).then(function (res) {
+      return res.text().then(function (t) {
+        var d = null;
+        try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+        payClaimHandle(o, uiMode, res.ok ? d : null);
+      });
+    }, function () { payClaimHandle(o, uiMode, null); });
+  }
+  function payClaimHandle(o, uiMode, d) {
+    if (d && d.ok && d.status === 'paid' && d.code && d.tier) {
+      payClaimDone(uiMode, d);
+      return;
+    }
+    if (d && d.ok && d.status === 'canceled') {
+      payClaimBusy = false;
+      payOrderClear();
+      if (uiMode) { payWaitUi('canceled'); payWaitAutoHide(); }
+      return;
+    }
+    /* 아직 승인 전(웹훅이 1~3초 늦게 온다) — 짧게 몇 번 더 물어본다 */
+    payWaitTries++;
+    if (payWaitTries < 7) {
+      var wait = payWaitTries < 3 ? 1200 : (payWaitTries < 5 ? 2000 : 3000);
+      setTimeout(function () { payClaimStep(o, uiMode); }, wait);
+      return;
+    }
+    payClaimBusy = false;
+    if (uiMode) {
+      payWaitUi('slow');
+      syncPayWaitKakao(o.item);
+    }
+  }
+  function payClaimDone(uiMode, d) {
+    payClaimBusy = false;
+    payOrderClear();
+    payWaitClear();
+    if (!d) { if (uiMode) { payWaitUi('slow'); } return; }
+    applyPaidUnlock(d);
+    if (uiMode) { payWaitUi('paid'); payWaitAutoHide(); }
+  }
+  /** 서버가 확인해 준 코드로 이 기기를 바로 연다 — 코드 입력·카톡 없음 */
+  function applyPaidUnlock(d) {
+    var pb = $('#payBack'); if (pb) pb.hidden = true;   // 복귀 배너는 필요 없다
+    saveUnlock({ code: d.code, tier: d.tier, phone: d.phone || '' });
+    if (d.phone) rememberPhone(d.phone);
+    state.mismatch = null;
+    syncPaidTier(d.tier);
+    syncLockUI();
+    syncTrialState();
+    render();
+    closeShop();
+    var who = d.phone ? maskPhone(d.phone) : '결제한 번호';
+    toast('🔓 결제 확인 완료 — ' + who + '로 1년 전체가 열렸어요');
+    sfxOpen();
+    try { if (window.SpecialGuide && SpecialGuide.refresh) SpecialGuide.refresh(); } catch (e) { }
+  }
+  function syncPayWaitKakao(item) {
+    var a = $('#payWaitKakao');
+    if (a) { a.hidden = false; }
+    var it = (payOrderRead() && payOrderRead().item) || item || 'pass';
+    var close = $('#payWaitClose');
+    if (close && !close.getAttribute('data-bind')) {
+      close.setAttribute('data-bind', '1');
+      close.addEventListener('click', function (e) {
+        e.preventDefault();
+        payWaitUi('hide');
+        if (/^consult/.test(String(it))) { consultTier = String(it) === 'consult-sig' ? 'signature' : 'onepoint'; openShop('consult'); }
+        else goKakaoOrder(it);
+      });
+    }
+  }
+
+  /* 페이앱이 결제 완료 후 returnurl 로 되돌려 보낸 경우(?paid=1) —
+     결제하러 간 상품을 주소에 실어 두었으니, 세션이 끊겼어도 복귀 배너를 띄운다.
+     띄운 뒤에는 주소에서 paid=1 을 지워(새로고침해도 다시 뜨지 않게) 깔끔한 달력 주소로 되돌린다.
+     2026-11-25 — 돌아오면 코드를 받기 전에 서버에 결제 승인을 먼저 물어보고,
+     확인되면 그 자리에서 전체를 연다(코드 입력 없음). */
+  function payReturnCheck() {
+    var q = '';
+    try { q = String(location.search || ''); } catch (e) { return; }
+    var paid = /[?&]paid=1(&|$)/.test(q);
+    var m = /[?&]o=([A-Za-z0-9-]+)/.exec(q);
+    var item = m ? decodeURIComponent(m[1]) : '';
+    if (!payWaitRead() && item && (payInfoOf(item) || /^care-/.test(item))) payWaitSave(item, '');
+    if (paid) {
+      try {
+        if (history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+      } catch (e) { }
+      payClaimStart(true);
+      return;
+    }
+    /* 결제창을 다녀왔는데 주소가 사라진 경우(앱을 다시 연 경우) — 30분 안의 예약이면 조용히 한 번 확인 */
+    var o = payOrderRead();
+    if (o && (Date.now() - Number(o.t)) < 30 * 60 * 1000) payClaimStart(false);
+  }
   /** 페이앱 returnurl — 결제를 마치면 매출전표의 '확인'을 누를 때 이 달력으로 되돌아온다.
-     돌아온 주소(?paid=1)를 보면 결과 맨 위에 '카톡으로 입장 코드 받기' 배너를 바로 띄운다. */
+     돌아온 주소(?paid=1)를 보면 서버에 결제 승인을 확인해 바로 열어 준다. */
   function payReturnUrl(item) {
     var base = '';
     try { base = location.origin + location.pathname; } catch (e) { base = ''; }
@@ -5841,17 +6065,15 @@
   function phoneFieldHTML(item) {
     var consult = /^consult/.test(String(item || ''));
     return '<label class="payphone" for="payPhone-' + esc(item) + '">' +
-      '<span class="payphone__lb"><b>' + (consult ? '📱 결제 확인용 휴대폰 번호' : '📱 입장 코드 받으실 휴대폰 번호') + '</b>' +
-      '<span>적으면 결제창이 한 단계 줄어요</span></span>' +
+      '<span class="payphone__lb"><b>📱 결제 확인용 휴대폰 번호</b>' +
+      '<span>' + (consult ? '결제 확인에만 써요' : '적으면 결제창이 한 단계 줄어요') + '</span></span>' +
       '<input class="payphone__inp" id="payPhone-' + esc(item) + '" type="tel" inputmode="numeric"' +
       ' autocomplete="tel" maxlength="13" placeholder="010-1234-5678"' +
       ' value="' + esc(payPhone) + '" data-pay-phone="' + esc(item) + '">' +
-      '<span class="payphone__hint">' + (consult
-        ? '결제 확인에만 써요 · 이 기기에만 기억해요'
-        : '결제 확인과 코드 발송에만 써요 · 이 기기에만 기억해요') + '</span>' +
+      '<span class="payphone__hint">결제 확인에만 써요 · 이 기기에만 기억해요</span>' +
       (consult ? '' :
-        /* 결제 절차 한 줄 — 번호를 적은 김에 다음에 무슨 일이 일어나는지 한눈에 (2026-11-24) */
-        '<span class="payphone__flow"><b>결제 완료</b> → <b>입장 코드 확인</b>(카톡·화면) → <b>즉시 1년 전체 열림</b></span>') +
+        /* 결제 절차 한 줄 — 번호를 적은 김에 다음에 무슨 일이 일어나는지 한눈에 (2026-11-24 → 11-25 자동 열림) */
+        '<span class="payphone__flow"><b>결제 완료</b> → <b>1년 전체 바로 열림</b> <span class="payphone__flow-n">코드 입력 없이</span></span>') +
       '</label>';
   }
   function payPhoneVal() {
@@ -6293,10 +6515,10 @@
   function cardNote(url, opts) {
     opts = opts || {};
     payNote((opts.direct
-      ? '카드결제 창으로 바로 넘어가요 — 결제를 마치면 이 화면으로 스스로 돌아와요.'
-      : '카드결제 창을 열었어요. 결제를 마치고 이 화면으로 돌아오시면 됩니다.') +
+      ? '카드결제 창으로 바로 넘어가요 — 결제를 마치면 이 화면으로 스스로 돌아오고, 결제가 확인되면 바로 열려요.'
+      : '카드결제 창을 열었어요. 결제를 마치고 이 화면으로 돌아오시면 결제를 확인해 바로 열어 드려요.') +
       (opts.phone
-        ? ' 결제 확인과 코드 발송은 적어 주신 번호로 해요.'
+        ? ' 결제 확인은 적어 주신 번호로 해요.'
         : ' 휴대폰 번호를 적으면 결제수단 선택 화면으로 바로 들어가요.') +
       (url ? ' <a class="pay__kakao" href="' + esc(url) + '" target="_blank" rel="noopener">결제창이 안 보이면 여기 누르기 →</a>' : ''));
   }
@@ -6365,8 +6587,8 @@
   /** 무료 체험 중이면 결제 팝업 상단에 '먼저 7일 무료' 안내 한 줄 — 결제 전에 체험부터 */
   function trialShopNote() {
     if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
-    if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
-    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 결제하신 번호에 묶인 <b>입장 코드</b>를 카톡으로 보내 드려요.</p>';
+    if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
+    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
   }
   /** 가격 한 줄 — 정가 취소선 → 14,900원 → 하루 40원 (팝업·잠금 카드 공통) */
   function passPriceHTML(prefix) {
@@ -6401,7 +6623,7 @@
       '<li><b>2026년 11월 ~ 2027년 12월 14개월</b><span>내 사주로 하루씩, 날짜별 흐름을 전부</span></li>' +
       '<li><b>날짜별 조심 · 기운 UP · 실속</b><span>그날 피할 것과 챙길 것까지 한눈에</span></li>' +
       '<li><b>매일 1회 액운 태우기</b><span>하루 한 번, 적고 · 구기고 · 태워 보내기</span></li>' +
-      '<li><b>기기에 바로 저장</b><span>회원가입 없이, 결제한 번호로 받은 코드로 열기</span></li>' +
+      '<li><b>결제하면 바로 열려요</b><span>카드결제는 코드 입력 없이, 이 기기에 바로 저장</span></li>' +
       '</ul>' +
       /* 2026-11-23 심플 결제 — 카드 주 버튼 하나 + 작은 계좌이체·코드 링크만.
          계좌이체를 고르면 안내 안에 '입금 확인 카톡 보내기'가 나오므로 큰 카톡 버튼은 두지 않는다. */
