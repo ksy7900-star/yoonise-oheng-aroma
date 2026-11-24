@@ -1421,7 +1421,7 @@ body.locked{overflow:hidden}
   var FORBIDDEN = ['반드시 성공한다', '무조건 돈이 들어온다', '큰 사고가 발생한다',
     '특정 시기에 질병이 발생한다', '사주 때문에 실패할 수밖에 없다'];
 
-  var data = null, current = null, busy = false;
+  var data = null, current = null, busy = false, saving = false;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -1802,16 +1802,18 @@ body.locked{overflow:hidden}
   }
 
   function saveDraft(approve) {
-    if (!current || !current.claim_no || busy) return;
+    if (!current || !current.claim_no) return;
+    /* 목록 새로고침(busy)과 별개로 둔다 — 초안 자동 저장이 도는 동안 눌러도 승인이 삼켜지지 않게 */
+    if (saving) { toast('저장 중이에요 — 1초 뒤에 다시 눌러 주세요.'); return; }
     var ta = $('#sgDraft');
     var text = ta ? ta.value : '';
     if (approve && !text.trim()) { alert('먼저 가이드 본문을 채워 주세요.'); return; }
-    busy = true;
+    saving = true;
     rpc('admin_special_guide_save', {
       p_pin: pin(), p_claim_no: current.claim_no,
-      p_ai_draft: current.ai_draft || '', p_admin_edited: text, p_approve: !!approve
+      p_ai_draft: current.ai_draft || text || '', p_admin_edited: text, p_approve: !!approve
     }).then(function (d) {
-      busy = false;
+      saving = false;
       if (!d || !d.ok) { alert('저장하지 못했어요 · ' + ((d && d.error) || '')); return; }
       current.admin_edited = text;
       current.status = d.status;
@@ -1822,7 +1824,7 @@ body.locked{overflow:hidden}
       if (approve) toast("승인됐어요. 손님 달력 앱에도 같은 가이드가 열렸어요. '카톡 복붙용 복사'로 보내신 뒤 '전달 완료'를 눌러 주세요.");
       else toast('초안을 저장했어요.');
     }, function (err) {
-      busy = false;
+      saving = false;
       alert('저장하지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
     });
   }
