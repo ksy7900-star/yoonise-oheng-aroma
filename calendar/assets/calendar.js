@@ -3843,6 +3843,19 @@
     calm: ['오늘은 크게 부딪히는 날이 아니에요.',
            '이런 조용한 날에 하나 정리해 두면, 바쁜 날 그게 든든한 밑천이 됩니다.']
   };
+  /* TODAY 카드의 두 번째 줄 — 팝업의 '피할 것·챙길 것'을 그대로 옮기지 않고,
+     오늘 바로 할 일 하나만 짧게 (2026-11-24 #18271: TODAY 는 요약만 맡는다) */
+  var HOOK_TODAY_DO = {
+    chung: '일정은 절반만, 답장은 한 박자 늦게',
+    hyeong: '확인은 두 번, 서명은 내일로',
+    hae: '톡보다 얼굴 보고, 부탁은 짧게',
+    gwiyin: '혼자 붙들든 일 하나, 오늘 꺼내 보세요',
+    hap: '미뤄 둔 연락 하나, 먼저 걸어 보세요',
+    wealth: '결제 버튼 앞에서 한 번만 멈춰 보세요',
+    doc: '미뤄 둔 서류 하나, 초안만 잡아 두세요',
+    jie: '이번 달 목표 한 줄만 정리해 두세요',
+    calm: '밀린 정리 하나만 끝내면 충분해요'
+  };
 
   /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 (2026-11-23 3차: 밝은 카드 + 자연스러운 상담가 말투) */
   function renderHook() {
@@ -3854,14 +3867,24 @@
     var name = String((state.res.input && state.res.input.name) || '').trim();
     var owner = name ? esc(name) + ' 님' : '내';
 
-    // ① 오늘 내 한 줄
+    // ① 오늘 — 간결한 요약: 하루의 결 한 줄 + 오늘 할 일 한 줄
+    //    (자세한 이유·피할 것·챙길 것은 `자세히 보기` → 오늘 날짜 팝업이 맡는다)
+    var info = infoFor(state.todayISO);
+    var p = info ? litePrimary(info) : { kind: 'calm' };
     var todayBox = $('#hookToday');
     if (todayBox) {
-      var info = infoFor(state.todayISO);
-      var p = info ? litePrimary(info) : { kind: 'calm' };
       var lines = HOOK_TODAY[p.kind] || HOOK_TODAY.calm;
-      todayBox.innerHTML = (name ? '<b class="hk-name">' + esc(name) + ' 님</b>, ' : '') + lines.join('<br>');
+      todayBox.innerHTML = (name ? '<b class="hk-name">' + esc(name) + ' 님</b>, ' : '') + lines[0];
     }
+    var dateEl = $('#hookTodayDate');
+    if (dateEl) dateEl.textContent = info ? fmtMD(info.iso) + ' ' + DOW_KO[info.dow] + '요일' : '';
+    var doEl = $('#hookTodayDo');
+    if (doEl) {
+      var doLine = HOOK_TODAY_DO[p.kind] || '';
+      doEl.innerHTML = doLine ? '<span class="hk__arw" aria-hidden="true">→</span>' + esc(doLine) : '';
+      doEl.hidden = !doLine;
+    }
+    renderTodayNight();
 
     // ② 2027 내 급소 — 내 원국이 2027년 기운과 어떻게 만나는지부터
     var yearBox = $('#hookYear');
@@ -3878,8 +3901,38 @@
         yearBox.innerHTML =
           '2027년은 ' + rel + '. ' + owner + ' 사주에서는 ' + line +
           (ms ? '<br>특히 <b class="hk-hl">' + ms + '</b>엔 ' + doLine : '');
+        /* 접힘 상태에서도 급소가 뭐지 궁금하게 — 조심할 달만 요약 줄에 작게 */
+        var peekEl = $('#hookFoldPeek');
+        if (peekEl) peekEl.textContent = ms ? '급소 ' + ms : '';
       }
     }
+  }
+
+  /* ── 🌙 첫 화면의 오늘 밤 1초 체크 상태 (2026-11-24 #18271) ─────────
+     TODAY 카드 안 한 줄이 오늘 기록의 유무를 바로 말한다(기록 전 / 기록 완료 · 고른 항목).
+     누르면 오늘 날짜 팝업이 열리고 그 안 1초 체크 칸으로 내려간다.
+     저장·수정 즉시 이 줄도 그 자리에서 바뀐다 — 팝업을 닫아도 다시 그리지 않고. */
+  function todayNightLabel(rec) {
+    if (!rec || (!rec.mood && !rec.memo)) return '';
+    if (!rec.mood) return '한 줄 메모';        // 버튼 없이 메모만 남긴 날
+    var info = infoFor(state.todayISO);
+    var moods = info ? nightMoodSet(info) : NIGHT_MOODS.calm;
+    var raw = String(moods[rec.mood] || '');   // '🛡️ 선 지켰다' → '선 지켰다'
+    return raw.replace(/^\S+\s*/, '') || '기록함';
+  }
+  function renderTodayNight() {
+    var chip = $('#todayNight'), st = $('#todayNightState');
+    if (!chip || !state.res) return;
+    var rec = nightOf(state.todayISO);
+    var label = todayNightLabel(rec);
+    var done = !!label;
+    chip.classList.toggle('is-done', done);
+    if (st) st.textContent = done ? '기록 완료 · ' + label : '기록 전';
+    var aria = done
+      ? '오늘 밤 1초 체크 기록 완료 — ' + label + '. 누르면 오늘 팝업에서 고치기'
+      : '오늘 밤 1초 체크 — 아직 기록 전. 누르면 오늘 팝업에서 기록하기';
+    chip.setAttribute('aria-label', aria);
+    chip.title = aria;
   }
 
   /** 맨 위 내 사주 카드 안 미니 원국 — 여덟 글자를 오행 색 칩으로 (2026-11-23 3차·4차)
@@ -3946,6 +3999,8 @@
     renderCalendar();
     renderBurnCard();
     renderDuo();
+    /* 🧭 고정형 이동 메뉴 — 달력이 열린 뒤에만 (2026-11-24 #18271) */
+    syncQuickNav();
     /* 🎁 첫 3일 특별 선물 — 상태(미구매·유료·자격)에 맞춰 맨 위 카드와 맨 아래 안내만 다시 그린다 */
     if (window.SpecialGuide) window.SpecialGuide.refresh();
   }
@@ -4556,6 +4611,7 @@
     nightSet(iso, next, memoEl ? memoEl.value : (prev.memo || ''));
     syncNightBtns(wrap, next);
     paintNightCell(iso);
+    renderTodayNight();          // 첫 화면 상태 줄도 그 자리에서 바로 바꾼다 (2026-11-24)
     if (next) sfxTap(1);
   }
   var nightMemoT = null;
@@ -4571,6 +4627,29 @@
       '<span class="diaryjump__txt">' + (saved ? '오늘 1줄 성찰 고치기' : '오늘 1줄 성찰 쓰기') + '</span>' +
       '<span class="diaryjump__arw" aria-hidden="true">↓</span>' +
       '</button>';
+  }
+
+  /** 오늘 밤 1초 체크 칸으로 — 오늘 팝업을 열고 그 안 1초 체크로 내려가 첫 버튼에 포커스 */
+  function jumpToNight() {
+    if (!modalBody) return;
+    var wrap = modalBody.querySelector('.nightcheck');
+    if (!wrap) return;
+    try { wrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    catch (e) { try { wrap.scrollIntoView(); } catch (e2) {} }
+    wrap.classList.remove('is-jump');
+    void wrap.offsetWidth;
+    wrap.classList.add('is-jump');
+    setTimeout(function () { if (wrap) wrap.classList.remove('is-jump'); }, 1500);
+    var first = wrap.querySelector('[data-night-mood]');
+    if (first) { try { first.focus({ preventScroll: true }); } catch (e) { try { first.focus(); } catch (e2) {} } }
+    sfxTap(1);
+  }
+  /** 첫 화면의 TODAY·1초 체크·고정 메뉴가 함께 쓰는 '오늘 밤 1초 체크로 가기' */
+  function openTodayNight() {
+    if (!state.res) return;
+    openDayModal(state.todayISO);      // 잠긴 날이면 여는 방법 안내 팝업이 그대로 뜬다
+    if (isLockedDay(state.todayISO)) return;
+    setTimeout(jumpToNight, 260);      // 팝업이 내용을 그리고 스크롤을 0으로 되돌린 뒤에
   }
 
   /** 점프 — 성찰 카드로 부드럽게 내려가 바로 쓸 수 있게 (이미 남긴 날은 고치기 상태로) */
@@ -4825,14 +4904,8 @@
     if (d) d.textContent = tier ? INVITE_PAID_SUB : LADDER_TEXT_FREE;
   }
 
-  /* ── 🧭 4칸 바로가기 — 누르면 그 자리로 부드럽게 (2026‑11‑22) ── */
-  function jumpToSection(kind) {
-    var target = kind === 'burn' ? $('#burnCard')
-      : (kind === 'care' ? $('#careCard') : null);
-    if (!target && kind === 'cal') {
-      var grid = $('#calGrid');
-      target = (grid && grid.closest) ? (grid.closest('.card--cal') || grid) : grid;
-    }
+  /* ── 🧭 바로가기 · 고정 메뉴 — 누르면 그 자리로 부드럽게 (2026‑11‑22 · 2026-11-24) ── */
+  function jumpToEl(target) {
     if (!target) return;
     var reduce = false;
     try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -4842,6 +4915,33 @@
     void target.offsetWidth;
     target.classList.add('is-jump-flash');
     setTimeout(function () { target.classList.remove('is-jump-flash'); }, 1300);
+  }
+  function jumpToSection(kind) {
+    var target = kind === 'burn' ? $('#burnCard')
+      : (kind === 'care' ? $('#careCard') : null);
+    if (!target && kind === 'cal') {
+      var grid = $('#calGrid');
+      target = (grid && grid.closest) ? (grid.closest('.card--cal') || grid) : grid;
+    }
+    jumpToEl(target);
+  }
+
+  /* ── 🧭 고정형 이동 메뉴 (2026-11-24 #18271) ───────────────────
+     달력이 열린 뒤에만 보인다. 팝업(z-index 120+)보다 아래(90)에 있고,
+     팝업이 열리면(body.is-modal-open) CSS가 한 번 더 숨긴다. */
+  function syncQuickNav() {
+    var nav = $('#quickNav'), res = $('#result'), jump = $('#heroJump');
+    if (!nav) return;
+    var on = !!(state.res && res && !res.hidden);
+    nav.hidden = !on;
+    if (jump) jump.hidden = !on;   // 제목 아래 3개 바로가기도 결과 화면에서만 (#18311)
+    document.body.classList.toggle('has-qnav', on);
+  }
+  function onQuickNav(kind) {
+    if (kind === 'today') { jumpToEl($('#todayCard') || $('#hook3')); return; }
+    if (kind === 'night') { openTodayNight(); return; }
+    if (kind === 'more') { jumpToEl($('#quick2x2')); return; }
+    jumpToSection('cal');
   }
 
   /* ── 앱 안 구입 팝업 (1년 패스 · 올인원 패키지 · 긴급 개운템) ──────
@@ -8433,13 +8533,51 @@
       });
     }
 
-    // 🧭 4칸 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미테스트는 링크)
+    // 🧭 4칸 바로가기 · 2×2 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미테스트는 링크)
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
       var jb = e.target.closest('[data-jump]');
       if (!jb) return;
       e.preventDefault();
       jumpToSection(jb.getAttribute('data-jump'));
+    });
+
+    /* 2026-11-24 #18271 — TODAY `자세히 보기` · 오늘 밤 1초 체크 상태 · 고정형 이동 메뉴 */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest) return;
+      if (e.target.closest('[data-today-open]')) {
+        e.preventDefault();
+        if (state.res) openDayModal(state.todayISO);
+        return;
+      }
+      if (e.target.closest('[data-today-night]')) {
+        e.preventDefault();
+        openTodayNight();
+        return;
+      }
+      var qn = e.target.closest('[data-qnav]');
+      if (qn) { e.preventDefault(); onQuickNav(qn.getAttribute('data-qnav')); return; }
+      var hj = e.target.closest('[data-hjump]');
+      if (hj) {
+        e.preventDefault();
+        var k = hj.getAttribute('data-hjump');
+        if (k === 'morning') jumpToEl($('#todayCard') || $('#hook3'));
+        else if (k === 'night') openTodayNight();
+        else jumpToSection('cal');
+      }
+    });
+    /* 글자를 입력하는 동안(키보드가 올라올 때)은 고정 메뉴를 잠시 비껸다 */
+    document.addEventListener('focusin', function (e) {
+      var t = e.target;
+      if (!t || !t.tagName) return;
+      var tag = t.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') document.body.classList.add('qnav-typing');
+    });
+    document.addEventListener('focusout', function (e) {
+      var t = e.target;
+      if (!t || !t.tagName) return;
+      var tag = t.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') document.body.classList.remove('qnav-typing');
     });
 
     // 대표 부적 — 배너 부적 톡 → 오라 번쩍 + 문구 / 크게 보기 버튼·배너 빈곳 → 모달 / 모달 안 부적·버튼 → 오늘 기운 받기
@@ -8454,9 +8592,10 @@
 
     /* 💎 액운 태우기 아래 '카톡 3초 연결하고 내 2027 수호 부적 받기' (2026-11-23 2차)
        · 이미 카톡으로 연결된 손님 → 그 자리에서 내 수호 부적 팝업을 크게 연다
-       · 아직 연결 전 → /calendar/member/ 로 보내 카카오 로그인 후 달력으로 돌아온다 */
+       · 아직 연결 전 → /calendar/member/ 로 보내 카카오 로그인 후 달력으로 돌아온다
+       2026-11-24: 2×2 바로가기의 `1년 수호부적` 카드도 같은 길로 ([data-talis-get]) */
     document.addEventListener('click', function (e) {
-      if (!e.target.closest || !e.target.closest('#talisGet')) return;
+      if (!e.target.closest || !e.target.closest('#talisGet, [data-talis-get]')) return;
       e.preventDefault();
       if (state.repTalis && hasSbSession()) { openTalisModal(); return; }
       location.href = './member/?autologin=1&next=talis';
@@ -8502,6 +8641,7 @@
         nightSet(iso, prev.mood || '', val);
         syncNightBtns(wrap, prev.mood || '');
         paintNightCell(iso);
+        renderTodayNight();      // 메모만 남겨도 첫 화면은 '기록 완료'로 (2026-11-24)
       }, 450);
     });
 
