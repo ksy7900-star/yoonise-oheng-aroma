@@ -374,6 +374,7 @@ body.locked{overflow:hidden}
 .svc-pillars{margin:6px 0 0; display:flex; gap:4px; flex-wrap:wrap; font-size:9.5px; font-weight:700; color:var(--mute)}
 .svc-pillars span{padding:3px 7px; border-radius:7px; background:#F8FAFC; border:1px solid var(--hair-soft)}
 .svc-pillars b{font-family:var(--serif); font-size:11.5px; font-weight:600; color:var(--ink); margin-left:0; letter-spacing:0}
+.svc-img-note{margin:8px 0 0; font-size:9.5px; line-height:1.65; font-weight:600; color:var(--mute); text-align:center}
 .svc-recent{margin-top:16px}
 .svc-recent__hd{margin:0 0 4px; font-size:10.5px; font-weight:800; color:var(--ink-2)}
 .svc-recent__hd span{font-weight:600; color:var(--mute)}
@@ -608,6 +609,11 @@ body.locked{overflow:hidden}
           <button type="button" class="primary" id="svcCopy">감정서 복사</button>
           <button type="button" id="svcEmpty">본문 비우기</button>
         </div>
+        <div class="sgbtns">
+          <button type="button" class="gold full" id="svcImgSave">도장 포함 이미지 저장</button>
+          <button type="button" class="full" id="svcImgShare" hidden>이미지로 공유하기 (카톡 등)</button>
+        </div>
+        <p class="svc-img-note">지금 본문에 고친 그대로, 서명과 직인까지 한 장 이미지(PNG)로 저장해요.</p>
         <div class="sgsign">
           <p class="sgsign__k">감정서 마지막 장</p>
           <img class="sgsign__seal" src="../assets/yoonise-seal.png?v=20261125m" alt="윤이세 직인" width="720" height="381" loading="lazy">
@@ -627,7 +633,7 @@ body.locked{overflow:hidden}
     <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125m<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125n<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 </div>
 
 <script>
@@ -2298,6 +2304,289 @@ body.locked{overflow:hidden}
     toast('복사가 막혀 있어요 — 본문을 길게 눌러 직접 복사해 주세요.');
   }
 
+  /* ── 도장 포함 이미지 (2026-11-25) ──────────────────────────────────────────
+     textarea 의 지금 글을 그대로, 1080 기준 폭 캔버스에 그리고 맨 아래에
+     「— 윤이세」와 직인(../assets/yoonise-seal.png, 같은 출처)을 찍어 PNG 로 만든다.
+     높이는 글 길이에 맞춰 계산하므로 잘리지 않는다. 화면(CSS)은 건드리지 않는다. */
+  var IMG = {
+    w: 1080, pad: 92, top: 104,
+    bg: '#FAF7F2', ink: '#2A2622', body: '#3B342C', soft: '#8C8279', gold: '#B08D57',
+    serif: '"Nanum Myeongjo","Noto Serif KR","AppleMyungjo","Batang","바탕",serif',
+    sans: '"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif'
+  };
+  var SEAL_SRC = '../assets/yoonise-seal.png?v=20261125m';
+  var sealPromise = null;
+
+  function loadSeal() {
+    if (sealPromise) return sealPromise;
+    sealPromise = new Promise(function (res, rej) {
+      var img = new Image();
+      img.onload = function () { res(img); };
+      img.onerror = function () {
+        sealPromise = null;
+        rej(new Error('직인 이미지를 불러오지 못했어요 — 새로고침한 뒤 다시 시도해 주세요.'));
+      };
+      img.src = SEAL_SRC;
+    });
+    return sealPromise;
+  }
+  function fontsReady() {
+    try {
+      if (document.fonts && document.fonts.ready) {
+        return document.fonts.ready.then(function () { }, function () { });
+      }
+    } catch (e) { }
+    return Promise.resolve();
+  }
+
+  /* 공백 단위로 줄바꿈. 한 단어가 폭을 넘으면 글자 단위로 자른다. */
+  function wrapText(ctx, text, maxW) {
+    var lines = [], cur = '';
+    function addWord(w) {
+      if (!w) return;
+      if (ctx.measureText(w).width <= maxW) {
+        if (!cur) { cur = w; return; }
+        var trial = cur + ' ' + w;
+        if (ctx.measureText(trial).width <= maxW) { cur = trial; return; }
+        lines.push(cur); cur = w; return;
+      }
+      if (cur) { lines.push(cur); cur = ''; }
+      var acc = '';
+      for (var i = 0; i < w.length; i++) {
+        var t = acc + w.charAt(i);
+        if (acc && ctx.measureText(t).width > maxW) { lines.push(acc); acc = w.charAt(i); }
+        else acc = t;
+      }
+      cur = acc;
+    }
+    String(text).split(' ').forEach(addWord);
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  /* 본문 → 그리는 단위(제목·소제목·본문·서명) */
+  function parseDraft(text) {
+    var raw = String(text).replace(/\r\n/g, '\n').split('\n');
+    var sigLine = '';
+    for (var i = raw.length - 1; i >= 0; i--) {
+      var t = raw[i].trim();
+      if (!t) continue;
+      if (/^[—–―-]\s*윤이세\s*$/.test(t)) sigLine = t;
+      break;
+    }
+    var blocks = [], seen = 0;
+    raw.forEach(function (line) {
+      var t = line.trim();
+      if (!t) return;
+      if (sigLine && t === sigLine) return;
+      var kind = 'body';
+      if (seen === 0 && /^『.*』$/.test(t)) kind = 'title';
+      else if (/^[1-9]\.\s/.test(t)) kind = 'head';
+      else if (seen === 1 && /^안녕하세요,/.test(t)) kind = 'greet';
+      blocks.push({ kind: kind, text: t });
+      seen += 1;
+    });
+    return { blocks: blocks, sig: sigLine || '— 윤이세' };
+  }
+
+  function drawDraft(seal, text) {
+    var W = IMG.w, pad = IMG.pad;
+    var maxW = W - pad * 2;
+    var m = document.createElement('canvas').getContext('2d');
+    if (!m) throw new Error('이 브라우저에서는 이미지를 만들 수 없어요 — 다른 브라우저로 열어 주세요.');
+    var ops = [];
+    var y = IMG.top;
+
+    function font(weight, size, family) { return weight + ' ' + size + 'px ' + family; }
+
+    function textBlock(str, opt) {
+      m.font = opt.font;
+      var lines = wrapText(m, str, opt.maxW || maxW);
+      for (var i = 0; i < lines.length; i++) {
+        y += opt.lh;
+        ops.push({ s: lines[i], x: opt.align === 'center' ? W / 2 : pad, y: y, font: opt.font, color: opt.color, align: opt.align || 'left' });
+      }
+      y += opt.gap || 0;
+    }
+
+    var parts = parseDraft(text);
+    // 상단 브랜드 표기
+    textBlock('Y O O N I S E', { font: font(600, 17, IMG.sans), color: IMG.gold, lh: 22, align: 'center', gap: 30, maxW: maxW });
+
+    parts.blocks.forEach(function (b) {
+      if (b.kind === 'title') {
+        textBlock(b.text, { font: font(600, 43, IMG.serif), color: IMG.ink, lh: 62, align: 'center', gap: 26, maxW: maxW - 30 });
+        ops.push({ rule: true, x: W / 2 - 40, y: y + 4, w: 80, h: 2, color: IMG.gold, alpha: 0.55 });
+        y += 46;
+      } else if (b.kind === 'head') {
+        y += 30;
+        textBlock(b.text, { font: font(700, 31, IMG.serif), color: IMG.ink, lh: 46, gap: 12 });
+      } else if (b.kind === 'greet') {
+        textBlock(b.text, { font: font(400, 32, IMG.sans), color: IMG.ink, lh: 54, gap: 20 });
+      } else {
+        textBlock(b.text, { font: font(400, 30, IMG.sans), color: IMG.body, lh: 51, gap: 14 });
+      }
+    });
+
+    /* 서명 + 직인 */
+    y += 34;
+    ops.push({ rule: true, x: pad, y: y, w: maxW, h: 1, color: 'rgba(120,102,80,.32)', alpha: 1 });
+    y += 62;
+    var nameFont = font(600, 42, IMG.serif);
+    m.font = nameFont;
+    var nameW = m.measureText(parts.sig).width;
+    var sealW = 250, sealH = Math.round(sealW * 381 / 720);
+    var gap = 24;
+    var gx = Math.max(pad, (W - (nameW + gap + sealW)) / 2);
+    ops.push({ s: parts.sig, x: gx, y: y, font: nameFont, color: IMG.ink, align: 'left' });
+    ops.push({ seal: true, x: gx + nameW + gap, y: y - 14 - sealH / 2, w: sealW, h: sealH, rot: -5 });
+    y += 40;
+
+    var footY = y + 54;
+    var H = Math.ceil(footY + 70);
+    var S = 2;                                  /* 고해상도(2배) — 1080 기준 폭 */
+    if (H * S > 8000) S = Math.max(1, Math.round((8000 / H) * 2) / 2);
+
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(W * S);
+    cv.height = Math.round(H * S);
+    var c = cv.getContext('2d');
+    if (!c) throw new Error('이 브라우저에서는 이미지를 만들 수 없어요 — 다른 브라우저로 열어 주세요.');
+    c.setTransform(S, 0, 0, S, 0, 0);
+    c.textBaseline = 'alphabetic';
+
+    /* 종이 바탕 + 아주 옅은 상단 빛 */
+    c.fillStyle = IMG.bg;
+    c.fillRect(0, 0, W, H);
+    var g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(255,253,248,.85)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0)');
+    g.addColorStop(1, 'rgba(233,222,205,.28)');
+    c.fillStyle = g;
+    c.fillRect(0, 0, W, H);
+
+    /* 얇은 이중 테두리 */
+    c.strokeStyle = 'rgba(150,126,94,.34)';
+    c.lineWidth = 1.4;
+    c.strokeRect(26, 26, W - 52, H - 52);
+    c.strokeStyle = 'rgba(150,126,94,.16)';
+    c.lineWidth = 0.8;
+    c.strokeRect(34, 34, W - 68, H - 68);
+
+    ops.forEach(function (o) {
+      if (o.rule) {
+        c.globalAlpha = o.alpha;
+        c.fillStyle = o.color;
+        c.fillRect(o.x, o.y, o.w, o.h);
+        c.globalAlpha = 1;
+        return;
+      }
+      if (o.seal) {
+        c.save();
+        c.translate(o.x + o.w / 2, o.y + o.h / 2);
+        c.rotate(o.rot * Math.PI / 180);
+        c.globalAlpha = 0.96;
+        c.drawImage(seal, -o.w / 2, -o.h / 2, o.w, o.h);
+        c.restore();
+        return;
+      }
+      c.font = o.font;
+      c.fillStyle = o.color;
+      c.textAlign = o.align;
+      c.fillText(o.s, o.x, o.y);
+    });
+
+    /* 바닥 작은 표기 */
+    c.font = font(500, 16, IMG.sans);
+    c.fillStyle = 'rgba(140,130,121,.85)';
+    c.textAlign = 'left';
+    c.fillText('윤이세사주', pad, footY);
+    c.textAlign = 'right';
+    c.fillText('2027년 맞춤 운세 활용 가이드', W - pad, footY);
+    c.textAlign = 'left';
+
+    return cv;
+  }
+
+  function canvasToBlob(cv) {
+    return new Promise(function (res, rej) {
+      try {
+        cv.toBlob(function (b) {
+          if (b && b.size > 0) res(b);
+          else rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.'));
+        }, 'image/png');
+      } catch (e) {
+        rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.'));
+      }
+    });
+  }
+
+  function safeFileName(s) {
+    return String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '').trim();
+  }
+
+  function buildImage() {
+    var text = ($('svcDraft').value || '').trim();
+    if (!text) return Promise.reject(new Error('먼저 감정서를 만들어 주세요.'));
+    var who = safeFileName(($('svcName').value || '').trim()) || '고객';
+    return Promise.all([loadSeal(), fontsReady()]).then(function (r) {
+      return canvasToBlob(drawDraft(r[0], text)).then(function (blob) {
+        var fname = '윤이세_감정서_' + who + '.png';
+        var file = null;
+        try { file = new File([blob], fname, { type: 'image/png' }); } catch (e) { file = null; }
+        return { blob: blob, file: file, name: fname };
+      });
+    });
+  }
+
+  function busyImage(on) {
+    var a = $('svcImgSave'), b = $('svcImgShare');
+    [a, b].forEach(function (x) { if (x) x.disabled = !!on; });
+    if (a) a.textContent = on ? '이미지 만드는 중…' : '도장 포함 이미지 저장';
+  }
+
+  function saveImage() {
+    busyImage(true);
+    buildImage().then(function (r) {
+      busyImage(false);
+      var url = URL.createObjectURL(r.blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = r.name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        try { a.remove(); } catch (e) { }
+        try { URL.revokeObjectURL(url); } catch (e) { }
+      }, 8000);
+      toast('이미지를 저장했어요 — 카톡에 사진으로 보내면 됩니다.');
+    }, function (e) {
+      busyImage(false);
+      toast((e && e.message) ? e.message : '이미지를 만들지 못했어요 — 다시 시도해 주세요.');
+    });
+  }
+
+  function shareImage() {
+    busyImage(true);
+    buildImage().then(function (r) {
+      busyImage(false);
+      if (!r.file || !navigator.share) { saveImage(); return; }
+      navigator.share({ files: [r.file], title: '윤이세 감정서' }).then(function () {
+        toast('공유 창을 열었어요 — 카톡을 고르시면 됩니다.');
+      }, function () { /* 사용자가 닫음 */ });
+    }, function (e) {
+      busyImage(false);
+      toast((e && e.message) ? e.message : '이미지를 만들지 못했어요 — 다시 시도해 주세요.');
+    });
+  }
+
+  function canShareFiles() {
+    try {
+      if (!navigator.canShare || !navigator.share || typeof File !== 'function') return false;
+      var f = new File([new Blob([new Uint8Array([1])], { type: 'image/png' })], 'a.png', { type: 'image/png' });
+      return navigator.canShare({ files: [f] });
+    } catch (e) { return false; }
+  }
+
   /* ── 최근 5건 — 이 브라우저에만 ───────────────── */
   function loadStore() {
     try {
@@ -2380,6 +2669,11 @@ body.locked{overflow:hidden}
     $('svcMake').addEventListener('click', make);
     $('svcDraft').addEventListener('input', checkForbidden);
     $('svcCopy').addEventListener('click', copyDraft);
+    $('svcImgSave').addEventListener('click', saveImage);
+    if (canShareFiles()) {
+      $('svcImgShare').hidden = false;
+      $('svcImgShare').addEventListener('click', shareImage);
+    }
     $('svcEmpty').addEventListener('click', function () {
       $('svcDraft').value = '';
       checkForbidden();
