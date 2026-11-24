@@ -168,10 +168,14 @@
   var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
   var CAL_FOLD_KEY = 'yoonise.timing.calFold.v2';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 사용자가 버튼으로 고른 상태만 기억, 저장값이 없으면 접힘 (#18624)
   var CAL_FOLD_LEGACY_KEY = 'yoonise.timing.calFold.v1';   // #18494 '기본 펼침' 시절 키 — 값은 읽지 않고 지우기만 한다 (#18624)
-  var TGUIDE_KEY = 'yoonise.timing.tguide.v1';   // 무료 체험 사용 안내 카드를 ✕로 닫은 기기 (2026-11-24 #18768)
+  /* 2026-11-24aa #19144 — 사용 안내 카드는 ✕·닫힘 기억(yoonise.timing.tguide.v1)을 없애고 상시 표시로 바꿈.
+     옛 기기에 남은 그 키는 읽지 않고, 아래 '저장된 정보 지우기' 목록에서만 지운다. */
+  var TGUIDE_LEGACY_KEY = 'yoonise.timing.tguide.v1';
   var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
+  /* 2026-11-24aa #19144 — 달력 위 한 줄 안내. 고객 상태와 상관없이 이 문장 하나만 쓴다. */
+  var CAL_NOTE_TEXT = '날짜를 누르면 그날의 운세와 조심할 점, 챙기면 좋은 일을 확인할 수 있어요.';
   var KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
   /* ── 결제 설정 (아래 값만 채우면 팝업 버튼이 바로 결제로 연결됩니다) ──────────
      💳 카드결제 (페이앱) — 상품별 페이앱 결제 링크 주소.
@@ -392,7 +396,7 @@
     return [STORE_KEY, MAIN_KEY, UNLOCK_KEY, LEGACY_UNLOCK_KEY, TRIAL_KEY, STAMP_KEY,
       DIARY_KEY, DIARY_TRY_KEY, NIGHT_KEY, WELCOME_KEY, GUIDE_KEY, PAYWAIT_KEY, PHONE_KEY,
       PICK_KEY, CARE_TRIAL_KEY, BURN_KEY, SOUND_KEY, REF_KEY, INVITED_KEY,
-      INVITE_NOTICE_KEY, FIRST_SAJU_KEY, CAL_FOLD_KEY, TGUIDE_KEY];
+      INVITE_NOTICE_KEY, FIRST_SAJU_KEY, CAL_FOLD_KEY, TGUIDE_LEGACY_KEY];
   }
   function clearAllAppData() {
     var named = appDataKeys();
@@ -825,34 +829,19 @@
     if (pb) pb.hidden = (mode !== 'over');
     var pf = $('#passFoot');
     if (pf) pf.hidden = (mode !== 'on');
-    syncTrialGuide();                     // 무료 체험 중에만 TODAY 위 사용 안내 카드 (#18768)
+    syncTrialGuide();                     // 사용 안내 카드 — 사주를 넣은 뒤 늘 TODAY 위에 (#19144)
     syncCtaCopy();                        // 구매 유도 버튼 이름표 — 고객 상태 4가지 (#18672)
   }
 
-  /* ── 📖 무료 체험 사용 안내 카드 (2026-11-24 김나영 님 #18768) ─────────────────
-     · 사주를 넣은 무료 체험 손님에게만, TODAY 영역 바로 위에 작게 한 장.
-     · 체험이 끝나거나 이용권이 열린 기기에서는 자동으로 숨는다(보이기 상태만 다시 맞춘다).
-     · ✕로 닫으면 이 기기에서는 다시 뜨지 않는다 — localStorage `yoonise.timing.tguide.v1`.
-     · 72시간 특별 선물 카드·구매 버튼·결제 로직은 건드리지 않는다(별개 운영). */
-  function trialGuideClosed() {
-    try { return localStorage.getItem(TGUIDE_KEY) === '1'; } catch (e) { return false; }
-  }
-  function trialGuideOpen() {
-    if (!state.res) return false;                       // 사주 입력 전에는 없다
-    if (TEST_OPEN_ALL) return false;                    // 지인 테스트 — 전부 열린 상태라 안내 대상이 아니다
-    if (!FREE_TRIAL_ENABLED || state.unlocked) return false;   // 유료 이용권 활성 고객
-    var w = trialWindow();
-    if (!w) return false;
-    /* 앱을 켜 둔 채 자정을 넘겨도 그 자리에서 사라지게 — 기기 시계로 오늘을 다시 센다 */
-    var now = new Date();
-    var today = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-    if (today > w.end) return false;                    // 무료 체험 기간 종료
-    return !trialGuideClosed();
-  }
+  /* ── 📖 사용 안내 카드 (2026-11-24 #18768 → 2026-11-24aa #19144) ─────────────────
+     · 사주를 넣은 뒤에는 무료 체험 중·체험 종료·결제 완료 어느 상태에서도 TODAY 영역 바로 위에 작게 한 장.
+     · 사주 입력 전(첫 화면)에는 없다.
+     · ✕ 닫기 버튼과 닫힘 기억(localStorage `yoonise.timing.tguide.v1`)은 없앴다 — 늘 보이는 안내다.
+     · 새 카드·팝업·고정 배너를 더하지 않는다. 72시간 특별 선물 카드·구매 버튼·결제 로직은 건드리지 않는다. */
   function syncTrialGuide() {
     var el = $('#trialGuide');
     if (!el) return;
-    el.hidden = !trialGuideOpen();
+    el.hidden = !state.res;                             // 사주를 넣은 화면에서만
   }
 
   /* ── 🏷️ 구매 유도 버튼 이름표 — 고객 상태 4가지 (2026-11-24 김나영 님 #18672)
@@ -4755,27 +4744,9 @@
     renderSaeun(v, dim);
 
     syncTrialState();                     // 첫 방문일 기록이 끝난 뒤 문구 상태(체험 중/종료)를 맞춘다
-    var tw = trialWindow();
-    var freeEnd = tw ? T.parseISO(tw.end) : null;
-    var noteText;
-    if (LITE_MODE) {
-      noteText = '궁금한 날짜를 눌러 보세요. 그날 조심할 점과 챙길 점이 바로 나와요.';
-    } else if (!FREE_TRIAL_ENABLED || state.unlocked) {
-      noteText = '날짜를 누르면 그날의 부적과 ✨ 오늘의 1줄 성찰이 함께 나와요. 기운이 있는 날만 눌려요.';
-    } else if (trialOver() || !freeEnd) {
-      noteText = '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 입장 코드를 넣으면 2026년 11월부터 2027년 12월까지 전체가 열려요.';
-    } else {
-      noteText = freeEnd.m + '월 ' + freeEnd.d + '일까지는 딱지가 붙은 날을 눌러 부적을 받아 스티커로 붙일 수 있어요. 그 뒤 날짜는 표시만 보이고, 누르면 여는 방법이 나옵니다.';
-    }
-    if (LITE_MODE) {
-      /* 잠금(8일째 이후)에도 달력의 3색은 그대로 보인다 — 날짜를 눌렀을 때만 결제 안내가 나온다 */
-      $('#calNote').innerHTML = (FREE_TRIAL_ENABLED && !state.unlocked && trialOver()
-        ? '무료 ' + FREE_DAYS + '일 체험이 끝났어요 — 오늘·앞날은 <b>1년 전체 이용권</b> 안내가 나오고, <b>지난 날은 그대로 열려요</b>.'
-        : '궁금한 날짜를 눌러 보세요 — <b>지난 날도</b> 그날 조심할 점과 챙길 점이 바로 나와요. (체험 7일이 지난 앞날은 여는 방법이 나와요.)') +
-        '<br>저녁마다 오늘 하루를 1초 체크해 보세요. 내 흐름이 기록으로 남아요.';
-    } else {
-      $('#calNote').textContent = noteText;
-    }
+    /* 2026-11-24aa #19144 — 달력 위 안내는 고객 상태(체험 중·체험 종료·결제 완료)와 상관없이 이 한 문장만.
+       (예전의 괄호 속 무료 체험 안내·저녁 기록 설명 줄은 없앴다. 달력 접근 권한·3색·날짜 팝업·버튼은 그대로) */
+    $('#calNote').textContent = CAL_NOTE_TEXT;
     renderNightRec(v);
 
     // 📖 내 성찰 기록 보기 버튼의 일수
@@ -9110,13 +9081,8 @@
     var inviteX = $('#inviteNoticeX');
     if (inviteX) inviteX.addEventListener('click', function (e) { e.preventDefault(); hideInviteNotice(); });
 
-    // 📖 무료 체험 사용 안내 카드 — ✕로 닫으면 이 기기에서는 다시 뜨지 않는다 (#18768)
-    var tguideX = $('#trialGuideX');
-    if (tguideX) tguideX.addEventListener('click', function (e) {
-      e.preventDefault();
-      try { localStorage.setItem(TGUIDE_KEY, '1'); } catch (err) {}
-      syncTrialGuide();
-    });
+    // 📖 사용 안내 카드 — 2026-11-24aa #19144: ✕ 닫기 버튼을 없애고 상시 표시로 바꿨다.
+    //    (예전 기기에 남은 `yoonise.timing.tguide.v1` 값은 읽지 않는다)
 
     // 📖 내 성찰 기록 보기 — 달력 아래 버튼
     var dbookBtn = $('#diaryBookBtn');

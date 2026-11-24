@@ -434,6 +434,23 @@
     });
   }
 
+  /* ── 버전 이름 견주기 — '20261124z' 다음이 '20261124aa' 처럼 글자 꼬리가 늘어나도
+     "예전 파일이냐"를 맞게 판단하려고 숫자(8자리) + 알파벳 꼬리(26진수)로 본다.
+     ('z' = 26 → 'aa' = 27 → 'ab' = 28). 해석이 안 되는 이름은 예전처럼 글자로 견준다. */
+  function verKey(s) {
+    var m = /^(\d+)([a-z]*)$/.exec(s || '');
+    if (!m) return null;
+    var tail = 0, t = m[2];
+    for (var i = 0; i < t.length; i++) tail = tail * 26 + (t.charCodeAt(i) - 96);
+    return [parseInt(m[1], 10), tail];
+  }
+  function olderVersion(a, b) {            // a 가 b 보다 예전이면 true
+    var ka = verKey(a), kb = verKey(b);
+    if (!ka || !kb) return a < b;
+    if (ka[0] !== kb[0]) return ka[0] < kb[0];
+    return ka[1] < kb[1];
+  }
+
   /* ── 예전 화면이 남아 있을 때 스스로 최신 화면으로 ──
      깃허브 페이지 HTML 은 cache-control: max-age=600 이다. 서비스 워커가 없는
      브라우저(카톡·네이버 인앱 등)나 워커가 붙기 전 첫 화면에서는 배포 직후
@@ -460,7 +477,7 @@
         if (!m) return;
         LIVE = m[1];
         if (!LIVE || LIVE === BUILD) return;
-        if (LIVE < BUILD) return;          // 예전 파일이 섞여 와도 되돌리지 않는다
+        if (olderVersion(LIVE, BUILD)) return;   // 예전 파일이 섞여 와도 되돌리지 않는다 ('z' → 'aa' 도 견준다)
         if (cur === LIVE) return;          // 이미 새 주소로 왔다 — 다시 돌지 않는다
         /* 설치 앱은 주소를 바꾸지 않는다 — 주소가 바뀌면 앱이 사파리·새 창으로 넘어가며 닫힌 것처럼 보인다.
            (서비스 워커가 붙은 설치 앱은 같은 주소 새로 고침만으로 최신 HTML 이 온다 — sw.js 가 no-store) */
