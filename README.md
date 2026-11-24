@@ -3050,7 +3050,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 
 ## §116. ✨ 첫 화면 소개 문구 · 무료 체험 사용 안내 카드 · 새로고침 자동 업데이트 · 색감 개선 (#18768, 2026-11-24)
 
-자산: `calendar/index.html` · `calendar/assets/calendar.js` · `calendar/assets/pwa.js` · `calendar/assets/style.css` · `calendar/sw.js` · `calendar/manifest.webmanifest` · 버전 **`?v=20261124w`** (`sw.js` `VERSION = '20261124w'`)
+자산: `calendar/index.html` · `calendar/assets/calendar.js` · `calendar/assets/pwa.js` · `calendar/assets/style.css` · `calendar/sw.js` · `calendar/manifest.webmanifest` · `calendar/member/index.html`·`calendar/member/member.css`(색감만) · 버전 **`?v=20261124w`** (`sw.js` `VERSION = '20261124w'`)
 검증: `work/polish-20261124w/` (`cap.py`·`guide_check.py`·`sw_update_test.py`·`regress.py`·`sweep.py`)
 
 ### 1. 첫 방문 소개 문구 (사주 입력 전 화면)
@@ -3095,4 +3095,5 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 한지 종이(`#FFFCF4`·`#FFFDFA`…) | — | `#FFFDF8` 로 통일 |
 | 히어로 배경 광 | 에메랄드+남색 | 골드 광(따뜻한 크림 위) |
 - 슬레이트 계열(`#F1F5F9`·`#E2E8F0`·`#CBD5E1`·`#94A3B8`·`#475569`)과 그림자 `rgba(15,23,42,…)` → 따뜻한 중성(`#F6F1E7`·`#E8E0D2`·`#CFC6B7`·`#9A9084`·`#4B4438`·`rgba(28,24,19,…)`)로 통일. 총 701곳(색상 값만).
+- 같은 매핑을 `/calendar/member/`(케미테스트) `member.css` 156곳에도 적용해 페이지를 옮겨 다녀도 톤이 끊기지 않게 했다(그 페이지 고유의 보라·하트 색은 그대로).
 - 대비(WCAG): 본문 17.9:1 · 보조 5.7:1 · 골드 4.7:1 · 코랄 5.9:1 · ⚠️ 5.9:1 · ⚡ 5.2:1 · 🌿 5.7:1 — 3색 구분과 가독성 유지.
