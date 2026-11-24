@@ -7560,7 +7560,7 @@
   /* 무료 5회를 다 쓴 뒤 — 2026-11-23 단일 패스로 통일. 패스 하나면 매일 1회 계속 태울 수 있다. */
   function burnShopHTML() {
     return '<p class="modal__eyebrow">FULL PASS · 매일 1회 액운 태우기</p>' +
-      '<h2 class="shop__title" id="shopTitle">🔥 무료 5회를 다 쓰셨어요</h2>' +
+      '<h2 class="shop__title" id="shopTitle">🔥 무료 ' + BURN_FREE + '회를 다 쓰셨어요</h2>' +
       '<p class="shop__sub">1년 전체 패스를 열면 <b>매일 한 번씩</b> 계속 태울 수 있어요.</p>' +
       passShopCoreHTML() +
       '<p class="burn__foot">' + esc(burnLeftText()) + ' · 다음에 또 태우고 싶어지면 언제든 다시 오세요.</p>';
