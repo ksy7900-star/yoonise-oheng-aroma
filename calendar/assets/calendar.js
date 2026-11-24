@@ -5280,9 +5280,78 @@
     target.classList.add('is-jump-flash');
     setTimeout(function () { target.classList.remove('is-jump-flash'); }, 1300);
   }
+  /* ══════════════════════════════════════════════════════════════════
+     2026-11-24 #18405 — 2×2 바로가기 아래 기능 카드 접기(아코디언)
+     · 2×2 카드는 늘 보이고, 그 아래 **액운 태우기 · 케미·수호부적 · 긴급 개운템**은
+       기본적으로 **접힌 채** 시작한다(처음엔 2×2와 달력이 먼저 보이게).
+     · 2×2 를 누르면 다른 카드는 접고, 고른 카드 하나만 펼친 뒤 그 카드로 내려간다.
+     · 카드 제목(머리)을 직접 눌러도 접고 펼 수 있다.
+     · TODAY · 달력 · 1초 체크 · 1:1 상담은 이 접기 대상이 아니다(그대로).
+     · 카드 안의 내용·저장 데이터·버튼·결제·카톡 연결은 하나도 건드리지 않는다 —
+       화면에서 보이거나 숨겨질 뿐이다.
+     ══════════════════════════════════════════════════════════════════ */
+  var ACC_CARDS = {
+    burn: { card: '#burnCard', head: '[data-acc-head="burn"]' },
+    care: { card: '#careCard', head: '[data-acc-head="care"]' },
+    duo:  { card: '#duoCard',  head: '[data-acc-head="duo"]' }
+  };
+  function accSet(key, open) {
+    var cfg = ACC_CARDS[key];
+    if (!cfg) return;
+    var card = $(cfg.card), head = $(cfg.head);
+    if (!card) return;
+    card.classList.toggle('is-acc-closed', !open);
+    card.classList.toggle('is-acc-open', !!open);
+    if (head) {
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var label = head.getAttribute('aria-label') || '';
+      head.setAttribute('aria-label', open
+        ? label.replace('펼치기', '접기')
+        : label.replace('접기', '펼치기'));
+    }
+  }
+  function accCloseAll(except) {
+    Object.keys(ACC_CARDS).forEach(function (k) {
+      if (k !== except) accSet(k, false);
+    });
+  }
+  /** 2×2 에서 고른 카드만 펼친다 — 다른 카드는 접는다 */
+  function accOpenOnly(key) {
+    if (!ACC_CARDS[key]) return;
+    accCloseAll(key);
+    accSet(key, true);
+  }
+  function accIsOpen(key) {
+    var cfg = ACC_CARDS[key];
+    var card = cfg ? $(cfg.card) : null;
+    return !!(card && card.classList.contains('is-acc-open'));
+  }
+  function accToggle(key) {
+    if (accIsOpen(key)) accSet(key, false);
+    else accOpenOnly(key);
+  }
+  function accInit() {
+    Object.keys(ACC_CARDS).forEach(function (k) { accSet(k, false); });   // 기본 접힘
+    var heads = $$('[data-acc-head]');
+    heads.forEach(function (h) {
+      if (h.getAttribute('data-acc-bound') === '1') return;
+      h.setAttribute('data-acc-bound', '1');
+      var key = h.getAttribute('data-acc-head');
+      h.addEventListener('click', function (e) {
+        e.preventDefault();
+        accToggle(key);
+      });
+      h.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); accToggle(key); }
+      });
+    });
+  }
+
   function jumpToSection(kind) {
+    /* #18405 — 기능 카드는 접힌 채 시작한다. 그 카드로 가라는 요청이면 먼저 펼친다. */
+    if (kind === 'burn' || kind === 'care' || kind === 'duo') accOpenOnly(kind);
     var target = kind === 'burn' ? $('#burnCard')
-      : (kind === 'care' ? $('#careCard') : null);
+      : (kind === 'care' ? $('#careCard') : (kind === 'duo' ? $('#duoCard') : null));
     if (!target && kind === 'cal') {
       var grid = $('#calGrid');
       target = (grid && grid.closest) ? (grid.closest('.card--cal') || grid) : grid;
@@ -8730,6 +8799,7 @@
 
   /* ── 시작 ──────────────────────────────────────────── */
   function boot() {
+    accInit();                                // #18405 — 기능 카드는 기본 접힘
     // index.html 의 무료 체험 문구(js-trial) / 전체 오픈 문구(js-open) / 체험 종료 문구(js-trial-over)를 스위치에 맞춰 보인다
     if (LITE_MODE) { document.body.classList.add('is-lite'); toggleNatal(false); }   // 2.0 첫 화면 — 원국표는 접힌 채로 시작
     else {
@@ -8897,6 +8967,13 @@
       });
     }
 
+    /* #18405 — 케미테스트는 ./member/ 로 바로 가는 링크 그대로 둔다.
+       페이지 안 카드(#duoCard)도 같이 펼쳐 두어, 돌아왔을 때 접힌 채 어색하지 않게. */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('.q2--chemi')) return;
+      accOpenOnly('duo');
+    });
+
     // 🧭 4칸 바로가기 · 2×2 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미테스트는 링크)
     document.addEventListener('click', function (e) {
       if (!e.target.closest) return;
@@ -8974,6 +9051,8 @@
     document.addEventListener('click', function (e) {
       if (!e.target.closest || !e.target.closest('#talisGet, [data-talis-get]')) return;
       e.preventDefault();
+      accOpenOnly('duo');                      // #18405 — 페이지 안 수호부적 카드를 먼저 펼친다
+      if (e.target.closest('[data-talis-get]')) jumpToEl($('#duoCard') || $('#talisGet'));
       if (state.repTalis && hasSbSession()) { openTalisModal(); return; }
       location.href = './member/?autologin=1&next=talis';
     });

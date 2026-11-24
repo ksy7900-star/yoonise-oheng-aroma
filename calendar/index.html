@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124p">
+<link rel="stylesheet" href="assets/style.css?v=20261124q">
 </head>
 <body>
 
@@ -541,16 +541,19 @@
           <span class="q2__ar" aria-hidden="true">→</span>
         </button>
       </div>
+      <p class="quick2x2__hint">↓ 아래 카드는 제목을 누르면 펼쳐져요</p>
     </section>
 
     <!-- 🔥 오늘 액운 태우기 — 달력 바로 밑에 (2026-11-22 순서 개편) -->
     <section class="card card--burn" id="burnCard" aria-labelledby="burnTitle">
-      <div class="burn__top">
+      <div class="burn__top acc__head" data-acc-head="burn" role="button" tabindex="0"
+           aria-expanded="false" aria-controls="burnCard" aria-label="액운 태우기 카드 펼치기">
         <div>
           <p class="burn__eyebrow">BURN &amp; RESET</p>
           <h2 class="card__title" id="burnTitle">🔥 오늘 액운 태우기</h2>
         </div>
         <span class="burn__left" id="burnLeft">남은 무료 5회</span>
+        <span class="acc__chev" aria-hidden="true">⌄</span>
       </div>
       <p class="burn__sub">오늘 두고 갈 일, 잊고 싶은 일, 털어낼 걱정을 적어 보세요<br><span>(어디에도 저장되지 않고 바로 사라져요)</span></p>
       <button type="button" class="burn__cta" id="burnOpen">
@@ -565,6 +568,15 @@
          3차(2026-11-23): '카톡 3초 연결' 같은 광고성 문구를 걷어 내고
          부적을 '받는 것'으로 조용히 말한다 — 카카오 연결 안내는 그대로 둔다. -->
     <section class="duo" id="duoCard" aria-label="케미테스트와 2027 수호 부적">
+      <button type="button" class="acc__head acc__head--duo" id="duoAccHead" data-acc-head="duo"
+              aria-expanded="false" aria-controls="duoCard" aria-label="케미테스트와 수호부적 카드 펼치기">
+        <span class="acc__ic" aria-hidden="true">✨</span>
+        <span class="acc__tt">
+          <span class="acc__t">케미테스트 · 1년 수호부적</span>
+          <span class="acc__d">친구·연인과의 케미 점수, 내 2027 수호 부적</span>
+        </span>
+        <span class="acc__chev" aria-hidden="true">⌄</span>
+      </button>
       <a class="duo__card duo__card--chemi" href="./member/">
         <span class="duo__badge">무료 · 공유</span>
         <span class="duo__eyebrow">CHEMI TEST</span>
@@ -588,11 +600,13 @@
            누르면 개운템 1회 무료 체험 화면이 바로 열린다 (pwa.js → calendar.js)
          · 문구는 `.carecard__web` / `.carecard__app` — html.is-standalone 으로 갈린다 -->
     <section class="card card--care" id="careCard" aria-labelledby="careTitle">
-      <div class="carecard__top">
+      <div class="carecard__top acc__head" data-acc-head="care" role="button" tabindex="0"
+           aria-expanded="false" aria-controls="careCard" aria-label="긴급 개운템 카드 펼치기">
         <div>
           <p class="carecard__eyebrow">QUICK CARE</p>
           <h2 class="card__title" id="careTitle">⚡ 긴급 개운템 <span class="carecard__pill">앱 전용</span></h2>
         </div>
+        <span class="acc__chev" aria-hidden="true">⌄</span>
       </div>
       <p class="carecard__sub">중요한 자리·마음이 흔들리는 날 바로 꺼내 쓰는 긴급 개운템<br>
         <b class="carecard__free carecard__web">바탕화면에 꺼내 두고 아이콘으로 여시면 무료로 열려요</b>
@@ -923,12 +937,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124p"></script>
-<script src="assets/manse.js?v=20261124p"></script>
-<script src="assets/timing.js?v=20261124p"></script>
-<script src="assets/chars.js?v=20261124p"></script>
-<script src="assets/calendar.js?v=20261124p"></script>
-<script src="assets/special-guide.js?v=20261124p"></script>
-<script src="assets/pwa.js?v=20261124p"></script>
+<script src="vendor/lunar.js?v=20261124q"></script>
+<script src="assets/manse.js?v=20261124q"></script>
+<script src="assets/timing.js?v=20261124q"></script>
+<script src="assets/chars.js?v=20261124q"></script>
+<script src="assets/calendar.js?v=20261124q"></script>
+<script src="assets/special-guide.js?v=20261124q"></script>
+<script src="assets/pwa.js?v=20261124q"></script>
 </body>
 </html>
