@@ -6179,3 +6179,5 @@ body.is-result .hero__sub { display: none; }
 /* 어떤 팝업이든(특별 선물처럼 body 클래스를 안 붙이는 팝업 포함) 열려 있으면 고정 메뉴는 내려간다.
    :has 를 모르는 브라우저는 위의 body.is-modal-open 규칙만으로 동작한다. */
 body:has(.modal:not([hidden])) .qnav { opacity: 0; pointer-events: none; }
+/* 제목 아래 3개 바로가기는 결과 화면(body.is-result)에서만 — 입력 전·수정 화면에서는 숨긴다 */
+body:not(.is-result) #heroJump { display: none !important; }
