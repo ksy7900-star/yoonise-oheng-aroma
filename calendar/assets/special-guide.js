@@ -42,6 +42,7 @@
     pollTimer: 0,
     tickTimer: 0,
     modalOpen: false,
+    guideOpen: false,        // 도착한 가이드 팝업이 열려 있는지
     consentChecked: false    // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
   };
 
@@ -233,11 +234,17 @@
     if (!c || !c.res) { hideAll(); return; }
     if (mem.preexisting) { hideAll(); return; }
     var first = loadFirst();
-    if (!first) { hideAll(); return; }   // 최초 입력 기록은 calendarOpened() 가 맡는다
+    /* 승인된 가이드가 이미 있으면 72시간 기록이 지워져 있어도 계속 보여 준다(며칠 뒤 재방문) */
+    if (!first && !guideOf(mem.claim) && !guideOf(cachedClaim())) { hideAll(); return; }   // 최초 입력 기록은 calendarOpened() 가 맡는다
 
     /* 유료 고객 — 자격이 확인된 경우에만 신청 화면 */
     if (paidNow(c)) {
       hideOfferOnly();
+      /* 지난번에 받아 둔 승인 가이드가 있으면 서버 응답을 기다리지 않고 먼저 띄운다 */
+      if (!mem.claim) {
+        var cc = cachedClaim();
+        if (cc && guideOf(cc)) { mem.claim = cc; renderClaim(); }
+      }
       if (!mem.claimTried || mem.claimCode !== String(c.code && c.code.code || '')) {
         maybeClaim(c);
         return;
@@ -358,6 +365,31 @@
     });
   }
 
+  /* ── 승인된 가이드 (2026-11-25 #21065) ──────────────────
+     윤이세가 /yoon-key/ 에서 '승인'을 누른 건은 고객 달력 앱에서 바로 열린다.
+     · 조건: approved_at 이 있고 취소가 아니며 서버가 본문(guide_text)을 내려 준 경우.
+     · 한 번 보고 닫아도 사라지지 않는다 — 카드가 접혀도 아래 '다시 열기' 버튼으로
+       언제든(며칠 뒤 다시 들어와도) 같은 본문과 직인을 다시 볼 수 있다.
+     · 서버가 응답하기 전에도, 지난번에 받아 둔 본문이 있으면 바로 띄운다(기기에 캐시). */
+  function guideOf(d) {
+    if (!d || !d.approved_at || d.status === 'cancelled') return '';
+    return String(d.guide_text || '').trim();
+  }
+  function cachedClaim() {
+    try {
+      var o = JSON.parse(localStorage.getItem(CLAIM_KEY) || 'null');
+      return (o && o.ok && o.claim_no) ? o : null;
+    } catch (e) { return null; }
+  }
+  function fmtDay(iso) {
+    if (!iso) return '';
+    var t = Date.parse(iso);
+    if (isNaN(t)) return '';
+    var p = new Date(t + 9 * 3600 * 1000);
+    var z = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p.getUTCFullYear() + '.' + z(p.getUTCMonth() + 1) + '.' + z(p.getUTCDate());
+  }
+
   var STATUS_STEP = { eligible: 0, submitted: 1, awaiting_draft: 2, draft_ready: 2, reviewing: 2, delivered: 3 };
   var STEP_LABEL = ['신청하기', '접수 완료', '준비 중', '전달 완료'];
 
@@ -370,25 +402,30 @@
       hideAll();
       return;
     }
-    if (!d.eligible && d.status !== 'delivered' && d.status !== 'submitted' &&
+    if (!d.eligible && !guideOf(d) && d.status !== 'delivered' && d.status !== 'submitted' &&
         d.status !== 'reviewing' && d.status !== 'draft_ready' && d.status !== 'awaiting_draft') {
       hideAll();
       return;
     }
 
     var delivered = d.status === 'delivered';
+    var guide = guideOf(d);
     document.body.classList.add('has-sgift-claim');
     document.body.classList.remove('has-sgift');
     if (foot) foot.hidden = true;               // 이미 구매 — 하단 구매 유도 숨김
     var close = closedFlag();
     card.hidden = close;
-    if (tg) { tg.hidden = !close; tg.textContent = delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기'; }
+    if (tg) {
+      tg.hidden = !close;
+      tg.textContent = guide ? '🎁 도착한 가이드 다시 열기'
+        : (delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기');
+    }
 
     var body = $('#specialGiftBody');
     if (body) {
       body.setAttribute('data-mode-offer', '');
       var step = STATUS_STEP[d.status] == null ? 0 : STATUS_STEP[d.status];
-      body.innerHTML = claimHTML(d, step);
+      body.innerHTML = guide ? guideArrivedHTML(d) : claimHTML(d, step);
     }
     startPoll(d);
     ctaSync();
@@ -482,6 +519,52 @@
     return head +
       '<ol class="sgift__steps">' + steps + '</ol>' +
       noBox + statusLine + consent + btn + hint;
+  }
+
+  /* ── 도착한 가이드 카드 ─────────────────────────────── */
+  function guideArrivedHTML(d) {
+    var no = d.claim_no || '';
+    return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+      '<h2 class="sgift__title" id="specialGiftTitle">윤이세 선생님의 2027 맞춤 가이드가 도착했어요</h2>' +
+      '<p class="sgift__desc">사주를 직접 읽고 고친 가이드예요. 버튼을 누르면 본문과 직인까지 한 번에 열립니다.</p>' +
+      '<p class="sgift__sub">오늘 닫아 두셔도 괜찮아요. 며칠 뒤에 다시 들어와도 같은 가이드를 언제든 다시 열어 볼 수 있습니다.</p>' +
+      (no ? '<div class="sgift__no"><span>신청번호</span><b id="specialClaimNo">' + esc(no) + '</b>' +
+        '<button type="button" class="sgift__copy" id="specialCopyNo">복사</button></div>' : '') +
+      '<div class="sgift__acts"><button type="button" class="sgift__buy" id="specialGuideOpen">가이드 열기</button></div>' +
+      '<p class="sgift__hint">가이드를 닫아도 이 카드는 그대로 남아 있어요 — 다시 열어 보실 수 있습니다.</p>';
+  }
+
+  function openGuide() {
+    var d = mem.claim;
+    var text = guideOf(d);
+    if (!text) return;
+    var m = $('#specialGuideModal');
+    var body = $('#specialGuideBody');
+    if (!m || !body) return;
+    var when = fmtDay(d.approved_at);
+    body.innerHTML =
+      '<p class="sgiftm__eyebrow">2027 GUIDE · 윤이세</p>' +
+      '<h2 class="sgiftm__title" id="specialGuideTitle">2027년 맞춤 운세 활용 가이드</h2>' +
+      '<p class="sgguide__meta">' + esc(d.claim_no || '') + (when ? ' · ' + when + ' 도착' : '') + '</p>' +
+      '<div class="sgguide__paper">' + esc(text) + '</div>' +
+      '<div class="sgguide__sign">' +
+        '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261125i" alt="윤이세 직인" loading="lazy">' +
+        '<p class="sgguide__name">— 윤이세</p>' +
+        '<p class="sgguide__note">카카오톡으로도 같은 가이드를 보내 드렸어요. 언제든 다시 열어 보실 수 있습니다.</p>' +
+      '</div>' +
+      '<button type="button" class="sgift__buy sgguide__close" data-sgguide-close>가이드 닫기</button>';
+    m.hidden = false;
+    mem.guideOpen = true;
+    document.body.classList.add('is-sgift-modal');
+    try { $('#specialGuideDialog').focus({ preventScroll: true }); } catch (e) { }
+    try { body.parentNode.scrollTop = 0; } catch (e) { }
+  }
+  function closeGuide() {
+    var m = $('#specialGuideModal');
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    mem.guideOpen = false;
+    if (!mem.modalOpen) document.body.classList.remove('is-sgift-modal');
   }
 
   function startPoll(d) {
@@ -761,6 +844,10 @@
         refresh();
         return;
       }
+      var gopen = e.target.closest('#specialGuideOpen');
+      if (gopen) { e.preventDefault(); openGuide(); return; }
+      var gclose = e.target.closest('#specialGuideModal [data-sgguide-close]');
+      if (gclose) { e.preventDefault(); closeGuide(); return; }
       var more = e.target.closest('#specialGiftMore');
       if (more) { e.preventDefault(); openModal(); return; }
       var ap = e.target.closest('#specialApply');
@@ -789,7 +876,9 @@
       }
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && mem.modalOpen) { e.preventDefault(); closeModal(); }
+      if (e.key !== 'Escape') return;
+      if (mem.guideOpen) { e.preventDefault(); closeGuide(); return; }
+      if (mem.modalOpen) { e.preventDefault(); closeModal(); }
     });
     /* [필수] 동의 체크 — 누를 때마다 신청 버튼과 안내 문구가 바뀐다 */
     document.addEventListener('change', function (e) {

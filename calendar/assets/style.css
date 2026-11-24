@@ -6016,6 +6016,34 @@ body.has-sgift #passFoot{display:none !important}
 }
 .modal--sgift .sgift__buy{margin-top:15px}
 
+/* ── 🎁 도착한 가이드 팝업 (2026-11-25 #21065) ─────────────────────
+   윤이세가 '승인'한 가이드를 손님이 자기 달력 앱에서 연다.
+   본문은 줄바꿈 그대로, 마지막에 직인 이미지 + '— 윤이세'. */
+.sgguide__meta{
+  margin:8px 0 0; font-size:10px; font-weight:700; letter-spacing:.02em;
+  color:var(--mute);
+}
+.sgguide__paper{
+  margin:14px 0 0; padding:16px 15px;
+  border-radius:16px; background:#FFFDF8;
+  border:1px solid rgba(165,101,15,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+  font-size:12.5px; line-height:1.95; color:var(--ink);
+  letter-spacing:-.012em; word-break:keep-all;
+  white-space:pre-wrap;
+}
+.sgguide__sign{
+  margin:16px 0 0; padding:14px 12px 12px; text-align:center;
+  border-top:1px dashed rgba(165,101,15,.24);
+}
+.sgguide__seal{display:block; width:158px; max-width:62%; height:auto; margin:0 auto}
+.sgguide__name{
+  margin:2px 0 0; font-family:var(--serif); font-size:15px; font-weight:600;
+  color:var(--ink); letter-spacing:.02em;
+}
+.sgguide__note{margin:8px 0 0; font-size:10px; line-height:1.7; color:var(--mute); font-weight:600; word-break:keep-all}
+.modal--sgift .sgguide__close{margin-top:12px}
+
 @media (max-width:380px){
   .sgift{padding:18px 15px 16px}
   .sgift__title{font-size:17.5px}
