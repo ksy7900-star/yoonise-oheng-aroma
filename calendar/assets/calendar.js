@@ -4191,7 +4191,16 @@
     var keep = String(sc.card.keep || '').trim();
     /* 카드의 '챙길 것'은 '~하기'로 끝난다 — 그대로 넣으면 어색한 틀도 있어,
        '~하는' 형태({v})까지 함께 만들어 어법에 맞는 틀만 고른다. */
-    var verb = /기$/.test(keep) ? keep.slice(0, -1) + '는' : '';
+    var verb = '';
+    if (/기$/.test(keep)) {
+      var stem = keep.slice(0, -1);
+      var last = stem.charCodeAt(stem.length - 1);
+      /* '만들다 → 만드는'처럼 받침 ㄹ은 '는' 앞에서 떨어진다 */
+      if (last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 === 8) {
+        stem = stem.slice(0, -1) + String.fromCharCode(last - 8);
+      }
+      verb = stem + '는';
+    }
     var doFrames = BR_DO.filter(function (fr) { return verb || fr.indexOf('{v}') < 0; });
     var doLine = '';
     if (keep) {
