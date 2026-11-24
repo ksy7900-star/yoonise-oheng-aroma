@@ -550,7 +550,7 @@
       '<div class="sgguide__sign">' +
         '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261125i" alt="윤이세 직인" loading="lazy">' +
         '<p class="sgguide__name">— 윤이세</p>' +
-        '<p class="sgguide__note">카카오톡으로도 같은 가이드를 보내 드렸어요. 언제든 다시 열어 보실 수 있습니다.</p>' +
+        '<p class="sgguide__note">가이드는 카카오톡으로도 보내 드려요. 언제든 다시 열어 보실 수 있어요.</p>' +
       '</div>' +
       '<button type="button" class="sgift__buy sgguide__close" data-sgguide-close>가이드 닫기</button>';
     m.hidden = false;

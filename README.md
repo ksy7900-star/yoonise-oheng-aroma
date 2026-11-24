@@ -3452,3 +3452,59 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 ### 5. 남은 것
 - 고객이 앱에서 가이드를 열람하는 화면은 **없다**(가이드는 카톡으로만 나간다). 그래서 직인은 운영자 화면(가이드 마지막 장)에 붙였고, 카톡에는 글을 붙여 넣은 뒤 직인 PNG 를 사진으로 한 장 더 보내는 방식이다.
 - 카톡 한 메시지 길이 제한에 걸리면 4번/5번 사이에서 두 번에 나눠 보내야 할 수 있다(현재 2,084자).
+
+## §127. 🔧 승인 버튼이 안 눌리던 버그 · 승인하면 손님 달력 앱에 가이드가 바로 열림 (?v=20261125i, 2026-11-25)
+
+자산: `calendar/yoon-key/index.html`(`syncDraftButtons`·토스트·`saving` 분리) · `calendar/assets/special-guide.js`(도착 카드·`openGuide`) · `calendar/assets/style.css`(`.sgguide__*`) · `calendar/index.html`(가이드 팝업·`?v=`) · `calendar/sw.js`(VERSION) · DB 함수 2개(`claim_or_get_special_guide`·`special_guide_status`)
+
+### 1. 대표님 지적 (그대로)
+> `"승인버튼도 안눌려지고 / 전달이 바로되야하잖아"` (#21032)
+> `"승인 누르면 가이드열자"` (#21065)
+> `"계속볼수있는거야?1회보고 자라지면 안되잖아"` (#21076)
+
+### 2. 고친 것 — 운영자 화면(`/calendar/yoon-key/`)
+| 증상 | 원인 | 지금 |
+|---|---|---|
+| `AI 초안 다시 만들기`를 눌러도 `승인`·`카톡 복붙용 복사`가 안 눌림 | 버튼 `disabled` 를 상세를 그릴 때 한 번만 계산(`hasDraft = admin_edited \|\| ai_draft`)해서, 초안을 채워도 다시 계산하지 않았다 | 본문(textarea)을 기준으로 버튼 잠금을 다시 계산하는 `syncDraftButtons()` 를 초안 생성 직후·본문 입력 때마다 호출. 빈 본문이면 그대로 잠금 |
+| 초안 저장 응답을 기다리는 동안 누른 `승인`이 조용히 사라짐 | 저장·목록 새로고침이 같은 `busy` 플래그를 써서 `saveDraft` 가 그냥 `return` | 저장은 `saving`, 목록은 `busy` 로 분리. 저장 중에 누르면 "저장 중이에요 — 1초 뒤에 다시" 토스트 |
+| 승인해도 눌렸는지 티가 안 남 | 안내 없음 | 4초 토스트 — `승인됐어요. 손님 달력 앱에도 같은 가이드가 열렸어요. '카톡 복붙용 복사'로 보내신 뒤 '전달 완료'를 눌러 주세요.` (`window.YoonCalendarToast` 도 이 화면에서 처음 생겼다) |
+| 승인 뒤 화면이 튀고 쓰던 본문이 다시 그려짐 | `openDetail` + `load()` 이중 렌더 | `load({keepDetail:true})` — 목록·카운터만 새로, 상세(본문·스크롤)는 그대로 |
+| `카톡 복붙용 복사`가 저장 전 본문을 복사 | `messageText` 가 저장된 값만 봄 | 화면 textarea 값을 우선 사용(쓰던 그대로 복사) |
+
+### 3. DB — 승인된 본문은 그 기기에만
+- `admin_special_guide_save(p_approve:true)` 는 이미 `approved_at = now()`, `status='reviewing'` 을 남기고 있었다(그대로 확인만).
+- `claim_or_get_special_guide` · `special_guide_status` 가 이제 `guide_text` 를 함께 돌려준다.
+  ```sql
+  'guide_text', case when r.approved_at is not null and r.status <> 'cancelled'
+                     and r.client_uid = uid
+                     then coalesce(nullif(r.admin_edited, ''), nullif(r.ai_draft, '')) end
+  ```
+  → **`approved_at` 이 없거나 취소면 null, 남의 `client_uid` 로 부르면 null.** 기기키가 비어 있던 신청은 이 기기에 붙이는 그 순간(`returning * into v_row`) 바로 본문이 내려온다.
+- 표 구조·데이터 변경 없음(함수 2개 replace).
+
+### 4. 손님 화면 — 한 번 보고 사라지지 않는다
+- 도착 카드: **`🎁 윤이세 선생님의 2027 맞춤 가이드가 도착했어요`** + `가이드 열기`.
+- 누르면 팝업: 본문 전체(줄바꿈 그대로) → 점선 → **투명 직인 `assets/yoonise-seal.png` + `— 윤이세`** → `가이드 닫기`.
+- 닫아도 끝나지 않는다: 카드 `✕` 로 접으면 아래에 **`🎁 도착한 가이드 다시 열기`** 버튼이 남고, 눌러 카드를 다시 펴고 또 열 수 있다. 60초 폴링·재방문·앱 재실행 모두 같은 상태.
+- 72시간 기록(`yoonise.firstSajuAt.v1`)이 지워져도, 지난번 본문을 기기에 캐시(`yoonise.specialGuide.claim.v1`)해 두어 서버 응답 전에도 바로 뜬다.
+
+### 5. 검증 (라이브 · 390px · 2026-11-25 07:0x KST)
+임시 유료 코드 1장 + 테스트 기기(`g-sgtest-20261125a`)로 끝까지 돌린 뒤 **임시 행은 전부 삭제**(잔류 0).
+
+| 항목 | 결과 |
+|---|---|
+| 초안 없는 건에서 `승인`·`복사` | `disabled=true` — 잠김 (정상) |
+| `AI 초안 다시 만들기` 직후(0.4초) | `승인 disabled=false`, `복사 disabled=false`, 초안 2,079자, 토스트 표시 — **통과** |
+| `승인` 클릭 | 토스트 표시 · `전달 완료` 활성 · DB `status=reviewing`·`approved_at` 채워짐 — **통과** |
+| 승인 전 손님 앱 | `특별 선물 대상자로 확인되었습니다!` · 열기 버튼 없음 · RPC `guide_text=null` — **통과** |
+| 승인 후 손님 앱 | `가이드가 도착했어요` · 팝업 본문 2,079자 · 직인 로드 · `— 윤이세` — **통과** |
+| 닫고 새로 고침 | 토글 `🎁 도착한 가이드 다시 열기` → 다시 열림 — **통과** |
+| 72시간 기록 삭제(며칠 뒤 흉내) | 카드·열기 버튼 그대로 — **통과** |
+| 남의 기기키 | `guide_text=null`(상태 조회·신청 조회 모두) — **통과** |
+| 콘솔 오류 | 0건 |
+| 스크린샷 | `work/sg-guide-20261125/live-guide-arrived.png` · `live-guide-open-390.png` · `live-guide-sign-390.png` · `live-admin-after-gen.png` · `live-admin-after-approve.png` |
+
+### 6. 남은 것
+- 카톡 복붙용 복사는 그대로 `/yoon-key/` 에만 있다(손님 앱에는 없다).
+- 승인은 `reviewing` 으로만 바뀐다 — 손님 앱의 4단계 표시는 3번째 칸(`준비 중`)에 머물다 `전달 완료` 를 눌러야 4번째로 간다. 가이드 본문은 승인 즉시 열린다.
+- 가이드를 고쳐 다시 승인하면 손님 앱도 다음 방문(또는 60초 폴링)에 고친 본문으로 바뀐다.
