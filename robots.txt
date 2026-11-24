@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# 검색 비노출 페이지(코드 발급기·회원 케미·효과음 미리보기)는 각 페이지의 noindex 메타로 제어합니다.
+
+Sitemap: https://ksy7900-star.github.io/yoonise-oheng-aroma/sitemap.xml
