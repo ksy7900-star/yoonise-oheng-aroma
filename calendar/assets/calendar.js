@@ -6016,19 +6016,30 @@
     sfxOpen();
     try { if (window.SpecialGuide && SpecialGuide.refresh) SpecialGuide.refresh(); } catch (e) { }
   }
+  var payWaitItem = '';
+  function payWaitOrderItem() {
+    var o = payOrderRead();
+    return (o && o.item) || payWaitItem || 'pass';
+  }
   function syncPayWaitKakao(item) {
-    var a = $('#payWaitKakao');
+    var a = $('#payWaitKakao'), close = $('#payWaitClose');
+    if (item) payWaitItem = String(item);
     if (a) { a.hidden = false; }
-    var it = (payOrderRead() && payOrderRead().item) || item || 'pass';
-    var close = $('#payWaitClose');
-    if (close && !close.getAttribute('data-bind')) {
-      close.setAttribute('data-bind', '1');
-      close.addEventListener('click', function (e) {
+    /* 💬 카톡으로 코드 받기 — 결제는 됐는데 승인이 아직 안 온 경우의 마지막 길 */
+    if (a && !a.getAttribute('data-bind')) {
+      a.setAttribute('data-bind', '1');
+      a.addEventListener('click', function (e) {
         e.preventDefault();
         payWaitUi('hide');
+        var it = payWaitOrderItem();
         if (/^consult/.test(String(it))) { consultTier = String(it) === 'consult-sig' ? 'signature' : 'onepoint'; openShop('consult'); }
         else goKakaoOrder(it);
       });
+    }
+    /* 닫기 — 확인 화면만 닫는다 */
+    if (close && !close.getAttribute('data-bind')) {
+      close.setAttribute('data-bind', '1');
+      close.addEventListener('click', function (e) { e.preventDefault(); payWaitUi('hide'); });
     }
   }
 
