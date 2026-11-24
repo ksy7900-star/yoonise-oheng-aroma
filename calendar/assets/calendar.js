@@ -5898,7 +5898,7 @@
   function payPrepareSupported(item) { return !!payInfoOf(item) && !/^consult/.test(String(item)); }
 
   /* ── 결제 확인 화면(오버레이) ─────────────────────────────── */
-  function payWaitUi(mode) {
+  function payWaitUi(mode, code) {
     var box = $('#payWait');
     if (!box) return;
     var ic = $('#payWaitIc'), t = $('#payWaitT'), d = $('#payWaitD');
@@ -5914,7 +5914,8 @@
     } else if (mode === 'paid') {
       if (ic) ic.textContent = '🔓';
       if (t) t.textContent = '1년 전체가 열렸어요';
-      if (d) d.textContent = '결제 확인 완료 — 2026년 11월부터 2027년 12월까지 전부 열렸어요.';
+      if (d) d.textContent = '결제 확인 완료 — 2026년 11월부터 2027년 12월까지 전부 열렸어요.' +
+        (code ? ' 다른 기기에서도 보시려면 입장 코드 ' + code + ' 를 넣어 주세요.' : '');
     } else if (mode === 'canceled') {
       if (ic) ic.textContent = '💳';
       if (t) t.textContent = '결제가 취소됐어요';
@@ -5997,7 +5998,7 @@
     payWaitClear();
     if (!d) { if (uiMode) { payWaitUi('slow'); } return; }
     applyPaidUnlock(d);
-    if (uiMode) { payWaitUi('paid'); payWaitAutoHide(); }
+    if (uiMode) { payWaitUi('paid', d.code); payWaitAutoHide(); }
   }
   /** 서버가 확인해 준 코드로 이 기기를 바로 연다 — 코드 입력·카톡 없음 */
   function applyPaidUnlock(d) {
