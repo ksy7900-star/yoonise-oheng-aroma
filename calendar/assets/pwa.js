@@ -346,6 +346,39 @@
   showBar();
   markStandalone();
 
+  /* ── 자동 새로 고침은 '한 번'만 — 설치 앱에서는 주소를 바꾸지 않는다 ──────
+     (2026-11-24 #19032 · 설치 고객 앱이 다시 열 때 꺼지던 문제)
+     · 홈 화면에 깔린 앱(iOS standalone·안드로이드 WebAPK)에서 location.replace 로
+       주소(?v=)를 바꾸면 그건 '새로 고침'이 아니라 앱 밖으로 나가는 이동으로 처리된다.
+       iOS 는 사파리로 튕기고, 안드로이드 WebAPK 는 앱 창이 다시 뜬다 — 고객에게는 앱이 꺼진 것으로 보인다.
+       그래서 설치 앱에서는 주소를 그대로 두고 location.reload() 만 한다.
+     · 갱신 경로가 둘(cacheHeal · controllerchange)이라 같은 실행에서 두 번 넘어갈 수 있었다.
+       sessionStorage 에 시각을 남겨 새로 고쳐도 살아 있게 하고, 한 번 넘어가면 잠근다. */
+  var NAV_KEY = 'yoonise.nav.at';
+  var NAV_WINDOW = 20000;                 // 이 시간 안에는 자동 새로 고침을 다시 하지 않는다
+  function navLocked() {
+    try {
+      var t = parseInt(sessionStorage.getItem(NAV_KEY) || '0', 10);
+      return !!t && (Date.now() - t) < NAV_WINDOW;
+    } catch (e) { return false; }
+  }
+  function lockNav() {
+    try { sessionStorage.setItem(NAV_KEY, String(Date.now())); } catch (e) {}
+  }
+  /* nextUrl 이 있으면(브라우저 탭) 그 주소로, 없거나 설치 앱이면 같은 주소로 새로 고친다 */
+  function refreshOnce(nextUrl) {
+    if (document.visibilityState === 'hidden') return false;   // 앱이 뒤에 있으면 건드리지 않는다
+    if (navLocked()) return false;                             // 방금 넘어왔다 — 두 번 가지 않는다
+    lockNav();
+    try {
+      if (nextUrl && !isStandalone()) location.replace(nextUrl);
+      else location.reload();
+    } catch (e) {
+      try { location.reload(); } catch (e2) {}
+    }
+    return true;
+  }
+
   /* ── 서비스 워커 (network-first · skipWaiting · claim) ──
      · 등록할 때 updateViaCache:'none' — sw.js 자체가 브라우저 HTTP 캐시(max-age=600)에
        가려 새 버전 확인이 10분 밀리는 일을 막는다 (2026-11-24 #18768).
@@ -383,7 +416,7 @@
       if (didReload || !hadController) return;
       didReload = true;
       if (hasUnsavedInput()) return;      // 쓰던 글을 지우지 않는다 — 다음에 열 때 최신으로 뜬다
-      location.reload();
+      refreshOnce();                      // 설치 앱이면 주소 그대로 새로 고침 (앱이 닫히지 않게)
     });
 
     window.addEventListener('load', function () {
@@ -429,8 +462,11 @@
         if (!LIVE || LIVE === BUILD) return;
         if (LIVE < BUILD) return;          // 예전 파일이 섞여 와도 되돌리지 않는다
         if (cur === LIVE) return;          // 이미 새 주소로 왔다 — 다시 돌지 않는다
+        /* 설치 앱은 주소를 바꾸지 않는다 — 주소가 바뀌면 앱이 사파리·새 창으로 넘어가며 닫힌 것처럼 보인다.
+           (서비스 워커가 붙은 설치 앱은 같은 주소 새로 고침만으로 최신 HTML 이 온다 — sw.js 가 no-store) */
+        if (isStandalone()) { refreshOnce(); return; }
         u.searchParams.set('v', LIVE);
-        location.replace(u.toString());
+        refreshOnce(u.toString());
       }).catch(function () {});
     } catch (e) {}
   })();
