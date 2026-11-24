@@ -3541,6 +3541,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 뼈대 | 표제·인사·마음 짚기 도입·`님이 약해서가 아니에요`·서명 — 10명 모두 동일(고정 뼈대) |
 | 길이 | 1,255~1,420자 (카톡 한 메시지에 여유) |
 | 표본 문서 | `work/sg-v6/out-v6.md` · 점검 `work/sg-v6/audit.py` (quickjs 로 생성기 직접 실행) |
+| 전수 격자 800조합 (일간 10 × 영역 5 × 일지관계 4 × 오행 조합 4) | 길이 1,179~1,373자 · 규칙 위반 0 · `4. 실천 조언 3가지`가 2개로 줄어든 경우 0 — 통과 (`work/sg-v6/grid.py`) |
 | 배포본 | `calendar/assets/special-guide-draft.js` 라이브 SHA-256 동일(`248c3ad…`) · Pages build `built`(커밋 `0ced8e1`) |
 | 라이브 페이지 | `https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/yoon-key/?v=20261125l` HTTP 200 · 페이지 안에서 `SpecialGuideDraft.make()` 직접 호출 → 1,337자 · 금지어 0 — 통과 |
 | 캐시 | 파일만 바꾸면 옛 `?v=` 를 캐시한 기기가 예전 본문을 받는다(실제로 `j` 로 확인) — 내용이 바뀔 때마다 `?v=` 를 올린다. 지금은 `?v=20261125l` |
