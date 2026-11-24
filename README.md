@@ -771,6 +771,7 @@ python3 -m http.server 8000
 
 - **아이콘 3종(`calendar/assets/`)** — 2048px 원본을 그려 다운샘플. 크림 한지 바탕 + 먹 원판 + 금박 초승달 + 12시(時) 눈금 테두리.
   - `icon-192.png` 192×192 · 20,833B / `icon-512.png` 512×512 · 71,522B / `apple-touch-icon.png` 180×180 · 19,098B (모두 RGB, 투명 없음)
+  - → 2026-11-24 **§120에서 네이비·골드 해·달 아이콘으로 교체**(같은 파일 이름·같은 규격). 위 수치는 그때(한지·먹색) 기준 기록이다.
   - 생성 스크립트: `work/qa21k/make-icons.py` (원본 `work/qa21k/icon-master-2048.png` — 저장소 밖)
 - **manifest(`calendar/manifest.webmanifest`)** — `name` `윤이세 사주 달력` · `short_name` `사주달력` · `start_url`·`scope` `/yoonise-oheng-aroma/calendar/` · `display` `standalone` · `background_color`·`theme_color` `#F7F3EB` · `lang ko` · `orientation portrait` · 아이콘 192(any)/512(any)/512(maskable).
 - **`<head>`(`calendar/index.html`)** — `link[rel=manifest]` · `link[rel=apple-touch-icon sizes=180x180]` · `apple-mobile-web-app-capable` · `mobile-web-app-capable` · `apple-mobile-web-app-status-bar-style default` · `apple-mobile-web-app-title`·`application-name` `사주달력`. 기존 `theme-color #F7F3EB` 그대로.
@@ -3192,3 +3193,37 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 예전 화면(`?v=20261124z`) → `?v=20261124aa` 자가 치유 | 1회 이동 확인 (20261124y 도 동일) |
 
 **실기기 미검증**: iPhone(Safari/WebKit)·Android 실기기 홈 화면 설치 상태의 이름·아이콘 반영은 이 환경에서 확인 불가(Chromium 재현만). 이미 설치된 앱은 **새로 설치**해야 홈 화면 이름이 `사주타이밍` 으로 바뀐다(설치 라벨은 설치 시점 값).
+
+## §120. 🎨 앱 아이콘 교체 — 네이비 바탕 골드 해·달 (승인 1안 · ?v=20261124ab, 2026-11-24)
+
+김나영 님 승인(1안 = 해 + 초승달 겹침)에 따라 설치 아이콘 3종만 교체했다. **화면·기능·문구·PWA 식별자·URL·저장 데이터는 한 줄도 건드리지 않았다**(변경 파일 = 아이콘 3개 + `sw.js` `VERSION` + `index.html` 자산 쿼리).
+
+### 1. 파일 (`calendar/assets/`, 이름·규격 그대로)
+| 파일 | 규격 | 만든 법 | 크기 |
+|---|---|---|---|
+| `icon-512.png` | 512×512 | 승인본 `work/polish-20261124aa/icon-draft-1.png` **그대로 복사** (바이트 동일, sha256 `9bdf5384…aeb5c`) | 148,298B |
+| `icon-192.png` | 192×192 | 같은 1안 SVG 를 192 크기로 **직접 렌더**(벡터 → 픽셀, 다운샘플 없음) | 25,995B |
+| `apple-touch-icon.png` | 180×180 | 같은 SVG 를 180 으로 직접 렌더 | 23,591B |
+
+- 생성 스크립트: `work/polish-20261124ab/make_app_icons.py` (시안 원본 `work/polish-20261124aa/make_icons.py` 의 `SVG1` 을 그대로 불러 씀 — 승인본과 같은 그림).
+- 192·180 은 512 를 LANCZOS 로 줄인 본과 4배 확대 비교해 **테두리 번짐이 없는 직접 렌더본**을 택했다(`work/polish-20261124ab/compare-192-4x.png` · `compare-native-vs-lanczos.png`).
+- 3종 모두 **RGB·알파 없음**(옛 파일과 동일 조건), 파비콘은 원래대로 `data:image/svg+xml` 인라인(파일 없음) — 손대지 않았다.
+- 마스커블: manifest 의 `512 maskable` 이 같은 파일을 쓴다. 그림 전체가 중앙 80% 안전원(반지름 205px) 안에 들어온다(가장 바깥 = 해 왼쪽 끝 중심거리 198px) — 크롭해도 해·달이 잘리지 않는다.
+
+### 2. 버전
+- `sw.js` `VERSION` = `20261124ab` (캐시 이름 `yoonise-cal-20261124ab`), `index.html` CSS 1 + 스크립트 7 = **8곳 전부 `?v=20261124ab`**.
+- `manifest.webmanifest` 의 `id`·`start_url`·`scope`·`name`(`사주타이밍`)·`theme_color` 그대로. 아이콘 `src` 도 파일 이름이 같아 매니페스트는 무수정.
+- `pwa.js` 의 버전 견주기(`verKey`)는 `ab` 끼리 같으므로 자가 치유 이동이 일어나지 않는다(불필요한 새로 고침 없음).
+
+### 3. 검증 (로컬 `127.0.0.1:8111` = 저장소 그대로 서빙 · Chromium 390×844 · `work/polish-20261124ab/check_local.py`)
+| 항목 | 결과 |
+|---|---|
+| `icon-192` / `icon-512` / `apple-touch-icon` | 200 `image/png`, 실제 디코딩 **192²·512²·180²** |
+| `manifest.webmanifest` | 200 `application/manifest+json`, 아이콘 3항목 그대로(192 any / 512 any / 512 maskable) |
+| `sw.js` 등록 | `activated` · `controller` true · 캐시 `yoonise-cal-20261124ab` · `GET_VERSION` 응답 `20261124ab` |
+| head 자산 쿼리 | CSS·스크립트 8종 모두 `?v=20261124ab`, `pwa.js?v=20261124ab` |
+| Chrome 설치 판정 | `Page.getAppManifest` errors `[]` · `Page.getInstallabilityErrors` `[]` |
+| 콘솔 오류·pageerror | **0건** |
+| 화면 | 첫 화면·입력 폼 그대로(스크린샷 `local-390-top.png`) |
+
+**실기기 미검증**: 이미 홈 화면에 설치된 앱은 **아이콘이 자동으로 바뀌지 않는다**(설치 시점 아이콘 유지 — 안드로이드는 재설치 또는 런처 캐시 갱신, iOS는 삭제 후 다시 추가). 새로 설치하는 고객부터 새 아이콘이 보인다. 실기기 홈 화면 아이콘 모양(마스커블 크롭·iOS 라운드)은 이 환경에서 확인 불가.
