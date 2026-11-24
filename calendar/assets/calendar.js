@@ -3928,7 +3928,11 @@
       '@오늘은 작은 일 하나를 끝내기 좋은 하루예요.',
       '오늘 하루는 남의 속도에 맞추지 않아도 돼요.',
       '@오늘은 숨 고르기 딱 좋은 날이에요.',
-      '오늘은 크게 잘할 필요도, 애쓸 필요도 없는 날이에요.'
+      '오늘은 크게 잘할 필요도, 애쓸 필요도 없는 날이에요.',
+      '@오늘은 일부러 애쓰지 않아도 되는 하루예요.',
+      '오늘은 흐르는 대로 두어도 무리가 없는 날이에요.',
+      '@오늘은 한 가지도 서둘러 끝낼 필요가 없어요.',
+      '오늘 하루는 하고 싶은 만큼만 해도 충분해요.'
     ]
   };
   /* ② 왜 이런 날인지 — 그날 실제로 걸린 일진의 자리(충·형·해·귀인·합·재성·인성·절입).
@@ -4029,13 +4033,13 @@
   /* ④ 오늘 할 일 — 팝업과 같은 카드(dayCardOf)의 '챙길 것'을 그대로 쓴다.
      카드가 날마다 달라서 문장 내용도 날마다 달라진다. */
   var BR_DO = [
-    '그래서 오늘은 {k}, 이 하나만 해 두세요.',
-    '오늘 하나만 꼽으라면 {v} 거예요.',
-    '오늘은 {v} 정도로 충분해요.',
-    '여기서 하나만 더 한다면 {v} 거예요.',
-    '오늘은 {v} 것부터 해 보세요.',
-    '오늘 손에 잡을 건 {v} 거예요.',
-    '오늘 해 둘 건 {k}, 딱 이것 하나예요.'
+    '{k}, 이 하나만 해 두세요.',
+    '{v} 거예요.',
+    '{v} 정도로 충분해요.',
+    '{v} 것부터 해 보세요.',
+    '{k}, 딱 이것 하나예요.',
+    '하나만 꼽으라면 {v} 거예요.',
+    '여기서 하나만 더 한다면 {v} 거예요.'
   ];
   /* ⑤ 닫는 말 — 따뜻함 · 단호함 · 생활조언 · 응원 · 질문 · 담담함을
      날짜마다 돌려 쓴다(BR_TONES). 같은 결이 연달아 나오지 않는다. */
@@ -4160,6 +4164,7 @@
         var rec = {};
         rec.open = pick('open:' + sc.key, BR_OPEN[sc.key] || BR_OPEN.calm, d);
         if (sc.kind !== 'calm') rec.why = pick('why:' + sc.kind, BR_WHY[sc.kind], d);
+        rec.do = pick('do:' + sc.card.head, brDoFrames(sc.card.keep), d);
         rec.lookLead = (brHash('lead|' + sig + '|' + d) % 2) === 0;
         rec.close = pick('close:' + BR_TONES[(d + (brHash(sig) % 6)) % 6],
           BR_CLOSE[BR_TONES[(d + (brHash(sig) % 6)) % 6]], d);
@@ -4172,6 +4177,12 @@
     BR_SEQ_RECENT = recent;
     return BR_SEQ;
   }
+  /** 오늘 할 일 문장 틀 — 카드의 '챙길 것'이 '~하기'로 끝날 때만 {v} 틀을 쓴다 */
+  function brDoFrames(keep) {
+    var hasVerb = /기$/.test(String(keep || ''));
+    return BR_DO.filter(function (fr) { return hasVerb || fr.indexOf('{v}') < 0; });
+  }
+
   /** 오늘의 브리핑 — 제목 1줄 + 본문 3~5문장(HTML) + 오늘 할 일 */
   function briefOf(iso) {
     var sc = brScene(iso);
@@ -4201,10 +4212,10 @@
       }
       verb = stem + '는';
     }
-    var doFrames = BR_DO.filter(function (fr) { return verb || fr.indexOf('{v}') < 0; });
+    var doFrames = brDoFrames(keep);
     var doLine = '';
     if (keep) {
-      var fr = doFrames[brHash(sc.card.head + '|' + sigOf(sc)) % doFrames.length] || doFrames[0] || BR_DO[0];
+      var fr = doFrames[seq.do] || doFrames[0] || BR_DO[0];
       doLine = fr.replace('{k}', esc(keep)).replace('{v}', esc(verb));
     }
     var close = (BR_CLOSE[seq.tone] || BR_CLOSE.quiet)[seq.close] || '';
