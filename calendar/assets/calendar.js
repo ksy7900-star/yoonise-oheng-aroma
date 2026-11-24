@@ -168,6 +168,7 @@
   var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
   var CAL_FOLD_KEY = 'yoonise.timing.calFold.v2';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 사용자가 버튼으로 고른 상태만 기억, 저장값이 없으면 접힘 (#18624)
   var CAL_FOLD_LEGACY_KEY = 'yoonise.timing.calFold.v1';   // #18494 '기본 펼침' 시절 키 — 값은 읽지 않고 지우기만 한다 (#18624)
+  var TGUIDE_KEY = 'yoonise.timing.tguide.v1';   // 무료 체험 사용 안내 카드를 ✕로 닫은 기기 (2026-11-24 #18768)
   var trialStartMemo = '';
   var DOW_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
@@ -391,7 +392,7 @@
     return [STORE_KEY, MAIN_KEY, UNLOCK_KEY, LEGACY_UNLOCK_KEY, TRIAL_KEY, STAMP_KEY,
       DIARY_KEY, DIARY_TRY_KEY, NIGHT_KEY, WELCOME_KEY, GUIDE_KEY, PAYWAIT_KEY, PHONE_KEY,
       PICK_KEY, CARE_TRIAL_KEY, BURN_KEY, SOUND_KEY, REF_KEY, INVITED_KEY,
-      INVITE_NOTICE_KEY, FIRST_SAJU_KEY, CAL_FOLD_KEY];
+      INVITE_NOTICE_KEY, FIRST_SAJU_KEY, CAL_FOLD_KEY, TGUIDE_KEY];
   }
   function clearAllAppData() {
     var named = appDataKeys();
@@ -824,7 +825,34 @@
     if (pb) pb.hidden = (mode !== 'over');
     var pf = $('#passFoot');
     if (pf) pf.hidden = (mode !== 'on');
+    syncTrialGuide();                     // 무료 체험 중에만 TODAY 위 사용 안내 카드 (#18768)
     syncCtaCopy();                        // 구매 유도 버튼 이름표 — 고객 상태 4가지 (#18672)
+  }
+
+  /* ── 📖 무료 체험 사용 안내 카드 (2026-11-24 김나영 님 #18768) ─────────────────
+     · 사주를 넣은 무료 체험 손님에게만, TODAY 영역 바로 위에 작게 한 장.
+     · 체험이 끝나거나 이용권이 열린 기기에서는 자동으로 숨는다(보이기 상태만 다시 맞춘다).
+     · ✕로 닫으면 이 기기에서는 다시 뜨지 않는다 — localStorage `yoonise.timing.tguide.v1`.
+     · 72시간 특별 선물 카드·구매 버튼·결제 로직은 건드리지 않는다(별개 운영). */
+  function trialGuideClosed() {
+    try { return localStorage.getItem(TGUIDE_KEY) === '1'; } catch (e) { return false; }
+  }
+  function trialGuideOpen() {
+    if (!state.res) return false;                       // 사주 입력 전에는 없다
+    if (TEST_OPEN_ALL) return false;                    // 지인 테스트 — 전부 열린 상태라 안내 대상이 아니다
+    if (!FREE_TRIAL_ENABLED || state.unlocked) return false;   // 유료 이용권 활성 고객
+    var w = trialWindow();
+    if (!w) return false;
+    /* 앱을 켜 둔 채 자정을 넘겨도 그 자리에서 사라지게 — 기기 시계로 오늘을 다시 센다 */
+    var now = new Date();
+    var today = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+    if (today > w.end) return false;                    // 무료 체험 기간 종료
+    return !trialGuideClosed();
+  }
+  function syncTrialGuide() {
+    var el = $('#trialGuide');
+    if (!el) return;
+    el.hidden = !trialGuideOpen();
   }
 
   /* ── 🏷️ 구매 유도 버튼 이름표 — 고객 상태 4가지 (2026-11-24 김나영 님 #18672) ─────────────
@@ -9070,6 +9098,14 @@
     // 🎁 친구 초대 적용 안내 — ✕ 로 바로 닫는다 (소리 없이, 손가락도 한 번이면 되게)
     var inviteX = $('#inviteNoticeX');
     if (inviteX) inviteX.addEventListener('click', function (e) { e.preventDefault(); hideInviteNotice(); });
+
+    // 📖 무료 체험 사용 안내 카드 — ✕로 닫으면 이 기기에서는 다시 뜨지 않는다 (#18768)
+    var tguideX = $('#trialGuideX');
+    if (tguideX) tguideX.addEventListener('click', function (e) {
+      e.preventDefault();
+      try { localStorage.setItem(TGUIDE_KEY, '1'); } catch (err) {}
+      syncTrialGuide();
+    });
 
     // 📖 내 성찰 기록 보기 — 달력 아래 버튼
     var dbookBtn = $('#diaryBookBtn');

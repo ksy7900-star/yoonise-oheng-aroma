@@ -347,23 +347,54 @@
   markStandalone();
 
   /* ── 서비스 워커 (network-first · skipWaiting · claim) ──
-     · 등록 직후와 '화면이 다시 보일 때'마다 update() 로 새 sw.js 를 확인한다
+     · 등록할 때 updateViaCache:'none' — sw.js 자체가 브라우저 HTTP 캐시(max-age=600)에
+       가려 새 버전 확인이 10분 밀리는 일을 막는다 (2026-11-24 #18768).
+     · 등록 직후·'화면이 다시 보일 때'·'뒤로/앞으로 캐시로 돌아왔을 때(pageshow)'마다
+       update() 로 새 sw.js 를 확인한다.
      · 새 워커가 이 화면을 넘겨받으면(controllerchange) 딱 한 번 새로 고친다 —
-       앱을 켜 둔 채로 배포해도 예전 화면이 남지 않게 (2026-11-23 제보 #16176)
+       앱을 켜 두 채로 배포해도 예전 화면이 남지 않게 (2026-11-23 제보 #16176)
        (첫 설치에서 claim 으로 넘겨받는 경우엔 새로 고치지 않는다) */
   if ('serviceWorker' in navigator) {
     var hadController = !!navigator.serviceWorker.controller;
     var didReload = false;
+
+    /* 새로 고쳐도 안전한가 — 입력 중이거나 아직 저장 전인 글이 있으면 건드리지 않는다.
+       (localStorage 의 사주·1초 체크·결제 기록은 새로 고쳐도 그대로다. 지킬 것은 지금 쓰는 중인 글.) */
+    function hasUnsavedInput() {
+      try {
+        var el = document.activeElement;
+        var tag = (el && el.tagName ? el.tagName : '').toLowerCase();
+        if (tag === 'textarea' || tag === 'select') return true;
+        if (el && el.isContentEditable) return true;
+        if (tag === 'input') {
+          var t = (el.getAttribute('type') || 'text').toLowerCase();
+          if (t !== 'checkbox' && t !== 'radio' && t !== 'button' && t !== 'submit' && t !== 'range') return true;
+        }
+        /* 포커스가 빠져 있어도 저장 전 글이 남아 있으면 그대로 둔다 */
+        var diary = document.querySelector('#diaryText');
+        if (diary && String(diary.value || '').trim()) return true;
+        var nameIn = document.querySelector('#name');
+        if (nameIn && nameIn.offsetParent && String(nameIn.value || '').trim()) return true;
+      } catch (e) {}
+      return false;
+    }
+
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (didReload || !hadController) return;
       didReload = true;
+      if (hasUnsavedInput()) return;      // 쓰던 글을 지우지 않는다 — 다음에 열 때 최신으로 뜬다
       location.reload();
     });
+
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js', { scope: './' }).then(function (reg) {
+      navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).then(function (reg) {
         try { reg.update(); } catch (e) {}
         document.addEventListener('visibilitychange', function () {
           if (document.visibilityState !== 'visible') return;
+          try { reg.update(); } catch (e) {}
+        });
+        /* 홈 화면 앱을 다시 열거나 뒤로 돌아와도 새 배포를 확인한다 */
+        window.addEventListener('pageshow', function () {
           try { reg.update(); } catch (e) {}
         });
       }).catch(function () {});

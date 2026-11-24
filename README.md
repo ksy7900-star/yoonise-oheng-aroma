@@ -3047,3 +3047,52 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 ### 3. 무변경·검증
 - 결제 팝업 구조·`29,000원 → 14,900원 · 하루 40원`·`카드 · 간편결제 14,900원`·페이앱 `https://www.payapp.kr/L/z4otyE`·코드 발급/입증/활성화·7일 체험·72시간 조건·선물명 그대로. `정기결제`·`구독` 표현 없음.
 - 로컬 390×844 4상태(Supabase RPC 는 스텁으로 대체 — 실데이터 무변경): ①②③④ 문구·숨김·안내 정확히 일치, 각 버튼 클릭 시 결제 팝업 열림(링크 동일), ④ 구매 버튼 0개, 콘솔·페이지 오류 0건.
+
+## §116. ✨ 첫 화면 소개 문구 · 무료 체험 사용 안내 카드 · 새로고침 자동 업데이트 · 색감 개선 (#18768, 2026-11-24)
+
+자산: `calendar/index.html` · `calendar/assets/calendar.js` · `calendar/assets/pwa.js` · `calendar/assets/style.css` · `calendar/sw.js` · `calendar/manifest.webmanifest` · 버전 **`?v=20261124w`** (`sw.js` `VERSION = '20261124w'`)
+검증: `work/polish-20261124w/` (`cap.py`·`guide_check.py`·`sw_update_test.py`·`regress.py`·`sweep.py`)
+
+### 1. 첫 방문 소개 문구 (사주 입력 전 화면)
+```
+좋은 날은 놓치지 않고,
+조심할 날은 미리 알고.
+
+아침엔 나만의 운세를 확인하고,
+저녁엔 하루를 한 줄로 기록하세요.
+
+매일 쌓이는 기록이 나만의 2027년 일기가 됩니다.
+```
+- `.hero__hook`(짙은 네이비 판) = 첫 두 줄, `.hero__sub` = 둘째 문단, `.hero__sub--tail` = 셋째 문장. 제목 `내 사주 타이밍 달력`·배경·글꼴·구성·`내 사주 타이밍 달력 열기` 버튼과 입력 화면 이동은 그대로.
+- 첫 화면에 사주 입력창 추가·`7일 무료 체험`·가격·결제 유도·새 시작 버튼·안내 팝업 **없음**(LITE_MODE 로 1차 웰컴 팝업도 뜨지 않는다).
+
+### 2. 무료 체험 사용 안내 카드 `.tguide` (TODAY 위)
+- 제목 `윤이세 타이밍 달력 사용 안내` + 본문 2문단(원고 그대로), 우측 상단 ✕. 전체 화면 팝업 아님, 높이 112px(390)·107px(360).
+- 표시: 사주 입력을 마친 **무료 체험 중** 손님만(`state.res && FREE_TRIAL_ENABLED && !unlocked && 오늘 <= trialWindow().end`). 기기 시계로 오늘을 다시 세므로 앱을 켜 둔 채 자정을 넘겨도 사라진다.
+- ✕ → `localStorage['yoonise.timing.tguide.v1'] = '1'` (다시 자동 표시 안 함, `저장된 정보 지우기`에 포함).
+- 체험 종료·유료 이용권 활성 고객에게는 자동 숨김. 72시간 특별 선물 카드·구매 버튼·카운트다운·결제 로직 무변경(별개).
+
+### 3. 새로고침 한 번으로 최신 배포
+- `sw.js`: `VERSION`/`APP_VERSION` = `20261124w`. network-first fetch 에서 문서(policy)뿐 아니라 `script`·`style`·`manifest` 도 `{cache:'no-store'}` 로 받는다(이미지·폰트는 그대로). activate 에서 구버전 `yoonise-cal-*` 캐시 삭제 + `skipWaiting`/`claim` 유지, `GET_VERSION` 메시지 응답 추가.
+- `pwa.js`: `register('sw.js', {scope:'./', updateViaCache:'none'})` — sw.js 가 HTTP 캐시(max-age=600)에 가려 업데이트 확인이 10분 밀리던 문제 제거. `load`·`visibilitychange`·`pageshow` 마다 `reg.update()`. `controllerchange` 때 **입력 중이거나 저장 전 글(#diaryText·#name)이 있으면 새로 고치지 않고** 다음 열람에 최신으로 뜬다(사주·1초 체크·결제 기록은 그대로 남는다).
+- 호스팅·도메인·DB·localStorage 구조 변경 없음.
+
+### 4. 색감 개선 (색상 값만 — 배치·크기·문구·기능 무변경)
+| 토큰 | Before | After |
+|---|---|---|
+| `--bg` (페이지 바탕) | `#FAFBFD` | `#FAF4E9` |
+| `--bg-2` (카드 안 표면·입력칸) | `#F8FAFC` | `#FBF7EF` |
+| `--ink` | `#0F172A` | `#1A1712` |
+| `--ink-2` | `#334155` | `#3B352C` |
+| `--mute` | `#64748B` | `#6E665A` |
+| `--navy` | `#1E293B` | `#1B2940` |
+| `--gold` | `#B45309` | `#A5650F` |
+| `--coral` | `#BE123C` | `#C21F46` |
+| `--good-ink` / `--good-bg` | `#047857` / `#E6F7F1` | `#067F5B` / `#E8F8F2` |
+| `--warn-ink` / `--warn-bg` | `#8C3A2A` / `#FBE9E4` (lite) | `#A03826` / `#FDECE7` |
+| `--lite-up-ink` / `--lite-up-bg` | `#8A5A16` / `#FBF0D9` | `#8F5B12` / `#FDF4E1` |
+| `--lite-real-ink` / `--lite-real-bg` | `#35603F` / `#E9F1E2` | `#2E6A45` / `#EAF3E5` |
+| 한지 종이(`#FFFCF4`·`#FFFDFA`…) | — | `#FFFDF8` 로 통일 |
+| 히어로 배경 광 | 에메랄드+남색 | 골드 광(따뜻한 크림 위) |
+- 슬레이트 계열(`#F1F5F9`·`#E2E8F0`·`#CBD5E1`·`#94A3B8`·`#475569`)과 그림자 `rgba(15,23,42,…)` → 따뜻한 중성(`#F6F1E7`·`#E8E0D2`·`#CFC6B7`·`#9A9084`·`#4B4438`·`rgba(28,24,19,…)`)로 통일. 총 701곳(색상 값만).
+- 대비(WCAG): 본문 17.9:1 · 보조 5.7:1 · 골드 4.7:1 · 코랄 5.9:1 · ⚠️ 5.9:1 · ⚡ 5.2:1 · 🌿 5.7:1 — 3색 구분과 가독성 유지.

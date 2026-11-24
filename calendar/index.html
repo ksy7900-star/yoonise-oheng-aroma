@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>내 사주 타이밍 달력 | 윤이세사주</title>
 <meta name="description" content="생년월일만 넣으면 2027년 조심할 날·치고 나갈 날을 하루씩 짚어주고, 막힌 운을 태워 비우는 맞춤 사주 달력 · 윤이세사주">
-<meta name="theme-color" content="#FAFBFD">
+<meta name="theme-color" content="#FAF4E9">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="윤이세사주">
 <meta property="og:title" content="내 사주 2027년 길흉 달력 + 액운 태우기">
@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="타이밍달력">
 <meta name="application-name" content="타이밍달력">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124v">
+<link rel="stylesheet" href="assets/style.css?v=20261124w">
 </head>
 <body>
 
@@ -51,8 +51,9 @@
   <div class="hero__inner">
     <p class="hero__eyebrow">YOONISE · TIMING CALENDAR</p>
     <h1 class="hero__title">내 사주 <br><em>타이밍 달력</em></h1>
-    <p class="hero__hook">좋은 날은 살리고, <span class="hl">조심할 날은 미리 챙기세요.</span></p>
-    <p class="hero__sub">아침엔 오늘의 흐름을 확인하고, 저녁엔 나의 하루를 한 줄로 남기는 2027 사주 타이밍 달력.</p>
+    <p class="hero__hook">좋은 날은 놓치지 않고,<br><span class="hl">조심할 날은 미리 알고.</span></p>
+    <p class="hero__sub">아침엔 나만의 운세를 확인하고,<br>저녁엔 하루를 한 줄로 기록하세요.</p>
+    <p class="hero__sub hero__sub--tail">매일 쌓이는 기록이 나만의 2027년 일기가 됩니다.</p>
     <!-- 2026-11-24 #18311 — 제목 아래 3개의 콤팩트 바로가기
          · 달력이 열린 뒤(결과 화면)에만 보인다. 사주를 넣기 전에는 TODAY·달력이 없어서 숨긴다.
          · 새 기능을 만들지 않고 이미 있는 자리로만 보낸다.
@@ -244,6 +245,18 @@
         </div>
       </div>
     </div>
+
+    <!-- 📖 무료 체험 안내 카드 (2026-11-24 #18768)
+         · 보이는 조건: 사주를 넣은 **무료 체험 중** 손님만. 체험이 끝나거나 이용권이 열리면 자동으로 숨는다
+           (calendar.js syncTrialState → .tguide). 72시간 특별 선물 카드와는 별개다.
+         · 전체 화면 팝업이 아니라 TODAY 위의 작은 카드 한 장이고, ✕로 닫으면 다시 뜨지 않는다
+           (localStorage `yoonise.timing.tguide.v1`). -->
+    <section class="tguide" id="trialGuide" aria-labelledby="trialGuideT" hidden>
+      <button type="button" class="tguide__x" id="trialGuideX" aria-label="사용 안내 닫기">✕</button>
+      <h3 class="tguide__t" id="trialGuideT">윤이세 타이밍 달력 사용 안내</h3>
+      <p class="tguide__lead">좋은 날은 놓치지 않고, 조심할 날은 미리 알고.</p>
+      <p class="tguide__b">아침엔 오늘의 운세를 확인하고, 저녁엔 하루를 한 줄로 기록하세요. 매일 쌓이는 기록이 나만의 2027년 일기가 됩니다.</p>
+    </section>
 
     <!-- ──────── ✨ TODAY · 오늘의 운세 브리핑 (2026-11-24 #18370) ────────
          라벨 · 오늘 날짜 · 제목 1줄 · 본문 3~5문장 · `오늘 상세 운세 보기`
@@ -951,12 +964,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124v"></script>
-<script src="assets/manse.js?v=20261124v"></script>
-<script src="assets/timing.js?v=20261124v"></script>
-<script src="assets/chars.js?v=20261124v"></script>
-<script src="assets/calendar.js?v=20261124v"></script>
-<script src="assets/special-guide.js?v=20261124v"></script>
-<script src="assets/pwa.js?v=20261124v"></script>
+<script src="vendor/lunar.js?v=20261124w"></script>
+<script src="assets/manse.js?v=20261124w"></script>
+<script src="assets/timing.js?v=20261124w"></script>
+<script src="assets/chars.js?v=20261124w"></script>
+<script src="assets/calendar.js?v=20261124w"></script>
+<script src="assets/special-guide.js?v=20261124w"></script>
+<script src="assets/pwa.js?v=20261124w"></script>
 </body>
 </html>
