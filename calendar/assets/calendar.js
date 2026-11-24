@@ -4376,22 +4376,23 @@
     var raw = String(moods[rec.mood] || '');   // '🛡️ 선 지켰다' → '선 지켰다'
     return raw.replace(/^\S+\s*/, '') || '기록함';
   }
-  /* 2026-11-24 #18370 — 상태 문구는 지시서 그대로 `오늘 기록 전` / `오늘 기록 완료`.
-     고른 항목은 아래 작은 줄(#todayNightWhat)에만 조용히 덧붙인다. */
+  /* 2026-11-24 #18370 → #19883 — 카드 문구·버튼은 기록 전/후 고정(아래 주석 참고).
+     상태 칩 문구는 `오늘 기록 전` 하나만 쓴다. */
   function renderTodayNight() {
     var chip = $('#todayNight'), st = $('#todayNightState'), what = $('#todayNightWhat');
     if (!chip || !state.res) return;
     var rec = nightOf(state.todayISO);
     var label = todayNightLabel(rec);
     var done = !!label;
-    chip.classList.toggle('is-done', done);
-    if (st) st.textContent = done ? '오늘 기록 완료' : '오늘 기록 전';
+    /* 2026-11-24 #19883 — 카드 문구·버튼은 기록 전/후 같은 모습으로 고정한다.
+       제목 그대로 · 부제 그대로 · 네이비 알약 `1초 체크 · 한 줄 기록하기 →` 그대로.
+       초록 전환(is-done)과 `오늘 기록 완료` 칩은 쓰지 않고, 기록이 있으면 상태 칩만 감춘다
+       (`오늘 기록 전`이라고 잘못 말하지 않게). 팝업의 기록·수정 기능은 그대로. */
+    chip.classList.remove('is-done');
+    if (st) { st.textContent = '오늘 기록 전'; st.hidden = done; }
     var go = $('#todayNightGo');
-    if (go) go.textContent = done ? '오늘 기록 보기 · 수정 →' : '✏️ 1초 체크 · 한 줄 기록하기 →';
-    if (what) {
-      var memo = rec && rec.memo ? String(rec.memo) : '';
-      what.textContent = done ? (label + (memo ? ' · “' + memo + '”' : '')) : '오늘 기분은 어땠나요? 하루를 짧게 남겨보세요.';
-    }
+    if (go) go.textContent = '✏️ 1초 체크 · 한 줄 기록하기 →';
+    if (what) what.textContent = '오늘 기분은 어땠나요? 하루를 짧게 남겨보세요.';
     var aria = done
       ? '나의 1초 체크 오늘 기록 완료 — ' + label + '. 누르면 오늘 팝업에서 고치기'
       : '나의 1초 체크 오늘 기록 전. 누르면 오늘 팝업에서 기록하기';
