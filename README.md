@@ -2762,7 +2762,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 
 ## §109. 🔍 `20261124h` 전수 오류 점검 — 절입 경계 월주 · 없는 날짜 · 관리자 PIN 보안 · 추천 중복 (2026-11-24)
 
-자산: `calendar/assets/manse.js` · `calendar/assets/calendar.js` · `calendar/yoon-key/index.html` · `calendar/index.html` · `calendar/member/index.html` · `calendar/sw.js` · Supabase(`fifynkkaeqcjlovesuop`) · 버전 **`20261124i`**
+자산: `calendar/assets/manse.js` · `calendar/assets/calendar.js` · `calendar/yoon-key/index.html` · `calendar/index.html` · `calendar/member/index.html` · `calendar/sw.js` · Supabase(`fifynkkaeqcjlovesuop`) · 버전 **`20261124i` → 최종 `20261124j`**
 
 ### 1. 진태양시 + 절입 경계에서 월주가 한 달 어긋나던 문제 (P0)
 - `compute()` 가 절입 시각과 출생 시각을 비교할 때 **경도 보정(서울 32분)까지 빼 버려**, 진태양시를 켠 사람이 절입 직후 32분 안에 태어났으면 월주가 한 달 앞당겨졌다.
