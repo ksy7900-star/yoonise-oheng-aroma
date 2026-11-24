@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261124ad">
+<link rel="stylesheet" href="assets/style.css?v=20261124ae">
 </head>
 <body>
 
@@ -215,8 +215,9 @@
     <button type="button" class="sgift__toggle" id="specialGiftToggle" hidden>🎁 첫 3일 특별 선물 보기</button>
 
     <!-- 💳 결제하러 다녀온 손님 — 결제 후 '카톡으로 코드 받기' 한 걸음을 잃지 않게 (2026-11-21)
-         2.0 (2026-11-23): 결제·코드 화면은 화면에서만 감춤(.v2-parked). 코드는 그대로 보존 -->
-    <div class="payback v2-parked" id="payBack" hidden>
+         2026-11-24: 2.0 의 .v2-parked 를 풀었다 — 결제하고 돌아온 손님이 코드 받을 길을 잃지 않게.
+         (배너 자체는 평소 hidden 이고, 결제 복귀 기기에서만 payBackCheck() 가 연다) -->
+    <div class="payback" id="payBack" hidden>
       <p class="payback__t"><b>💳 결제하고 돌아오셨나요?</b><span id="payBackWhat"></span></p>
       <div class="payback__row">
         <button type="button" class="payback__go" id="payBackGo">💬 카톡으로 입장 코드 받기</button>
@@ -520,8 +521,9 @@
         <p class="howto__free">날짜를 누르면 팝업 아래 <b>✨ 오늘의 1줄 성찰</b>이 함께 나와요. 한 줄을 남긴 날은 달력 칸에 <b>작은 펜 점</b>이 찍혀요.</p>
       </details>
 
-      <!-- 📖 내 성찰 기록 모아보기 · .txt 백업 -->
-      <button type="button" class="diarybook v2-parked" id="diaryBookBtn">
+      <!-- 📖 내 성찰 기록 모아보기 · 백업/복원 — 2026-11-24: .v2-parked 를 풀어 다시 보이게
+           (기기를 바꾸기 전 기록을 지킬 수 있는 유일한 자리다) -->
+      <button type="button" class="diarybook" id="diaryBookBtn">
         <span class="diarybook__ico" aria-hidden="true">📖</span>
         <span class="diarybook__txt">내 성찰 기록 보기</span>
         <span class="diarybook__n" id="diaryBookCount" hidden></span>
@@ -778,6 +780,18 @@
     </footer>
   </div>
 
+  <!-- ───────── 사업자 정보 · 환불 규정 · 개인정보 안내 (2026-11-24)
+       story/ · apply/ 하단과 같은 표기. 사주를 넣기 전 첫 화면에서도 보이도록 #result 밖에 둔다.
+       (결제·상담은 /apply/·카톡으로 이어지므로, 결제 화면에도 같은 정보가 있어야 한다) -->
+  <section class="foot foot--legal" aria-label="사업자 정보 · 환불 규정 · 개인정보 안내">
+    <p class="foot__biz"><b>엔와이트레이드</b> · 대표 김나영 · 사업자등록번호 219-07-67996<br>
+      통신판매업 신고 제2022-부산부산진-1013호<br>
+      경남 거제시 거제중앙로15길 18 302호(사무실) / 경북 영덕군 영해면 연평3길 36(사업장)<br>
+      문의 카카오톡 채널 ‘윤이세사주’</p>
+    <p class="foot__legal"><b>환불·청약철회</b> 결제 후 입장코드 발급 및 서비스 이용 개시 시 디지털 콘텐츠 특성상 청약철회가 제한될 수 있습니다. 미사용·오류 시 7일 이내 고객센터(카카오톡 채널)로 문의해 주세요.</p>
+    <p class="foot__legal"><b>개인정보처리방침</b> 생년월일·사주와 성찰·저녁 기록은 이 기기 브라우저에만 저장되고 서버로 보내지 않습니다. 결제는 결제대행사(페이앱)가 처리하며, 1:1 상담을 접수하실 때에만 입력하신 내용과 연락처가 접수처에 저장됩니다. 저장된 정보는 화면의 ‘저장된 정보 지우기’로 언제든 지울 수 있습니다.</p>
+  </section>
+
   <!-- 📲 앱 설치 — 설치 배너를 닫았거나 기록이 남아도 언제든 다시 (2026-11-21)
        달력이 열린 뒤에는 달력 하단 `📲 앱 설치` 가 맡는다 -->
   <div class="appshelf v2-parked" id="appShelf">
@@ -917,7 +931,7 @@
 </div>
 
 <!-- ───────── 📖 내 성찰 기록 모아보기 · 백업 ───────── -->
-<div class="modal modal--dbook v2-parked" id="diaryBookModal" hidden>
+<div class="modal modal--dbook" id="diaryBookModal" hidden>
   <div class="modal__backdrop" data-dbook-close></div>
   <div class="modal__dialog modal__dialog--dbook" id="diaryBookDialog" role="dialog" aria-modal="true" aria-labelledby="dbookTitle" tabindex="-1">
     <div class="modal__topbar">
@@ -977,12 +991,12 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261124ad"></script>
-<script src="assets/manse.js?v=20261124ad"></script>
-<script src="assets/timing.js?v=20261124ad"></script>
-<script src="assets/chars.js?v=20261124ad"></script>
-<script src="assets/calendar.js?v=20261124ad"></script>
-<script src="assets/special-guide.js?v=20261124ad"></script>
-<script src="assets/pwa.js?v=20261124ad"></script>
+<script src="vendor/lunar.js?v=20261124ae"></script>
+<script src="assets/manse.js?v=20261124ae"></script>
+<script src="assets/timing.js?v=20261124ae"></script>
+<script src="assets/chars.js?v=20261124ae"></script>
+<script src="assets/calendar.js?v=20261124ae"></script>
+<script src="assets/special-guide.js?v=20261124ae"></script>
+<script src="assets/pwa.js?v=20261124ae"></script>
 </body>
 </html>

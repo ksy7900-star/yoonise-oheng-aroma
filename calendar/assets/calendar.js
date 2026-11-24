@@ -668,13 +668,22 @@
   }
 
   function openForm() {
-    /* 코드로 열린 캘린더는 그 1명의 사주에 묶여 있다 — 다른 사람 사주를 넣는 길을 열지 않는다 (#9247) */
+    /* 코드로 열린 캘린더 — **예전 사주 기반 코드**만 그 1명의 사주에 묶여 다른 사주를 받지 않는다 (#9247).
+       지금 쓰는 번호 기반 코드는 이 기기에 열린 것이라 사주를 바꿔도 그대로 열린다(syncLockUI 와 같은 기준).
+       2026-11-24: 그래서 수정 버튼을 막지 않고 열어 준다 — 생년월일·시간을 잘못 넣은 손님이 스스로 고칠 수 있게.
+       사주에 묶인 코드만 한 번 확인을 받는다(고치면 그 코드가 다시 잠길 수 있다). */
     if (state.unlocked) {
-      var id = currentIdentity();
-      toast('🔒 ' + (id ? id.label : '이') + ' 전용 캘린더예요 — 다른 사주는 새 코드가 필요해요');
-      var b = $('#editBtn');
-      if (b) { b.classList.remove('is-refuse'); void b.offsetWidth; b.classList.add('is-refuse'); }
-      return;
+      var phoneBound = !!(state.code && state.code.phone);
+      if (!phoneBound) {
+        var ok = window.confirm('사주 정보를 수정하면 이 코드가 다시 잠길 수 있어요.\n성찰·저녁 기록은 그대로 남습니다. 수정하시겠어요?');
+        if (!ok) {
+          var b0 = $('#editBtn');
+          if (b0) { b0.classList.remove('is-refuse'); void b0.offsetWidth; b0.classList.add('is-refuse'); }
+          return;
+        }
+      } else {
+        toast('✏️ 사주 정보를 고칠 수 있어요 — 기록은 그대로 남아요');
+      }
     }
     document.body.classList.remove('is-result');
     $('#formCard').hidden = false;
@@ -1664,6 +1673,12 @@
     saveNight();
     return rec.mood || rec.memo ? rec : null;
   }
+  /** 이 기기에 남긴 저녁 체크 일수 (전체) — 기록 보기 버튼의 표시 조건에 쓴다 */
+  function nightCountAll() {
+    var n = 0;
+    for (var k in night.entries) if (Object.prototype.hasOwnProperty.call(night.entries, k)) n++;
+    return n;
+  }
   /** 이 달에 기록을 남긴 날 수 */
   function nightCountOf(y, m) {
     var n = 0, head = y + '-' + (m < 10 ? '0' + m : m) + '-';
@@ -1961,6 +1976,93 @@
     }
   }
 
+  /* ── 📦 백업 · 복원 (2026-11-24) ─────────────────────────────────
+     .txt 는 사람이 읽는 성찰 기록만 담는다. 기기를 바꾸거나 브라우저 기록을 지우면
+     사주·저녁 1초 체크·부적 도장이 함께 사라지므로, 되살릴 수 있는 .json 백업을 하나 둔다.
+       담는 것 : 사주 입력(STORE_KEY) · 저녁 1초 체크(NIGHT_KEY) · 부적 도장(STAMP_KEY) · 성찰(DIARY_KEY)
+       담지 않는 것 : 입장 코드(UNLOCK_KEY) — 카톡으로 받은 코드를 새 기기에서 다시 넣으면 그대로 열린다.
+     복원은 저장된 값만 바꾸고 화면을 새로 고쳐, 평소 기기로 열 때와 똑같은 길로 다시 읽게 한다. */
+  var BACKUP_APP = 'yoonise-timing-backup';
+  var BACKUP_KEYS = [STORE_KEY, NIGHT_KEY, STAMP_KEY, DIARY_KEY];
+  function backupPayload() {
+    var keys = {};
+    BACKUP_KEYS.forEach(function (k) {
+      var raw = null;
+      try { raw = localStorage.getItem(k); } catch (e) { raw = null; }
+      if (!raw) return;
+      var v = null;
+      try { v = JSON.parse(raw); } catch (e) { v = raw; }
+      keys[k] = v;
+    });
+    return { app: BACKUP_APP, v: 1, at: new Date().toISOString(), keys: keys };
+  }
+  function downloadBackup() {
+    var text = JSON.stringify(backupPayload(), null, 1);
+    var name = '윤이세_타이밍달력_백업_' + state.todayISO.replace(/-/g, '') + '.json';
+    try {
+      var blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 3000);
+      toast('📦 사주·기록 백업 파일을 내려받았어요 — 새 기기에서 복원할 수 있어요');
+    } catch (e) {
+      copyText(text, function (copied) {
+        toast(copied === true ? '파일 저장이 막혀 백업 내용을 복사했어요 — 메모장에 붙여 두세요' : '파일 저장·복사가 막혀 있어요');
+      });
+    }
+  }
+  /** 백업 파일 고르기 — 손가락으로 고른 파일만 읽는다(자동으로 아무것도 하지 않는다) */
+  function pickBackupFile() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.json,application/json';
+    inp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(inp);
+    var cleanup = function () { setTimeout(function () { try { document.body.removeChild(inp); } catch (e) {} }, 800); };
+    inp.addEventListener('change', function () {
+      var f = inp.files && inp.files[0];
+      if (!f) { cleanup(); return; }
+      var reader = new FileReader();
+      reader.onload = function () { var raw = String(reader.result || ''); cleanup(); restoreBackup(raw); };
+      reader.onerror = function () { cleanup(); toast('파일을 읽지 못했어요 — 다시 시도해 주세요'); };
+      reader.readAsText(f);
+    });
+    inp.click();
+  }
+  function restoreBackup(raw) {
+    var o = null;
+    try { o = JSON.parse(String(raw || '').replace(/^\uFEFF/, '')); } catch (e) { o = null; }
+    if (!o || o.app !== BACKUP_APP || !o.keys || typeof o.keys !== 'object') {
+      toast('이 앱의 백업 파일이 아니에요 — 내려받은 .json 파일을 골라 주세요');
+      return;
+    }
+    var write = [];
+    BACKUP_KEYS.forEach(function (k) {
+      if (!Object.prototype.hasOwnProperty.call(o.keys, k)) return;
+      var v = o.keys[k];
+      if (v == null) return;
+      write.push([k, typeof v === 'string' ? v : JSON.stringify(v)]);
+    });
+    if (!write.length) { toast('백업 파일에 되살릴 기록이 없어요'); return; }
+    var when = o.at ? koDate(o.at) : '';
+    var ok = window.confirm((when ? when + '에 받은 ' : '') + '백업 파일로 이 기기의 기록을 바꿉니다.\n' +
+      '지금 이 기기의 사주·기록은 덮어써요. 계속할까요?');
+    if (!ok) return;
+    try {
+      write.forEach(function (w) { localStorage.setItem(w[0], w[1]); });
+    } catch (e) {
+      toast('이 브라우저에서는 저장이 막혀 있어 복원할 수 없어요');
+      return;
+    }
+    toast('✅ 복원했어요 — 화면을 새로 고릅니다');
+    setTimeout(function () { try { location.reload(); } catch (e) {} }, 800);
+  }
+
   var dbookEl = null, dbookBody = null, dbookDialog = null, dbookLastFocus = null, dbookClosing = false;
 
   function diaryBookHTML() {
@@ -1996,8 +2098,13 @@
           '<button type="button" class="dbook__act dbook__act--gold" data-diary-dl>.txt로 내려받기</button>' +
           '</div>'
         : '') +
+      /* 📦 기기를 바꿔도 되살릴 수 있는 백업 — 사람이 읽는 .txt 와 별도로 둔다 (2026-11-24) */
+      '<div class="dbook__acts">' +
+      '<button type="button" class="dbook__act dbook__act--gold" data-backup-dl>📦 백업 파일 저장</button>' +
+      '<button type="button" class="dbook__act" data-backup-up>↩️ 백업 파일로 복원</button>' +
+      '</div>' +
       body +
-      '<p class="dbook__note">성찰 기록은 <b>이 브라우저에만</b> 저장돼요. 기기를 바꾸거나 브라우저 기록을 지우면 사라지니, 가끔 .txt로 내려받아 두세요.</p>'; 
+      '<p class="dbook__note">백업 파일(.json)에는 <b>사주 정보 · 저녁 1초 체크 · 성찰 기록 · 부적 도장</b>이 함께 담겨요. 입장 코드는 담기지 않으니 새 기기에서 카톡 코드를 다시 넣어 주세요. 기록은 <b>이 브라우저에만</b> 저장되니 기기를 바꾸기 전에 한 번 저장해 두세요.</p>'; 
   }
   function openDiaryBook() {
     if (!dbookEl) return;
@@ -4758,7 +4865,9 @@
       bk.hidden = !nNote;
     }
     var bookBtn = $('#diaryBookBtn');
-    if (bookBtn) bookBtn.hidden = !diaryAllowed();
+    /* 2026-11-24 — 성찰 기록이 없어도 저녁 1초 체크가 있다면 백업할 것이 있다.
+       (백업/복원은 글을 쓴 사람만의 것이 아니라, 이 기기에 쌓인 기록 전부의 것이다) */
+    if (bookBtn) bookBtn.hidden = !(diaryAllowed() || diaryCount() > 0 || nightCountAll() > 0);
   }
 
   /* ── 달력 아래: 이 달 조심할 날 · 좋은 날 목록 ─────────── */
@@ -9099,6 +9208,8 @@
           return;
         }
         if (e.target.closest('[data-diary-dl]')) { downloadDiary(); return; }
+        if (e.target.closest('[data-backup-dl]')) { downloadBackup(); return; }
+        if (e.target.closest('[data-backup-up]')) { pickBackupFile(); return; }
         if (e.target.closest('[data-dbook-today]')) {
           // 기록 보기에서 바로 오늘 성찰칸으로 — 보기 팝업을 닫고 오늘 날짜 팝업을 연 뒤 성찰 카드로 내려간다
           closeDiaryBook();

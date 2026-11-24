@@ -790,6 +790,18 @@ body[data-trial="off"] .day--past .day__badges { visibility: visible; }
 
 /* ── 푸터 ─────────────────────────────────────────── */
 .foot { padding: 26px 8px 8px; text-align: center; }
+/* 사업자 정보 · 환불 규정 · 개인정보 안내 — story/ · apply/ 하단과 같은 표기 (2026-11-24) */
+.foot--legal { padding: 22px 8px 30px; margin-top: 18px; border-top: 1px solid var(--hair-soft); }
+.foot__biz {
+  max-width: 340px; margin: 0 auto;
+  font-size: 10px; line-height: 1.85; color: var(--mute); word-break: keep-all;
+}
+.foot__biz b { font-weight: 700; color: var(--ink-2); }
+.foot__legal {
+  max-width: 340px; margin: 12px auto 0; text-align: left;
+  font-size: 9.5px; line-height: 1.72; color: var(--mute); word-break: keep-all;
+}
+.foot__legal b { margin-right: 4px; font-weight: 700; color: var(--ink-2); }
 .ghost-link {
   background: none; border: 0; padding: 6px 10px;
   font-size: 11px; color: var(--mute); text-decoration: underline; text-underline-offset: 3px;
@@ -5276,6 +5288,8 @@ body.is-lite .savedbar__meta { font-size: 11px; line-height: 1.55; margin-top: 4
   border-radius: 6px;
   font-family: var(--serif); font-size: 13px; font-weight: 700; line-height: 1;
   letter-spacing: 0;
+  /* 2026-11-24 — 두 글자가 한 덩어리로 뭉치지 않게: 칩이 줄어들지 않고 글자도 붙지 않는다 */
+  flex: 0 0 auto; white-space: nowrap; overflow: visible;
 }
 /* 원국표(#natal .natal__tile)와 같은 오방색 토큰만 쓴다 — 목 연두 · 화 분홍 · 토 노랑 · 금 흰/회 · 수 짙은남색 */
 .natalmini__chip--목 { background: var(--ob-wood-bg);  color: var(--ob-wood-ink); }
@@ -5773,6 +5787,8 @@ body.has-bonus .js-trial{ display: none !important; }
   letter-spacing:-.01em; color:var(--gold-deep);
   text-decoration:underline; text-underline-offset:3px;
   text-decoration-color:rgba(165,101,15,.4);
+  /* 2026-11-24 — 카드 테두리 밖으로 나가던 문제: 글자가 길어지면 칸 안에서 줄을 바꾼다 */
+  max-width:100%; min-width:0; flex-wrap:wrap; overflow-wrap:anywhere;
 }
 .sgift__quick span{font-size:11px}
 .sgift__quick:active{opacity:.72}
