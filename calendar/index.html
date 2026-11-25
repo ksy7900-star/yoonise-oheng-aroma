@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126o">
+<link rel="stylesheet" href="assets/style.css?v=20261126p">
 </head>
 <body>
 
@@ -60,11 +60,45 @@
          · 달력이 열린 뒤(결과 화면)에만 보인다. 사주를 넣기 전에는 TODAY·달력이 없어서 숨긴다.
          · 새 기능을 만들지 않고 이미 있는 자리로만 보낸다.
            아침 운세 = TODAY 카드 · 타이밍 달력 = 월별 달력 · 저녁 기록 = 오늘 팝업의 1초 체크·한 줄 메모 -->
+    <!-- 2026-11-26 — 앱 공유: 상단 헤더 오른쪽, 바로 아래 3개 바로가기(아침 운세·타이밍 달력·저녁 기록)의
+         `저녁 기록` 바로 위에 붙는다. 누르면 기기 기본 공유창(navigator.share)으로 이 앱을 보낸다.
+         · 친구 초대·추천(?ref=)과는 다른 일반 앱 공유 — 주소에 ?ref=·이름·생년월일·시간·성별·
+           휴대폰 번호를 한 글자도 붙이지 않고, 앱 기본 주소만 보낸다(calendar.js `shareApp`). -->
+    <div class="hero__share">
+      <button type="button" class="appshare" id="appShare">
+        <span class="appshare__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg></span><span>앱 공유</span>
+      </button>
+    </div>
     <nav class="hero__jump" id="heroJump" aria-label="바로가기" hidden>
       <button type="button" class="hjump" data-hjump="morning"><span class="hjump__ic" aria-hidden="true">☀️</span>아침 운세</button>
       <button type="button" class="hjump" data-hjump="cal"><span class="hjump__ic" aria-hidden="true">🗓️</span>타이밍 달력</button>
       <button type="button" class="hjump" data-hjump="night"><span class="hjump__ic" aria-hidden="true">🌙</span>저녁 기록</button>
     </nav>
+    <!-- 2026-11-26 #21914 — `운세 외에도 이런 재미가 있어요` 4가지 바로가기
+         · 자리: 3개 바로가기(아침 운세 · 타이밍 달력 · 저녁 기록) 바로 아래.
+         · 새 기능을 만들지 않는다 — 이미 있는 상세 카드 3장(#burnCard · #duoCard · #careCard)으로
+           바로 보낸다. 4개 칸(`MORE · 더 해 볼 것`)과 같은 `moreOpen` 을 써서, 누른 기능 한 장만
+           펼친 채로 그 자리로 간다(추가 기능 탭으로만 가는 것이 아니다).
+         · 사주를 넣기 전에 누르면 — 입력칸으로 안내하고 그 기능을 기억해 두었다가,
+           사주 저장·렌더가 끝나면 그 카드를 그대로 열어 준다(calendar.js `featureJump`·`runPendingFeature`).
+         · 긴급 개운템은 기존 방식 그대로 카드 안 `바탕화면에 꺼내 두기`(앱에서는 `지금 열어 보기`)로 이어진다. -->
+    <div class="hero__fun" id="heroFun">
+      <p class="hero__fun__t">운세 외에도 이런 재미가 있어요</p>
+      <div class="hero__fun__row">
+        <button type="button" class="hfun" data-feature="burn">
+          <span class="hfun__ic" aria-hidden="true">🔥</span><span class="hfun__l">액운 태우기</span>
+        </button>
+        <button type="button" class="hfun" data-feature="chemi">
+          <span class="hfun__ic" aria-hidden="true">✨</span><span class="hfun__l">케미테스트</span>
+        </button>
+        <button type="button" class="hfun" data-feature="talis">
+          <span class="hfun__ic" aria-hidden="true">🛡️</span><span class="hfun__l">1년 수호부적</span>
+        </button>
+        <button type="button" class="hfun" data-feature="care">
+          <span class="hfun__ic" aria-hidden="true">⚡</span><span class="hfun__l">긴급 개운템</span><span class="hfun__n">앱 전용</span>
+        </button>
+      </div>
+    </div>
     <ul class="hero__facts">
       <li>절기 시각까지 반영</li>
       <li class="js-trial-over">무료 체험 종료 · 코드로 열기</li>
@@ -1046,13 +1080,13 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126o"></script>
-<script src="assets/manse.js?v=20261126o"></script>
-<script src="assets/timing.js?v=20261126o"></script>
-<script src="assets/chars.js?v=20261126o"></script>
-<script src="assets/brief.js?v=20261126o"></script>
-<script src="assets/calendar.js?v=20261126o"></script>
-<script src="assets/special-guide.js?v=20261126o"></script>
-<script src="assets/pwa.js?v=20261126o"></script>
+<script src="vendor/lunar.js?v=20261126p"></script>
+<script src="assets/manse.js?v=20261126p"></script>
+<script src="assets/timing.js?v=20261126p"></script>
+<script src="assets/chars.js?v=20261126p"></script>
+<script src="assets/brief.js?v=20261126p"></script>
+<script src="assets/calendar.js?v=20261126p"></script>
+<script src="assets/special-guide.js?v=20261126p"></script>
+<script src="assets/pwa.js?v=20261126p"></script>
 </body>
 </html>

@@ -609,12 +609,14 @@
         $('#result').hidden = false;
         document.body.classList.add('is-result');   // 달력이 열리면 히어로는 얇은 브랜드 줄로 접힌다
         render();
+        var pendingOpened = runPendingFeature();   // #21914 — 첫 화면에서 골라 둔 기능이 있으면 그 카드를 연다
         payBackCheck();      // 결제하고 돌아온 기기라면 사주를 넣자마자 맨 위에 '카톡으로 코드 받기' 한 줄
         if (!codeOk && state.mismatch) {
           toast('🔒 이 코드는 ' + codeOwnerLabel(state.mismatch.code) + ' 전용이에요 — ' +
             (trialOver() ? '무료 체험도 끝나 지금은 잠겨 있어요' : '지금 사주로는 ' + FREE_DAYS + '일 무료 체험만 열려요'));
         }
-        $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        /* #21914 — 첫 화면에서 기능을 골라 두었으면 그 카드로 바로 내려간다(위 #result 로 말지 않는다) */
+        if (!pendingOpened) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         maybeAutoGuide();     // 달력이 처음 열린 기기라면 사용법 팝업 한 번
         /* 🎁 첫 3일 특별 선물 — '달력이 실제로 열린 시점'을 서버에 남기고 안내를 그린다.
            입력창만 열거나 새로고침한 것으로는 바뀌지 않는다(서버가 client_uid 로 한 번만 기록). */
@@ -5507,6 +5509,59 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════
+     2026-11-26 #21914 — 헤더 `운세 외에도 이런 재미가 있어요` 4가지 바로가기
+     · 새 기능을 만들지 않는다. 위 4칸(`MORE · 더 해 볼 것`)과 **같은** moreOpen 으로
+       이미 있는 상세 카드(#burnCard · #duoCard · #careCard) 한 장만 펼쳐 그 자리로 간다.
+       '추가 기능' 탭으로만 보내는 것이 아니다.
+     · 사주를 넣기 전(첫 방문)·수정 화면에서 누르면 — 그 기능을 기억해 두고 사주 입력칸으로
+       안내한다. 사주를 저장하고 달력이 그려진 직후(onSubmit → runPendingFeature) 그 카드가 열린다.
+     · 긴급 개운템도 다른 기능과 같은 길 — 카드 안 기존 `바탕화면에 꺼내 두기`(앱에서는 `지금 열어 보기`)가
+       설치 안내·앱 전용 동작을 그대로 맡는다. */
+  var FEATURE_NAME = { burn: '액운 태우기', chemi: '케미테스트', talis: '1년 수호부적', care: '긴급 개운템' };
+  var pendingFeature = '';
+  function featureJump(kind) {
+    if (!FEATURE_NAME[kind]) return;
+    var resultShown = !!(state.res && $('#result') && !$('#result').hidden);
+    if (!resultShown) {
+      pendingFeature = kind;
+      var form = $('#formCard');
+      if (form && form.hidden) form.hidden = false;
+      toast('🌱 사주를 넣고 나면 ' + FEATURE_NAME[kind] + ' 카드가 바로 열려요');
+      jumpToEl(form);
+      return;
+    }
+    vibrate(12);
+    moreOpen(kind, true);
+  }
+  /** 사주 저장·렌더 직후 — 첫 방문에 골라 두었던 기능을 그대로 열어 준다(한 번만)
+      · 카드를 먼저 펼쳐 둔 뒤(레이아웃이 끝난 뒤) 그 카드로 내려간다.
+      · 사주를 열며 `#result` 로 올라가던 스크롤과 싸우지 않게, 이때는 onSubmit 이
+        `#result` 로 스크롤하지 않는다(그 한 줄만 비켜 준다). */
+  function runPendingFeature() {
+    var kind = pendingFeature;
+    pendingFeature = '';
+    if (!kind) return false;
+    var el = moreOpen(kind, false);
+    toast('✨ ' + FEATURE_NAME[kind] + ' 카드를 열었어요');
+    if (!el) return true;
+    /* 사주를 열면 앱이 스스로 다른 곳으로 스크롤한다 — 안내 팝업(스크롤 잠김),
+       첫 결제 유도 카드(특별 선물)로 내려가는 스크롤 등. 그래서 한 번만 부르면 덮어쓴다.
+       → 몇 번만 다시 맞춘다. 팝업이 떠 있으면 기다렸다가, 손님이 직접 스크롤하면 그만둔다. */
+    var cancelled = false;
+    try {
+      window.addEventListener('wheel', function () { cancelled = true; }, { passive: true, once: true });
+      window.addEventListener('touchmove', function () { cancelled = true; }, { passive: true, once: true });
+    } catch (e) { }
+    [250, 800, 1400, 2200, 3000].forEach(function (ms) {
+      setTimeout(function () {
+        if (cancelled || anyModalOpen()) return;
+        if (Math.abs(el.getBoundingClientRect().top) > 40) jumpToEl(el);
+      }, ms);
+    });
+    return true;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
      2026-11-24 #18494 → #18624 — '이번 달 나의 타이밍'에서 달력 접기·펼치기
      · 요약(⚠️·⚡·🌿 일수)은 늘 보이고, 달력 본문(#calBody)만 접힌다.
      · 처음(저장값 없음)은 **접힘** — 사주를 넣은 직후에도 요약만 보이고 달력은 접혀 있다 (#18624).
@@ -6489,6 +6544,39 @@
     // 카카오톡 채널 채팅방으로 이동 — referrer 없이(noreferrer) 새 창으로
     openNoRef(KAKAO);
   }
+  /* ── 2026-11-26 — 상단 헤더 `앱 공유` ────────────────────────────────
+     기기 기본 공유창(navigator.share)을 연다. 카카오톡·문자·링크 복사 등은 그 창이 맡는다.
+     · 주소는 **앱 기본 주소 한 가지**만 쓴다. 친구 초대·추천(?ref=)과 다른 일반 공유라서
+       ?ref=·이름·생년월일·태어난 시간·성별·휴대폰 번호를 한 글자도 붙이지 않는다.
+     · navigator.share 가 없는 브라우저(카톡 인앱 일부·옛 사파리)는 주소만 복사하고 토스트로 알린다.
+     · 사용자가 공유창을 닫은 것(AbortError)은 오류가 아니므로 아무것도 띄우지 않는다. */
+  var APP_SHARE_URL = 'https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/';
+  var APP_SHARE_TITLE = '사주타이밍 · 내 사주 타이밍 달력';
+  var APP_SHARE_TEXT = '2027년 내 사주 타이밍 달력 — 아침엔 오늘의 흐름을 확인하고, 저녁엔 하루를 한 줄로 기록하는 운세 다이어리.';
+  function shareApp() {
+    function copyFallback() {
+      copyText(APP_SHARE_URL, function (copied) {
+        toast(copied === true
+          ? '🔗 앱 주소를 복사했어요 — 카톡·문자에 붙여 보내 주세요'
+          : '앱 주소: ' + APP_SHARE_URL);
+      });
+      vibrate(18);
+    }
+    if (navigator.share) {
+      try {
+        navigator.share({ title: APP_SHARE_TITLE, text: APP_SHARE_TEXT, url: APP_SHARE_URL }).then(function () {
+          vibrate(12);
+        }, function (err) {
+          var n = (err && err.name) || '';
+          if (n === 'AbortError') return;   // 사용자가 닫음 — 오류 아님
+          copyFallback();
+        });
+        return;
+      } catch (e) { /* 공유 객체를 못 만드는 브라우저 — 아래 복사로 */ }
+    }
+    copyFallback();
+  }
+
   /* 새 탭이 차단될 수 있으니 안내 안에 한 번 더 누를 수 있는 링크를 함께 둔다 */
   function kakaoLinkHTML(label) {
     return '<a class="pay__kakao" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
@@ -9566,7 +9654,13 @@
         if (k === 'morning') jumpToEl($('#todayCard') || $('#hook3'));
         else if (k === 'night') openTodayNight();
         else jumpToSection('cal');
+        return;
       }
+      /* 2026-11-26 — 헤더 `앱 공유` (3개 바로가기 위 오른쪽) */
+      if (e.target.closest('#appShare')) { e.preventDefault(); shareApp(); return; }
+      /* 2026-11-26 #21914 — `운세 외에도 이런 재미가 있어요` 4가지 바로가기 */
+      var ft = e.target.closest('[data-feature]');
+      if (ft) { e.preventDefault(); featureJump(ft.getAttribute('data-feature')); return; }
     });
     /* 글자를 입력하는 동안(키보드가 올라올 때)은 고정 메뉴를 잠시 비껸다 */
     document.addEventListener('focusin', function (e) {
