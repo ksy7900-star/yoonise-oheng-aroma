@@ -1943,22 +1943,73 @@
     keys.sort();
     return keys;
   }
-  function diaryAllText() {
-    var keys = diaryKeys();
+
+  /* ── 📖 내 성찰 기록 모아보기 = 🌙 저녁 1초 체크 + ✍️ 1줄 성찰 (2026-11-25 #3581) ─────
+     · 예전에는 이 책이 diary.entries(DIARY_KEY)만 읽었다. 그런데 간결 버전(LITE_MODE)에서는
+       '저녁 1초 체크'만 남기므로 기록이 night.entries(NIGHT_KEY, yoonise.nightcheck.v1)에만 쌓여
+       기록이 있는데도 '아직 남긴 기록이 없어요'가 떴다(윤희 님 제보).
+     · 저장 칸(키)은 하나도 바꾸지 않고 **읽을 때 두 칸을 합친다** — 이미 남긴 기록이 바로 살아난다.
+     · 한 날짜에 둘 다 있으면 그 날짜 한 칸 안에 1초 체크 → 메모 → 성찰 순서로 같이 보여 준다.
+     · 날짜는 최근 날이 위로. */
+  function nightHas(iso) {
+    var r = night.entries[iso];
+    return !!(r && (r.mood || r.memo));
+  }
+  function diaryHas(iso) {
+    var r = diary.entries[iso];
+    return !!(r && r.text);
+  }
+  /** 두 칸을 합친 기록의 날짜 — 최근 날이 앞 */
+  function reflectKeys() {
+    var seen = {}, keys = [];
+    for (var k in night.entries) {
+      if (!Object.prototype.hasOwnProperty.call(night.entries, k)) continue;
+      if (!nightHas(k) || seen[k]) continue;
+      seen[k] = 1; keys.push(k);
+    }
+    for (var j in diary.entries) {
+      if (!Object.prototype.hasOwnProperty.call(diary.entries, j)) continue;
+      if (!diaryHas(j) || seen[j]) continue;
+      seen[j] = 1; keys.push(j);
+    }
+    keys.sort();
+    keys.reverse();
+    return keys;
+  }
+  function reflectCount() { return reflectKeys().length; }
+  /** 그날 1초 체크 버튼의 이름 — 저장은 ok·did·shaky 키로만 하고, 이름은 그날 성격에서 다시 만든다 */
+  function nightLabelOf(iso) {
+    var r = nightOf(iso);
+    if (!r || !r.mood) return '';
+    var set = NIGHT_MOODS.calm;
+    try { var info = infoFor(iso); if (info) set = nightMoodSet(info); } catch (e) { set = NIGHT_MOODS.calm; }
+    return set[r.mood] || '';
+  }
+  function reflectAllText() {
+    var keys = reflectKeys();
     var out = ['윤이세 · 2027 내 인생 타이밍 캘린더 — 내 성찰 기록',
       '남긴 날 ' + keys.length + '일 · 내려받은 날 ' + fmtKoDate(state.todayISO), ''];
     keys.forEach(function (k) {
-      var r = diary.entries[k];
       var p = T.parseISO(k);
       var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
-      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ') · ' + (r.plain ? '무난한 날' : (r.cat || '')) + ']');
-      out.push('Q. ' + (r.q || ''));
-      out.push('A. ' + (r.text || ''));
+      out.push('[' + p.y + '.' + p.m + '.' + p.d + ' (' + dow + ')]');
+      var nl = nightLabelOf(k);
+      var nr = nightOf(k);
+      if (nl) out.push('🌙 저녁 1초 체크 · ' + nl);
+      if (nr && nr.memo) out.push('   메모. ' + nr.memo);
+      if (diaryHas(k)) {
+        var r = diary.entries[k];
+        out.push('✍️ 1줄 성찰 · ' + (r.plain ? '무난한 날' : (r.cat || '')));
+        out.push('Q. ' + (r.q || ''));
+        out.push('A. ' + (r.text || ''));
+      }
       out.push('');
     });
     if (!keys.length) out.push('아직 남긴 기록이 없어요.');
     return out.join('\n');
   }
+  /* 예전 이름 — 이 책의 복사·내려받기는 이제 두 칸을 합친 글을 쓴다 */
+  function diaryAllText() { return reflectAllText(); }
   function downloadDiary() {
     var text = diaryAllText();
     var name = '윤이세_성찰기록_' + state.todayISO.replace(/-/g, '') + '.txt';
@@ -2069,25 +2120,35 @@
 
   var dbookEl = null, dbookBody = null, dbookDialog = null, dbookLastFocus = null, dbookClosing = false;
 
+  /** 기록 한 칸 — 🌙 1초 체크(버튼 이름·메모)와 ✍️ 1줄 성찰을 한 날짜 안에 같이 (2026-11-25 #3581) */
+  function diaryBookItemHTML(k) {
+    var p = T.parseISO(k);
+    var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
+    var nl = nightLabelOf(k);
+    var nr = nightOf(k);
+    var hasD = diaryHas(k);
+    var r = hasD ? diary.entries[k] : null;
+    var chips = '';
+    if (nl) chips += '<span class="dbook__chip">🌙 ' + esc(nl.replace(/^\S+\s*/, '')) + '</span>';
+    if (r) chips += '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '무난한 날' : (r.cat || '성찰')) + '</span>';
+    return '<button type="button" class="dbook__item' + (nl ? ' dbook__item--night' : '') + '" data-dbook-day="' + k + '" aria-label="' +
+      p.m + '월 ' + p.d + '일 기록 — 그날 열기">' +
+      '<span class="dbook__date">' + p.y + '.' + p.m + '.' + p.d +
+      '<em>(' + dow + ')</em></span>' +
+      '<span class="dbook__tags">' + chips + '</span>' +
+      (nr && nr.memo ? '<span class="dbook__memo">' + esc(nr.memo) + '</span>' : '') +
+      (r ? '<span class="dbook__q">' + esc(r.q || '') + '</span>' : '') +
+      (r ? '<span class="dbook__a">' + esc(r.text || '') + '</span>' : '') +
+      '</button>';
+  }
+
   function diaryBookHTML() {
-    var keys = diaryKeys();
+    var keys = reflectKeys();
     var body = keys.length
-      ? '<div class="dbook__list">' + keys.map(function (k) {
-        var r = diary.entries[k];
-        var p = T.parseISO(k);
-        var dow = DOW_KO[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()];
-        return '<button type="button" class="dbook__item" data-dbook-day="' + k + '" aria-label="' +
-          p.m + '월 ' + p.d + '일 성찰 기록 — 그날 열기">' +
-          '<span class="dbook__date">' + p.y + '.' + p.m + '.' + p.d +
-          '<em>(' + dow + ')</em></span>' +
-          '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '무난한 날' : (r.cat || '성찰')) + '</span>' +
-          '<span class="dbook__q">' + esc(r.q || '') + '</span>' +
-          '<span class="dbook__a">' + esc(r.text || '') + '</span>' +
-          '</button>';
-      }).join('') + '</div>'
+      ? '<div class="dbook__list">' + keys.map(diaryBookItemHTML).join('') + '</div>'
       : '<div class="dbook__empty">' +
         '<p class="dbook__empty-title">아직 남긴 기록이 없어요</p>' +
-        '<p class="dbook__empty-sub">날짜를 눌러 저녁 1초 체크를 남기면 여기에 쌓여요.<br>백업 파일로 기기를 옮길 수도 있어요.</p>' +
+        '<p class="dbook__empty-sub">날짜를 눌러 🌙 저녁 1초 체크나 ✍️ 1줄 성찰을 남기면 여기에 쌓여요.<br>백업 파일로 기기를 옮길 수도 있어요.</p>' +
         '</div>';
 
     return '<p class="modal__eyebrow">MY REFLECTIONS · 성찰 기록</p>' +
@@ -2135,6 +2196,74 @@
       var target = dbookLastFocus;
       if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
       dbookLastFocus = null;
+    }, 180);
+  }
+
+  /* ── 🎁 내 사주 타이밍 달력 무료 이용법 — 친구 초대 · 인스타그램 인증 (2026-11-25 #3581)
+     · `🎁 첫 3일 특별 선물 보기` 바로 아래 띠를 누르면 열린다. #result 가 보이는 동안 늘 보인다.
+     · 여기서 새 혜택을 만들지 않고, **앱에 이미 들어 있는 규칙만** 그대로 적는다.
+       ① 친구 초대 — member.js 사다리 1/3/5/7명: +2주(14일) · +1개월(30일) ·
+          +3개월(90일, +1:1 상담 1만원 할인) · +6개월(180일, +1:1 원포인트 반값)
+          초대받은 친구도 액운 태우기 +1회 (calendar.js INVITE_BURN_BONUS)
+       ② 인스타그램 인증 — 인스타에 사용 후기를 올려 카카오톡 채널로 보내면 1개월 이용권 (계정당 1회)
+     · 초대 링크는 memberHref() — 이 기기에 대기 중인 초대 코드(?ref=)가 있으면 그대로 이어 준다. */
+  var FREEHOW_KAKAO = 'https://pf.kakao.com/_hxfbCG/chat';
+  var freeEl = null, freeBody = null, freeDialog = null, freeLastFocus = null, freeClosing = false;
+
+  function freeHowHTML() {
+    var ladder = [
+      { n: '1명', v: '+2주' },
+      { n: '3명', v: '+1개월' },
+      { n: '5명', v: '+3개월' },
+      { n: '7명', v: '+6개월' }
+    ];
+    return '<p class="modal__eyebrow">FREE · 무료 이용법</p>' +
+      '<h2 class="fhow__title" id="freeTitle">🎁 내 사주 타이밍 달력<br>무료로 쓰는 두 가지</h2>' +
+      '<p class="fhow__sub">이미 앱에 들어 있는 혜택 그대로예요.</p>' +
+      '<section class="fhow__card">' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">①</span><span class="fhow__t">친구 초대</span></p>' +
+      '<p class="fhow__d">내 초대 링크로 친구가 들어오면 <b>자동으로</b> 기간이 늘어나요.</p>' +
+      '<ul class="fhow__ladder">' + ladder.map(function (x) {
+        return '<li><b>' + x.n + '</b><strong>' + x.v + '</strong></li>';
+      }).join('') + '</ul>' +
+      '<p class="fhow__note">초대받은 친구도 액운 태우기 <b>+1회</b></p>' +
+      '<p class="fhow__note">5명부터는 1:1 상담 할인도 함께 드려요</p>' +
+      '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
+      '</section>' +
+      '<section class="fhow__card">' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">②</span><span class="fhow__t">인스타그램 인증</span></p>' +
+      '<p class="fhow__d">인스타에 사용 후기를 올리고 <b>카카오톡 채널</b>로 보내 주시면 <b>1개월 이용권</b>을 드려요.</p>' +
+      '<p class="fhow__note">계정당 1회 · 올린 화면을 보내 주세요</p>' +
+      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener">카카오톡 채널로 보내기 <span aria-hidden="true">→</span></a>' +
+      '</section>' +
+      '<p class="fhow__foot">두 혜택은 함께 받을 수 있어요.</p>';
+  }
+  function openFreeHow() {
+    if (!freeEl || !freeBody) return;
+    freeLastFocus = document.activeElement;
+    freeBody.innerHTML = freeHowHTML();
+    /* 이 기기에 대기 중인 초대 코드(?ref=)가 있으면 초대 화면으로 그대로 이어 준다 */
+    var go = freeBody.querySelector('[data-free-invite]');
+    if (go) { try { go.setAttribute('href', memberHref()); } catch (e) {} }
+    freeEl.hidden = false;
+    document.body.classList.add('is-modal-open');
+    freeBody.scrollTop = 0;
+    sfxOpen();
+    try { freeDialog.focus({ preventScroll: true }); } catch (e) { freeDialog.focus(); }
+  }
+  function closeFreeHow() {
+    if (!freeEl || freeEl.hidden || freeClosing) return;
+    freeClosing = true;
+    freeEl.classList.add('is-closing');
+    setTimeout(function () {
+      freeEl.classList.remove('is-closing');
+      freeEl.hidden = true;
+      freeBody.innerHTML = '';
+      freeClosing = false;
+      if (!anyModalOpen()) document.body.classList.remove('is-modal-open');
+      var target = freeLastFocus;
+      if (target && target.focus) { try { target.focus({ preventScroll: true }); } catch (e) {} }
+      freeLastFocus = null;
     }, 180);
   }
 
@@ -2209,7 +2338,7 @@
   function guideAtEntry() { return !state.res; }
   /** 열려 있는 팝업이 하나라도 있으면 body 스크롤 잠금을 유지한다 */
   function anyModalOpen() {
-    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl, welcomeEl];
+    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl, welcomeEl, freeEl];
     for (var i = 0; i < els.length; i++) if (els[i] && !els[i].hidden) return true;
     return false;
   }
@@ -4632,10 +4761,10 @@
     $('#calNote').textContent = CAL_NOTE_TEXT;
     renderNightRec(v);
 
-    // 📖 내 성찰 기록 보기 버튼의 일수
+    // 📖 내 성찰 기록 보기 버튼의 일수 — 🌙 1초 체크 + ✍️ 성찰 합계 (2026-11-25 #3581)
     var bk = $('#diaryBookCount');
     if (bk) {
-      var nNote = diaryCount();
+      var nNote = reflectCount();
       bk.textContent = nNote ? nNote + '일' : '';
       bk.hidden = !nNote;
     }
@@ -4644,7 +4773,7 @@
        (백업/복원은 글을 쓴 사람만의 것이 아니라, 이 기기에 쌓인 기록 전부의 것이다)
        2026-11-25 — 성찰 기록이 없어도 책을 열어 둔다. 기기를 바꿔 온 손님이 '백업 파일로 복원'을
        찾을 수 있는 길이 이 책 안에만 있어서, 기록 수만으로 버튼을 숨기면 복원 길이 막힌다. */
-    if (bookBtn) bookBtn.hidden = !(diaryAllowed() || diaryCount() > 0 || nightCountAll() > 0);
+    if (bookBtn) bookBtn.hidden = !(diaryAllowed() || reflectCount() > 0 || nightCountAll() > 0);
   }
 
   /* ── 달력 아래: 이 달 조심할 날 · 좋은 날 목록 ─────────── */
@@ -9162,6 +9291,9 @@
     burnBody = $('#burnBody');
     burnDialog = $('#burnDialog');
     dbookEl = $('#diaryBookModal');
+    freeEl = $('#freeModal');
+    freeBody = $('#freeBody');
+    freeDialog = $('#freeDialog');
     dbookBody = $('#diaryBookBody');
     dbookDialog = $('#diaryBookDialog');
     guideEl = $('#guideModal');
@@ -9244,6 +9376,16 @@
     // 📖 내 성찰 기록 보기 — 달력 아래 버튼
     var dbookBtn = $('#diaryBookBtn');
     if (dbookBtn) dbookBtn.addEventListener('click', function (e) { e.preventDefault(); openDiaryBook(); });
+
+    // 🎁 무료 이용법 띠 — `첫 3일 특별 선물 보기` 바로 아래 (2026-11-25 #3581)
+    var freeBar = $('#freeBar');
+    if (freeBar) freeBar.addEventListener('click', function (e) { e.preventDefault(); openFreeHow(); });
+    if (freeEl) {
+      freeEl.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        if (e.target.closest('[data-free-close]')) closeFreeHow();
+      });
+    }
     if (dbookEl) {
       dbookEl.addEventListener('click', function (e) {
         if (!e.target.closest) return;
@@ -9644,6 +9786,21 @@
           e.preventDefault(); dLast.focus();
         } else if (!e.shiftKey && document.activeElement === dLast) {
           e.preventDefault(); dFirst.focus();
+        }
+        return;
+      }
+      if (freeEl && !freeEl.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); closeFreeHow(); return; }
+        if (e.key !== 'Tab') return;
+        var ff = $$('a[href], button:not([disabled])', freeDialog).filter(function (el) {
+          return el.offsetParent !== null;
+        });
+        if (!ff.length) return;
+        var ffFirst = ff[0], ffLast = ff[ff.length - 1];
+        if (e.shiftKey && (document.activeElement === ffFirst || document.activeElement === freeDialog)) {
+          e.preventDefault(); ffLast.focus();
+        } else if (!e.shiftKey && document.activeElement === ffLast) {
+          e.preventDefault(); ffFirst.focus();
         }
         return;
       }

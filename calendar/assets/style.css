@@ -3803,6 +3803,18 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 }
 .dbook__date em { font-style: normal; font-size: 9.5px; color: var(--mute); margin-left: 2px; }
 .dbook__item .badge { justify-self: start; font-size: 9.5px; padding: 3px 7px; }
+/* 🌙 저녁 1초 체크 + ✍️ 1줄 성찰을 한 날짜 안에 (2026-11-25 #3581) */
+.dbook__tags { grid-column: 2; justify-self: start; display: flex; flex-wrap: wrap; gap: 4px; }
+.dbook__chip {
+  font-size: 9.5px; font-weight: 700; padding: 3px 7px; border-radius: 999px;
+  background: #F2EDE3; color: #6E5A2A; letter-spacing: -.01em; white-space: nowrap;
+}
+.dbook__memo {
+  grid-column: 1 / -1; font-size: 11px; line-height: 1.55; color: #6E665A;
+  letter-spacing: -.01em; word-break: break-word;
+}
+.dbook__memo::before { content: "🌙 "; font-size: 10px; }
+.dbook__item--night { background: #FFFDF7; }
 .dbook__q {
   grid-column: 1 / -1; font-size: 10px; line-height: 1.55; color: #9A9084;
   letter-spacing: -0.01em;
@@ -3820,6 +3832,78 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
   font-size: 10px; line-height: 1.7; color: #6E665A;
 }
 .dbook__note b { color: #4B4438; }
+
+/* ==========================================================
+   🎁 내 사주 타이밍 달력 무료 이용법 (2026-11-25 #3581)
+   · `🎁 첫 3일 특별 선물 보기` 바로 아래 띠 + 누르면 열리는 팝업.
+   · 띠는 크림색 카드가 쌓인 자리에서 바로 눈에 들어오도록 짙은 남색 + 금색.
+     (빨간 경고·깜박임 없이 '고급 웰니스' 톤 유지)
+   ========================================================== */
+.freebar {
+  position: relative; display: flex; align-items: center; gap: 11px;
+  width: 100%; margin: 10px 0 2px; padding: 13px 14px;
+  border-radius: 16px; border: 1px solid rgba(201, 138, 34, .55);
+  background: linear-gradient(135deg, #1B2940 0%, #24334C 55%, #1B2940 100%);
+  box-shadow: 0 14px 26px -20px rgba(15, 22, 33, .85);
+  font-family: inherit; text-align: left; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.freebar:active { transform: translateY(1px); }
+.freebar:focus-visible { outline: 2px solid #C21F46; outline-offset: 3px; }
+.freebar__ic {
+  flex: none; width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #FBE4B2 0%, #D9A24A 72%);
+  font-size: 15px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .16);
+}
+.freebar__b { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.freebar__t { font-size: 13px; font-weight: 800; color: #FFFFFF; letter-spacing: -.02em; word-break: keep-all; }
+.freebar__d { font-size: 10.5px; font-weight: 600; color: #E8CE9B; letter-spacing: -.01em; }
+.freebar__ar { flex: none; color: #E8CE9B; font-size: 17px; font-weight: 700; line-height: 1; }
+
+/* 팝업 — 혜택 두 가지를 카드 두 장으로만 (글을 늘어놓지 않는다) */
+.modal__dialog--free { max-width: 420px; }
+.fhow__title {
+  font-family: var(--serif); font-size: 22px; line-height: 1.4;
+  margin-top: 6px; letter-spacing: -.02em; padding-right: 34px;
+}
+.fhow__sub { margin-top: 8px; font-size: 11.5px; line-height: 1.6; color: var(--ink-2); }
+.fhow__card {
+  margin-top: 14px; padding: 15px 15px 14px; border-radius: 18px;
+  background: #FFFFFF; border: 1px solid rgba(28, 24, 19, .10);
+  box-shadow: 0 10px 24px -22px rgba(28, 24, 19, .85);
+}
+.fhow__head { display: flex; align-items: center; gap: 8px; margin: 0; }
+.fhow__n {
+  flex: none; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #F3EDE0; color: #8A4E0B; font-size: 11px; font-weight: 800;
+}
+.fhow__t { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+.fhow__d { margin: 8px 0 0; font-size: 11.5px; line-height: 1.72; color: var(--ink-2); word-break: keep-all; }
+.fhow__d b { color: #8A4E0B; font-weight: 800; }
+.fhow__ladder {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+  margin: 12px 0 0; padding: 0; list-style: none;
+}
+.fhow__ladder li {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 9px 4px 8px; border-radius: 12px; text-align: center;
+  background: #FBF7EF; border: 1px solid rgba(165, 101, 15, .16);
+}
+.fhow__ladder b { font-size: 10px; font-weight: 700; color: var(--mute); letter-spacing: -.01em; }
+.fhow__ladder strong { font-size: 14px; font-weight: 800; color: #8A4E0B; letter-spacing: -.03em; }
+.fhow__note { margin: 9px 0 0; font-size: 10px; line-height: 1.55; color: var(--mute); }
+.fhow__note b { color: #8A4E0B; font-weight: 800; }
+.fhow__go {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  width: 100%; margin-top: 12px; padding: 13px 12px; border-radius: 13px;
+  background: var(--navy); color: #FFFFFF; text-decoration: none;
+  font-size: 12.5px; font-weight: 800; letter-spacing: -.02em;
+}
+.fhow__go:active { transform: translateY(1px); }
+.fhow__go--kakao { background: #FEE500; color: #3C1E1E; border: 1px solid rgba(60, 30, 30, .10); }
+.fhow__foot { margin: 16px 0 0; font-size: 10.5px; text-align: center; color: var(--mute); }
 
 /* ==========================================================
    2026-11-20 · 달력 '시원한 여백' 개편 (피드백 #8759 #8764)
@@ -5812,21 +5896,37 @@ body.has-bonus .js-trial{ display: none !important; }
 .sgift__consent-n{margin:-6px 0 10px; font-size:9.5px; color:var(--mute); text-align:right}
 .sgift__buy[disabled]{opacity:.42}
 
-/* 결제 팝업 안 특별 선물 카드 — 가격 카드 바로 아래 한 칸 (2026-11-24) */
+/* 결제 팝업 안 특별 선물 카드 — 가격 카드 바로 아래 한 칸 (2026-11-24)
+   2026-11-25 강조 (#3581, 윤희 님 "첫3일 결제 혜택이 눈에 안 들어온다"):
+   아래 4줄짜리 특징 목록과 섞이지 않게 따뜻한 금빛 바탕 + 또렷한 테두리 + 금색 알약 배지.
+   빨간 경고·깜박임 없이 '고급 웰니스' 톤은 그대로 둔다. */
 .shopgift{
-  position:relative; margin-top:6px; padding:7px 10px 7px 12px;
-  border-radius:11px; background:#FFFDF8; border:1px solid rgba(165,101,15,.22);
+  position:relative; margin:10px 0 13px; padding:11px 12px 11px 15px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#FFF4DC 0%,#FCE7BC 55%,#FADFAA 100%);
+  border:1.5px solid rgba(165,101,15,.55);
+  box-shadow:0 10px 22px -16px rgba(130,80,10,.75), inset 0 1px 0 rgba(255,255,255,.8);
+  overflow:hidden;
 }
 .shopgift::before{
-  content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px;
-  border-radius:0 3px 3px 0; background:linear-gradient(180deg,#F7CA79,#A5650F);
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+  background:linear-gradient(180deg,#E8A33A,#A5650F);
 }
-.shopgift__k{margin:0; font-size:9px; font-weight:800; letter-spacing:.05em; color:#A5650F}
+.shopgift__pill{
+  display:inline-block; margin:0 0 7px; padding:3px 9px 3.5px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#C98A22,#A5650F);
+  color:#FFFFFF; font-size:8.5px; font-weight:800; letter-spacing:.04em;
+  box-shadow:0 3px 8px -5px rgba(120,70,5,.9);
+}
+.shopgift__k{margin:0; font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#8A4E0B}
 .shopgift__t{
-  margin:2px 0 0; font-size:11.5px; font-weight:700; line-height:1.38;
-  color:var(--ink); letter-spacing:-.03em; word-break:keep-all;
+  margin:4px 0 0; font-size:13px; font-weight:800; line-height:1.42;
+  color:#4A3006; letter-spacing:-.03em; word-break:keep-all;
 }
-.shopgift__d{margin:2px 0 0; font-size:9.5px; line-height:1.45; color:#8A4E0B; letter-spacing:-.01em; word-break:keep-all}
+.shopgift__d{margin:4px 0 0; font-size:9.5px; line-height:1.5; color:#8A5A16; letter-spacing:-.01em; word-break:keep-all}
+/* 혜택 카드와 아래 특징 목록 사이를 한 번 띄워 '다른 칸'임을 분명하게 */
+.shopgift + .shop__list--pass{margin-top:14px}
 
 /* 결제 절차 한 줄 — 번호 입력칸 아래 */
 .payphone__flow{

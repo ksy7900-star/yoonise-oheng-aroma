@@ -190,6 +190,7 @@
   function payGiftHTML() {
     if (!offerActive()) return '';
     return '<div class="shopgift" id="shopGift">' +
+      '<span class="shopgift__pill">72시간 한정 · 무료 증정</span>' +
       '<p class="shopgift__k">🎁 첫 3일 결제 고객 특별 혜택</p>' +
       '<p class="shopgift__t">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</p>' +
       '<p class="shopgift__d">결제하시면 1년 달력이 바로 열려요. 72시간 맞춤 운세 가이드는 결제 후 화면에서 한 번 동의해 주시면 카카오톡으로 보내드려요. (동의하지 않아도 이용에는 아무 영향이 없어요.)</p>' +
