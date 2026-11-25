@@ -702,7 +702,7 @@
       '<details class="sgguide__textwrap"><summary>글자로 보기 · 복사하기</summary>' +
       '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>' +
       '<div class="sgguide__sign">' +
-      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126s" alt="윤이세 직인" loading="lazy">' +
+      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126t" alt="윤이세 직인" loading="lazy">' +
       '<p class="sgguide__name">— 윤이세</p>' +
       '<p class="sgguide__note">가이드는 언제든 다시 열어 보실 수 있어요.</p>' +
       '</div></details>' +
@@ -720,7 +720,7 @@
      표지 전용 장은 없다. 1장 위에 원국, 마지막 장에 서명·직인. */
   function gopts(text, scale) {
     return {
-      seal: 'assets/yoonise-seal.png?v=20261126s',
+      seal: 'assets/yoonise-seal.png?v=20261126t',
       name: nameIn(text),
       saju: (mem.claim && mem.claim.saju_snapshot) || null,
       scale: scale || 1

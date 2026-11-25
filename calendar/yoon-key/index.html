@@ -725,7 +725,7 @@ body.locked{overflow:hidden}
           <button type="button" class="gold full" id="svcSend">감정서 보내기</button>
         </div>
         <p class="svc-img-note">지금 화면에서 고친 그대로 — 공식 표지 1장 + 본문, 본문 1장 위에 원국, 마지막 장에 마무리·서명·직인과 1:1 상담 안내가 함께 들어갑니다. 표지·본문 모두 A4 세로 비율(1240×1754)이고, PDF도 같은 그림·같은 장 구성입니다.</p>
-        <p class="svc-img-note"><a class="sgsign__dl" href="../assets/yoonise-seal.png?v=20261126s" download="윤이세-직인.png">직인 이미지 저장 (투명 PNG)</a></p>
+        <p class="svc-img-note"><a class="sgsign__dl" href="../assets/yoonise-seal.png?v=20261126t" download="윤이세-직인.png">직인 이미지 저장 (투명 PNG)</a></p>
 
         <div class="svc-preview" id="svcPreview" hidden>
           <p class="svc-recent__hd">미리보기 <span id="svcPreviewCount"></span> <i class="svc-preview__hint">눌러서 크게 보기</i></p>
@@ -745,7 +745,7 @@ body.locked{overflow:hidden}
       <b>개인정보</b> — 결제로 자동 접수된 건은 고객이 화면에서 <b>동의</b>를 누른 뒤에만 이름·사주 자료가 서버에 저장되고(<b>동의 X</b>인 건은 저장되지 않음), 동의 없이는 <b>전달 완료</b>를 누를 수 없어요. 접수 정보는 접수일부터 1년 뒤 위 <b>1년 지난 개인정보 정리</b>로 지우고, 고객이 삭제를 요청하면 상세의 <b>고객 요청 · 개인정보 지우기</b>로 바로 지웁니다. 결제·거래 기록(주문·입장 코드 원장)은 전자상거래법에 따라 5년간 남기고 지우지 않아요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126s<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126t<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 
 </div>
 
@@ -1641,8 +1641,8 @@ body.locked{overflow:hidden}
 </script>
 
 <!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
-<script src="../assets/special-guide-draft.js?v=20261126s"></script>
-<script src="../assets/guide-paper.js?v=20261126s"></script>
+<script src="../assets/special-guide-draft.js?v=20261126t"></script>
+<script src="../assets/guide-paper.js?v=20261126t"></script>
 <script>
 (function () {
   'use strict';
@@ -1953,7 +1953,7 @@ body.locked{overflow:hidden}
      카톡 복붙용 글에는 이미지를 섞지 않고, 그 아래 4개 버튼(미리보기·PDF·이미지·보내기)으로
      완성된 감정서를 그대로 보낸다. */
   function signBlock() {
-    var src = '../assets/yoonise-seal.png?v=20261126s';
+    var src = '../assets/yoonise-seal.png?v=20261126t';
     return '<div class="sgsign">' +
       '<p class="sgsign__k">마지막 장</p>' +
       '<img class="sgsign__seal" src="' + src + '" alt="윤이세 직인" width="720" height="381" loading="lazy">' +
@@ -2173,7 +2173,7 @@ body.locked{overflow:hidden}
   /* ── 고객에게 보낼 감정서 — 미리보기 · PDF · 페이지 이미지 · 보내기 (2026-11-26)
      글상자의 ‘윤이세가 고친 최종 본문’이 그대로 종이에 올라간다. 서버에서 다시 만들지 않는다.
      사주 원국은 접수 때 저장된 스냅샷(saju_snapshot)으로만 그리고, 대운·세운은 넣지 않는다. */
-  var SGS_SEAL = '../assets/yoonise-seal.png?v=20261126s';
+  var SGS_SEAL = '../assets/yoonise-seal.png?v=20261126t';
   var sgFilesCache = null, sgFilesKey = '';
 
   function sgWho() {
@@ -2372,8 +2372,8 @@ body.locked{overflow:hidden}
      · 스냅샷 모양은 달력 페이지 assets/special-guide.js 의 buildSnapshot 과 같다 — 같은 SpecialGuideDraft.make() 에 넣는다.
      · 화면의 종이(#svcPaper)가 원본이다. 복사·PNG 저장 모두 이 DOM 을 읽으므로, 고친 글과 서식이 되돌아가지 않는다.
      · 서버에는 아무것도 쓰지 않는다. 최근 5건은 이 브라우저(localStorage)에만 남는다. -->
-<script src="../vendor/lunar.js?v=20261126s"></script>
-<script src="../assets/manse.js?v=20261126s"></script>
+<script src="../vendor/lunar.js?v=20261126t"></script>
+<script src="../assets/manse.js?v=20261126t"></script>
 <script>
 (function () {
   'use strict';
@@ -2384,7 +2384,7 @@ body.locked{overflow:hidden}
   var cal = 'solar', gender = 'F';
   var recents = [];
   var currentRecent = -1;      /* 지금 종이에 열려 있는 최근 기록 — 고친 내용을 그 기록에 되돌려 저장한다 */
-  var SEAL_SRC = '../assets/yoonise-seal.png?v=20261126s';
+  var SEAL_SRC = '../assets/yoonise-seal.png?v=20261126t';
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {

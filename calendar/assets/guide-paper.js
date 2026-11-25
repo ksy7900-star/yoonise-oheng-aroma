@@ -602,15 +602,15 @@
       return (end - top0) / (bottom - top0);
     }
     var last = textFill(natural[natural.length - 1], natural.length - 1);
-    if (last >= 0.55) return natural;
+    if (last >= 0.34) return natural;
     var best = natural;
-    var ks = [0.96, 0.93, 0.90, 0.87, 0.84, 0.81];
+    var ks = [0.95, 0.92, 0.89, 0.86, 0.83];
     for (var i = 0; i < ks.length; i++) {
       var alt = paginate(m, list, headH, ks[i]);
       if (alt.length !== natural.length) continue;
       var f = textFill(alt[alt.length - 1], alt.length - 1);
       if (f > textFill(best[best.length - 1], best.length - 1)) best = alt;
-      if (f >= 0.6) break;          /* 고르게 나뉘었으면 거기서 멈춘다 — 아래를 비우지 않게 */
+      if (f >= 0.5) break;          /* 고르게 나뉘었으면 거기서 멈춘다 — 아래를 비우지 않게 */
     }
     return best;
   }
@@ -1242,6 +1242,17 @@
     files: files,
     chartHeight: function () { return CHART_H; },
     /** 배치 진단 — 장마다 글이 어디까지 찼는지 (관리자·검수용) */
+    __dbg: function (input, opts) {
+      opts = opts || {};
+      var m = document.createElement('canvas').getContext('2d');
+      var list = blocks(input);
+      var head = buildHead(m, list, opts);
+      var pages = layoutPages(m, bodyOf(list), head.height);
+      return pages.map(function (p, i) {
+        var last = p.ops[p.ops.length - 1];
+        return { p: i + 1, n: p.ops.length, first: p.ops[0] ? Math.round(p.ops[0].y) : 0, lastY: last ? Math.round(last.y) : 0, h: last ? Math.round(last.h) : 0, end: Math.round(p.y) };
+      });
+    },
     layout: function (input, opts) {
       opts = opts || {};
       var m = document.createElement('canvas').getContext('2d');
