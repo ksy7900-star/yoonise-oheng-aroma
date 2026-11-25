@@ -2210,6 +2210,7 @@ body.locked{overflow:hidden}
   var CAL_LABEL = { solar: '양력', lunar: '음력' };
   var cal = 'solar', gender = 'F';
   var recents = [];
+  var currentRecent = -1;      /* 지금 종이에 열려 있는 최근 기록 — 고친 내용을 그 기록에 되돌려 저장한다 */
   var SEAL_SRC = '../assets/yoonise-seal.png?v=20261126b';
 
   function $(id) { return document.getElementById(id); }
@@ -3190,14 +3191,15 @@ body.locked{overflow:hidden}
     recents = recents.filter(function (x) { return !(x && x.name === item.name && x.birth === item.birth); });
     recents.unshift(item);
     recents = recents.slice(0, MAX);
+    currentRecent = 0;
     saveStore();
     renderRecents();
   }
   function syncRecent() {
     if (!recents.length) return;
-    var name = ($('svcName').value || '').trim();
-    var r = recents[0];
-    if (!r || (r.name && name && r.name !== name)) return;
+    var i = currentRecent >= 0 ? currentRecent : 0;
+    var r = recents[i];
+    if (!r) return;
     r.html = $('svcPaper').innerHTML;
     r.text = plainText();
     saveStore();
@@ -3320,8 +3322,11 @@ body.locked{overflow:hidden}
     $('svcRecent').addEventListener('click', function (e) {
       var b = e.target.closest('.svc-recent__open');
       if (!b) return;
-      var r = recents[Number(b.getAttribute('data-i'))];
+      var idx = Number(b.getAttribute('data-i'));
+      var r = recents[idx];
       if (!r) return;
+      currentRecent = idx;
+      if (r.name) $('svcName').value = r.name;
       $('svcMeta').textContent = r.meta || '';
       $('svcPillars').innerHTML = r.pillars || '';
       if (r.html) {
