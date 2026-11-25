@@ -118,6 +118,12 @@
     try { localStorage.setItem(SEEN_KEY, String(no)); } catch (e) { }
   }
   function isSeen(d) { return !!(d && d.claim_no && seenNo() === String(d.claim_no)); }
+  /** 이 감정서의 도착 안내를 이미 접었는가 — 접었다는 표시도 그 신청번호에만 적용한다.
+      (새 감정서가 오면 다시 한 번 도착 카드로 알린다) */
+  function isDismissed(d) {
+    if (!d || !d.claim_no) return closedFlag();
+    return isSeen(d) || (closedFlag() && seenNo() === String(d.claim_no));
+  }
 
   /* ── 서버 호출 ─────────────────────────────────────── */
   function rpc(name, body) {
@@ -328,8 +334,7 @@
     if (!el) return;
     var d = mem.claim || cachedClaim();
     if (!guideOf(d) && !guideOf(cachedClaim())) { el.hidden = true; return; }
-    var no = (d && d.claim_no) || '';
-    var gone = closedFlag() || (no && isSeen(d));
+    var gone = isDismissed(d) || (cachedClaim() && isDismissed(cachedClaim()));
     el.hidden = !gone;
   }
 
@@ -523,8 +528,8 @@
     /* 감정서가 도착한 건 — 큰 도착 카드는 처음 한 번만 보여 준다.
        한 번 열어 보거나 X 로 닫으면 카드를 통째로 숨기고(여백 0),
        아래 '나의 2027년 맞춤 감정서' 보관 버튼으로 자리를 넘긴다 (#21986). */
-    var seen = !!guide && isSeen(d);
-    card.hidden = !!guide ? (close || seen) : close;
+    var seen = !!guide && isDismissed(d);
+    card.hidden = !!guide ? seen : close;
     if (tg) {
       if (guide) tg.hidden = true;             // 다시 열기는 보관 버튼이 맡는다
       else { tg.hidden = !close; tg.textContent = delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기'; }
