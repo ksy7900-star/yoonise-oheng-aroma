@@ -1729,6 +1729,11 @@
       } else if (!has && dot) {
         dot.parentNode.removeChild(dot);
       }
+      /* 화면 낭독기 이름도 같이 맞춘다 — 점만 지우고 '기록 있음'이 남으면 없는 기록을 읽어 준다 */
+      var lab = cell.getAttribute('aria-label') || '';
+      lab = lab.replace(/[, ]*저녁 체크 기록 있음$/, '');
+      if (has) lab += ', 저녁 체크 기록 있음';
+      cell.setAttribute('aria-label', lab);
     }
     renderNightRec(state.view);
   }
