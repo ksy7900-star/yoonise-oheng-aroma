@@ -6600,7 +6600,9 @@
     if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
     return '<p class="shop__trial">먼저 <b>사주를 넣은 날부터 ' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
   }
-  /** 가격 한 줄 — 정가 취소선 → 14,900원 → 하루 40원 (팝업·잠금 카드 공통) */
+  /** 가격 한 줄 — 정가 취소선 → 14,900원 → 하루 40원 (팝업·잠금 카드 공통)
+      2026-11-26 — 결제 팝업은 두 칸 비교(passCompareHTML)로 바뀌어 이 줄을 쓰지 않는다.
+      잠금 카드처럼 '한 줄로 된 가격'이 다시 필요한 자리를 위해 그대로 남겨 둔다. */
   function passPriceHTML(prefix) {
     return '<div class="shop__price shop__price--pass">' +
       '<span>' + esc(prefix || '1년 전체 패스') + '</span>' +
@@ -6622,19 +6624,43 @@
       '<button type="button" class="shop__mini" data-pay="bank" data-item="pass">🏦 계좌이체 안내</button>' +
       '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
   }
+  /** 결제 창의 2단 비교 (2026-11-26 윤희 님 — "세번째사진 샘플")
+      같은 14,900원인데, 무엇이 다른지 한눈에: 첫 3일(72시간) 안에 결제하면
+      윤이세가 직접 전하는 맞춤 운세 활용 가이드가 함께 간다.
+      · 예전의 긴 가격 배너 · 혜택 카드 · 4줄 특징 목록은 이 한 칸으로 합쳤다.
+      · 왼쪽 금빛 칸의 남은 시간은 special-guide.js 가 그린다 — 72시간 기록을 아는 곳이 거기다.
+      · 360px 폭에서도 두 칸이 나란히 서도록 접히지 않는 그리드로 잡았다(style.css .paycmp). */
+  function passCompareHTML() {
+    var gift = (window.SpecialGuide && window.SpecialGuide.payCmpHTML) ? window.SpecialGuide.payCmpHTML() : '';
+    var over = !!(window.SpecialGuide && window.SpecialGuide.payCmpOver && window.SpecialGuide.payCmpOver());
+    return '<div class="paycmp">' +
+      '<div class="paycmp__col paycmp__col--now' + (over ? ' is-over' : '') + '">' +
+      '<p class="paycmp__when">첫 3일(72시간) 이내</p>' +
+      '<p class="paycmp__name">2027 사주 타이밍 달력</p>' +
+      '<p class="paycmp__badge"><b>14,900원</b></p>' +
+      gift +
+      '<p class="paycmp__until">2027년 12월 31일까지 이용</p>' +
+      '</div>' +
+      '<div class="paycmp__col paycmp__col--later">' +
+      '<p class="paycmp__when">첫 3일(72시간) 경과 후</p>' +
+      '<p class="paycmp__name">2027 사주 타이밍 달력</p>' +
+      '<p class="paycmp__badge"><b>14,900원</b></p>' +
+      '<ul class="paycmp__list">' +
+      '<li>전체 사주 타이밍 달력</li>' +
+      '<li>날짜별 운세 안내</li>' +
+      '<li>매일 1회 액운 태우기</li>' +
+      '<li>결제 즉시 이용</li>' +
+      '</ul>' +
+      '<p class="paycmp__until">2027년 12월 31일까지 이용</p>' +
+      '</div>' +
+      '</div>';
+  }
   /** 단일 패스 본문 — 결제 창·잠금 팝업·액운 태우기 소진 팝업이 같이 쓴다 */
   function passShopCoreHTML() {
-    return '<p class="shop__sub">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름 + 매일 1회 액운 태우기</p>' +
-      passPriceHTML('2027 내 사주 타이밍 달력 · 1년 전체 패스') +
-      /* 🎁 첫 3일 결제 고객 특별 혜택 — 미결제 + 첫 사주 입력 72시간 이내일 때만 가격 카드 바로 아래 한 칸.
-         72시간이 지났거나 이미 결제한 기기에는 special-guide.js 가 빈 문자열을 돌려줘 아무것도 안 그린다. */
-      (window.SpecialGuide && window.SpecialGuide.payGiftHTML ? window.SpecialGuide.payGiftHTML() : '') +
-      '<ul class="shop__list shop__list--pass">' +
-      '<li><b>2026년 11월 ~ 2027년 12월 14개월</b><span>내 사주로 하루씩, 날짜별 흐름을 전부</span></li>' +
-      '<li><b>날짜별 조심 · 기운 UP · 실속</b><span>그날 피할 것과 챙길 것까지 한눈에</span></li>' +
-      '<li><b>매일 1회 액운 태우기</b><span>하루 한 번, 적고 · 구기고 · 태워 보내기</span></li>' +
-      '<li><b>결제하면 바로 열려요</b><span>카드결제는 코드 입력 없이, 이 기기에 바로 저장</span></li>' +
-      '</ul>' +
+    /* 2026-11-26 — 아래 두 칸 체크 목록과 같은 말('매일 1회 액운 태우기')이 겹치지 않게
+       부제는 '날짜별 흐름'까지만 짧게 남긴다. */
+    return '<p class="shop__sub">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름</p>' +
+      passCompareHTML() +
       /* 2026-11-23 심플 결제 — 카드 주 버튼 하나 + 작은 계좌이체·코드 링크만.
          계좌이체를 고르면 안내 안에 '입금 확인 카톡 보내기'가 나오므로 큰 카톡 버튼은 두지 않는다. */
       passPayActionsHTML();

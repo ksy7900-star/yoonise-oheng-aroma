@@ -41,6 +41,7 @@
     scrollNext: false,
     pollTimer: 0,
     tickTimer: 0,
+    payTick: 0,
     modalOpen: false,
     guideOpen: false,        // 도착한 가이드 팝업이 열려 있는지
     consentChecked: false    // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
@@ -91,6 +92,7 @@
   function saveFirst(o) {
     mem.first = o;
     try { localStorage.setItem(FIRST_KEY, JSON.stringify(o)); } catch (e) { }
+    paintPayCmp();      // 결제 팝업이 열려 있으면 남은 시간을 바로 채운다
   }
   function closedFlag() {
     try { return localStorage.getItem(CLOSED_KEY) === '1'; } catch (e) { return false; }
@@ -196,6 +198,71 @@
       '<p class="shopgift__d">결제하시면 1년 달력이 바로 열려요. 72시간 맞춤 운세 가이드는 결제 후 화면에서 한 번 동의해 주시면 카카오톡으로 보내드려요. (동의하지 않아도 이용에는 아무 영향이 없어요.)</p>' +
       '</div>';
   }
+
+  /* ── 결제 팝업 2단 비교 — 왼쪽 '첫 3일(72시간) 이내' 칸 (2026-11-26 윤희 님) ───
+     결제 팝업은 이제 두 칸(이내 / 경과 후)을 나란히 보여 준다. 값은 둘 다 14,900원이고,
+     다른 점은 하나 — 3일 안에 결제하면 맞춤 운세 활용 가이드가 함께 간다.
+     · 남은 시간은 이 파일이 가진 72시간 기록(loadFirst)에서 그대로 가져와 20초마다 고친다.
+       (서버가 기준이다 — touchFirst 가 받아 둔 deadline_ms)
+     · 72시간이 지났거나 대상이 아닌 기기는 칸을 지우지 않고 담담하게 '종료'로 바꿔 둔다.
+       오른쪽 칸과 나란히 남아 '그래도 지금 사면 된다'가 한눈에 보이게.
+     · 서버 응답 전(기록 없음)에는 '—' 만 두고, 응답이 오면 saveFirst → paintPayCmp 가 바로 채운다. */
+  function payCmpState() {
+    if (mem.preexisting) return 'over';
+    var c = cal();
+    if (c && paidNow(c)) return 'over';       // 이미 1년 패스가 열린 기기
+    var f = loadFirst();
+    if (!f || !f.deadline_ms) return 'wait';
+    return (f.deadline_ms - Date.now()) > 0 ? 'live' : 'over';
+  }
+  /** 1일 08시간 25분 — 두 자리로 맞춰 읽기 쉽게 (남은 시간이 없으면 빈 문자열) */
+  function fmtCmp(ms) {
+    if (!(ms > 0)) return '';
+    var min = Math.max(1, Math.round(ms / 60000));
+    var d = Math.floor(min / 1440), h = Math.floor((min - d * 1440) / 60), m = min - d * 1440 - h * 60;
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    if (d > 0) return d + '일 ' + p(h) + '시간 ' + p(m) + '분';
+    if (h > 0) return h + '시간 ' + p(m) + '분';
+    return m + '분';
+  }
+  var PAYCMP_T = '윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드 <b>무료 증정</b>';
+  var PAYCMP_OVER_T = '지난 혜택이에요 — 지금 결제해도 1년 전체는 그대로 열려요';
+  function payCmpHTML() {
+    var st = payCmpState(), over = st === 'over';
+    var f = loadFirst();
+    payCmpStart();
+    return '<div class="paycmp__gift' + (over ? ' is-over' : '') + '" id="payCmpGift">' +
+      '<p class="paycmp__gift-k" id="payCmpK">' + (over ? '특별 혜택 종료' : '특별 혜택 종료까지') + '</p>' +
+      '<p class="paycmp__gift-clock" id="payCmpLeft">' +
+      (st === 'live' && f ? fmtCmp(f.deadline_ms - Date.now()) : (over ? '종료' : '—')) + '</p>' +
+      '<span class="paycmp__gift-rule" aria-hidden="true"></span>' +
+      '<p class="paycmp__gift-t" id="payCmpT">' + (over ? PAYCMP_OVER_T : PAYCMP_T) + '</p>' +
+      '</div>';
+  }
+  /** 이 칸 하나만 다시 칠한다 — 20초마다, 그리고 72시간 기록이 새로 들어올 때(saveFirst) */
+  function paintPayCmp() {
+    var el = $('#payCmpLeft');
+    if (!el) { stopPayCmp(); return; }
+    var st = payCmpState(), over = st === 'over';
+    var gift = $('#payCmpGift');
+    if (gift) {
+      if (over) gift.classList.add('is-over'); else gift.classList.remove('is-over');
+      var col = gift.parentNode;   // 왼쪽 칸(.paycmp__col--now)도 같이 담담해진다
+      if (col && col.classList) { if (over) col.classList.add('is-over'); else col.classList.remove('is-over'); }
+    }
+    var k = $('#payCmpK'); if (k) k.textContent = over ? '특별 혜택 종료' : '특별 혜택 종료까지';
+    var t = $('#payCmpT');
+    if (t) { if (over) t.textContent = PAYCMP_OVER_T; else t.innerHTML = PAYCMP_T; }
+    if (over) el.textContent = '종료';
+    else if (st === 'live') el.textContent = fmtCmp(loadFirst().deadline_ms - Date.now());
+    else el.textContent = '—';
+    if (over) stopPayCmp();
+  }
+  function payCmpStart() {
+    if (mem.payTick) return;
+    mem.payTick = setInterval(paintPayCmp, 20000);
+  }
+  function stopPayCmp() { if (mem.payTick) { clearInterval(mem.payTick); mem.payTick = 0; } }
 
   /* ── 화면 ─────────────────────────────────────────── */
   function cal() {
@@ -956,6 +1023,7 @@
       var savedAt = opts && opts.savedAt ? Date.parse(opts.savedAt) : NaN;
       if (!isNaN(savedAt) && savedAt < EVENT_START_MS) {
         mem.preexisting = true;
+        paintPayCmp();     // 결제 팝업 왼쪽 칸을 '종료'로
         refresh();
         return;
       }
@@ -973,7 +1041,11 @@
     buildSnapshot: buildSnapshot,
     uid: ensureUid,
     offerActive: offerActive,
-    payGiftHTML: payGiftHTML,
+    payGiftHTML: payGiftHTML,      // 2026-11-26 부터 결제 팝업은 payCmpHTML 을 쓴다 (다른 화면용으로 남겨 둠)
+    payCmpHTML: payCmpHTML,
+    paintPayCmp: paintPayCmp,
+    /** 결제 팝업을 그리는 쪽(calendar.js)이 왼쪽 칸을 처음부터 담담하게 그릴 때 본다 */
+    payCmpOver: function () { return payCmpState() === 'over'; },
     /* 🏷️ 구매 유도 단계 — 'gift' = 첫 사주 입력 후 72시간 이내·미결제 (달력 버튼 이름표가 이 값을 먼저 본다) */
     ctaPhase: function () { return offerActive() ? 'gift' : ''; }
   };
