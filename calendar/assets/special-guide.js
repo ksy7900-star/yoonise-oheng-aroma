@@ -541,14 +541,10 @@
 
   /* ── 도착한 가이드 카드 ─────────────────────────────── */
   function guideArrivedHTML(d) {
-    var no = d.claim_no || '';
     return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
       '<h2 class="sgift__title" id="specialGiftTitle">윤이세 선생님의 2027 맞춤 가이드가 도착했어요</h2>' +
       '<p class="sgift__sub">오늘 닫아 두셔도 괜찮아요. 며칠 뒤에 다시 들어와도 같은 가이드를 언제든 다시 열어 볼 수 있습니다.</p>' +
-      (no ? '<div class="sgift__no"><span>신청번호</span><b id="specialClaimNo">' + esc(no) + '</b>' +
-        '<button type="button" class="sgift__copy" id="specialCopyNo">복사</button></div>' : '') +
-      '<div class="sgift__acts"><button type="button" class="sgift__buy" id="specialGuideOpen">가이드 열기</button></div>' +
-      '<p class="sgift__hint">가이드를 닫아도 이 카드는 그대로 남아 있어요 — 다시 열어 보실 수 있습니다.</p>';
+      '<div class="sgift__acts"><button type="button" class="sgift__buy" id="specialGuideOpen">가이드 열기</button></div>';
   }
 
   function openGuide() {
