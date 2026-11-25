@@ -523,9 +523,10 @@
         var Bs = blockUnits(m, b), hs = 0;
         Bs.units.forEach(function (u) { hs += u.h; });
         var limS = limitFor(pages.length - 1);
+        cur.textEnd = cur.y;                 /* 서명 앞까지의 글 끝 — 마지막 장 밀도 계산에 쓴다 */
         var y0 = cur.y + Bs.before;
         var low = limS - hs - 8;
-        if (y0 < low) y0 = low;              /* 남는 자리가 많으면 아래쪽에 붙인다 — 편지 끝처럼 */
+        if (y0 < low && (low - y0) <= 240) y0 = low;   /* 남는 자리가 조금이면 아래에 붙인다 */
         if (y0 + hs > limS) {
           if (cur.filled > 0) { open(); y0 = M.top + Bs.before; }
         }
@@ -595,16 +596,21 @@
       var top0 = i === 0 ? M.top + headH : M.top;
       return (pg.y - top0) / (bottom - top0);
     }
-    var last = fill(natural[natural.length - 1], natural.length - 1);
-    if (last >= 0.6) return natural;
+    function textFill(pg, i) {
+      var top0 = i === 0 ? M.top + headH : M.top;
+      var end = pg.textEnd || pg.y;
+      return (end - top0) / (bottom - top0);
+    }
+    var last = textFill(natural[natural.length - 1], natural.length - 1);
+    if (last >= 0.55) return natural;
     var best = natural;
     var ks = [0.96, 0.93, 0.90, 0.87, 0.84, 0.81];
     for (var i = 0; i < ks.length; i++) {
       var alt = paginate(m, list, headH, ks[i]);
       if (alt.length !== natural.length) continue;
-      var f = fill(alt[alt.length - 1], alt.length - 1);
-      if (f > fill(best[best.length - 1], best.length - 1)) best = alt;
-      if (f >= 0.62) break;          /* 고르게 나뉘었으면 거기서 멈춘다 — 아래를 비우지 않게 */
+      var f = textFill(alt[alt.length - 1], alt.length - 1);
+      if (f > textFill(best[best.length - 1], best.length - 1)) best = alt;
+      if (f >= 0.6) break;          /* 고르게 나뉘었으면 거기서 멈춘다 — 아래를 비우지 않게 */
     }
     return best;
   }
