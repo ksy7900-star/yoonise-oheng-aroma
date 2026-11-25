@@ -7,8 +7,10 @@
      페이지 이미지 · PDF · 공유 파일을 모두 이 한 곳에서 만든다.
      그래서 화면에서 고친 글이 저장물에서 초안으로 되돌아가지 않는다.
    · 표지 전용 페이지도, 직인만 있는 페이지도 없다 (2026-11-26 #22071).
-       1장 위: 제목 → 이름·생년월일시 → 개인 사주 원국(4기둥·대운/세운 없음) → 도입부 → 본문
-       마지막 장: 마무리 문단 + ‘— 윤이세’ 서명 + 실제 직인(yoonise-seal.png)
+       1장 위: 제목 → 개인 사주 원국(4기둥·대운/세운 없음, 상자 안 첫 줄에 이름·성별·생년월일·시각)
+              → 도입부 → 본문   (2026-11-26 #22228 — 원국 위 두 줄은 지운다, 고객 정보는 상자 안 한 줄로)
+       마지막 장: 마무리 문단 + ‘윤이세’ 이름 왼쪽 · 실제 직인(yoonise-seal.png) 오른쪽을 한 묶음으로
+              본문 오른쪽 끝에 붙인다 (#22228 — 가운데 정렬·이름 앞 ‘—’ 없음)
      약 1,450자 기준 3~4장, 본문 42px · 줄 1.5배 · 좌우 여백 68px.
    · 페이지 나눔은 문단(블록) 단위이고, 한 문단이 길면 줄 단위로만 나눈다.
      문장 중간에서 잘리지 않고, 마지막 장에 서명만 홀로 남지 않는다.
@@ -48,7 +50,8 @@
     chartTenZ: '800 17px ' + SANS,
     chartHz: '600 32px ' + SERIF,
     chartHid: '600 18px ' + SERIF,
-    chartNote: '600 15px ' + SANS
+    chartNote: '600 15px ' + SANS,
+    chartMeta: '700 20px ' + SANS
   };
   var LH = { title: 54, for: 36, meta: 32, greet: 62, head: 52, body: 63, item: 63, chap: 22 };
 
@@ -68,7 +71,8 @@
   };
   var GAN_EL = { '甲': '목', '乙': '목', '丙': '화', '丁': '화', '戊': '토', '己': '토', '庚': '금', '辛': '금', '壬': '수', '癸': '수' };
   var ZHI_EL = { '子': '수', '丑': '토', '寅': '목', '卯': '목', '辰': '토', '巳': '화', '午': '화', '未': '토', '申': '금', '酉': '금', '戌': '토', '亥': '수' };
-  var CHART_H = 234;                 /* 원국 상자 높이 */
+  var CHART_H = 316;                 /* 원국 상자 높이 — 안쪽 위 정보 한 줄 + 4기둥 + 지장간 + 설명 */
+  var SIGN_SEAL_W = 168;             /* 마지막 장 직인 폭 (높이는 원본 비율) */
   /* 1:1 상담 신청서 — 감정서 마지막 장 버튼이 가리키는 곳 (QR 없이 바로 연결) */
   var APPLY_URL = 'https://ksy7900-star.github.io/yoonise-oheng-aroma/apply/';
   var CTA_LABEL = '윤이세 1:1 맞춤 상담 알아보기 →';
@@ -102,7 +106,7 @@
       else if (/^안녕하세요,/.test(t)) type = 'greet';
       else if (/^[1-5]\.\s/.test(t)) type = 'head';
       else if (/^[①②③④⑤]/.test(t)) type = 'item';
-      else if (/^[—–―-]\s*윤이세\s*$/.test(t)) type = 'sign';
+      else if (/^[—–―-]?\s*윤이세\s*$/.test(t)) type = 'sign';
       out.push({ type: type, text: t, runs: runsOf(t) });
       seen += 1;
     });
@@ -123,7 +127,7 @@
        장을 줄이고 같은 말을 두 번 쓰지 않기 위해서다. 소제목은 위 여백과 금선으로 구분한다. */
     /* 서명이 없으면 붙인다 — 직인은 마지막 장에만, 마무리 글과 함께 */
     if (!out.some(function (b) { return b.type === 'sign'; })) {
-      out.push({ type: 'sign', text: '— 윤이세' });
+      out.push({ type: 'sign', text: '윤이세' });
     }
     return out;
   }
@@ -265,90 +269,123 @@
     c.textBaseline = 'alphabetic';
   }
 
-  function drawChart(c, x, y, w, saju) {
+  /* 원국 한 칸이 무엇을 보여 주는지 — 그리는 쪽과 검증(타이밍 달력과 대조)이 같은 함수를 본다.
+     값은 저장된 스냅샷(pillars)만 쓴다. 여기서 사주를 다시 계산하지 않는다. */
+  function chartData(saju) {
     var cols = [['time', '시'], ['day', '일'], ['month', '월'], ['year', '년']];
     var p = saju && saju.pillars ? saju.pillars : {};
     var known = !saju || saju.time_known !== false;
+    return cols.map(function (col) {
+      var k = col[0], v = p[k] || null, miss = !v;
+      return {
+        key: k, label: col[1],
+        state: miss ? (k === 'time' && !known ? '모름' : '없음') : 'known',
+        gan: miss ? null : v.gan,
+        zhi: miss ? null : v.zhi,
+        gan_el: miss ? null : elOf(v, 'gan'),
+        zhi_el: miss ? null : elOf(v, 'zhi'),
+        ten_gan: miss ? null : (k === 'day' ? '일원' : (v.ten_gan || '—')),
+        ten_zhi: miss ? null : (v.ten_zhi || '—'),
+        hidden: miss ? [] : (HIDDEN[v.zhi] || [])
+      };
+    });
+  }
+
+  function drawChart(c, x, y, w, saju) {
+    var data = chartData(saju);
 
     roundRect(c, x, y, w, CHART_H, 12);
     c.fillStyle = '#FFFDF8'; c.fill();
     c.strokeStyle = 'rgba(150,126,94,.26)'; c.lineWidth = 1.2; c.stroke();
 
-    c.font = F.chartK; c.fillStyle = C.goldDeep; c.textAlign = 'left';
-    c.fillText('사주 원국', x + 20, y + 30);
-    c.font = F.chartN; c.fillStyle = C.soft; c.textAlign = 'right';
-    c.fillText('지장간 · 지지 속에 숨어 있는 기운', x + w - 20, y + 30);
+    /* 상자 안 첫 줄 — 이름 · 성별 · 생년월일(음/양/윤) · 시각 (한 줄, 입력값 그대로) */
+    var line = birthLine(saju);
+    if (line) {
+      c.font = F.chartMeta; c.fillStyle = C.goldDeep; c.textAlign = 'left';
+      c.fillText(line, x + 22, y + 34);
+    }
 
-    var pad = 18, gap = 8, colW = (w - pad * 2 - gap * 3) / 4;
-    var top = y + 38;
-    cols.forEach(function (col, i) {
-      var k = col[0], v = p[k] || null;
-      var isDay = k === 'day';
+    var pad = 20, gap = 8, colW = (w - pad * 2 - gap * 3) / 4;
+    var top = y + 70;
+    data.forEach(function (d, i) {
       var x0 = x + pad + i * (colW + gap);
-      var miss = !v;
+      var miss = d.state !== 'known';
+      var isDay = d.key === 'day';
       c.textAlign = 'center';
       /* 자리 이름 */
       c.font = F.chartPos; c.fillStyle = C.soft;
-      c.fillText(col[1], x0 + colW / 2, top + 10);
+      c.fillText(d.label, x0 + colW / 2, top + 8);
       /* 천간 십성 (일간 자리는 '일원') */
       c.font = F.chartTen;
-      roundRect(c, x0, top + 17, colW, 26, 8);
+      roundRect(c, x0, top + 14, colW, 26, 8);
       c.fillStyle = miss ? '#F4F5F7' : (isDay ? '#EFE0C0' : '#F7EEDC');
       c.fill();
       c.fillStyle = miss ? '#B9BEC6' : (isDay ? '#6B3A05' : '#7A4A0B');
       c.textBaseline = 'middle';
-      c.fillText(miss ? (k === 'time' && !known ? '모름' : '—') : (isDay ? '일원' : (v.ten_gan || '—')), x0 + colW / 2, top + 32);
+      c.fillText(miss ? d.state : d.ten_gan, x0 + colW / 2, top + 28);
       c.textBaseline = 'alphabetic';
-      /* 천간 · 지지 */
-      glyphPill(c, x0, top + 47, colW, 40, v ? v.gan : '', elOf(v, 'gan'), miss, true);
-      glyphPill(c, x0, top + 91, colW, 40, v ? v.zhi : '', elOf(v, 'zhi'), miss, true);
-      /* 지지 십성 — 지지 바로 아래 */
+      /* 천간 · 지지 (오행 색) */
+      glyphPill(c, x0, top + 48, colW, 42, d.gan || '', d.gan_el, miss, true);
+      glyphPill(c, x0, top + 94, colW, 42, d.zhi || '', d.zhi_el, miss, true);
+      /* 지지 십성 — 지지 아래 한 칸 띄어 */
       c.textAlign = 'center';
       c.font = F.chartTenZ;
       c.fillStyle = miss ? '#C7CBD1' : '#7A4A0B';
-      c.fillText(miss ? '—' : (v.ten_zhi || '—'), x0 + colW / 2, top + 156);
+      c.fillText(miss ? '—' : d.ten_zhi, x0 + colW / 2, top + 172);
       /* 지장간 */
       c.font = F.chartHid;
-      var hid = v && HIDDEN[v.zhi] ? HIDDEN[v.zhi] : [];
-      if (!hid.length) {
+      if (!d.hidden.length) {
         c.fillStyle = '#C7CBD1';
-        c.fillText('—', x0 + colW / 2, top + 182);
+        c.fillText('—', x0 + colW / 2, top + 206);
       } else {
         var parts = [], hw = 0;
-        hid.forEach(function (h) { var tw = c.measureText(h).width; parts.push({ h: h, w: tw }); hw += tw + 4; });
-        var hx = x0 + colW / 2 - (hw - 4) / 2;
+        d.hidden.forEach(function (h) { var tw = c.measureText(h).width; parts.push({ h: h, w: tw }); hw += tw + 5; });
+        var hx = x0 + colW / 2 - (hw - 5) / 2;
         c.textAlign = 'left';
         parts.forEach(function (t) {
           c.fillStyle = (EL[GAN_EL[t.h]] || EL['토']).fg;
-          c.fillText(t.h, hx, top + 182);
-          hx += t.w + 4;
+          c.fillText(t.h, hx, top + 206);
+          hx += t.w + 5;
         });
       }
     });
+    /* 설명 — 지장간 줄 아래 가운데 (관리자 원국 표와 같은 자리) */
+    c.font = F.chartNote; c.fillStyle = C.soft; c.textAlign = 'center';
+    c.fillText('지장간 · 지지 속에 숨어 있는 기운', x + w / 2, y + CHART_H - 16);
   }
 
-  function sajuInfo(opts) { return !!(opts && opts.saju && opts.saju.pillars); }
-  /** 이름 · 성별 · 생년월일 · 시각 — 원국 위 한 줄 (원국 자료만 있을 때) */
-  function metaFromSnapshot(s) {
+  /** 입력값 그대로 한 줄 — 이름 · 성별 · 생년월일(양력/음력/윤달) · 태어난 시각 */
+  function birthLine(s) {
     if (!s) return '';
-    var p = [];
-    if (s.name) p.push(s.name + ' 님');
-    if (s.gender) p.push(s.gender);
-    if (s.solar && s.solar.y) p.push(s.solar.y + '.' + s.solar.m + '.' + s.solar.d + ' (양력)');
-    if (s.time_known === false) p.push('태어난 시각 모름');
-    return p.join(' · ');
+    var out = [];
+    var inp = s.input || {};
+    var sol = s.solar && s.solar.y ? s.solar : null;
+    var lun = s.lunar && s.lunar.y ? s.lunar : null;
+    var cal = inp.calendar || (lun ? 'lunar' : 'solar');
+    if (s.name) out.push(String(s.name).replace(/\s*님$/, ''));
+    if (s.gender) out.push(s.gender);
+    function ymd(o) { return o.y + '.' + o.m + '.' + o.d; }
+    if (cal === 'lunar' && lun) {
+      out.push('음력 ' + ymd(lun) + (lun.leap || inp.leap ? ' 윤달' : '') + (sol ? ' (양력 ' + ymd(sol) + ')' : ''));
+    } else if (sol) {
+      out.push('양력 ' + ymd(sol));
+    }
+    var known = s.time_known !== false;
+    if (!known) out.push('태어난 시각 모름');
+    else if (inp.timeKnown && inp.hh != null) out.push(pad2(inp.hh) + ':' + pad2(inp.mm || 0));
+    return out.join(' · ');
   }
+  function pad2(n) { n = Number(n) || 0; return (n < 10 ? '0' : '') + n; }
 
-  /* ── 첫 장 위 머리 — 제목 → 이름·생년월일시 → 원국 ───────── */
+  /* ── 첫 장 위 머리 — 제목 → 원국(안쪽 첫 줄에 이름·생년월일시) ─────
+     원국 위에 이름·생년월일시를 또 쓰지 않는다 — 같은 정보가 두 번 나오면 지저분하다(2026-11-26 #22228). */
   function buildHead(m, list, opts) {
     var ops = [];
     var y = M.top;
     var maxW = W - M.x * 2;
     var title = opts.title || '';
-    var forLine = '';
     list.forEach(function (b) {
       if (!title && b.type === 'title') title = b.text;
-      else if (!forLine && b.type === 'for') forLine = b.text;
     });
     title = String(title || '').replace(/^『|』$/g, '');
     if (title) {
@@ -358,25 +395,21 @@
         ops.push({ y: y + 34, draw: textOp([{ t: t, b: false }], W / 2, 0, F.title, F.title, C.ink, 'center', 0) });
         y += LH.title;
       });
-      y += 14;
-    }
-    if (forLine) {
-      ops.push({ y: y + 16, draw: textOp([{ t: forLine, b: false }], W / 2, 0, F.for, F.for, C.soft, 'center', 0) });
-      y += LH.for;
-    }
-    var meta = String(opts.meta || '').trim();
-    if (!meta && sajuInfo(opts)) meta = metaFromSnapshot(opts.saju);
-    if (meta) {
-      wrapPlain(m, meta, maxW - 20, F.meta).forEach(function (t) {
-        ops.push({ y: y + 19, draw: textOp([{ t: t, b: false }], W / 2, 0, F.meta, F.meta, '#6B6157', 'center', 0) });
-        y += LH.meta;
-      });
+      y += 12;
     }
     var saju = opts.saju || null;
     if (saju && saju.pillars) {
-      y += 10;
       ops.push({ y: y, h: CHART_H, draw: function (c, yy) { drawChart(c, M.x, yy, maxW, saju); } });
       y += CHART_H;
+    } else {
+      /* 원국 자료가 없을 때만 — 저장된 스냅샷이 없으면 넘겨받은 한 줄을 그대로 쓴다 */
+      var meta = String(opts.meta || '').trim();
+      if (meta) {
+        wrapPlain(m, meta, maxW - 20, F.meta).forEach(function (t) {
+          ops.push({ y: y + 19, draw: textOp([{ t: t, b: false }], W / 2, 0, F.meta, F.meta, '#6B6157', 'center', 0) });
+          y += LH.meta;
+        });
+      }
     }
     y += 14;
     return { ops: ops, height: y - M.top };
@@ -451,19 +484,23 @@
       return { units: units, before: 0, after: 10 };
     }
     if (b.type === 'sign') {
-      var sealW = 196, sealH = Math.round(sealW * 381 / 720);
-      var name = (b.text || '— 윤이세').replace(/\s+/g, ' ').trim();
-      /* 마지막 장 — 서명·직인 아래에 1:1 상담 블록 (2026-11-26 #22119 · #22132 예시 그대로) */
+      /* 마지막 장 — '윤이세'(왼쪽) + 직인(오른쪽)을 한 묶음으로 본문 오른쪽 끝에 붙인다 (#22228) */
+      var sealW = SIGN_SEAL_W, sealH = Math.round(sealW * 381 / 720);
+      var name = String(b.text || '윤이세').replace(/^[—–―-]\s*/, '').replace(/\s+/g, ' ').trim() || '윤이세';
+      var gap = 26;
       var u = { h: 34 + CTA_BOTTOM, draw: function (c, y) {
         c.fillStyle = C.hair; c.fillRect(M.x, y + 4, W - M.x * 2, 1);
-        var ny = y + 86;
+        var ny = y + 74;                       /* 두 금선 사이( y+4 ~ y+118 )의 한가운데 */
+        var sealCy = y + 61;
         c.font = F.sign; c.fillStyle = C.ink; c.textAlign = 'left';
         var nw = c.measureText(name).width;
-        var sx = Math.max(M.x, (W - (nw + 22 + sealW)) / 2);
+        var right = W - M.x - 12;                 /* 테두리·본문 끝에서 12px 안쪽 */
+        var sx = right - (nw + gap + sealW);      /* 이름 시작 — 묶음 전체가 오른쪽 */
+        if (sx < M.x) sx = M.x;
         c.fillText(name, sx, ny);
         if (SIGN.seal) {
           c.save();
-          c.translate(sx + nw + 22 + sealW / 2, ny - sealH / 2 + 12);
+          c.translate(sx + nw + gap + sealW / 2, sealCy);   /* 직인 가운데를 이름 높이에 맞춘다 */
           c.rotate(-4 * Math.PI / 180);
           c.globalAlpha = .96;
           c.drawImage(SIGN.seal, -sealW / 2, -sealH / 2, sealW, sealH);
@@ -730,21 +767,18 @@
     c.fillText('당신의 선택에 지혜를,', W / 2, 1022);
     c.fillText('걸어가는 길에 행운을.', W / 2, 1082);
 
-    /* 실제 서명·직인 — 원본 PNG 를 비율 그대로 */
+    /* 실제 서명·직인 — 원본 PNG 를 비율 그대로. 이름 석자는 넣지 않는다 (#22228) */
     var sealW = 300, sealH = Math.round(sealW * 381 / 720);
+    var sealY = 1392;                    /* 본문 끝(1082)과 브랜드(1676) 사이의 한가운데 */
     if (SIGN.seal) {
       c.save();
-      c.translate(W / 2, 1318);
+      c.translate(W / 2, sealY);
       c.rotate(-4 * Math.PI / 180);
       c.globalAlpha = .96;
       c.drawImage(SIGN.seal, -sealW / 2, -sealH / 2, sealW, sealH);
       c.restore();
       c.globalAlpha = 1;
     }
-
-    /* — 윤이세 */
-    c.font = '600 54px ' + SERIF; c.fillStyle = C.ink;
-    c.fillText('— 윤이세', W / 2, 1500);
 
     /* 윤이세사주 */
     c.font = '700 26px ' + SANS; c.fillStyle = 'rgba(140,130,121,.95)';
@@ -1241,6 +1275,9 @@
     render: render,
     files: files,
     chartHeight: function () { return CHART_H; },
+    /** 원국 칸별 값 — 화면에 그린 것과 같은 자료(검증용) */
+    chartData: chartData,
+    birthLine: birthLine,
     /** 배치 진단 — 장마다 글이 어디까지 찼는지 (관리자·검수용) */
     __dbg: function (input, opts) {
       opts = opts || {};

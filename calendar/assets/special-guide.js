@@ -702,8 +702,8 @@
       '<details class="sgguide__textwrap"><summary>글자로 보기 · 복사하기</summary>' +
       '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>' +
       '<div class="sgguide__sign">' +
-      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126t" alt="윤이세 직인" loading="lazy">' +
-      '<p class="sgguide__name">— 윤이세</p>' +
+      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126u" alt="윤이세 직인" loading="lazy">' +
+      '<p class="sgguide__name">윤이세</p>' +
       '<p class="sgguide__note">가이드는 언제든 다시 열어 보실 수 있어요.</p>' +
       '</div></details>' +
       '<button type="button" class="sgift__buy sgguide__close" data-sgguide-close>가이드 닫기</button>';
@@ -720,7 +720,7 @@
      표지 전용 장은 없다. 1장 위에 원국, 마지막 장에 서명·직인. */
   function gopts(text, scale) {
     return {
-      seal: 'assets/yoonise-seal.png?v=20261126t',
+      seal: 'assets/yoonise-seal.png?v=20261126u',
       name: nameIn(text),
       saju: (mem.claim && mem.claim.saju_snapshot) || null,
       scale: scale || 1
@@ -1142,6 +1142,16 @@
         gender: res.input && res.input.gender === 'M' ? '남' : '여',
         time_known: !!(res.input && res.input.timeKnown),
         solar: { y: res.solar.y, m: res.solar.m, d: res.solar.d },
+        /* 입력값 그대로 — 감정서 원국 위 한 줄이 양력/음력/윤달·시각을 입력한 그대로 보여 주게 (#22228) */
+        lunar: res.lunar ? { y: res.lunar.y, m: res.lunar.m, d: res.lunar.d, leap: !!res.lunar.leap, text: res.lunar.text || '' } : null,
+        input: res.input ? {
+          calendar: res.input.calendar, y: res.input.y, m: res.input.m, d: res.input.d,
+          leap: !!res.input.leap, timeKnown: !!res.input.timeKnown,
+          hh: res.input.timeKnown ? res.input.hh : null,
+          mm: res.input.timeKnown ? res.input.mm : null,
+          gender: res.input.gender, ziRule: res.input.ziRule,
+          trueSolar: !!res.input.trueSolar, dst: !!res.input.dst, region: res.input.region
+        } : null,
         pillars: { year: pil(p.year), month: pil(p.month), day: pil(p.day), time: pil(p.time) },
         day_master: { gan: d.gan, gan_ko: M.GAN_KO[d.ganIndex], element: M.GAN_EL[d.ganIndex], hun: M.GAN_HUN[d.ganIndex] },
         counts: counts,
