@@ -14,10 +14,11 @@
  *   ① 제목 + 오늘의 상황 … 오늘 천간이 '내게' 오는 자리(십신 10가지) × 그 자리가
  *      내 사주에 원래 얼마나 있나(0~1 / 2~3 / 4+). 같은 날이라도 사주마다 다르다.
  *      제목도 이 한 벌에서 나오므로 제목과 본문이 어긋나지 않는다.
- *   ② 내 사주 한 줄 … 여덟 글자에서 실제로 비어 있거나(0) 한 자뿐이거나(1)
- *      넘치는(4+) 오행. 사주에서 참인 것만 후보가 되고, 이틀에 한 번만 붙는다
- *      (매일 같은 이야기로 시작하지 않게). **한 문장으로 따로 선다** — 오늘의
- *      상황 문장 뒤에 붙여 이어 붙이지 않는다(2026-11-26 문장 개편).
+ *   ② 내 사주 × 오늘 … 오늘 일진이 내 사주와 '어디서' 만나고 부딪히는지.
+ *      충·형·해·육합·귀인·재성·인성·절기 — 타이밍 엔진이 이미 판정한 결만 쓴다.
+ *      오행 개수·일간 하나로 성격을 단정하지 않는다(2026-11-26 윤희 님 지침).
+ *      이틀에 한 번만 붙는다(매일 같은 이야기로 시작하지 않게). **한 문장으로
+ *      따로 선다** — 오늘 상황 문장 뒤에 붙여 이어 붙이지 않는다.
  *   ③ 오늘 할 일 … ①과 한 벌로 묶인 실제 행동 하나.
  *   ④ 닫는 말 … 따뜻함·단호함·생활조언·응원·질문·담담함을 날마다 돌려 쓴다.
  *
@@ -87,7 +88,7 @@
       '오늘 하루는 서두를 이유가 별로 없는 날입니다.',
       '@오늘은 한 가지도 급하게 끝낼 필요가 없습니다.',
       '오늘은 평소의 걸음으로 가도 되는 날입니다.',
-      '@오늘은 잠깐 숨을 고르기 좋은 하루입니다.',
+      '@오늘은 잠깐 멈춰 서기 좋은 하루입니다.',
       '오늘 하루는 하고 싶은 만큼만 해도 충분합니다.',
       '@오늘은 일부러 애쓰지 않아도 되는 날입니다.'
     ]
@@ -321,161 +322,215 @@
   };
 
   /* ══════════════════════════════════════════════════════════════════
-     📌 내 사주 한 줄 — 여덟 글자에서 실제로 비어 있거나 넘치는 오행
-     · 오늘 오는 오행이 아예 없던 사주면 그걸 먼저 말한다(가장 크게 와닿는 자리).
-     · 그 밖에는 비어 있는 오행 · 넘치는 오행을 사실대로 말하고, 그 사주가
-       원래 어떤 결로 살아왔는지 한 줄로 붙인다. 지어낸 경험담은 쓰지 않는다.
-     · 한 문장으로 **따로 선다** — 오늘 상황 문장에 이어 붙이지 않는다.
-     · 사주에서 참인 것만 후보가 되므로, 사주가 다르면 이 문장도 반드시 달라진다. */
-  var TB_NOTE = {
-    'zero:목': [
-      '오늘 오는 나무가 사주에 한 자도 없어서, 시작하는 일이 낯설기만 합니다.',
-      '여덟 글자에 나무가 없는데 오늘 그 자리가 들어와서, 새로 여는 일이 어색합니다.',
-      '원국에 나무가 없던 사주라, 오늘 시작하는 일은 손에 잡히지 않습니다.'
-,
-      '나무가 비어 있는 사주라, 오늘 새 일을 여는 데 손이 늦습니다.'    ],
-    'zero:화': [
-      '오늘 오는 불이 사주에 없어서, 드러내는 일이 스스로도 어색합니다.',
-      '여덟 글자에 불이 없는데 오늘 그 자리가 와서, 표현하는 일에 힘이 더 듭니다.',
-      '원국에 불이 없던 사주라, 오늘은 나서는 자리가 어색합니다.'
-,
-      '불이 비어 있는 사주라, 오늘 표현하는 자리가 어색하게 느껴집니다.'    ],
-    'zero:토': [
-      '오늘 오는 흙이 사주에 없어서, 한곳에 머무는 일이 어색합니다.',
-      '여덟 글자에 흙이 없는데 오늘 그 자리가 들어와서, 자리를 잡는 일이 손에 익지 않습니다.',
-      '원국에 흙이 없던 사주라, 오늘 생기는 자리가 낯섭니다.'
-,
-      '흙이 비어 있는 사주라, 오늘은 자리를 잡아도 오래 두기 어렵습니다.'    ],
-    'zero:금': [
-      '오늘 오는 쇠가 사주에 없어서, 선을 긋는 일이 어색하게 느껴집니다.',
-      '여덟 글자에 쇠가 없는데 오늘 그 자리가 와서, 끊어 내는 일이 쉽지 않습니다.',
-      '원국에 쇠가 없던 사주라, 오늘은 매듭을 짓기가 버겁습니다.'
-,
-      '쇠가 비어 있는 사주라, 오늘 매듭을 짓는 일이 손에 잡히지 않습니다.'    ],
-    'zero:수': [
-      '오늘 오는 물이 사주에 없어서, 말로 풀어내는 일이 여간 어렵지 않습니다.',
-      '여덟 글자에 물이 없는데 오늘 그 자리가 들어와서, 속을 꺼내기가 버겁습니다.',
-      '원국에 물이 없던 사주라, 오늘은 하고 싶은 말이 목에 걸립니다.'
-,
-      '물이 비어 있는 사주라, 속을 꺼내는 일이 무겁기만 합니다.'    ],
-    'no:목': [
-      '사주에 나무가 없어서, 무엇이든 시작은 마음먹기부터입니다.',
-      '여덟 글자에 나무가 없어서, 새 일은 늘 스스로 문을 열어야 합니다.',
-      '원국에 나무가 없어서, 무엇을 시작하든 첫발이 무겁습니다.'
-,
-      '나무가 없는 사주라, 새 일은 늘 첫발을 떼는 데서 멈춥니다.'    ],
-    'no:화': [
-      '사주에 불이 없어서, 기쁜 일도 혼자 삭이는 편입니다.',
-      '여덟 글자에 불이 없어서, 속이 달아오르는 날이 그리 많지 않습니다.',
-      '원국에 불이 없어서, 좋은 일이 생겨도 티를 잘 내지 않습니다.'
-,
-      '불이 없는 사주라, 기쁨을 밖으로 내보이는 일이 어색합니다.'    ],
-    'no:토': [
-      '사주에 흙이 없어서, 한곳에 오래 머무는 일이 쉽지 않습니다.',
-      '여덟 글자에 흙이 없어서, 자리를 잡는 데 남보다 시간이 걸립니다.',
-      '원국에 흙이 없어서, 한자리에 뿌리내리는 일이 늘 어려웠습니다.'
-,
-      '흙이 없는 사주라, 한곳에 머무는 일이 오래 버티지 못합니다.'    ],
-    'no:금': [
-      '사주에 쇠가 없어서, 끊어야 할 때 끊지 못하고 오래 끌게 됩니다.',
-      '여덟 글자에 쇠가 없어서, 매듭을 짓는 일에서 자꾸 마음이 남습니다.',
-      '원국에 쇠가 없어서, 정해야 할 때 정하지 못해 시간이 갑니다.'
-,
-      '쇠가 없는 사주라, 정할 때와 미룰 때를 가르기 어려워합니다.'    ],
-    'no:수': [
-      '사주에 물이 없어서, 생각은 많은데 말로는 잘 꺼내지 못합니다.',
-      '여덟 글자에 물이 없어서, 속에 담아 두고 혼자 삭이는 날이 많습니다.',
-      '원국에 물이 없어서, 하고 싶은 말이 입 밖으로 잘 나오지 않습니다.'
-,
-      '물이 없는 사주라, 마음속에만 두고 꺼내지 못하는 말이 많습니다.'    ],
-    'many:목': [
-      '사주에 나무가 많아서, 벌여 둔 일이 많고 쉽게 줄이지 못합니다.',
-      '여덟 글자에 나무가 많아서, 쉬지 않고 새 일을 벌이려 합니다.',
-      '원국에 나무가 많아서, 벌인 일이 손에서 놓이지 않습니다.'
-    ],
-    'many:화': [
-      '사주에 불이 많아서, 시작은 빠른데 마무리가 느립니다.',
-      '여덟 글자에 불이 많아서, 마음이 먼저 달아오르는 날이 잦습니다.',
-      '원국에 불이 많아서, 한번 오르면 식는 데까지 시간이 걸립니다.'
-    ],
-    'many:토': [
-      '사주에 흙이 많아서, 한번 정한 생각을 바꾸기 어려워합니다.',
-      '여덟 글자에 흙이 많아서, 생각이 무거워지기 쉬운 편입니다.',
-      '원국에 흙이 많아서, 마음이 자리를 잡으면 움직이기 어렵습니다.'
-    ],
-    'many:금': [
-      '사주에 쇠가 많아서, 옳고 그름을 먼저 따지게 됩니다.',
-      '여덟 글자에 쇠가 많아서, 매사를 정확히 해 두지 않으면 마음이 놓이지 않습니다.',
-      '원국에 쇠가 많아서, 일을 마무리하지 않고는 넘어가기 어렵습니다.'
-    ],
-    'many:수': [
-      '사주에 물이 많아서, 생각이 길어져 밤이 늦어집니다.',
-      '여덟 글자에 물이 많아서, 혼자 곱씹는 시간이 길어집니다.',
-      '원국에 물이 많아서, 마음이 가라앉으면 좀처럼 올라오지 않습니다.'
-    ],
-    'thin:목': [
-      '사주에 나무가 하나뿐이라, 새로 시작하는 일은 한 번 더 재어 보게 됩니다.',
-      '여덟 글자에 나무가 하나뿐이라, 새 일을 벌일 때 마음이 무겁습니다.',
-      '나무가 하나뿐인 사주라, 시작하는 자리마다 힘을 모아야 합니다.'
-    ],
-    'thin:화': [
-      '사주에 불이 하나뿐이라, 마음이 달아오르는 날이 그리 많지 않습니다.',
-      '여덟 글자에 불이 하나뿐이라, 기쁜 일도 크게 드러내지 않는 편입니다.',
-      '불이 하나뿐인 사주라, 표현하는 일에 늘 한 박자 늦습니다.'
-    ],
-    'thin:토': [
-      '사주에 흙이 하나뿐이라, 한자리를 지키는 힘이 자주 모자랍니다.',
-      '여덟 글자에 흙이 하나뿐이라, 오래 머무는 일이 쉽지 않습니다.',
-      '흙이 하나뿐인 사주라, 버티는 힘을 따로 마련해 두어야 합니다.'
-    ],
-    'thin:금': [
-      '사주에 쇠가 하나뿐이라, 끝을 맺는 자리에서 마음이 무거워집니다.',
-      '여덟 글자에 쇠가 하나뿐이라, 끊어 내는 결정 앞에서 오래 망설입니다.',
-      '쇠가 하나뿐인 사주라, 매듭을 지을 때마다 결심이 필요합니다.'
-    ],
-    'thin:수': [
-      '사주에 물이 하나뿐이라, 속에 담아 두는 날이 많습니다.',
-      '여덟 글자에 물이 하나뿐이라, 생각을 말로 꺼내는 일이 아쉽습니다.',
-      '물이 하나뿐인 사주라, 하고 싶은 말을 삼키는 날이 잦습니다.'
-    ],
-    'top:목': [
-      '여덟 글자에서 나무가 가장 두터워서, 무엇이든 먼저 시작하는 쪽입니다.',
-      '나무가 가장 두터운 사주라, 새 일을 벌이는 데 머뭇거림이 없습니다.',
-      '나무가 가장 두터운 사주라, 할 일이 없으면 오히려 답답해합니다.'
-,
-      '나무가 가장 두터운 사주라, 일을 벌이는 쪽으로 마음이 먼저 갑니다.'    ],
-    'top:화': [
-      '여덟 글자에서 불이 가장 두터워서, 달아오르는 날이 잦습니다.',
-      '불이 가장 두터운 사주라, 시작은 빠른데 오래 두고 보는 힘이 약합니다.',
-      '불이 가장 두터운 사주라, 마음이 앞서는 일이 잦습니다.'
-,
-      '불이 가장 두터운 사주라, 마음이 오르내리는 폭이 큽니다.'    ],
-    'top:토': [
-      '여덟 글자에서 흙이 가장 두터워서, 한번 정한 것을 쉽게 버리지 못합니다.',
-      '흙이 가장 두터운 사주라, 한번 마음먹으면 좀처럼 돌이키지 않습니다.',
-      '흙이 가장 두터운 사주라, 마음이 한번 가면 오래 그 자리에 머뭅니다.'
-,
-      '흙이 가장 두터운 사주라, 한번 앉은 자리를 잘 옮기지 않습니다.'    ],
-    'top:금': [
-      '여덟 글자에서 쇠가 가장 두터워서, 스스로에게 엄격한 편입니다.',
-      '쇠가 가장 두터운 사주라, 옳고 그름을 먼저 따지게 됩니다.',
-      '쇠가 가장 두터운 사주라, 매사에 기준을 세워 두어야 마음이 놓입니다.'
-,
-      '쇠가 가장 두터운 사주라, 어설픈 것을 견디기 어려워합니다.'    ],
-    'top:수': [
-      '여덟 글자에서 물이 가장 두터워서, 생각이 깊고 밤이 깁니다.',
-      '물이 가장 두터운 사주라, 마음이 가라앉는 시간이 남들보다 깁니다.',
-      '물이 가장 두터운 사주라, 생각이 많아 잠이 늦어집니다.'
-,
-      '물이 가장 두터운 사주라, 재고 또 재느라 결정이 늦습니다.'    ],
-    'even': [
-      '여덟 글자가 고르게 놓여서, 어느 한쪽으로 크게 치우치지 않습니다.',
-      '오행이 고르게 퍼진 사주라, 어떤 자리든 받아들이는 힘이 있습니다.',
-      '한쪽으로 몰린 곳이 없어서, 때에 따라 모습을 바꿀 수 있습니다.'
-    ]
+     📌 내 사주 × 오늘 — 오늘 들어오는 기운이 '내 사주 어디에' 닿는지 한 줄
+     2026-11-26 윤희 님 지침: 단독 오행·일간 해석 금지 · 분석과 문장 분리
+
+     무엇이 틀렸나
+     ─ 예전에는 '사주에 물이 없어서 마음속에만 두고 꺼내지 못합니다'처럼 겉으로
+       드러난 글자 개수 하나로 그 사람의 성격과 하루를 단정했다. 1974-05-19 08:30
+       사주는 겉으로 水가 한 자도 없지만 지장간 申(壬)·辰(癸)에 물이 들어 있다.
+       '물이 없는 사주'가 아니었다. 세는 방식부터 틀렸던 것이다.
+
+     무엇으로 바꿨나
+     · 오행은 아래 strengthOf 가 **지장간까지 넣어 무게를 매기고, 월지의 계절
+       (왕·상·휴·수·사)로 한 번 더 보정한 실질 분포**로만 본다. 겉글자 개수는
+       이제 고르는 데도, 문장에도 쓰지 않는다.
+     · 그 분포를 문장으로 풀어 말하지는 않는다. '~이 없다/많다'는 말은 쓰지 않고,
+       오늘 일진이 내 사주와 **어디서 만나고 어디서 부딪히는지** — 타이밍 엔진이
+       이미 판정한 충·형·해·육합·삼합·귀인·재성·인성·절기 — 만 오늘의 말로 옮긴다.
+     · 자리는 타이밍 엔진과 같은 규칙(일지 먼저, 그다음 월지)으로 고른다.
+       달력 배지와 이 문장이 서로 다른 말을 하지 않게 하기 위해서다.
+     · 타고난 성격을 규정하지 않는다. 오늘 하루의 결만 말한다.
+     · 한 문장으로 **따로 선다** — 오늘 상황 문장에 이어 붙이지 않는다. */
+
+  var TB_MEET = {
+    /* 부딪히는 날 — 자리가 '내 자리(일지)'인지 '일하는 자리(월지)'인지까지 말한다 */
+    'chung': {
+      day: [
+        '오늘 들어오는 기운이 내 자리와 정면으로 부딪혀, 생활의 순서부터 흔들릴 수 있습니다.',
+        '내 자리에서 부딪히는 날이라, 평소의 순서를 지키는 쪽이 덜 지칩니다.'
+      ],
+      month: [
+        '오늘 들어오는 기운이 일하는 자리와 부딪혀, 하던 일의 판이 먼저 흔들릴 수 있습니다.',
+        '일하는 자리에서 부딪히는 날이라, 벌여 둔 일은 하나씩 매듭지어 두면 좋습니다.'
+      ],
+      any: [
+        '내 사주와 부딪히는 자리가 오늘 하나 열려, 서두르는 만큼 되돌아오기 쉽습니다.',
+        '내 쪽에서 걸리는 자리가 하나 있어, 오늘은 밀어붙이는 쪽이 손해입니다.'
+      ]
+    },
+    'hyeong': {
+      day: [
+        '내 자리 쪽에서 절차가 한 번씩 엇나가기 쉬워, 해 두던 일도 순서를 다시 짚게 됩니다.',
+        '내 자리에서 걸리는 것이 생겨, 익숙한 일도 한 번 더 확인하게 됩니다.'
+      ],
+      month: [
+        '일하는 자리에서 서류와 순서가 엇갈리기 쉬워, 확인이 한 번 더 필요합니다.',
+        '일하는 자리에서 한 번 걸리는 것이 생겨, 마무리보다 점검이 먼저인 날입니다.'
+      ],
+      any: [
+        '확인과 절차에서 한 번씩 걸리는 자리가 오늘 열립니다.',
+        '순서를 건너뛰면 한 번 더 되돌아오게 되는 자리가 오늘 열립니다.'
+      ]
+    },
+    'hae': {
+      day: [
+        '내 쪽에서 건넨 이야기가 상대에게 다르게 닿기 쉬운 자리가 열립니다.',
+        '내가 아는 그대로 전해지지 않기 쉬운 자리가 오늘 열립니다.'
+      ],
+      month: [
+        '일에서 오간 이야기가 서로 다르게 남기 쉬운 자리가 열립니다.',
+        '일에서 전달이 한 번 비틀리기 쉬운 자리가 오늘 열립니다.'
+      ],
+      any: [
+        '이야기가 오갈 때 뜻이 조금씩 달라지는 자리가 오늘 열립니다.',
+        '전하려던 것과 전해진 것이 서로 달라지기 쉬운 자리가 열립니다.'
+      ]
+    },
+    'gwiyin': {
+      day: [
+        '내 자리에서 막혀 있던 일이 사람의 손을 빌려 풀리기 쉬운 날입니다.',
+        '내 자리에 다른 사람의 손이 먼저 닿아, 혼자 안고 있던 일이 가벼워집니다.'
+      ],
+      month: [
+        '일하는 자리에서 막힌 곳이 사람의 손으로 풀리기 쉬운 날입니다.',
+        '일하는 자리에 도와줄 사람이 먼저 와 닿는 날입니다.'
+      ],
+      any: [
+        '혼자 붙들고 있던 것에 다른 사람의 손이 먼저 닿는 날입니다.',
+        '내 편이 되어 줄 사람이 먼저 다가오는 날입니다.'
+      ]
+    },
+    'hap': {
+      day: [
+        '오늘 들어오는 기운이 내 자리와 맞물려, 끊겨 있던 일이 이어지기 쉽습니다.',
+        '내 자리에서 맞물리는 기운이 와, 미뤄 둔 일이 자연스럽게 이어집니다.'
+      ],
+      month: [
+        '오늘 들어오는 기운이 일하는 자리와 맞물려, 벌여 둔 일이 이어지기 쉽습니다.',
+        '일하는 자리에서 맞물리는 기운이 와, 끊긴 일이 다시 이어집니다.'
+      ],
+      any: [
+        '오늘 들어오는 기운이 내 사주와 맞물려, 끊겨 있던 흐름이 이어지기 쉽습니다.',
+        '오늘 들어오는 기운이 내 쪽과 맞물려, 미뤄 둔 일이 붙기 쉽습니다.'
+      ]
+    },
+    'wealth': {
+      any: [
+        '돈이 오가는 자리가 내 쪽에 열려, 나가는 셈이 먼저 눈에 들어옵니다.',
+        '들어오는 것보다 나가는 곳이 먼저 보이는 날이라, 한 번 짚어 두면 좋습니다.',
+        '셈이 또렷해지는 자리가 열려, 미뤄 둔 정산이 손에 잡힙니다.'
+      ]
+    },
+    'doc': {
+      any: [
+        '적고 정리하는 자리가 내 쪽에 열려, 미뤄 둔 문서가 손에 잡힙니다.',
+        '배우고 기록하는 자리가 열려, 정리해 둔 것이 오늘 힘을 받습니다.',
+        '문서로 남기는 일이 붙는 자리가 열려, 초안을 잡아 두기 좋습니다.'
+      ]
+    },
+    'jie': {
+      any: [
+        '달의 기준이 오늘 새로 서서, 이번 달의 흐름이 지금부터 바뀝니다.',
+        '오늘을 기점으로 달의 중심이 옮겨 가니, 새로 잡는 일은 하루 뒤가 낫습니다.',
+        '달이 바뀌는 자리라, 오늘 정한 목표 하나가 한 달을 끌고 갑니다.'
+      ]
+    },
+    'calm': {
+      any: [
+        '내 쪽에서 새로 걸리는 것이 없어, 따로 마음 쓸 곳이 적은 날입니다.',
+        '내 자리와 일하는 자리에서 크게 부딪히는 곳이 없어, 흐름이 고르게 이어집니다.',
+        '내 쪽에서 크게 튀는 자리가 없어, 있는 힘을 아껴 둘 수 있는 하루입니다.'
+      ]
+    }
   };
 
   var EL_ORDER = ['목', '화', '토', '금', '수'];
+
+  /* ── 실질 오행 분포 (내부 계산용 · 문장에 숫자를 쓰지 않는다) ──────────
+     겉으로 보이는 여덟 글자만 세면 지장간에 든 기운을 통째로 놓친다.
+       ① 천간 1.0, 지지의 지장간은 본기 0.6 · 중기 0.25 · 여기 0.15 (지지 하나 합 1.0)
+       ② 월지가 정하는 계절로 한 번 더 보정 — 왕1.4 · 상1.2 · 휴0.9 · 수(囚)0.75 · 사(死)0.6
+     이렇게 나온 비중을 10% 이하 / 10~28% / 28% 초과로 나눠 '얇음·고름·넉넉함'만
+     고르는 데 쓴다. 이 비중을 화면 문장에 그대로 옮기지는 않는다. */
+  var SEASON_OF_ZHI = [3, 4, 0, 0, 4, 1, 1, 4, 2, 2, 4, 3];  // 자축인묘진사오미신유술해 → 0봄 1여름 2가을 3겨울 4환절기
+  var SEASON_STATE = [
+    { 목: 1.4, 화: 1.2, 토: 0.6, 금: 0.75, 수: 0.9 },   // 봄 — 목왕 화상 토사 금수 수휴
+    { 목: 0.9, 화: 1.4, 토: 1.2, 금: 0.6, 수: 0.75 },  // 여름 — 화왕 토상 금사 수수 목휴
+    { 목: 0.6, 화: 0.75, 토: 0.9, 금: 1.4, 수: 1.2 },  // 가을 — 금왕 수상 목사 화수 토휴
+    { 목: 1.2, 화: 0.6, 토: 0.75, 금: 0.9, 수: 1.4 },  // 겨울 — 수왕 목상 화사 토수 금휴
+    { 목: 0.75, 화: 0.9, 토: 1.4, 금: 1.2, 수: 0.6 }   // 환절기(진술축미) — 토왕 금상 목수 화휴 수사
+  ];
+  var HID_W = [0.6, 0.25, 0.15];
+
+  /** 사주 지문(sig = 년간,년지,월간,월지,일간,일지,시간,시지) → 네 기둥.
+      시간을 몰라 뒤 두 칸이 비어 있어도 된다. 연·월·일이 없으면 null. */
+  function pillarsOf(ctx) {
+    var parts = String((ctx && ctx.sig) || '').split(',');
+    if (parts.length < 6) return null;
+    var out = [], i;
+    for (i = 0; i < parts.length; i++) {
+      if (parts[i] === '') { out.push(null); continue; }
+      var v = Number(parts[i]);
+      if (!isFinite(v)) return null;
+      out.push(v);
+    }
+    for (i = 0; i < 6; i++) if (out[i] === null || out[i] === undefined) return null;
+    return { yG: out[0], yZ: out[1], mG: out[2], mZ: out[3], dG: out[4], dZ: out[5],
+      tG: (out.length > 6 && out[6] !== null) ? out[6] : null,
+      tZ: (out.length > 7 && out[7] !== null) ? out[7] : null };
+  }
+
+  /** 실질 오행 분포 — 지장간 포함 · 월지 계절 보정. 엔진이 못 하는 부분은 여기서만 계산한다.
+      같은 사주면 결과가 같으므로 지문(sig)별로 한 번만 계산해 둔다. */
+  var ST_CACHE = {};
+  function strengthOf(ctx) {
+    var sig = String((ctx && ctx.sig) || '#');
+    if (ST_CACHE[sig]) return ST_CACHE[sig];
+    var M = global.Manse;
+    var P = pillarsOf(ctx);
+    if (!M || !P || !M.HIDDEN || !M.GAN_EL) return { ok: false };
+    var raw = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 }, i, k, e;
+    var gans = [P.yG, P.mG, P.dG, P.tG], zhis = [P.yZ, P.mZ, P.dZ, P.tZ];
+    for (i = 0; i < 4; i++) {
+      if (gans[i] !== null && gans[i] !== undefined && M.GAN_EL[gans[i]]) raw[M.GAN_EL[gans[i]]] += 1;
+      if (zhis[i] === null || zhis[i] === undefined) continue;
+      var hid = M.HIDDEN[M.ZHI[zhis[i]]] || [];
+      if (!hid.length) continue;
+      var w = [], sum = 0;
+      for (k = 0; k < hid.length; k++) { var ww = (HID_W[k] !== undefined ? HID_W[k] : 0.1); w.push(ww); sum += ww; }
+      for (k = 0; k < hid.length; k++) {
+        var gi = M.GAN.indexOf(hid[k]);
+        if (gi >= 0 && M.GAN_EL[gi]) raw[M.GAN_EL[gi]] += w[k] / sum;
+      }
+    }
+    var season = SEASON_OF_ZHI[P.mZ];
+    if (season === undefined) season = 0;
+    var st = SEASON_STATE[season] || SEASON_STATE[0];
+    var tot = 0, share = {};
+    for (e in raw) if (raw.hasOwnProperty(e)) { share[e] = raw[e] * (st[e] || 1); tot += share[e]; }
+    if (!tot) return { ok: false };
+    for (e in share) if (share.hasOwnProperty(e)) share[e] = share[e] / tot;
+    ST_CACHE[sig] = { ok: true, share: share, season: season, top: topOf(share) };
+    return ST_CACHE[sig];
+  }
+
+  /** 가장 두터운 오행 — 내부 기록용(문장에 쓰지 않는다) */
+  function topOf(share) {
+    var best = '', v = -1;
+    for (var i = 0; i < EL_ORDER.length; i++) {
+      var e = EL_ORDER[i];
+      if ((share[e] || 0) > v) { v = share[e] || 0; best = e; }
+    }
+    return best;
+  }
+
+  /** 실질 비중 → 얇음(10% 이하) · 고름(28% 이하) · 넉넉함(그 위) */
+  function fitOf(st, el) {
+    if (!st || !st.ok || !el) return 'mid';
+    var v = st.share[el] || 0;
+    return v <= 0.10 ? 'thin' : (v <= 0.28 ? 'mid' : 'heavy');
+  }
 
   /** 오늘 색 → 첫 문장 벌 — 색이 없는 날(머니·결정·절입)은 가장 가까운 결로 말한다 */
   function openKind(kind) {
@@ -491,43 +546,122 @@
     return one[bucket] || one.mid;
   }
 
-  /** 이 사주에서 오늘 참인 '한 줄' 후보 — 오늘 오는 오행이 비었으면 그걸 맨 앞에 */
-  function noteFacts(ctx) {
-    var counts = ctx.counts || {}, stemEl = ctx.stemEl || '';
-    var i, e, out = [];
-    if ((counts[stemEl] || 0) === 0) out.push('zero:' + stemEl);
-    for (i = 0; i < EL_ORDER.length; i++) {
-      e = EL_ORDER[i];
-      if (e === stemEl) continue;
-      if ((counts[e] || 0) === 0) out.push('no:' + e);
-    }
-    for (i = 0; i < EL_ORDER.length; i++) {
-      e = EL_ORDER[i];
-      if (e === stemEl) continue;
-      if ((counts[e] || 0) >= 4) out.push('many:' + e);
-    }
-    for (i = 0; i < EL_ORDER.length; i++) {
-      e = EL_ORDER[i];
-      if (e === stemEl) continue;
-      if ((counts[e] || 0) === 1) out.push('thin:' + e);
-    }
-    /* '가장 두터운 곳'도 함께 후보에 둔다 — 사주마다 다르고, 사실이다 */
-    var topEl = '', topN = 0;
-    for (i = 0; i < EL_ORDER.length; i++) {
-      e = EL_ORDER[i];
-      if (e === stemEl) continue;
-      if ((counts[e] || 0) > topN) { topN = counts[e] || 0; topEl = e; }
-    }
-    if (topN >= 3 && topEl) out.push('top:' + topEl);
-    if (!out.length) out.push('even');
-    return out;
+  /* ── 오늘의 자리 → 문장 고르기 ─────────────────────────────────────── */
+
+  /** 오늘 어느 색의 문장을 쓸지 — TB_MEET 에 있는 결만 쓴다 */
+  function meetKindOf(ctx) {
+    var k = (ctx && ctx.kind) || '';
+    if (TB_MEET[k]) return k;
+    var k2 = (ctx && ctx.key) || '';
+    if (TB_MEET[k2]) return k2;
+    return 'calm';
   }
 
-  /** 날짜 하나의 선택 — 사주 지문·십신·오행 개수·날짜로 고르고, 고른 자리를 기억한다 */
+  /** 오늘 일진이 내 사주 '어디'에 닿는지 — 타이밍 엔진과 같은 규칙(일지 먼저, 그다음 월지).
+      엔진이 판정한 결(종류)과 같은 자리만 말한다. 계산이 안 되면 자리를 말하지 않는다. */
+  function placeOf(ctx) {
+    var M = global.Manse, T = global.Timing;
+    var I = T && T._internal, P = pillarsOf(ctx);
+    if (!M || !I || !P || typeof M.dayGanZhiOf !== 'function') return 'any';
+    var k = meetKindOf(ctx);
+    if (k === 'wealth' || k === 'doc' || k === 'jie' || k === 'calm') return 'any';
+    var tz = null;
+    try {
+      var p = String((ctx && ctx.iso) || '').split('-');
+      var txt = M.dayGanZhiOf(+p[0], +p[1], +p[2]);
+      for (var i = 0; i < 60; i++) {
+        var gz = M.ganZhiOf(i);
+        if (gz.text === txt) { tz = gz.zhiIndex; break; }
+      }
+    } catch (e) { return 'any'; }
+    if (tz === null || tz === undefined) return 'any';
+    if (k === 'chung') {
+      if (I.chungOf(tz) === P.dZ) return 'day';
+      if (I.chungOf(tz) === P.mZ) return 'month';
+    } else if (k === 'hyeong') {
+      if (I.isHyeong(tz, P.dZ)) return 'day';
+      if (I.isHyeong(tz, P.mZ)) return 'month';
+    } else if (k === 'hae') {
+      if (I.haeOf(tz) === P.dZ) return 'day';
+      if (I.haeOf(tz) === P.mZ) return 'month';
+    } else if (k === 'hap') {
+      if (I.yukhapOf(tz) === P.dZ) return 'day';
+      if (I.yukhapOf(tz) === P.mZ) return 'month';
+    }
+    return 'any';
+  }
+
+  /** 그 결·그 자리에 쓸 문장 벌 (없으면 any → calm) */
+  function meetPool(kind, place) {
+    var one = TB_MEET[kind] || TB_MEET.calm;
+    return one[place] || one.any || TB_MEET.calm.any;
+  }
+
+  /* ── 출력 전 검증 (2026-11-26 윤희 님 지침 5) ─────────────────────────
+     화면에 내보내기 전에 문장을 스스로 훑는다. 걸리면 그 문장은 쓰지 않고 다음
+     벌로 바꾼다. 여기 목록은 '표현'이 아니라 '해석의 근거'를 막는 자물쇠다 —
+     특정 오행·일간 하나로 성격과 운세를 단정하는 말은 이 파일에서 나오면 안 된다. */
+  var BANNED = [
+    { re: /(물|불|흙|쇠|나무)\s*(이|가|은|는|을|를)?\s*(없|비어|비었|부족|모자라)/, why: '오행 결핍 단정' },
+    { re: /(목|화|토|금|수)\s*(이|가|은|는|을|를)\s*(없|비어|비었|부족|모자라)/, why: '오행 결핍 단정' },
+    { re: /(물|불|흙|쇠|나무)\s*(이|가|은|는|을|를|도)?\s*(한\s*자도|하나도|아예)?[^.!?]{0,12}(없|부족|모자라|비어)/, why: '오행 결핍 단정' },
+    { re: /(없|비어\s*있는|부족한|모자란)\s*사주/, why: '결핍 사주 단정' },
+    { re: /사주(라|라서|여서|인데|니까)/, why: "'~사주라' 단정" },
+    { re: /하나뿐/, why: "'하나뿐' 단정" },
+    { re: /두터/, why: "'가장 두터운' 단정" },
+    { re: /(많아서|많은\s*사주|넘쳐|넘치)/, why: "'많아서·넘치는' 단정" },
+    { re: /여덟\s*글자/, why: '글자 수 노출' },
+    { re: /일간(이라|이|은|는|의|자체)/, why: '일간 단정' },
+    { re: /(갑목|을목|병화|정화|무토|기토|경금|신금|임수|계수)\s*(일간|일주)/, why: '일간 비유 단정' },
+    { re: /(결단력|추진력|표현력|존재감)이?\s*(없|부족|약)/, why: '성격 능력 단정' },
+    { re: /성격이?\s*(급|조용|눈에|급하)/, why: '성격 단정' },
+    { re: /(타고난|태생적으로|원래부터)\s*(성향|성격|사람)/, why: '타고난 성향 규정' },
+    { re: /(십신|격국|용신|희신|신강|신약|지장간|합화|삼합|방합|통근|투간|대운|세운|월령|일진|원국)/, why: '전문용어 노출' },
+    { re: /(사주|원국)에\s*(물|불|흙|쇠|나무|목|화|토|금|수)가?\s*[0-9]/, why: '오행 개수 노출' }
+  ];
+
+  /** 문장에 금지 표현이 있으면 이유, 없으면 '' */
+  function bannedIn(s) {
+    var t = String(s || '');
+    for (var i = 0; i < BANNED.length; i++) if (BANNED[i].re.test(t)) return BANNED[i].why;
+    return '';
+  }
+
+  /** 이 자리 문장 중 걸리지 않는 첫 벌 — 다 걸리면 '' (그 문장을 빼고 내보낸다) */
+  function meetText(kind, place, start) {
+    var pool = meetPool(kind, place), n = pool.length, j, i;
+    for (j = 0; j < n; j++) {
+      i = (((start | 0) + j) % n + n) % n;
+      if (!bannedIn(pool[i])) return pool[i];
+    }
+    return '';
+  }
+
+  /** 다 만든 브리핑을 내보내기 전에 훑는다 — 제목·본문·조언이 서로 어긋나는지 포함 */
+  function verify(head, sentences, ctx) {
+    var body = [], i, probs = [], why;
+    for (i = 0; i < (sentences || []).length; i++) if (sentences[i]) body.push(String(sentences[i]));
+    var joined = body.join(' ');
+    if (!head) probs.push('제목 없음');
+    why = bannedIn(head + ' ' + joined);
+    if (why) probs.push(why);
+    if (body.length < 3 || body.length > 5) probs.push('문장 수 ' + body.length);
+    if (joined.length < 90 || joined.length > 230) probs.push('분량 ' + joined.length);
+    /* 오늘 상황 문장 자리(1·2번째)만 본다 — 맺음말에는 '오늘은'으로 시작하는 벌이 원래 있다 */
+    for (i = 1; i < body.length && i <= 2; i++) if (body[i].indexOf('오늘은') === 0) probs.push("'오늘은' 중복 시작");
+    /* 제목·본문·조언이 서로 어긋나는지 — 부딪히는 날에 '바로 결정하라'는 조언은 없다 */
+    var k = (ctx && ctx.kind) || '';
+    var warnDay = (k === 'chung' || k === 'hyeong' || k === 'hae');
+    var todo = body.length >= 2 ? body[body.length - 2] : '';
+    if (warnDay && /(바로|당장|즉시)\s*(결정|정하|답|보내|사)/.test(todo)) probs.push('조언이 그날 결에 어긋남');
+    return { ok: !probs.length, problems: probs, len: joined.length, sentences: body.length };
+  }
+
+  /** 날짜 하나의 선택 — 사주 지문·십신·실질 분포·날짜로 고르고, 고른 자리를 기억한다 */
   function plan(ctx, pick) {
-    var b = bucketOf(ctx.counts ? (ctx.counts[ctx.stemEl] || 0) : 0);
+    var st = strengthOf(ctx);
+    var b = fitOf(st, ctx.stemEl);
     var sit = sitPoolOf(ctx.tg, b);
-    var facts = noteFacts(ctx);
     var ok = openKind(ctx.kind);
     var rec = {};
     rec.sit = pick('sit:' + ctx.tg + ':' + b, sit, ctx.dayNo);
@@ -535,8 +669,10 @@
     /* 사주 한 줄은 이틀에 한 번만 붙인다 — 매일 같은 이야기로 시작하지 않게 */
     rec.noteOn = (((ctx.dayNo + (ctx.toneSeed | 0)) % 2) === 1);
     if (rec.noteOn) {
-      rec.fact = facts[pick('fact', facts, ctx.dayNo) % facts.length];
-      rec.note = pick('note:' + rec.fact, TB_NOTE[rec.fact] || TB_NOTE['even'], ctx.dayNo);
+      rec.meetKind = meetKindOf(ctx);
+      rec.meetPlace = placeOf(ctx);
+      rec.meet = pick('meet:' + rec.meetKind + ':' + rec.meetPlace,
+        meetPool(rec.meetKind, rec.meetPlace), ctx.dayNo);
     }
     rec.tone = BR_TONES[(ctx.dayNo + (ctx.toneSeed | 0)) % 6];
     rec.close = pick('close:' + rec.tone, BR_CLOSE[rec.tone] || BR_CLOSE.quiet, ctx.dayNo);
@@ -551,29 +687,39 @@
 
   /** 제목 한 줄 + 본문 3~5문장 — 고른 자리(rec)를 사람 말로 펼친다 */
   function render(ctx, rec) {
-    var b = bucketOf(ctx.counts ? (ctx.counts[ctx.stemEl] || 0) : 0);
+    var st = strengthOf(ctx);
+    var b = fitOf(st, ctx.stemEl);
     var ok = openKind(ctx.kind);
     var openers = BR_OPEN[ok] || BR_OPEN.calm;
     var open = String(openers[rec.open] || openers[0]).replace('@', ctx.who || '');
     var sit = sitPoolOf(ctx.tg, b)[rec.sit] || {};
-    var note = rec.noteOn ? ((TB_NOTE[rec.fact] || TB_NOTE['even'])[rec.note] || '') : '';
+    var meet = '';
+    if (rec.noteOn) {
+      meet = meetText(rec.meetKind || meetKindOf(ctx), rec.meetPlace || placeOf(ctx), rec.meet | 0);
+    }
     var close = (BR_CLOSE[rec.tone] || BR_CLOSE.quiet)[rec.close] || '';
     var scene = sit.s || '';
     var todo = sit.d || '';
     /* 사주 한 줄과 오늘 상황은 각각 한 문장으로 선다 — 한 문단에 이어 붙이지 않는다.
        순서는 늘 '인사 → 내 사주 → 오늘 상황 → 할 일 → 맺음'. 상담에서 말하는 차례다. */
-    var sentences = [open, note, scene, todo, close].filter(Boolean);
+    var sentences = [open, meet, scene, todo, close].filter(Boolean);
     return { head: sit.t || '', sentences: sentences };
   }
 
   global.TodayBrief = {
     plan: plan,
     render: render,
+    verify: verify,
     groupOf: groupOf,
     bucketOf: bucketOf,
-    noteFacts: noteFacts,
+    fitOf: fitOf,
+    strengthOf: strengthOf,
+    pillarsOf: pillarsOf,
+    meetKindOf: meetKindOf,
+    placeOf: placeOf,
+    bannedIn: bannedIn,
     openKind: openKind,
-    _tables: { TB_SIT: TB_SIT, TB_NOTE: TB_NOTE,
+    _tables: { TB_SIT: TB_SIT, TB_MEET: TB_MEET,
       BR_OPEN: BR_OPEN, BR_CLOSE: BR_CLOSE, BR_TONES: BR_TONES }
   };
 })(typeof window !== 'undefined' ? window : globalThis);
