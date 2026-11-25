@@ -2410,16 +2410,7 @@ body.locked{overflow:hidden}
     $('svcCal').addEventListener('click', function (e) {
       var b = e.target.closest('button');
       if (!b || !b.getAttribute('data-cal')) return;
-      cal = b.getAttribute('data-cal');
-      Array.prototype.forEach.call(this.children, function (c) {
-        var on = c === b;
-        c.classList.toggle('is-on', on);
-        c.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-      $('svcLeapRow').hidden = cal !== 'lunar';
-      $('svcDateLabel').textContent = cal === 'lunar' ? '음력 생년월일' : '생년월일';
-      if (cal === 'solar') $('svcLeap').checked = false;
-      fillDays();
+      setCal(b.getAttribute('data-cal'));
     });
 
     $('svcGenderBox').addEventListener('click', function (e) {
@@ -2447,6 +2438,19 @@ body.locked{overflow:hidden}
       }).join('');
       sel.value = 'seoul';
     }
+  }
+
+  function setCal(v) {
+    cal = v === 'lunar' ? 'lunar' : 'solar';
+    Array.prototype.forEach.call($('svcCal').children, function (c) {
+      var on = c.getAttribute('data-cal') === cal;
+      c.classList.toggle('is-on', on);
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    $('svcLeapRow').hidden = cal !== 'lunar';
+    $('svcDateLabel').textContent = cal === 'lunar' ? '음력 생년월일' : '생년월일';
+    if (cal === 'solar') $('svcLeap').checked = false;
+    fillDays();
   }
 
   function fillDays() {
@@ -3327,6 +3331,17 @@ body.locked{overflow:hidden}
       if (!r) return;
       currentRecent = idx;
       if (r.name) $('svcName').value = r.name;
+      if (r.birth) {
+        var b = String(r.birth).split('-');
+        if (b.length === 3) {
+          setCal(String(r.calLabel || '').indexOf('음력') === 0 ? 'lunar' : 'solar');
+          $('svcLeap').checked = String(r.calLabel || '').indexOf('윤달') >= 0;
+          $('svcYear').value = String(Number(b[0]));
+          $('svcMonth').value = String(Number(b[1]));
+          fillDays();
+          $('svcDay').value = String(Number(b[2]));
+        }
+      }
       $('svcMeta').textContent = r.meta || '';
       $('svcPillars').innerHTML = r.pillars || '';
       if (r.html) {
