@@ -544,7 +544,6 @@
     var no = d.claim_no || '';
     return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
       '<h2 class="sgift__title" id="specialGiftTitle">윤이세 선생님의 2027 맞춤 가이드가 도착했어요</h2>' +
-      '<p class="sgift__desc">사주를 직접 읽고 고친 가이드예요. 버튼을 누르면 본문과 직인까지 한 번에 열립니다.</p>' +
       '<p class="sgift__sub">오늘 닫아 두셔도 괜찮아요. 며칠 뒤에 다시 들어와도 같은 가이드를 언제든 다시 열어 볼 수 있습니다.</p>' +
       (no ? '<div class="sgift__no"><span>신청번호</span><b id="specialClaimNo">' + esc(no) + '</b>' +
         '<button type="button" class="sgift__copy" id="specialCopyNo">복사</button></div>' : '') +
