@@ -649,6 +649,8 @@
     if (joined.length < 90 || joined.length > 230) probs.push('분량 ' + joined.length);
     /* 오늘 상황 문장 자리(1·2번째)만 본다 — 맺음말에는 '오늘은'으로 시작하는 벌이 원래 있다 */
     for (i = 1; i < body.length && i <= 2; i++) if (body[i].indexOf('오늘은') === 0) probs.push("'오늘은' 중복 시작");
+    /* 같은 문장이 두 번 나오면 한 브리핑이 아니라 틀로 보인다 */
+    for (i = 0; i < body.length; i++) if (body.indexOf(body[i]) !== i) { probs.push('같은 문장 반복'); break; }
     /* 제목·본문·조언이 서로 어긋나는지 — 부딪히는 날에 '바로 결정하라'는 조언은 없다 */
     var k = (ctx && ctx.kind) || '';
     var warnDay = (k === 'chung' || k === 'hyeong' || k === 'hae');
@@ -696,10 +698,21 @@
     var meet = '';
     if (rec.noteOn) {
       meet = meetText(rec.meetKind || meetKindOf(ctx), rec.meetPlace || placeOf(ctx), rec.meet | 0);
+      if (meet && meet === open) {
+        meet = meetText(rec.meetKind || meetKindOf(ctx), rec.meetPlace || placeOf(ctx), (rec.meet | 0) + 1);
+      }
     }
-    var close = (BR_CLOSE[rec.tone] || BR_CLOSE.quiet)[rec.close] || '';
+    var tonePool = BR_CLOSE[rec.tone] || BR_CLOSE.quiet;
+    var close = tonePool[rec.close] || '';
     var scene = sit.s || '';
     var todo = sit.d || '';
+    /* 같은 문장이 한 브리핑 안에서 두 번 나오지 않게 — 맺음말을 한 칸씩 밀어 본다
+       (인사말 벌과 맺음말 벌에 같은 문장이 들어 있던 자리가 있었다) */
+    var used = [open, meet, scene, todo];
+    for (var ck = 1; ck < tonePool.length && used.indexOf(close) >= 0; ck++) {
+      var cand = tonePool[(rec.close + ck) % tonePool.length];
+      if (used.indexOf(cand) < 0) { close = cand; break; }
+    }
     /* 사주 한 줄과 오늘 상황은 각각 한 문장으로 선다 — 한 문단에 이어 붙이지 않는다.
        순서는 늘 '인사 → 내 사주 → 오늘 상황 → 할 일 → 맺음'. 상담에서 말하는 차례다. */
     var sentences = [open, meet, scene, todo, close].filter(Boolean);
