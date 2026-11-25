@@ -1695,10 +1695,24 @@
   /** 달력 위 '🌙 이번 달 기록 N일' */
   function renderNightRec(v) {
     var el = $('#calNightRec');
-    if (!el) return;
-    var n = nightCountOf(v.y, v.m);
-    el.hidden = !n;
-    el.textContent = n ? '🌙 이번 달 기록 ' + n + '일' : '';
+    if (el) {
+      var n = nightCountOf(v.y, v.m);
+      el.hidden = !n;
+      el.textContent = n ? '🌙 이번 달 기록 ' + n + '일' : '';
+    }
+    syncReflectBadge();
+  }
+  /** 📖 내 성찰 기록 보기 버튼의 일수 — 🌙 1초 체크 + ✍️ 성찰 합계 (2026-11-25 #3581)
+      체크하는 순간 바로 늘어나도록 여기서도 맞춘다(달력을 다시 그리지 않아도). */
+  function syncReflectBadge() {
+    var n = reflectCount();
+    var bk = $('#diaryBookCount');
+    if (bk) {
+      bk.textContent = n ? n + '일' : '';
+      bk.hidden = !n;
+    }
+    var bookBtn = $('#diaryBookBtn');
+    if (bookBtn && n) bookBtn.hidden = false;
   }
   /** 체크 직후 달력 칸에 점을 바로 찍고(다시 그리지 않고) 기록 일수를 맞춘다 */
   function paintNightCell(iso) {
@@ -4762,12 +4776,7 @@
     renderNightRec(v);
 
     // 📖 내 성찰 기록 보기 버튼의 일수 — 🌙 1초 체크 + ✍️ 성찰 합계 (2026-11-25 #3581)
-    var bk = $('#diaryBookCount');
-    if (bk) {
-      var nNote = reflectCount();
-      bk.textContent = nNote ? nNote + '일' : '';
-      bk.hidden = !nNote;
-    }
+    syncReflectBadge();
     var bookBtn = $('#diaryBookBtn');
     /* 2026-11-24 — 성찰 기록이 없어도 저녁 1초 체크가 있다면 백업할 것이 있다.
        (백업/복원은 글을 쓴 사람만의 것이 아니라, 이 기기에 쌓인 기록 전부의 것이다)
