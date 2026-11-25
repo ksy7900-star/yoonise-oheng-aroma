@@ -370,6 +370,26 @@
       '물이 넘치는 사주라, 생각이 많아 밤이 길어지는 편이에요.',
       '여덟 글자에 물이 많아서, 마음이 가라앉는 시간이 남들보다 길어요.'
     ],
+    'top:목': [
+      '여덟 글자에서 나무가 가장 두터운 사주라, 무엇이든 먼저 시작하는 쪽이에요.',
+      '나무가 많은 사주라, 쉬지 않고 뻗어 나가려는 마음이 앞서요.'
+    ],
+    'top:화': [
+      '여덟 글자에서 불이 가장 두터운 사주라, 마음이 먼저 달아오르는 편이에요.',
+      '불이 많은 사주라, 시작은 빠른데 오래 두고 보는 힘이 약해요.'
+    ],
+    'top:토': [
+      '여덟 글자에서 흙이 가장 두터운 사주라, 한번 정한 걸 쉽게 못 버려요.',
+      '흙이 많은 사주라, 생각이 자리를 잡으면 오래 머물러요.'
+    ],
+    'top:금': [
+      '여덟 글자에서 쇠가 가장 두터운 사주라, 스스로에게 엄격한 편이에요.',
+      '쇠가 많은 사주라, 옳고 그름을 먼저 따지게 돼요.'
+    ],
+    'top:수': [
+      '여덟 글자에서 물이 가장 두터운 사주라, 생각이 깊고 밤이 길어요.',
+      '물이 많은 사주라, 마음이 가라앉는 시간이 남들보다 길어요.'
+    ],
     'even': [
       '여덟 글자가 고르게 퍼진 사주라, 한쪽으로 크게 치우치지 않아요.',
       '오행이 고르게 놓인 사주라, 어느 한 곳에 매이지 않는 편이에요.',
@@ -408,6 +428,14 @@
       if (e === stemEl) continue;
       if ((counts[e] || 0) >= 4) out.push('many:' + e);
     }
+    /* 비어 있는 곳이 없으면 '가장 두터운 곳'을 말한다 — 사주마다 다르고, 사실이다 */
+    var topEl = '', topN = 0;
+    for (i = 0; i < EL_ORDER.length; i++) {
+      e = EL_ORDER[i];
+      if (e === stemEl) continue;
+      if ((counts[e] || 0) > topN) { topN = counts[e] || 0; topEl = e; }
+    }
+    if (!out.length && topN >= 3 && topEl) out.push('top:' + topEl);
     if (!out.length) out.push('even');
     return out;
   }
@@ -421,15 +449,19 @@
     var rec = {};
     rec.sit = pick('sit:' + ctx.tg + ':' + b, sit, ctx.dayNo);
     rec.open = pick('open:' + ok, BR_OPEN[ok], ctx.dayNo);
-    rec.fact = facts[pick('fact', facts, ctx.dayNo) % facts.length];
-    rec.note = pick('note:' + rec.fact, TB_NOTE[rec.fact] || TB_NOTE['even'], ctx.dayNo);
+    /* 사주 한 줄은 3일에 두 번만 붙인다 — 매일 같은 이야기로 시작하지 않게 */
+    rec.noteOn = (((ctx.dayNo * 5) + (ctx.toneSeed | 0)) % 3) !== 0;
+    if (rec.noteOn) {
+      rec.fact = facts[pick('fact', facts, ctx.dayNo) % facts.length];
+      rec.note = pick('note:' + rec.fact, TB_NOTE[rec.fact] || TB_NOTE['even'], ctx.dayNo);
+    }
     rec.tone = BR_TONES[(ctx.dayNo + (ctx.toneSeed | 0)) % 6];
     rec.close = pick('close:' + rec.tone, BR_CLOSE[rec.tone] || BR_CLOSE.quiet, ctx.dayNo);
     /* 문장 순서도 날마다 조금씩 달라야 한다 — 같은 틀을 매일 반복하지 않는다.
        0: 인사 · 상황 · 할 일 · 맺음 / 1: 인사 없이 상황부터 / 2: 할 일을 먼저 */
     rec.pattern = (ctx.order !== undefined && ctx.order !== null)
-      ? (ctx.order | 0) % 3
-      : (((ctx.dayNo + (ctx.toneSeed | 0)) % 3) + 3) % 3;
+      ? (ctx.order | 0) % 2
+      : ((((ctx.dayNo * 3) + (ctx.toneSeed | 0)) % 2) + 2) % 2;
     return rec;
   }
 
@@ -440,13 +472,13 @@
     var openers = BR_OPEN[ok] || BR_OPEN.calm;
     var open = String(openers[rec.open] || openers[0]).replace('@', ctx.who || '');
     var sit = sitPoolOf(ctx.tg, b)[rec.sit] || {};
-    var note = (TB_NOTE[rec.fact] || TB_NOTE['even'])[rec.note] || '';
+    var note = rec.noteOn ? ((TB_NOTE[rec.fact] || TB_NOTE['even'])[rec.note] || '') : '';
     var close = (BR_CLOSE[rec.tone] || BR_CLOSE.quiet)[rec.close] || '';
     var situation = [sit.s || '', note].filter(Boolean).join(' ');
-    var sentences;
-    if (rec.pattern === 1) sentences = [situation, sit.d, close];
-    else if (rec.pattern === 2) sentences = [open, sit.d, situation, close];
-    else sentences = [open, situation, sit.d, close];
+    /* 0: 인사 · 오늘의 상황 · 할 일 · 맺음 / 1: 인사 · 할 일 · 오늘의 상황 · 맺음 */
+    var sentences = rec.pattern === 1
+      ? [open, sit.d, situation, close]
+      : [open, situation, sit.d, close];
     sentences = sentences.filter(Boolean);
     return { head: sit.t || '', sentences: sentences };
   }
