@@ -29,11 +29,11 @@
     brand: '800 19px ' + SANS,
     title: '600 56px ' + SERIF,
     for: '400 29px ' + SANS,
-    greet: '500 41px ' + SANS, greetB: '700 41px ' + SANS,
+    greet: '500 45px ' + SANS, greetB: '700 45px ' + SANS,
     chap: '800 18px ' + SANS,
-    head: '700 45px ' + SERIF, headB: '700 45px ' + SERIF,
-    body: '400 40px ' + SANS, bodyB: '700 40px ' + SANS,
-    item: '400 40px ' + SANS, itemB: '700 40px ' + SANS,
+    head: '700 49px ' + SERIF, headB: '700 49px ' + SERIF,
+    body: '400 44px ' + SANS, bodyB: '700 44px ' + SANS,
+    item: '400 44px ' + SANS, itemB: '700 44px ' + SANS,
     sign: '600 50px ' + SERIF,
     foot: '600 17px ' + SANS,
     page: '600 17px ' + SANS,
@@ -44,7 +44,7 @@
     cSub: '500 25px ' + SANS,
     cSmall: '700 19px ' + SANS
   };
-  var LH = { body: 68, item: 68, greet: 74, head: 72, title: 78, for: 46, chap: 26 };
+  var LH = { body: 76, item: 76, greet: 82, head: 78, title: 78, for: 46, chap: 26 };
 
   var SEAL_DEFAULT = 'assets/yoonise-seal.png';
 
@@ -249,7 +249,7 @@
           if (!rs[0].t) rs.shift();
         }
       }
-      var indent = 56, lh = LH.item;
+      var indent = 60, lh = LH.item;
       var first = true;
       wrap(m, rs, maxW - indent, F.item, F.itemB).forEach(function (ln) {
         units.push({ h: lh, draw: (function (ln2, isFirst) {
