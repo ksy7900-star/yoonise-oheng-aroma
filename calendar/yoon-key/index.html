@@ -2548,6 +2548,7 @@ body.locked{overflow:hidden}
         html += '<p class="paper__greet">' + inline(b.text) + '</p>';
       } else if (b.type === 'head') {
         chap += 1;
+        if (chap > 1) html += '<hr class="paper__hr" contenteditable="false">';
         html += '<div class="paper__chap" contenteditable="false">CHAPTER ' + pad(chap) + '</div>';
         html += '<p class="paper__head">' + inline(b.text) + '</p>';
       } else if (b.type === 'item') {
@@ -2573,6 +2574,12 @@ body.locked{overflow:hidden}
     Array.prototype.forEach.call(heads, function (h, i) {
       var prev = h.previousElementSibling;
       if (!prev || !prev.classList || !prev.classList.contains('paper__chap')) {
+        if (i > 0) {
+          var hr = document.createElement('hr');
+          hr.className = 'paper__hr';
+          hr.setAttribute('contenteditable', 'false');
+          h.parentNode.insertBefore(hr, h);
+        }
         var d = document.createElement('div');
         d.className = 'paper__chap';
         d.setAttribute('contenteditable', 'false');
@@ -2584,6 +2591,10 @@ body.locked{overflow:hidden}
     Array.prototype.forEach.call(p.querySelectorAll('.paper__chap'), function (c) {
       var n = c.nextElementSibling;
       if (!n || !n.classList || !n.classList.contains('paper__head')) c.remove();
+    });
+    Array.prototype.forEach.call(p.querySelectorAll('hr.paper__hr'), function (h) {
+      var n = h.nextElementSibling;
+      if (!n || !n.classList || !n.classList.contains('paper__chap')) h.remove();
     });
   }
 
@@ -2905,6 +2916,7 @@ body.locked{overflow:hidden}
       return firstBaseline;
     }
 
+    var chapN = 0;
     blocks.forEach(function (b) {
       var t = b.type;
       if (t === 'brand') {
@@ -2927,7 +2939,14 @@ body.locked{overflow:hidden}
         return;
       }
       if (t === 'chap') {
-        y += 34;
+        chapN += 1;
+        if (chapN > 1) {
+          y += 30;
+          ops.push({ rule: true, x: pad, y: y, w: maxW, h: 1, color: 'rgba(150,126,94,.28)', alpha: 1 });
+          y += 6;
+        } else {
+          y += 34;
+        }
         var label = b.text.replace(/\s+/g, ' ').trim();
         ops.push({ s: label, x: pad, y: y + 24, font: F.chap, color: IMG.gold, align: 'left', sp: 5 });
         y += 28;
