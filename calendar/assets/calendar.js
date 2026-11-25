@@ -4155,7 +4155,11 @@
       var base = brHash(key + '|' + sig + '|' + salt) % pool.length;
       for (var k = 0; k < pool.length; k++) {
         var i = (base + k) % pool.length;
-        if (used.indexOf(i) < 0) { used.push(i); if (used.length > 13) used.shift(); return i; }
+        /* 기억은 '이 벌 안에서 아직 안 쓴 자리'만 남긴다 — 벌 크기만큼만 돌려 쓰고,
+           판이 작은 벌(2벌·3벌)에서 두 날 안에 같은 문장이 다시 나오지 않게. */
+        var cap = Math.max(0, pool.length - 1);
+        while (used.length > cap) used.shift();
+        if (used.indexOf(i) < 0) { used.push(i); return i; }
       }
       var old = used.shift(); used.push(old); return old;      // 문장 벌이 모자랄 때만
     }
