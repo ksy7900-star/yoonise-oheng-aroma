@@ -4067,225 +4067,17 @@
   };
 
   /* ══════════════════════════════════════════════════════════════════
-     📝 TODAY · 오늘의 운세 브리핑 (2026-11-24 #18370 『최종 통합 수정·보완 지시서』)
-     · 오늘 날짜의 일진(천간·지지·십신·충합형해·귀인·재성·인성)과 날짜 시드로
-       자연스러운 본문 **3~5문장**을 만든다. 한 줄 축약·말줄임 없음.
-     · 날짜 상세 팝업(liteDayText)과 **같은 카드(dayCardOf)** 를 쓰므로
-       색(⚠️·⚡·🌿·보통)·제목·오늘 할 일이 팝업과 어긋나지 않는다.
-     · 같은 사주·같은 날 → 새로고침해도 같은 문장. 날짜가 바뀌면 달라진다.
-       연속 14일에 같은 문장이 다시 나오지 않도록, 그 문장을 마지막으로 쓴 때를
-       기억해 두고(brSeqBuild) 아직 안 쓴 문장부터 고른다(brPick).
-     · 문체: 따뜻함·단호함·생활조언·응원·질문·담담함을 날짜마다 돌려 쓴다.
-     금지: '기운의 결' · '판이 바뀌는 자리' · '흐름을 얹는다' · '우주의 에너지' ·
-           '반드시/무조건', 근거 없는 사고·손실·질병 단정. */
-  /* ① 하루의 얼굴 — 3색(⚠️ 조심 / ⚡ 기운 UP / 🌿 실속·정리 / 보통)별 첫 문장.
-     '@' 자리에 '김나영 님, '이 들어간다(이름이 없으면 통째로 빠진다). */
-  var BR_OPEN = {
-    warn: [
-      '@오늘은 조금 천천히 가는 게 좋겠어요.',
-      '오늘 하루는 한 박자 늦추는 쪽이 잘 맞아요.',
-      '@오늘은 미리 알고 있으면 덜 놀라는 날이에요.',
-      '@오늘만큼은 서두르지 않으셔도 됩니다.',
-      '오늘 하루는 평소보다 조금 조심스럽게 움직여 보세요.',
-      '@오늘은 말과 결정을 반 박자 늦춰 보세요.',
-      '오늘은 큰일보다 잔걸림이 많은 날이에요.',
-      '오늘은 “조금만 기다렸다 하자”가 잘 맞는 하루예요.'
-    ],
-    up: [
-      '@오늘은 문을 두드려 볼 만한 날이에요.',
-      '오늘 하루는 먼저 움직이는 쪽이 유리해요.',
-      '@오늘은 미뤄 둔 것 하나를 꺼내기 좋은 날이에요.',
-      '오늘은 사람과 일이 잘 붙는 하루예요.',
-      '@오늘은 한 걸음만 앞으로 나가 보세요.',
-      '오늘 하루는 기회가 조용히 지나가는 날이에요. 잡으려면 먼저 움직여야 해요.',
-      '@오늘은 평소보다 조금 더 당당해져도 좋아요.'
-    ],
-    real: [
-      '@오늘은 새로 벌이기보다 다듬는 쪽이 잘 맞아요.',
-      '오늘 하루는 정리해 두면 다음 며칠이 확실히 가벼워져요.',
-      '@오늘은 하나만 골라 끝내면 충분한 날이에요.',
-      '오늘은 손에 쥔 일을 마무리하는 쪽에 힘이 붙어요.',
-      '@오늘은 덜어 내는 만큼 자리가 생기는 날이에요.',
-      '오늘 하루는 크게 벌이지 않아도 남는 게 있어요.'
-    ],
-    calm: [
-      '@오늘은 크게 부딪히는 일 없이 지나가는 날이에요.',
-      '오늘 하루는 내 속도대로 가도 괜찮아요.',
-      '@오늘은 특별히 피할 것도, 서두를 것도 없어요.',
-      '오늘은 잔잔하게 흐르는 하루예요.',
-      '@오늘은 하던 대로만 해도 됩니다.',
-      '오늘 하루는 조용히 지나가도 잘 지나가는 날이에요.',
-      '@오늘은 마음에 여유를 한 칸 두고 움직여 보세요.',
-      '오늘은 무리만 하지 않으면 되는 날이에요.',
-      '@오늘은 작은 일 하나를 끝내기 좋은 하루예요.',
-      '오늘 하루는 남의 속도에 맞추지 않아도 돼요.',
-      '@오늘은 숨 고르기 딱 좋은 날이에요.',
-      '오늘은 크게 잘할 필요도, 애쓸 필요도 없는 날이에요.',
-      '@오늘은 일부러 애쓰지 않아도 되는 하루예요.',
-      '오늘은 흐르는 대로 두어도 무리가 없는 날이에요.',
-      '@오늘은 한 가지도 서둘러 끝낼 필요가 없어요.',
-      '오늘 하루는 하고 싶은 만큼만 해도 충분해요.'
-    ]
-  };
-  /* ② 왜 이런 날인지 — 그날 실제로 걸린 일진의 자리(충·형·해·귀인·합·재성·인성·절입).
-     색이 붙은 날에만 쓴다(보통 날은 이유를 지어내지 않는다). */
-  var BR_WHY = {
-    chung: [
-      '일진이 내 자리와 부딪히는 날이라, 평소 잘 맞던 것도 한 번씩 어긋나요.',
-      '오늘은 내 중심과 바깥 기운이 서로 미는 날이에요.',
-      '내가 선 자리와 오늘 기운이 부딪히니, 같은 말도 조금 더 세게 들려요.',
-      '오늘은 흐름이 내 쪽으로 부드럽게 오지 않아요. 억지로 밀면 오히려 돌아옵니다.',
-      '자리와 기운이 어긋나는 날이라, 잘 되던 일도 한 번 끊겼다 이어져요.',
-      '오늘은 마음이 조급해지기 쉬운 쪽으로 기운이 들어와요.'
-    ],
-    hyeong: [
-      '서류와 일정이 한 번씩 엉키는 자리예요.',
-      '기운이 안쪽에서 서로 틀어지는 날이라, 확인 없이 넘긴 것에서 걸리기 쉬워요.',
-      '절차가 한 칸씩 꼬이는 결이라, 급하게 처리할수록 두 번 손대게 돼요.',
-      '오늘은 숫자와 기한에서 자꾸 어긋나요.',
-      '일이 매끄럽게 이어지지 않고 중간에 한 번 끊기는 날이에요.',
-      '확인을 건너뛴 자리에서 잔실수가 하나씩 나오는 날이에요.'
-    ],
-    hae: [
-      '오늘은 내 말이 상대에게 조금 다르게 닿기 쉬워요.',
-      '말과 뜻이 엇갈리는 자리라, 짐작으로 넘기면 서운함이 남아요.',
-      '오늘은 전달이 한 번 비틀리는 날이에요.',
-      '마음은 같은데 말이 어긋나기 쉬운 하루예요.',
-      '오늘은 한마디가 생각보다 멀리 가는 날이에요.'
-    ],
-    gwiyin: [
-      '나를 도와줄 사람의 자리가 오늘 열려요.',
-      '오늘은 누군가의 손이 닿으면 일이 빨리 풀리는 날이에요.',
-      '귀인 자리가 들어오는 날이라, 먼저 연락한 쪽이 이득을 봐요.',
-      '막혀 있던 일에 조력자가 붙는 날이에요.',
-      '오늘은 혼자 결론 내리기보다 한 사람 더 만나 보세요, 그 한 사람이 열쇠예요.'
-    ],
-    hap: [
-      '사람과 일이 붙는 기운이 오늘 들어와요.',
-      '오늘은 말을 걸면 받아 주는 쪽으로 흘러가요.',
-      '서로 맞물리는 자리라, 같이 하는 일이 혼자 할 때보다 잘 풀려요.',
-      '오늘은 관계의 문이 조금 더 열려 있어요.',
-      '미뤄 둔 연락이 유난히 잘 이어지는 날이에요.'
-    ],
-    wealth: [
-      '돈이 오가는 자리가 오늘 들어와요.',
-      '오늘은 결제와 정산이 눈에 잘 띄는 날이에요.',
-      '재물 자리가 열리는 날이라, 금액을 확인하는 습관이 그대로 이득이 돼요.',
-      '오늘은 돈의 흐름이 손에 잡히는 날이에요.',
-      '나가는 돈이 평소보다 잘 보이는 날이에요.'
-    ],
-    doc: [
-      '서류와 기록에 힘이 붙는 자리예요.',
-      '오늘은 적고 정리하는 일이 잘 풀려요.',
-      '문서 쪽 기운이 들어오는 날이라, 준비에 시간을 쓰면 좋아요.',
-      '오늘은 기록이 남는 쪽으로 일이 움직여요.',
-      '미뤄 둔 신청이나 정리 하나를 오늘 펴 두기 좋은 날이에요.'
-    ],
-    jie: [
-      '오늘은 달의 기준이 새로 서는 자리예요.',
-      '한 달의 문턱에 서는 날이라, 지금 정한 기준이 다음 달까지 따라와요.',
-      '오늘을 기점으로 흐름의 결이 바뀌어요.',
-      '달이 갈아 끼워지는 날이라, 시작보다 정리가 어울려요.'
-    ],
-    calm: [
-      '오늘은 크게 기울지 않는 날이에요.',
-      '눈에 띄게 흔들리는 자리는 아니에요.',
-      '오늘은 흐름이 고르게 지나가요.'
-    ]
-  };
-  /* ③ 오늘의 공기와 바닥 — 천간(10)의 결과 지지(12)의 결을 한 문장에 이어 붙인다.
-     10간 × 12지 = 60갑자라, 연속 14일에 같은 문장이 다시 나올 수 없다.
-     위(천간)는 마음이 어디로 움직이는지, 아래(지지)는 몸과 생활이 어디로 가는지로 나눠 쓴다. */
-  var BR_AIR = [
-    '새로 시작하는 마음이 슬며시 올라오고',
-    '부드럽게 감기는 쪽으로 마음이 움직이고',
-    '표정과 말이 한결 밝아지고',
-    '한 사람과 한 가지 일에 마음이 모이고',
-    '자리를 잡고 버티는 힘이 생기고',
-    '고르게 다지고 정돈하는 쪽이 잘 맞고',
-    '결단이 빨라지는 대신 말이 세지기 쉽고',
-    '작은 것 하나를 곱게 다듬고 싶어지고',
-    '생각이 넓게 흘러가고 말이 조금 커지기 쉽고',
-    '조용히 가라앉아 혼자 정리하고 싶어지고'
-  ];
-  var BR_ZHI = [
-    '밤물 같은 기운이 조용히 흘러, 혼자 있는 시간이 오히려 편해요.',
-    '단단한 흙이 깔려 있어, 끝을 맺는 일에 손이 잘 붙어요.',
-    '움트는 기운이 올라와, 아침에 몸이 먼저 깨어나요.',
-    '가지가 뻗어 나가, 사람 쪽으로 발길이 먼저 가요.',
-    '젖은 흙이 고여 있어, 감정이 한 번 가라앉았다 올라와요.',
-    '열기가 올라와, 말이 평소보다 조금 빨라지기 쉬워요.',
-    '한낮의 볕이 내려앉아, 오후로 갈수록 몸이 먼저 지칠 수 있어요.',
-    '마른 흙이 버티고 있어, 맺고 정리하는 쪽에 힘이 실려요.',
-    '쇠가 맑게 울려, 확인하고 다듬는 일이 잘 풀려요.',
-    '결이 선 쇠가 놓여 있어, 마무리가 깔끔하게 떨어져요.',
-    '묵은 흙이 쌓여 있어, 덜어 내는 일이 잘 돼요.',
-    '깊은 물이 조용히 흘러, 감정은 흘려보내고 몸을 먼저 챙기게 돼요.'
-  ];
-  /* ④ 오늘 할 일 — 팝업과 같은 카드(dayCardOf)의 '챙길 것'을 그대로 쓴다.
-     카드가 날마다 달라서 문장 내용도 날마다 달라진다. */
-  var BR_DO = [
-    '{k}, 이 하나만 해 두세요.',
-    '{v} 거예요.',
-    '{v} 정도로 충분해요.',
-    '{v} 것부터 해 보세요.',
-    '{k}, 딱 이것 하나예요.',
-    '하나만 꼽으라면 {v} 거예요.',
-    '여기서 하나만 더 한다면 {v} 거예요.'
-  ];
-  /* ⑤ 닫는 말 — 따뜻함 · 단호함 · 생활조언 · 응원 · 질문 · 담담함을
-     날짜마다 돌려 쓴다(BR_TONES). 같은 결이 연달아 나오지 않는다. */
-  var BR_CLOSE = {
-    warm: [
-      '오늘 하루도 서두르지 않아도 괜찮아요.',
-      '잘 안 풀려도 괜찮아요. 내일 다시 보면 조금 달라져 있어요.',
-      '오늘은 스스로에게 조금 너그러워도 됩니다.',
-      '힘들면 잠깐 멈춰도 돼요. 멈추는 것도 하루를 보내는 방법이에요.',
-      '하루 끝에 “오늘은 이만하면 됐다” 한 번 말해 주세요.',
-      '누구에게도 설명하지 않아도 되는 하루였으면 좋겠어요.'
-    ],
-    firm: [
-      '오늘만큼은 “안 된다”는 말을 먼저 꺼내지 마세요.',
-      '정 안 되면 오늘은 접는 것도 방법이에요.',
-      '확신이 없으면 안 하는 쪽이 낫습니다.',
-      '말은 짧게, 결정은 내일. 오늘은 이 두 가지만 지키세요.',
-      '오늘은 남의 속도에 맞추지 마세요.',
-      '기분이 상해도 그 자리에서 결론 내지 마세요.'
-    ],
-    advice: [
-      '물 한 잔, 창문 한 번 열기. 오늘은 그 정도가 약이에요.',
-      '점심은 거르지 마세요. 오늘은 몸이 먼저 신호를 보내요.',
-      '잠들기 전에 내일 할 일 하나만 적어 두세요.',
-      '오늘은 10분 걷는 시간이 생각보다 크게 남아요.',
-      '저녁에 오늘을 한 줄로 남겨 보세요. 내일의 내가 그걸 봅니다.',
-      '휴대폰은 한 번만 내려놓아도 하루가 조금 길어져요.'
-    ],
-    cheer: [
-      '오늘 한 걸음이면 충분해요. 내일 또 한 걸음이면 됩니다.',
-      '이런 날을 버티는 게 실력이에요. 잘하고 있어요.',
-      '잘 되든 안 되든, 오늘 해 본 건 남아요.',
-      '천천히 가도 돼요. 방향만 맞으면 됩니다.',
-      '작게 시작해도 괜찮아요. 끝까지 가는 사람이 남아요.',
-      '오늘의 나를 조금 믿어 줘도 좋겠어요.'
-    ],
-    ask: [
-      '오늘 꼭 해야 하는 일이 정말 그 일일까요? 한 번만 물어봐 주세요.',
-      '지금 마음이 급한 건 일 때문일까요, 피곤 때문일까요?',
-      '이 일, 일주일 뒤에도 중요할까요? 아니라면 오늘은 미뤄도 됩니다.',
-      '오늘 나를 웃게 한 건 뭐였나요? 저녁에 하나 떠올려 보세요.',
-      '고맙다고 말하지 못한 사람이 있나요? 오늘 한 사람이면 충분해요.',
-      '오늘 하루, 스스로에게 몇 점을 주고 싶나요?'
-    ],
-    quiet: [
-      '오늘은 이 정도면 충분합니다.',
-      '그냥 평범하게 지나가도 잘 지나간 거예요.',
-      '오늘은 조용한 쪽이 답이에요.',
-      '별일 없이 넘어가면 그게 제일 좋은 날입니다.',
-      '오늘은 크게 바라지 않아도 괜찮아요.',
-      '하루가 조용히 지나가는 것도 좋은 흐름이에요.'
-    ]
-  };
-  var BR_TONES = ['warm', 'firm', 'advice', 'cheer', 'ask', 'quiet'];
+     📝 TODAY · 오늘의 운세 브리핑 (2026-11-25 개인화 개편)
+     · 문장과 표는 assets/brief.js (window.TodayBrief) 에 있다.
+       여기서는 날짜마다 한 번만 골라 기억하고(brSeqBuild), 화면에 붙인다(briefOf).
+     · 고르는 데 사주 지문·오늘 십신·오행 개수·날짜가 모두 쓰이므로, 사주가 다르면
+       같은 날이라도 제목도 문장도 다르다. 같은 사주·같은 날이면 늘 같은 문장이고,
+       연속 14일 안에 같은 문장이 다시 나오지 않는다(고른 자리를 기억해 둔다).
+     · 달력 격자·날짜 팝업(liteDayText·dayCardOf)은 이 개편과 무관하게 예전 그대로다.
+       TODAY 는 상세 팝업을 요약하지 않고, 그날 하루를 이 사람 사주로 짚어 주는
+       한 토막(3~5문장)만 말한다. */
+  /* 브리핑이 다루는 날의 색 — 달력 3색 + 보통 */
+  var BR_KINDS = { chung: 1, hyeong: 1, hae: 1, gwiyin: 1, hap: 1, wealth: 1, doc: 1, jie: 1, calm: 1 };
   var BR_SEQ = null, BR_SEQ_SIG = '', BR_SEQ_AT = '', BR_SEQ_RECENT = {};
 
   function brDayNo(iso) {
@@ -4304,31 +4096,52 @@
     return [n.yearGanIndex, n.yearZhiIndex, n.monthGanIndex, n.monthZhiIndex,
       n.dayGanIndex, n.dayZhiIndex, n.timeGanIndex, n.timeZhiIndex].join(',');
   }
-  /** 오늘의 장면 — 색·카드·일진 신호를 한 번에 모은다(팝업과 같은 함수를 쓴다) */
+  /** 오늘의 장면 — 그날 색(3색·보통)과 일진을 한 번에 모은다(달력과 같은 판정) */
   function brScene(iso) {
     var info = infoFor(iso);
     if (!info) return null;
     var p = litePrimary(info);
-    var kind = (p.kind && BR_WHY[p.kind]) ? p.kind : 'calm';
+    var kind = (p.kind && BR_KINDS[p.kind]) ? p.kind : 'calm';
     if (p.key === 'calm') kind = 'calm';
-    var card = dayCardOf(info, p.kind);
     var marks = info.marks || [];
     /* 색이 붙은 날인데 이유가 'calm'으로 떨어졌다면(약한 신호만) 가장 센 신호로 말한다 */
     if (kind === 'calm') {
       var best = null;
       marks.forEach(function (mk) {
-        if (mk.cat === 'gray' || !BR_WHY[mk.kind]) return;
+        if (mk.cat === 'gray' || !BR_KINDS[mk.kind]) return;
         if (!best || mk.weight > best.weight) best = mk;
       });
       if (best && p.key !== 'calm') kind = best.kind;
     }
-    return { info: info, key: p.key, kind: kind, card: card, tenGod: info.tenGod, zhi: info.gz ? info.gz.zhiIndex : 0 };
+    return { info: info, key: p.key, kind: kind };
+  }
+  /** 그날 브리핑이 알아야 할 '내 사주 쪽' — 오늘 십신·천간 오행·지지 십신·오행 개수 */
+  function brCtx(iso, sc) {
+    var info = sc.info, M = window.Manse;
+    var dg = state.natal.dayGanIndex;
+    var zhi = info.gz ? info.gz.zhiIndex : 0;
+    var branchTg = '비견';
+    try {
+      branchTg = M.tenGodOf(dg, M.GAN.indexOf(M.HIDDEN[M.ZHI[zhi]][0])) || '비견';
+    } catch (e) { }
+    var name = String((state.res.input && state.res.input.name) || '').trim();
+    var sig = brNatalSig();
+    return {
+      iso: iso, dayNo: brDayNo(iso), sig: sig, toneSeed: brHash(sig) % 6,
+      kind: sc.kind, key: sc.key,
+      tg: info.tenGod || '비견',
+      stemEl: info.ganEl || '',
+      branchTg: branchTg,
+      counts: (state.res && state.res.counts) || {},
+      who: name ? esc(name) + ' 님, ' : ''
+    };
   }
   /** 연속 14일 안에서 같은 문장을 다시 쓰지 않게 — 날짜 순서대로 한 번만 계산한다.
       같은 사주면 언제 계산해도 결과가 같다(순수 함수 + 고정 시작점). */
   function brSeqBuild(upto) {
+    var B = window.TodayBrief;
     var sig = brNatalSig();
-    if (!sig) { BR_SEQ = {}; BR_SEQ_SIG = ''; BR_SEQ_AT = ''; BR_SEQ_RECENT = {}; return BR_SEQ || {}; }
+    if (!B || !sig) { BR_SEQ = {}; BR_SEQ_SIG = ''; BR_SEQ_AT = ''; BR_SEQ_RECENT = {}; return BR_SEQ || {}; }
     var end = upto || state.todayISO || RANGE_TO;
     if (end > RANGE_TO) end = RANGE_TO;
     if (BR_SEQ && BR_SEQ_SIG === sig && BR_SEQ_AT && BR_SEQ_AT >= end) return BR_SEQ;
@@ -4351,77 +4164,29 @@
     var guard = 0;
     while (iso <= end && guard++ < 700) {
       var sc = brScene(iso);
-      if (sc) {
-        var d = brDayNo(iso);
-        var rec = {};
-        rec.open = pick('open:' + sc.key, BR_OPEN[sc.key] || BR_OPEN.calm, d);
-        if (sc.kind !== 'calm') rec.why = pick('why:' + sc.kind, BR_WHY[sc.kind], d);
-        rec.do = pick('do:' + sc.card.head, brDoFrames(sc.card.keep), d);
-        rec.lookLead = (brHash('lead|' + sig + '|' + d) % 2) === 0;
-        rec.close = pick('close:' + BR_TONES[(d + (brHash(sig) % 6)) % 6],
-          BR_CLOSE[BR_TONES[(d + (brHash(sig) % 6)) % 6]], d);
-        rec.tone = BR_TONES[(d + (brHash(sig) % 6)) % 6];
-        BR_SEQ[iso] = rec;
-      }
+      if (sc) BR_SEQ[iso] = B.plan(brCtx(iso, sc), pick);
       BR_SEQ_AT = iso;
       iso = T.addDays(iso, 1);
     }
     BR_SEQ_RECENT = recent;
     return BR_SEQ;
   }
-  /** 오늘 할 일 문장 틀 — 카드의 '챙길 것'이 '~하기'로 끝날 때만 {v} 틀을 쓴다 */
-  function brDoFrames(keep) {
-    var hasVerb = /기$/.test(String(keep || ''));
-    return BR_DO.filter(function (fr) { return hasVerb || fr.indexOf('{v}') < 0; });
-  }
 
-  /** 오늘의 브리핑 — 제목 1줄 + 본문 3~5문장(HTML) + 오늘 할 일 */
+  /** 오늘의 브리핑 — 제목 1줄 + 본문 3~5문장(HTML) */
   function briefOf(iso) {
+    var B = window.TodayBrief;
     var sc = brScene(iso);
-    if (!sc) return null;
-    var seq = brSeqBuild(iso)[iso] || {};
-    var name = String((state.res.input && state.res.input.name) || '').trim();
-    var who = name ? esc(name) + ' 님, ' : '';
-    function fill(t) { return String(t || '').replace('@', who); }
-    var openers = BR_OPEN[sc.key] || BR_OPEN.calm;
-    var open = fill(openers[seq.open] || openers[0]);
-    var why = sc.kind !== 'calm' ? ((BR_WHY[sc.kind] || [])[seq.why] || '') : '';
-    /* 오늘의 공기(천간) + 바닥(지지) — 60갑자라 14일에 반복되지 않는다 */
-    var gz = sc.info.gz || {};
-    var air = BR_AIR[gz.ganIndex] || BR_AIR[0];
-    var zhi = BR_ZHI[gz.zhiIndex] || BR_ZHI[0];
-    var look = ((seq.lookLead && !/^오늘/.test(open)) ? '오늘은 ' : '') + air + ', 아래로는 ' + zhi;
-    var keep = String(sc.card.keep || '').trim();
-    /* 카드의 '챙길 것'은 '~하기'로 끝난다 — 그대로 넣으면 어색한 틀도 있어,
-       '~하는' 형태({v})까지 함께 만들어 어법에 맞는 틀만 고른다. */
-    var verb = '';
-    if (/기$/.test(keep)) {
-      var stem = keep.slice(0, -1);
-      var last = stem.charCodeAt(stem.length - 1);
-      /* '만들다 → 만드는'처럼 받침 ㄹ은 '는' 앞에서 떨어진다 */
-      if (last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 === 8) {
-        stem = stem.slice(0, -1) + String.fromCharCode(last - 8);
-      }
-      verb = stem + '는';
-    }
-    var doFrames = brDoFrames(keep);
-    var doLine = '';
-    if (keep) {
-      var fr = doFrames[seq.do] || doFrames[0] || BR_DO[0];
-      doLine = fr.replace('{k}', esc(keep)).replace('{v}', esc(verb));
-    }
-    var close = (BR_CLOSE[seq.tone] || BR_CLOSE.quiet)[seq.close] || '';
-    var lines = [open];
-    if (why) lines.push(why);
-    lines.push(look);
-    if (doLine) lines.push(doLine);
-    if (close) lines.push(close);
-    var body = lines.filter(Boolean).map(function (t) {
+    if (!sc || !B) return null;
+    brSeqBuild(iso);
+    var rec = BR_SEQ && BR_SEQ[iso];
+    if (!rec) return null;
+    var out = B.render(brCtx(iso, sc), rec);
+    var sentences = (out.sentences || []).filter(Boolean);
+    var body = sentences.map(function (t) {
       return '<p class="hk__sent">' + t + '</p>';
     }).join('');
-    return { head: sc.card.head, body: body, sentences: lines.filter(Boolean), key: sc.key, kind: sc.kind };
+    return { head: out.head, body: body, sentences: sentences, key: sc.key, kind: sc.kind };
   }
-  function sigOf(sc) { return brNatalSig(); }
 
   /** 3줄 후킹 카드 — 내 원국으로 매번 새로 만든다 (2026-11-23 3차: 밝은 카드 + 자연스러운 상담가 말투) */
   function renderHook() {
