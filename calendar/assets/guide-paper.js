@@ -350,6 +350,14 @@
           if (acc + remain[i].h > avail) break;
           acc += remain[i].h; fit += 1;
         }
+        /* 소제목이 종이 맨 아래에 홀로 남지 않게 — 제목 + 본문 두 줄은 같이 들어가야 한다 */
+        if (firstChunk && (b.type === 'head' || b.type === 'chap')) {
+          var headNeed = acc + B.after + (b.type === 'chap' ? 78 + 152 : 152);
+          if (cur.y + beforeY + headNeed > bottom && cur.filled > 0) { open(); continue; }
+        }
+        /* 다음 장에 한 줄만 걸치는 모양을 피한다 — 두 줄 이상 넘어가게.
+           다만 두 줄만 남았을 때 억지로 한 줄로 줄이면 종이 아래가 크게 비므로 그때는 그대로 둔다. */
+        if (fit > 2 && fit < remain.length && (remain.length - fit) === 1) fit -= 1;
         /* 한 줄만 남기고 넘기는 모양을 피한다 — 두 줄 미만이면 통째로 다음 장 */
         var orphan = (fit > 0 && fit < remain.length && fit < 2 && remain.length >= 3);
         if (fit === 0 || orphan) {
