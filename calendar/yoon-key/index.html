@@ -446,6 +446,15 @@ body.locked{overflow:hidden}
 .editbar button b{font-family:var(--serif); font-size:12px; margin-right:2px}
 .editbar button.is-on{border-color:rgba(180,83,9,.5); background:var(--gold-soft); color:var(--gold-deep)}
 .svc-img-note a{color:var(--gold-deep); text-decoration:none; font-weight:800; border-bottom:1px solid rgba(180,83,9,.3)}
+/* 감정서 검수 결과 — 만들 때마다 문장 검수를 통과했는지 한 줄로 */
+.svc-qa{margin:8px 0 0; padding:7px 10px; border-radius:9px; font-size:10px; line-height:1.6; font-weight:800; color:#0F766E; background:#ECFDF5; border:1px solid rgba(15,118,110,.18)}
+.svc-qa.is-warn{color:#92400E; background:#FFFBEB; border-color:rgba(180,83,9,.22)}
+/* 표지·페이지 미리보기 — 보내기 전에 눈으로 확인 */
+.svc-preview{margin-top:16px}
+.svc-preview__row{display:flex; gap:8px; overflow-x:auto; padding:2px 0 8px; -webkit-overflow-scrolling:touch}
+.svc-preview__row figure{flex:0 0 auto; margin:0; width:100px}
+.svc-preview__row canvas{display:block; width:100px; height:auto; border-radius:4px; border:1px solid rgba(150,126,94,.22); box-shadow:0 1px 4px rgba(90,70,45,.16); background:#FBF7F0}
+.svc-preview__row figcaption{margin-top:4px; text-align:center; font-size:8.5px; font-weight:700; color:var(--mute); letter-spacing:-.02em}
 
 @media (max-width:380px){ .tabs--4 button{font-size:9.5px} }
 </style>
@@ -687,6 +696,7 @@ body.locked{overflow:hidden}
       <div class="svc-out" id="svcOut" hidden>
         <p class="sgedit__date" id="svcMeta"></p>
         <p class="svc-pillars" id="svcPillars"></p>
+        <p class="svc-qa" id="svcQa" hidden></p>
 
         <div class="paper-wrap">
           <div class="paper" id="svcPaper" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="감정서 본문 — 눌러서 바로 고칠 수 있어요"></div>
@@ -705,11 +715,21 @@ body.locked{overflow:hidden}
           <button type="button" id="svcEmpty">본문 비우기</button>
         </div>
         <div class="sgbtns">
-          <button type="button" class="gold full" id="svcImgSave">도장 포함 이미지 저장</button>
-          <button type="button" class="full" id="svcImgShare" hidden>이미지로 공유하기 (카톡 등)</button>
+          <button type="button" class="gold full" id="svcCover">표지 이미지 저장</button>
+          <button type="button" class="full" id="svcPdf">PDF 저장 (전체)</button>
+          <button type="button" class="full" id="svcPdfShare" hidden>PDF 공유하기 (카톡 등)</button>
         </div>
-        <p class="svc-img-note">지금 화면에서 고친 그대로 — 굵은 글씨와 소제목, 단락까지 한 장 이미지(PNG)로 저장해요.</p>
-        <p class="svc-img-note"><a class="sgsign__dl" href="../assets/yoonise-seal.png?v=20261126b" download="윤이세-직인.png">직인 이미지 저장 (투명 PNG)</a></p>
+        <div class="sgbtns">
+          <button type="button" class="full" id="svcPages">페이지 이미지 저장 (전체)</button>
+          <button type="button" class="full" id="svcPagesShare" hidden>페이지 이미지 공유하기 (카톡 등)</button>
+        </div>
+        <p class="svc-img-note">지금 화면에서 고친 그대로 — 표지·페이지·PDF가 만들어져요. 페이지는 주제와 문단 단위로 나뉘고, 마지막 장에 직인과 서명이 들어갑니다.</p>
+        <p class="svc-img-note"><a class="sgsign__dl" href="../assets/yoonise-seal.png?v=20261126q" download="윤이세-직인.png">직인 이미지 저장 (투명 PNG)</a></p>
+
+        <div class="svc-preview" id="svcPreview" hidden>
+          <p class="svc-recent__hd">미리보기 <span id="svcPreviewCount"></span></p>
+          <div class="svc-preview__row" id="svcPreviewRow"></div>
+        </div>
       </div>
 
       <div class="svc-recent" id="svcRecent" hidden>
@@ -724,7 +744,7 @@ body.locked{overflow:hidden}
       <b>개인정보</b> — 결제로 자동 접수된 건은 고객이 화면에서 <b>동의</b>를 누른 뒤에만 이름·사주 자료가 서버에 저장되고(<b>동의 X</b>인 건은 저장되지 않음), 동의 없이는 <b>전달 완료</b>를 누를 수 없어요. 접수 정보는 접수일부터 1년 뒤 위 <b>1년 지난 개인정보 정리</b>로 지우고, 고객이 삭제를 요청하면 상세의 <b>고객 요청 · 개인정보 지우기</b>로 바로 지웁니다. 결제·거래 기록(주문·입장 코드 원장)은 전자상거래법에 따라 5년간 남기고 지우지 않아요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126b<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126q<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 
 </div>
 
@@ -1620,7 +1640,8 @@ body.locked{overflow:hidden}
 </script>
 
 <!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
-<script src="../assets/special-guide-draft.js?v=20261126b"></script>
+<script src="../assets/special-guide-draft.js?v=20261126q"></script>
+<script src="../assets/guide-paper.js?v=20261126q"></script>
 <script>
 (function () {
   'use strict';
@@ -1892,6 +1913,7 @@ body.locked{overflow:hidden}
           : '고객이 특별 가이드에 동의한 뒤에만 서버에 저장됩니다(현재 동의 전).') + '</p>') +
       '<div class="sgedit"><label for="sgDraft">가이드 본문 (초안 → 윤이세 수정)</label>' +
       '<textarea id="sgDraft" spellcheck="false" placeholder="위의 ‘초안 다시 만들기’를 누르면 도입과 1~5번 뼈대로 초안이 채워집니다.">' + esc(draft) + '</textarea>' +
+      '<p class="svc-qa" id="sgQa" hidden></p>' +
       '<p class="sgforbid" id="sgForbid" hidden></p>' +
       '<span class="sgedit__date">승인 ' + kst(r.approved_at) + ' · 전달 ' + kst(r.delivered_at) + '</span></div>' +
       signBlock() +
@@ -1924,7 +1946,7 @@ body.locked{overflow:hidden}
      종이 위에 도장을 떠온 것처럼 보이게 했다. 카카오톡 복붙용 글에는 이미지를 섞지 않고,
      글을 붙여 넣은 다음 이 이미지를 사진으로 한 장 더 보내면 마무리가 된다. */
   function signBlock() {
-    var src = '../assets/yoonise-seal.png?v=20261126a';
+    var src = '../assets/yoonise-seal.png?v=20261126q';
     return '<div class="sgsign">' +
       '<p class="sgsign__k">가이드 마지막 장</p>' +
       '<img class="sgsign__seal" src="' + src + '" alt="윤이세 직인" width="720" height="381" loading="lazy">' +
@@ -1971,7 +1993,7 @@ body.locked{overflow:hidden}
   window.YoonCalendarToast = window.YoonCalendarToast || toast;
 
   function checkForbidden() {
-    var ta = $('#sgDraft'), box = $('#sgForbid');
+    var ta = $('#sgDraft'), box = $('#sgForbid'), qa = $('#sgQa');
     if (!ta || !box) return;
     var t = ta.value || '';
     var hit = FORBIDDEN.filter(function (w) { return t.indexOf(w) >= 0; });
@@ -1982,11 +2004,22 @@ body.locked{overflow:hidden}
       box.hidden = true;
       box.textContent = '';
     }
+    /* 문장 검수 — 초안을 만든 직후와 고칠 때마다 같은 기준으로 본다 */
+    if (qa) {
+      if (!t.trim() || !window.SpecialGuideDraft || !window.SpecialGuideDraft.review) { qa.hidden = true; return; }
+      var r = window.SpecialGuideDraft.review(t);
+      qa.hidden = false;
+      qa.className = 'svc-qa' + (r.ok ? '' : ' is-warn');
+      qa.textContent = r.ok
+        ? '✓ 문장 검수 통과 · 어색한 표현 ' + r.fixes.length + '건 정리 · 금지 표현 0건 · ' + r.len + '자'
+        : '검수에서 걸린 것이 있어요 — ' + r.problems.join(' · ');
+    }
   }
 
   /* ── 카톡 복붙용 ──────────────────────────────────── */
   function messageText(r, bodyOverride) {
-    var body = (bodyOverride != null ? bodyOverride : (r.admin_edited || r.ai_draft || '')).trim();
+    var raw = (bodyOverride != null ? bodyOverride : (r.admin_edited || r.ai_draft || '')).trim();
+    var body = (window.SpecialGuideDraft && window.SpecialGuideDraft.plain) ? window.SpecialGuideDraft.plain(raw) : raw.replace(/\*\*/g, '');
     if (!body) return '';
     return '[윤이세 2027년 맞춤 운세 활용 가이드]\n신청번호: ' + (r.claim_no || '') + '\n\n' + body;
   }
@@ -2008,9 +2041,11 @@ body.locked{overflow:hidden}
      · 금지 표현 5종은 쓰지 않는다. · 달력 월별 운세·부적 문구를 재사용하지 않는다. */
   function makeDraft(s) {
     if (!s) return '';
-    if (window.SpecialGuideDraft && window.SpecialGuideDraft.make) {
-      var t = window.SpecialGuideDraft.make(s);
-      return window.SpecialGuideDraft.plain ? window.SpecialGuideDraft.plain(t) : t;
+    if (window.SpecialGuideDraft && window.SpecialGuideDraft.build) {
+      /* build = make + 출력 전 문장 검수(어색한 표현 교정·반복 정리).
+         굵은 글씨 표시(**)는 그대로 둔다 — 손님 화면·페이지·PDF가 이 표시를 읽어 굵게 그린다.
+         카톡으로 복사할 때만 messageText 가 지운다. */
+      return window.SpecialGuideDraft.build(s).text || '';
     }
     return '';
   }
@@ -2199,8 +2234,8 @@ body.locked{overflow:hidden}
      · 스냅샷 모양은 달력 페이지 assets/special-guide.js 의 buildSnapshot 과 같다 — 같은 SpecialGuideDraft.make() 에 넣는다.
      · 화면의 종이(#svcPaper)가 원본이다. 복사·PNG 저장 모두 이 DOM 을 읽으므로, 고친 글과 서식이 되돌아가지 않는다.
      · 서버에는 아무것도 쓰지 않는다. 최근 5건은 이 브라우저(localStorage)에만 남는다. -->
-<script src="../vendor/lunar.js?v=20261126b"></script>
-<script src="../assets/manse.js?v=20261126b"></script>
+<script src="../vendor/lunar.js?v=20261126q"></script>
+<script src="../assets/manse.js?v=20261126q"></script>
 <script>
 (function () {
   'use strict';
@@ -2211,7 +2246,7 @@ body.locked{overflow:hidden}
   var cal = 'solar', gender = 'F';
   var recents = [];
   var currentRecent = -1;      /* 지금 종이에 열려 있는 최근 기록 — 고친 내용을 그 기록에 되돌려 저장한다 */
-  var SEAL_SRC = '../assets/yoonise-seal.png?v=20261126b';
+  var SEAL_SRC = '../assets/yoonise-seal.png?v=20261126q';
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {
@@ -2793,373 +2828,164 @@ body.locked{overflow:hidden}
     syncBar();
   }
 
-  /* ── 도장 포함 이미지 — 지금 종이에 보이는 그대로 ──────────────
-     글꼴·굵기·소제목·단락·줄바꿈을 그대로 읽어 1080 기준 폭 캔버스에 그린다.
-     높이는 글 길이에 맞춰 계산하므로 잘리지 않는다. */
-  var IMG = {
-    w: 1080, pad: 88, top: 84,
-    bg: '#FAF7F2', ink: '#2A2622', body: '#3B342C', soft: '#8C8279', gold: '#B08D57',
-    serif: '"Nanum Myeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","Batang","바탕",serif',
-    sans: '"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif'
-  };
-  function font(weight, size, family) { return weight + ' ' + size + 'px ' + family; }
-  var F = {
-    brand: font(700, 20, IMG.sans),
-    title: font(600, 58, IMG.serif), titleB: font(700, 58, IMG.serif),
-    for: font(400, 32, IMG.sans), forB: font(600, 32, IMG.sans),
-    greet: font(400, 45, IMG.sans), greetB: font(700, 45, IMG.sans),
-    body: font(400, 46, IMG.sans), bodyB: font(700, 46, IMG.sans),
-    head: font(700, 54, IMG.serif), headB: font(700, 54, IMG.serif),
-    chap: font(800, 22, IMG.sans),
-    sign: font(600, 60, IMG.serif), signB: font(700, 60, IMG.serif),
-    foot: font(500, 20, IMG.sans)
-  };
-  var wcache = {};
-  function cw(m, f, ch) {
-    var k = f + '\u0001' + ch;
-    if (wcache[k] !== undefined) return wcache[k];
-    m.font = f;
-    var w = m.measureText(ch).width;
-    wcache[k] = w;
-    return w;
+  /* ── 표지 · 페이지 · PDF — 공통 렌더러(../assets/guide-paper.js) ───────
+     화면의 종이(#svcPaper)가 원본이다. 여기서 읽은 블록을 그대로 넘기므로
+     윤이세가 고친 글과 굵은 글씨가 표지·페이지·PDF·공유 파일에 똑같이 들어간다.
+     저장하는 순간 초안으로 되돌아가거나 다시 만들어지는 길은 없다.
+     · 표지 1장 · 페이지 여러 장(문단 단위로 나눔, 페이지 번호) · PDF 전체.
+     · 직인은 마지막 장과 표지에 저장소의 yoonise-seal.png 를 그대로 그린다. */
+  var fileCache = null, previewTimer = 0, previewSeq = 0;
+
+  function whoName() { return (($('svcName') && $('svcName').value) || '').trim(); }
+
+  function currentBlocks() {
+    var bl = paperBlocks();
+    if (!bl.length) throw new Error('먼저 감정서를 만들어 주세요.');
+    if (!window.GuidePaper) throw new Error('렌더러를 불러오지 못했어요 — 새로고침한 뒤 다시 시도해 주세요.');
+    return bl;
   }
 
-  function layoutRich(m, runs, maxW, reg, bold) {
-    var chars = [];
-    runs.forEach(function (r) {
-      if (r.br) { chars.push({ br: true }); return; }
-      var t = String(r.t || '');
-      for (var i = 0; i < t.length; i++) {
-        var ch = t.charAt(i);
-        chars.push({ c: ch, b: !!r.b, w: cw(m, r.b ? bold : reg, ch) });
-      }
-    });
-    var lines = [], line = [], lineW = 0;
-    function pushLine() { lines.push(line); line = []; lineW = 0; }
-    var i = 0;
-    while (i < chars.length) {
-      if (chars[i].br) { pushLine(); i++; continue; }
-      var word = [], w = 0;
-      while (i < chars.length && !chars[i].br) {
-        word.push(chars[i]); w += chars[i].w;
-        var isSpace = chars[i].c === ' ';
-        i++;
-        if (isSpace) break;
-      }
-      if (!word.length) continue;
-      if (lineW > 0 && lineW + w > maxW) pushLine();
-      if (w > maxW) {
-        for (var k = 0; k < word.length; k++) {
-          if (lineW > 0 && lineW + word[k].w > maxW) pushLine();
-          line.push(word[k]); lineW += word[k].w;
-        }
-      } else {
-        for (var j = 0; j < word.length; j++) line.push(word[j]);
-        lineW += w;
-      }
-    }
-    if (line.length) lines.push(line);
-    return lines;
+  /** 같은 종이로 여러 번 만들지 않게 한 번 만든 파일 묶음을 기억한다 (고치면 지운다) */
+  function filesNow() {
+    if (fileCache) return fileCache;
+    fileCache = window.GuidePaper.files(currentBlocks(), { seal: SEAL_SRC, name: whoName() });
+    return fileCache;
   }
+  function dropFiles() { fileCache = null; }
 
-  function segments(line) {
-    var out = [], cur = null;
-    line.forEach(function (ch) {
-      if (!cur || cur.b !== ch.b) { cur = { b: ch.b, t: '' }; out.push(cur); }
-      cur.t += ch.c;
-    });
-    return out;
+  var IMG_BTNS = ['svcCover', 'svcPdf', 'svcPdfShare', 'svcPages', 'svcPagesShare'];
+  function busyAll(on) {
+    IMG_BTNS.forEach(function (id) { var b = $(id); if (b) b.disabled = !!on; });
   }
-
-  function wrapCenter(m, text, maxW, f) {
-    m.font = f;
-    var words = String(text).split(' '), lines = [], cur = '';
-    words.forEach(function (w) {
-      var trial = cur ? cur + ' ' + w : w;
-      if (cur && m.measureText(trial).width > maxW) { lines.push(cur); cur = w; }
-      else cur = trial;
-    });
-    if (cur) lines.push(cur);
-    return lines;
-  }
-
-  function buildOps(m, blocks) {
-    var W = IMG.w, pad = IMG.pad, maxW = W - pad * 2;
-    var ops = [], y = IMG.top;
-
-    function center(text, f, lh, gap, color, sp) {
-      var lines = wrapCenter(m, text, maxW - 20, f);
-      lines.forEach(function (ln) {
-        y += lh;
-        ops.push({ s: ln, x: W / 2, y: y, font: f, color: color, align: 'center', sp: sp || 0 });
+  function run(make, done) {
+    busyAll(true);
+    setTimeout(function () {
+      new Promise(function (res) { res(make()); }).then(function (msg) {
+        busyAll(false);
+        if (msg) toast(msg);
+      }, function (e) {
+        busyAll(false);
+        toast((e && e.message) ? e.message : '만들지 못했어요 — 다시 시도해 주세요.');
       });
-      y += gap || 0;
-    }
-    function left(runs, reg, bold, opt) {
-      opt = opt || {};
-      var lh = opt.lh || 54;
-      var maxw = opt.maxW || maxW;
-      var x = opt.x == null ? pad : opt.x;
-      var startY = y;
-      var lines = layoutRich(m, runs, maxw, reg, bold);
-      var first = true, firstBaseline = 0;
-      lines.forEach(function (line) {
-        y += lh;
-        if (first) { firstBaseline = y; first = false; }
-        var cx = x;
-        segments(line).forEach(function (sg) {
-          ops.push({ s: sg.t, x: cx, y: y, font: sg.b ? bold : reg, color: opt.color || IMG.body, align: 'left' });
-          m.font = sg.b ? bold : reg;
-          cx += m.measureText(sg.t).width;
+    }, 40);
+  }
+
+  function saveCover() {
+    run(function () {
+      return window.GuidePaper.cover({ seal: SEAL_SRC, name: whoName() }, 1).then(function (cv) {
+        return window.GuidePaper.toBlob(cv, 'image/png');
+      }).then(function (b) {
+        window.GuidePaper.download(b, '윤이세_감정서_' + (safeName(whoName()) || '고객') + '_표지.png');
+        return '표지를 저장했어요 — 카톡에 사진으로 보내면 됩니다.';
+      });
+    });
+  }
+  function savePdf() {
+    run(function () {
+      return filesNow().then(function (f) {
+        window.GuidePaper.download(f.pdf, f.names.pdf);
+        syncRecent();
+        return 'PDF를 저장했어요 — 표지와 ' + f.pageCount + '장이 한 파일에 들어 있어요.';
+      });
+    });
+  }
+  function sharePdf() {
+    run(function () {
+      return filesNow().then(function (f) {
+        return window.GuidePaper.shareList([{ blob: f.pdf, name: f.names.pdf, type: 'application/pdf' }], '윤이세 감정서').then(function (ok) {
+          if (ok) { syncRecent(); return '공유 창을 열었어요 — 카톡을 고르시면 됩니다.'; }
+          window.GuidePaper.download(f.pdf, f.names.pdf);
+          syncRecent();
+          return '이 브라우저에서는 PDF 공유가 안 돼서 파일로 저장했어요.';
         });
       });
-      return firstBaseline;
-    }
-
-    var chapN = 0;
-    blocks.forEach(function (b) {
-      var t = b.type;
-      if (t === 'brand') {
-        center('YOONISE', F.brand, 28, 30, IMG.gold, 10);
-        return;
-      }
-      if (t === 'title') {
-        center(b.text, F.title, 82, 0, IMG.ink);
-        y += 4;
-        ops.push({ rule: true, x: W / 2 - 30, y: y, w: 60, h: 2, color: IMG.gold, alpha: 0.55 });
-        y += 34;
-        return;
-      }
-      if (t === 'for') {
-        center(b.text, F.for, 46, 38, IMG.soft);
-        return;
-      }
-      if (t === 'greet') {
-        left(b.runs, F.greet, F.greetB, { lh: 78, gap: 20, color: IMG.ink });
-        return;
-      }
-      if (t === 'chap') {
-        chapN += 1;
-        if (chapN > 1) {
-          y += 30;
-          ops.push({ rule: true, x: pad, y: y, w: maxW, h: 1, color: 'rgba(150,126,94,.28)', alpha: 1 });
-          y += 6;
-        } else {
-          y += 34;
-        }
-        var label = b.text.replace(/\s+/g, ' ').trim();
-        ops.push({ s: label, x: pad, y: y + 24, font: F.chap, color: IMG.gold, align: 'left', sp: 5 });
-        y += 28;
-        return;
-      }
-      if (t === 'head') {
-        left(b.runs, F.head, F.headB, { lh: 76, gap: 22, color: IMG.ink });
-        return;
-      }
-      if (t === 'item') {
-        var runs = b.runs.slice();
-        var mark = '';
-        if (runs.length && runs[0].t) {
-          var s0 = runs[0].t;
-          if (/^[①②③④⑤]/.test(s0)) {
-            mark = s0.charAt(0);
-            runs[0] = { t: s0.slice(1), b: runs[0].b };
-            if (!runs[0].t) runs.shift();
-          }
-        }
-        var by = left(runs, F.body, F.bodyB, { lh: 82, x: pad + 60, maxW: maxW - 60, gap: 16 });
-        if (mark) ops.push({ s: mark, x: pad, y: by, font: F.body, color: IMG.body, align: 'left' });
-        return;
-      }
-      if (t === 'sign') {
-        y += 26;
-        ops.push({ rule: true, x: pad, y: y, w: maxW, h: 1, color: 'rgba(120,102,80,.32)', alpha: 1 });
-        y += 52;
-        var nameFont = F.sign;
-        var name = (b.text || '— 윤이세').replace(/\s+/g, ' ').trim();
-        m.font = nameFont;
-        var nameW = m.measureText(name).width;
-        var sealW = 210, sealH = Math.round(sealW * 381 / 720), gapS = 26;
-        var gx = Math.max(pad, (W - (nameW + gapS + sealW)) / 2);
-        ops.push({ s: name, x: gx, y: y, font: nameFont, color: IMG.ink, align: 'left' });
-        ops.push({ seal: true, x: gx + nameW + gapS, y: y - sealH / 2 + 14, w: sealW, h: sealH, rot: -4 });
-        y += 20;
-        return;
-      }
-      if (t === 'foot') {
-        y += 44;
-        ops.push({ rule: true, x: pad, y: y, w: maxW, h: 1, color: 'rgba(120,102,80,.18)', alpha: 1 });
-        y += 28;
-        ops.push({ s: '윤이세사주', x: pad, y: y, font: F.foot, color: 'rgba(140,130,121,.9)', align: 'left' });
-        ops.push({ s: '2027 맞춤 운세 활용 가이드', x: W - pad, y: y, font: F.foot, color: 'rgba(140,130,121,.9)', align: 'right' });
-        return;
-      }
-      left(b.runs, F.body, F.bodyB, { lh: 82, gap: 22 });
-    });
-
-    return { ops: ops, height: Math.ceil(y + 84) };
-  }
-
-  function drawPaper(blocks, seal) {
-    var measure = document.createElement('canvas').getContext('2d');
-    if (!measure) throw new Error('이 브라우저에서는 이미지를 만들 수 없어요 — 다른 브라우저로 열어 주세요.');
-    wcache = {};
-    var plan = buildOps(measure, blocks);
-    var W = IMG.w, H = plan.height;
-    var S = 1;
-    if (H < 3200) S = 1.5;
-
-    var cv = document.createElement('canvas');
-    cv.width = Math.round(W * S);
-    cv.height = Math.round(H * S);
-    var c = cv.getContext('2d');
-    if (!c) throw new Error('이 브라우저에서는 이미지를 만들 수 없어요 — 다른 브라우저로 열어 주세요.');
-    c.setTransform(S, 0, 0, S, 0, 0);
-    c.textBaseline = 'alphabetic';
-
-    c.fillStyle = IMG.bg;
-    c.fillRect(0, 0, W, H);
-    var g = c.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, 'rgba(255,253,248,.9)');
-    g.addColorStop(0.4, 'rgba(255,255,255,0)');
-    g.addColorStop(1, 'rgba(233,222,205,.3)');
-    c.fillStyle = g;
-    c.fillRect(0, 0, W, H);
-
-    c.strokeStyle = 'rgba(150,126,94,.34)';
-    c.lineWidth = 1.4;
-    c.strokeRect(28, 28, W - 56, H - 56);
-    c.strokeStyle = 'rgba(150,126,94,.16)';
-    c.lineWidth = 0.8;
-    c.strokeRect(38, 38, W - 76, H - 76);
-
-    plan.ops.forEach(function (o) {
-      if (o.rule) {
-        c.globalAlpha = o.alpha == null ? 1 : o.alpha;
-        c.fillStyle = o.color;
-        c.fillRect(o.x, o.y, o.w, o.h);
-        c.globalAlpha = 1;
-        return;
-      }
-      if (o.seal) {
-        if (!seal) return;
-        c.save();
-        c.translate(o.x + o.w / 2, o.y + o.h / 2);
-        c.rotate(o.rot * Math.PI / 180);
-        c.globalAlpha = 0.96;
-        c.drawImage(seal, -o.w / 2, -o.h / 2, o.w, o.h);
-        c.restore();
-        return;
-      }
-      c.font = o.font;
-      c.fillStyle = o.color;
-      c.textAlign = o.align || 'left';
-      try { c.letterSpacing = (o.sp || 0) + 'px'; } catch (e) { }
-      c.fillText(o.s, o.x, o.y);
-      try { c.letterSpacing = '0px'; } catch (e) { }
-    });
-    return cv;
-  }
-
-  var sealPromise = null;
-  function loadSeal() {
-    if (sealPromise) return sealPromise;
-    sealPromise = new Promise(function (res, rej) {
-      var img = new Image();
-      img.onload = function () { res(img); };
-      img.onerror = function () {
-        sealPromise = null;
-        rej(new Error('직인 이미지를 불러오지 못했어요 — 새로고침한 뒤 다시 시도해 주세요.'));
-      };
-      img.src = SEAL_SRC;
-    });
-    return sealPromise;
-  }
-  function fontsReady() {
-    try {
-      if (document.fonts && document.fonts.ready) return document.fonts.ready.then(function () { }, function () { });
-    } catch (e) { }
-    return Promise.resolve();
-  }
-
-  function canvasToBlob(cv) {
-    return new Promise(function (res, rej) {
-      function fail() { rej(new Error('이미지를 만들지 못했어요 — 다시 시도해 주세요.')); }
-      try {
-        if (cv.toBlob) { cv.toBlob(function (b) { if (b && b.size > 0) res(b); else fail(); }, 'image/png'); return; }
-        var bin = atob(cv.toDataURL('image/png').split(',')[1]);
-        var u8 = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        res(new Blob([u8], { type: 'image/png' }));
-      } catch (e) { fail(); }
     });
   }
-
-  function safeFileName(s) { return String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '').trim(); }
-
-  function buildImage() {
-    var blocks = paperBlocks();
-    if (!blocks.length) return Promise.reject(new Error('먼저 감정서를 만들어 주세요.'));
-    var who = safeFileName(($('svcName').value || '').trim()) || '고객';
-    return Promise.all([loadSeal(), fontsReady()]).then(function (r) {
-      return canvasToBlob(drawPaper(blocks, r[0])).then(function (blob) {
-        var fname = '윤이세_감정서_' + who + '.png';
-        var file = null;
-        try { file = new File([blob], fname, { type: 'image/png' }); } catch (e) { file = null; }
-        return { blob: blob, file: file, name: fname };
+  function savePages() {
+    run(function () {
+      return filesNow().then(function (f) {
+        window.GuidePaper.download(f.zip, f.names.pagesZip);
+        syncRecent();
+        return '페이지 ' + f.pageCount + '장을 ZIP 하나로 저장했어요 — 풀면 순서대로 들어 있어요.';
+      });
+    });
+  }
+  function sharePages() {
+    run(function () {
+      return filesNow().then(function (f) {
+        var items = f.pages.map(function (b, i) { return { blob: b, name: f.names.page(i + 1), type: 'image/png' }; });
+        return window.GuidePaper.shareList(items, '윤이세 감정서').then(function (ok) {
+          if (ok) { syncRecent(); return '페이지 ' + f.pageCount + '장을 공유 창으로 넘겼어요 — 카톡에서 순서대로 보내 주세요.'; }
+          window.GuidePaper.download(f.zip, f.names.pagesZip);
+          syncRecent();
+          return '이 브라우저에서는 여러 장 공유가 안 돼서 ZIP으로 저장했어요.';
+        });
       });
     });
   }
 
-  function busyImage(on) {
-    var a = $('svcImgSave'), b = $('svcImgShare');
-    [a, b].forEach(function (x) { if (x) x.disabled = !!on; });
-    if (a) a.textContent = on ? '이미지 만드는 중…' : '도장 포함 이미지 저장';
-  }
-
-  function saveImage() {
-    busyImage(true);
-    buildImage().then(function (r) {
-      busyImage(false);
-      var url = URL.createObjectURL(r.blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = r.name;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () {
-        try { a.remove(); } catch (e) { }
-        try { URL.revokeObjectURL(url); } catch (e) { }
-      }, 8000);
-      syncRecent();
-      toast('이미지를 저장했어요 — 카톡에 사진으로 보내면 됩니다.');
-    }, function (e) {
-      busyImage(false);
-      toast((e && e.message) ? e.message : '이미지를 만들지 못했어요 — 다시 시도해 주세요.');
-    });
-  }
-
-  function shareImage() {
-    busyImage(true);
-    buildImage().then(function (r) {
-      busyImage(false);
-      if (!r.file || !navigator.share) { saveImage(); return; }
-      navigator.share({ files: [r.file], title: '윤이세 감정서' }).then(function () {
-        syncRecent();
-        toast('공유 창을 열었어요 — 카톡을 고르시면 됩니다.');
-      }, function () { });
-    }, function (e) {
-      busyImage(false);
-      toast((e && e.message) ? e.message : '이미지를 만들지 못했어요 — 다시 시도해 주세요.');
-    });
-  }
-
-  function canShareFiles() {
+  /** 여러 장 공유는 브라우저가 파일 공유를 지원할 때만 버튼을 보여 준다 */
+  function shareReady() {
     try {
-      if (!navigator.canShare || !navigator.share || typeof File !== 'function') return false;
-      var f = new File([new Blob([new Uint8Array([1])], { type: 'image/png' })], 'a.png', { type: 'image/png' });
-      return navigator.canShare({ files: [f] });
+      if (!navigator.share || !navigator.canShare || typeof File !== 'function' || !window.GuidePaper) return false;
+      var p = new File([new Blob([new Uint8Array([1])], { type: 'image/png' })], 'a.png', { type: 'image/png' });
+      var d = new File([new Blob([new Uint8Array([1])], { type: 'application/pdf' })], 'a.pdf', { type: 'application/pdf' });
+      return { pages: navigator.canShare({ files: [p, p] }), pdf: navigator.canShare({ files: [d] }) };
     } catch (e) { return false; }
   }
+
+  /* ── 미리보기 — 보내기 전에 표지와 페이지를 눈으로 확인 ── */
+  function paintPreview() {
+    var box = $('svcPreview'), row = $('svcPreviewRow'), cnt = $('svcPreviewCount');
+    if (!box || !row || !window.GuidePaper) return;
+    var bl;
+    try { bl = paperBlocks(); } catch (e) { bl = []; }
+    if (!bl.length) { box.hidden = true; row.innerHTML = ''; return; }
+    var seq = ++previewSeq;
+    window.GuidePaper.render(bl, { seal: SEAL_SRC, name: whoName(), scale: 0.34 }).then(function (r) {
+      if (seq !== previewSeq) return;
+      var items = [{ cv: r.cover, label: '표지' }];
+      r.pages.forEach(function (cv, i) { items.push({ cv: cv, label: (i + 1) + ' / ' + r.pages.length }); });
+      row.innerHTML = '';
+      items.forEach(function (it) {
+        var fig = document.createElement('figure');
+        it.cv.style.width = '100%';
+        fig.appendChild(it.cv);
+        var cap = document.createElement('figcaption');
+        cap.textContent = it.label;
+        fig.appendChild(cap);
+        row.appendChild(fig);
+      });
+      cnt.textContent = '표지 + ' + r.pages.length + '장';
+      box.hidden = false;
+    }, function () { box.hidden = true; });
+  }
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(paintPreview, 700);
+  }
+
+  /* ── 문장 검수 — 종이에 있는 그대로(굵은 글씨 포함)를 다시 글로 세워 본다 ── */
+  function blocksMarkdown() {
+    return paperBlocks().map(function (b) {
+      if (b.type === 'chap' || b.type === 'foot' || b.type === 'brand') return '';
+      return (b.runs || []).map(function (r) { return r.b ? '**' + r.t + '**' : r.t; }).join('');
+    }).filter(function (x) { return x.trim(); }).join('\n');
+  }
+  function paintQa() {
+    var box = $('svcQa');
+    if (!box) return;
+    var t = blocksMarkdown();
+    if (!t.trim() || !window.SpecialGuideDraft || !window.SpecialGuideDraft.review) { box.hidden = true; return; }
+    var r = window.SpecialGuideDraft.review(t);
+    box.hidden = false;
+    box.className = 'svc-qa' + (r.ok ? '' : ' is-warn');
+    box.textContent = r.ok
+      ? '✓ 문장 검수 통과 · 어색한 표현 ' + r.fixes.length + '건 정리 · 금지 표현 0건 · ' + r.len + '자'
+      : '검수에서 걸린 것이 있어요 — ' + r.problems.join(' · ');
+  }
+
+  function safeName(s) { return String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '').trim(); }
 
   /* ── 복사 ─────────────────────────────────────────── */
   function copyDraft() {
@@ -3266,7 +3092,7 @@ body.locked{overflow:hidden}
     }
     show(made.res, o, text);
     saveRecent(o, made.res, text);
-    toast('감정서를 만들었어요 — 종이를 눌러 고친 뒤 복사하거나 이미지로 저장하세요.');
+    toast('감정서를 만들었어요 — 종이를 눌러 고친 뒤 표지·페이지·PDF로 저장하세요.');
   }
 
   function pillarHtml(res) {
@@ -3294,7 +3120,10 @@ body.locked{overflow:hidden}
     $('svcPillars').innerHTML = keep && keep.pillars ? keep.pillars : pillarHtml(res);
     renderPaper(text);
     $('svcOut').hidden = false;
+    dropFiles();
     checkForbidden();
+    paintQa();
+    schedulePreview();
     try { $('svcOut').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { }
   }
 
@@ -3306,15 +3135,19 @@ body.locked{overflow:hidden}
 
     $('svcMake').addEventListener('click', make);
     $('svcCopy').addEventListener('click', copyDraft);
-    $('svcImgSave').addEventListener('click', saveImage);
-    if (canShareFiles()) {
-      $('svcImgShare').hidden = false;
-      $('svcImgShare').addEventListener('click', shareImage);
-    }
+    $('svcCover').addEventListener('click', saveCover);
+    $('svcPdf').addEventListener('click', savePdf);
+    $('svcPages').addEventListener('click', savePages);
+    var sr = shareReady();
+    if (sr && sr.pdf) { $('svcPdfShare').hidden = false; $('svcPdfShare').addEventListener('click', sharePdf); }
+    if (sr && sr.pages) { $('svcPagesShare').hidden = false; $('svcPagesShare').addEventListener('click', sharePages); }
     $('svcEmpty').addEventListener('click', function () {
       if (!confirm('감정서 본문을 비울까요? 지금 고친 내용은 사라져요.')) return;
       $('svcPaper').innerHTML = '';
+      dropFiles();
       checkForbidden();
+      paintQa();
+      $('svcPreview').hidden = true;
       try { $('svcPaper').focus(); } catch (e) { }
       toast('본문을 비웠어요.');
     });
@@ -3331,7 +3164,9 @@ body.locked{overflow:hidden}
     document.addEventListener('selectionchange', function () {
       if (document.activeElement === $('svcPaper')) { rememberRange(); syncBar(); }
     });
-    $('svcPaper').addEventListener('input', function () { renumber(); checkForbidden(); });
+    $('svcPaper').addEventListener('input', function () {
+      renumber(); checkForbidden(); dropFiles(); paintQa(); schedulePreview();
+    });
     $('svcPaper').addEventListener('keyup', syncBar);
     $('svcPaper').addEventListener('mouseup', syncBar);
     /* 붙여넣기는 글자만 — 서식은 도구로만 붙인다 */
@@ -3370,7 +3205,10 @@ body.locked{overflow:hidden}
         renderPaper(r.text || '');
       }
       $('svcOut').hidden = false;
+      dropFiles();
       checkForbidden();
+      paintQa();
+      schedulePreview();
       toast('최근에 만든 감정서를 불러왔어요.');
     });
     $('svcRecentClear').addEventListener('click', function () {
@@ -3386,19 +3224,19 @@ body.locked{overflow:hidden}
     renderRecents();
   }
 
-  /* 콘솔 확인용 — 같은 입력으로 감정서를 만들고, 이미지 크기까지 확인할 수 있다 */
+  /* 콘솔 확인용 — 같은 입력으로 감정서를 만들고, 검수·페이지·PDF 결과를 확인할 수 있다 */
   window.YoonSvcDraft = {
     buildSnapshot: buildSnapshot,
-    draft: function (o) { return window.SpecialGuideDraft.make(computeSnapshot(o).snap); },
+    draft: function (o) {
+      var snap = computeSnapshot(o).snap;
+      return window.SpecialGuideDraft.build ? window.SpecialGuideDraft.build(snap) : { text: window.SpecialGuideDraft.make(snap) };
+    },
     blocks: paperBlocks,
     text: plainText,
-    render: function () {
-      var blocks = paperBlocks();
-      return Promise.resolve(loadSeal()).then(function (seal) {
-        var plan = buildOps(document.createElement('canvas').getContext('2d'), blocks);
-        return { blocks: blocks.length, width: IMG.w, height: plan.height };
-      });
-    }
+    markdown: blocksMarkdown,
+    review: function () { return window.SpecialGuideDraft.review(blocksMarkdown()); },
+    files: filesNow,
+    preview: paintPreview
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);

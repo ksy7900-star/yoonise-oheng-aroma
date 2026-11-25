@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126p">
+<link rel="stylesheet" href="assets/style.css?v=20261126q">
 </head>
 <body>
 
@@ -367,6 +367,19 @@
           </article>
         </div>
       </details>
+
+      <!-- 📜 도착한 감정서 보관함 — `나의 2027년 핵심 사주 해석` 바로 아래 (2026-11-26 #21986)
+           처음 도착했을 때는 결과 화면 맨 위 큰 카드로 한 번만 알리고,
+           감정서를 열어 보거나 X 로 닫으면 그 카드는 자리를 비우고 이 버튼만 남는다.
+           실제 감정서(윤이세가 승인해 전한 본문)를 받은 고객에게만 보인다 — 판단은 special-guide.js. -->
+      <button type="button" class="sgarch" id="sgArchive" hidden>
+        <span class="sgarch__ic" aria-hidden="true">📜</span>
+        <span class="sgarch__b">
+          <span class="sgarch__t">나의 2027년 맞춤 감정서</span>
+          <span class="sgarch__d">윤이세가 직접 전하는 한 해의 길잡이</span>
+        </span>
+        <span class="sgarch__ar" aria-hidden="true">›</span>
+      </button>
 
       <!-- ③ 저녁엔 나의 하루 한 줄 기록 — 2027 카드 아래 독립 카드 (2026-11-24 #19841)
            예전 `.v2-parked` 숨김을 풀어 이 카드 하나로 깔끔하게 노출한다. 기능은 복제하지 않는다.
@@ -1080,13 +1093,14 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126p"></script>
-<script src="assets/manse.js?v=20261126p"></script>
-<script src="assets/timing.js?v=20261126p"></script>
-<script src="assets/chars.js?v=20261126p"></script>
-<script src="assets/brief.js?v=20261126p"></script>
-<script src="assets/calendar.js?v=20261126p"></script>
-<script src="assets/special-guide.js?v=20261126p"></script>
-<script src="assets/pwa.js?v=20261126p"></script>
+<script src="vendor/lunar.js?v=20261126q"></script>
+<script src="assets/manse.js?v=20261126q"></script>
+<script src="assets/timing.js?v=20261126q"></script>
+<script src="assets/chars.js?v=20261126q"></script>
+<script src="assets/brief.js?v=20261126q"></script>
+<script src="assets/calendar.js?v=20261126q"></script>
+<script src="assets/guide-paper.js?v=20261126q"></script>
+<script src="assets/special-guide.js?v=20261126q"></script>
+<script src="assets/pwa.js?v=20261126q"></script>
 </body>
 </html>

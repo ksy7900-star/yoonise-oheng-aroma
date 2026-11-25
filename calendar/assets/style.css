@@ -6246,6 +6246,55 @@ body.has-sgift #passFoot{display:none !important}
 .sgguide__note{margin:8px 0 0; font-size:10px; line-height:1.7; color:var(--mute); font-weight:600; word-break:keep-all}
 .modal--sgift .sgguide__close{margin-top:12px}
 
+/* ── 📜 도착한 감정서 보관함 — '2027년 핵심 사주 해석' 바로 아래 (2026-11-26 #21986)
+   처음 도착한 날 큰 카드로 한 번 알린 뒤에는 이 작은 버튼만 남는다. */
+.sgarch{
+  display:flex; align-items:center; gap:11px; width:100%;
+  margin:10px 0 0; padding:13px 14px; text-align:left;
+  border-radius:16px; border:1px solid rgba(165,101,15,.22);
+  background:linear-gradient(180deg,#FFFDF8 0%,#FFFFFF 68%);
+  font-family:inherit; cursor:pointer;
+  box-shadow:0 8px 22px -22px rgba(28,24,19,.6);
+}
+.sgarch:active{transform:translateY(1px)}
+.sgarch__ic{
+  flex:0 0 34px; width:34px; height:34px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; background:#FBF3E2; border:1px solid rgba(165,101,15,.22);
+}
+.sgarch__b{min-width:0; display:flex; flex-direction:column}
+.sgarch__t{font-size:13px; font-weight:800; color:var(--ink); letter-spacing:-.02em}
+.sgarch__d{margin-top:2px; font-size:10.5px; font-weight:600; color:var(--mute); letter-spacing:-.01em}
+.sgarch__ar{margin-left:auto; font-size:17px; font-weight:800; color:var(--gold-deep)}
+
+/* ── 도착한 가이드 — 표지 · 페이지 이미지 · 저장/공유 (2026-11-26)
+   저장되는 그림과 화면에 보이는 그림이 같다(같은 캔버스를 그대로 붙인다). */
+.sgguide__pages{margin:14px 0 0; display:flex; flex-direction:column; align-items:center; gap:4px}
+.sgguide__page{
+  display:block; width:100%; height:auto; border-radius:6px;
+  border:1px solid rgba(150,126,94,.22);
+  box-shadow:0 2px 10px -6px rgba(60,45,30,.45); background:#FBF7F0;
+}
+.sgguide__page--cover{margin-bottom:2px}
+.sgguide__cap{margin:0 0 12px; font-size:9.5px; font-weight:700; color:var(--mute); text-align:center; letter-spacing:.02em}
+.sgguide__loading{margin:16px 0; text-align:center; font-size:11.5px; color:var(--mute)}
+.sgguide__acts{margin:6px 0 0}
+.sgguide__grid{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:7px}
+.sgguide__grid button{
+  min-height:40px; border-radius:12px; border:1px solid var(--hair);
+  background:#FFFDF8; font-family:inherit; font-size:11.5px; font-weight:800;
+  color:var(--ink-2); cursor:pointer;
+}
+.sgguide__grid button[hidden]{display:none !important}
+.sgguide__grid button:disabled{opacity:.5}
+.sgguide__textwrap{
+  margin:14px 0 0; border:1px solid rgba(165,101,15,.16);
+  border-radius:14px; padding:0 12px; background:#FFFCF5;
+}
+.sgguide__textwrap summary{cursor:pointer; list-style:none; padding:11px 0; font-size:11px; font-weight:800; color:var(--gold-deep)}
+.sgguide__textwrap summary::-webkit-details-marker{display:none}
+.sgguide__textwrap[open]{padding-bottom:10px}
+
 @media (max-width:380px){
   .sgift{padding:18px 15px 16px}
   .sgift__title{font-size:17.5px}

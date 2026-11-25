@@ -18,6 +18,10 @@
   var FIRST_KEY = 'yoonise.firstSajuAt.v1';       // { at: ISO, deadline_ms: number, source }
   var CLOSED_KEY = 'yoonise.specialGuide.closed.v1';
   var CLAIM_KEY = 'yoonise.specialGuide.claim.v1';
+  /* 도착 안내를 '본' 감정서 — 신청번호를 남긴다. 앱을 다시 열어도 큰 도착 카드가
+     또 뜨지 않고, '나의 2027년 맞춤 감정서' 보관 버튼으로만 남는다 (2026-11-26 #21986).
+     새 감정서(다른 신청번호)가 오면 그때는 다시 도착 카드가 뜬다. */
+  var SEEN_KEY = 'yoonise.specialGuide.seen.v1';
 
   var EVENT_HOURS = 72;
   /* 이벤트 시작 — 이 시각 전에 이미 사주를 저장해 둔 기기는 대상이 아니다.
@@ -44,8 +48,14 @@
     payTick: 0,
     modalOpen: false,
     guideOpen: false,        // 도착한 가이드 팝업이 열려 있는지
+    guideSeq: 0,             // 페이지를 그리는 순서 — 늦게 온 그림이 덮어쓰지 않게
+    openAfterClaim: false,   // 보관 버튼을 눌렀는데 아직 신청 정보를 못 받아 온 경우
     consentChecked: false    // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
   };
+
+  function toast(t) {
+    if (window.YoonCalendar && window.YoonCalendar.toast) { try { window.YoonCalendar.toast(t); return; } catch (e) { } }
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -100,6 +110,14 @@
   function setClosed(v) {
     try { if (v) localStorage.setItem(CLOSED_KEY, '1'); else localStorage.removeItem(CLOSED_KEY); } catch (e) { }
   }
+  function seenNo() {
+    try { return localStorage.getItem(SEEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function markSeen(no) {
+    if (!no) return;
+    try { localStorage.setItem(SEEN_KEY, String(no)); } catch (e) { }
+  }
+  function isSeen(d) { return !!(d && d.claim_no && seenNo() === String(d.claim_no)); }
 
   /* ── 서버 호출 ─────────────────────────────────────── */
   function rpc(name, body) {
@@ -277,6 +295,7 @@
     if (foot) foot.hidden = true;
     if (tg) tg.hidden = true;
     document.body.classList.remove('has-sgift', 'has-sgift-claim');
+    syncArchive();
     ctaSync();
   }
 
@@ -298,6 +317,23 @@
   }
 
   function refresh() {
+    refreshCore();
+    syncArchive();
+  }
+
+  /* 도착 안내를 닫았거나 이미 열어 본 감정서 — 2027 카드 아래 보관 버튼으로만 남긴다.
+     실제 감정서(승인된 본문)를 받은 고객에게만 보인다. */
+  function syncArchive() {
+    var el = $('#sgArchive');
+    if (!el) return;
+    var d = mem.claim || cachedClaim();
+    if (!guideOf(d) && !guideOf(cachedClaim())) { el.hidden = true; return; }
+    var no = (d && d.claim_no) || '';
+    var gone = closedFlag() || (no && isSeen(d));
+    el.hidden = !gone;
+  }
+
+  function refreshCore() {
     var c = cal();
     if (!c || !c.res) { hideAll(); return; }
     if (mem.preexisting) { hideAll(); return; }
@@ -484,11 +520,14 @@
     document.body.classList.remove('has-sgift');
     if (foot) foot.hidden = true;               // 이미 구매 — 하단 구매 유도 숨김
     var close = closedFlag();
-    card.hidden = close;
+    /* 감정서가 도착한 건 — 큰 도착 카드는 처음 한 번만 보여 준다.
+       한 번 열어 보거나 X 로 닫으면 카드를 통째로 숨기고(여백 0),
+       아래 '나의 2027년 맞춤 감정서' 보관 버튼으로 자리를 넘긴다 (#21986). */
+    var seen = !!guide && isSeen(d);
+    card.hidden = !!guide ? (close || seen) : close;
     if (tg) {
-      tg.hidden = !close;
-      tg.textContent = guide ? '🎁 도착한 가이드 다시 열기'
-        : (delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기');
+      if (guide) tg.hidden = true;             // 다시 열기는 보관 버튼이 맡는다
+      else { tg.hidden = !close; tg.textContent = delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기'; }
     }
 
     var body = $('#specialGiftBody');
@@ -498,7 +537,9 @@
       body.innerHTML = guide ? guideArrivedHTML(d) : claimHTML(d, step);
     }
     startPoll(d);
+    syncArchive();
     ctaSync();
+    if (mem.openAfterClaim && guide) { mem.openAfterClaim = false; openGuide(); }
   }
 
   function claimHTML(d, step) {
@@ -615,10 +656,26 @@
       '<div class="sgift__acts"><button type="button" class="sgift__buy" id="specialGuideOpen">가이드 열기</button></div>';
   }
 
+  function plainText(t) {
+    var D = window.SpecialGuideDraft;
+    return D && D.plain ? D.plain(t) : String(t || '').replace(/\*\*/g, '');
+  }
+  /** 본문 첫 줄에서 이름을 읽는다 — 표지에 '○○ 님'으로 들어간다 */
+  function nameIn(t) {
+    var m = String(t || '').match(/^(.{1,12}?) 님을 위한 개인 맞춤 감정서/m);
+    return m ? m[1] : '';
+  }
+
+  /* ── 도착한 가이드 열기 — 표지 · 페이지 · PDF (2026-11-26) ─────────
+     본문은 윤이세가 승인한 그 글(guide_text)이다. 화면에서 다시 만들지 않고
+     그대로 종이에 올린다. 표지·페이지·PDF·공유 파일도 같은 글에서 나온다. */
+  var gfiles = null, gfilesNo = '';
+
   function openGuide() {
     var d = mem.claim;
     var text = guideOf(d);
     if (!text) return;
+    markSeen(d.claim_no);              // 열어 본 것으로 남긴다 — 큰 도착 카드는 다시 뜨지 않는다
     var m = $('#specialGuideModal');
     var body = $('#specialGuideBody');
     if (!m || !body) return;
@@ -627,25 +684,159 @@
       '<p class="sgiftm__eyebrow">2027 GUIDE · 윤이세</p>' +
       '<h2 class="sgiftm__title" id="specialGuideTitle">2027년 맞춤 운세 활용 가이드</h2>' +
       '<p class="sgguide__meta">' + esc(d.claim_no || '') + (when ? ' · ' + when + ' 도착' : '') + '</p>' +
-      '<div class="sgguide__paper">' + esc(text) + '</div>' +
-      '<div class="sgguide__sign">' +
-        '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126a" alt="윤이세 직인" loading="lazy">' +
-        '<p class="sgguide__name">— 윤이세</p>' +
-        '<p class="sgguide__note">가이드는 카카오톡으로도 보내 드려요. 언제든 다시 열어 보실 수 있어요.</p>' +
+      '<div class="sgguide__pages" id="sgPages"><p class="sgguide__loading">가이드를 펼치는 중…</p></div>' +
+      '<div class="sgguide__acts" id="sgActs" hidden>' +
+      '<button type="button" class="sgift__buy" id="sgCover">표지 이미지 저장</button>' +
+      '<div class="sgguide__grid">' +
+      '<button type="button" id="sgPdf">PDF 저장</button>' +
+      '<button type="button" id="sgPdfShare" hidden>PDF 공유</button>' +
+      '<button type="button" id="sgPagesSave">페이지 저장</button>' +
+      '<button type="button" id="sgPagesShare" hidden>페이지 공유</button>' +
       '</div>' +
+      '<p class="sgguide__note">페이지는 주제와 문단 단위로 나뉘고, 마지막 장에 윤이세 직인과 서명이 있습니다.</p>' +
+      '</div>' +
+      '<details class="sgguide__textwrap"><summary>글자로 보기 · 복사하기</summary>' +
+      '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>' +
+      '<div class="sgguide__sign">' +
+      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126q" alt="윤이세 직인" loading="lazy">' +
+      '<p class="sgguide__name">— 윤이세</p>' +
+      '<p class="sgguide__note">가이드는 언제든 다시 열어 보실 수 있어요.</p>' +
+      '</div></details>' +
       '<button type="button" class="sgift__buy sgguide__close" data-sgguide-close>가이드 닫기</button>';
     m.hidden = false;
     mem.guideOpen = true;
     document.body.classList.add('is-sgift-modal');
     try { $('#specialGuideDialog').focus({ preventScroll: true }); } catch (e) { }
     try { body.parentNode.scrollTop = 0; } catch (e) { }
+    paintGuide(text);
+    syncArchive();
   }
+
+  /* 표지와 페이지를 캔버스로 그려 팝업 안에 그대로 보여 준다 — 저장물과 같은 그림 */
+  function paintGuide(text) {
+    var host = $('#sgPages');
+    if (!host) return;
+    if (!window.GuidePaper) {
+      host.innerHTML = '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>';
+      return Promise.resolve(null);
+    }
+    var seq = ++mem.guideSeq;
+    return window.GuidePaper.render(text, { seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text), scale: 0.6 })
+      .then(function (r) {
+        if (seq !== mem.guideSeq) return null;
+        host.innerHTML = '';
+        r.cover.className = 'sgguide__page sgguide__page--cover';
+        host.appendChild(r.cover);
+        var cap = document.createElement('p');
+        cap.className = 'sgguide__cap';
+        cap.textContent = '표지';
+        host.appendChild(cap);
+        r.pages.forEach(function (cv, i) {
+          cv.className = 'sgguide__page';
+          host.appendChild(cv);
+          var c2 = document.createElement('p');
+          c2.className = 'sgguide__cap';
+          c2.textContent = (i + 1) + ' / ' + r.pages.length + '장';
+          host.appendChild(c2);
+        });
+        var acts = $('#sgActs');
+        if (acts) {
+          acts.hidden = false;
+          if (window.GuidePaper.canShare) {
+            var p = new File([new Blob([new Uint8Array([1])], { type: 'image/png' })], 'a.png', { type: 'image/png' });
+            var d = new File([new Blob([new Uint8Array([1])], { type: 'application/pdf' })], 'a.pdf', { type: 'application/pdf' });
+            if (navigator.canShare && navigator.canShare({ files: [p, p] })) { var sb = $('#sgPagesShare'); if (sb) sb.hidden = false; }
+            if (navigator.canShare && navigator.canShare({ files: [d] })) { var pb = $('#sgPdfShare'); if (pb) pb.hidden = false; }
+          }
+        }
+        return r;
+      }, function () {
+        host.innerHTML = '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>';
+        return null;
+      });
+  }
+
+  function guideTextNow() { return guideOf(mem.claim); }
+  function guideFiles(text) {
+    if (gfiles && gfilesNo === (mem.claim && mem.claim.claim_no)) return gfiles;
+    gfilesNo = mem.claim && mem.claim.claim_no;
+    gfiles = window.GuidePaper.files(text, {
+      seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text)
+    });
+    return gfiles;
+  }
+  function guideBusy(on) {
+    ['sgCover', 'sgPdf', 'sgPdfShare', 'sgPagesSave', 'sgPagesShare'].forEach(function (id) {
+      var b = $('#' + id); if (b) b.disabled = !!on;
+    });
+  }
+  function guideRun(make) {
+    var text = guideTextNow();
+    if (!text) return;
+    if (!window.GuidePaper) { toast('이 브라우저에서는 이미지 저장이 어려워요 — 글자로 보기에서 복사해 주세요.'); return; }
+    guideBusy(true);
+    toast('만드는 중이에요 — 잠시만 기다려 주세요.');
+    setTimeout(function () {
+      new Promise(function (res) { res(make(text)); }).then(function (msg) {
+        guideBusy(false);
+        if (msg) toast(msg);
+      }, function (e) {
+        guideBusy(false);
+        toast((e && e.message) ? e.message : '만들지 못했어요 — 다시 시도해 주세요.');
+      });
+    }, 40);
+  }
+  function guideCover() {
+    guideRun(function (text) {
+      return window.GuidePaper.cover({ seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text) }, 1)
+        .then(function (cv) { return window.GuidePaper.toBlob(cv, 'image/png'); })
+        .then(function (b) {
+          window.GuidePaper.download(b, '윤이세_감정서_' + (nameIn(text) || '고객') + '_표지.png');
+          return '표지를 저장했어요 — 카톡에 사진으로 보내면 됩니다.';
+        });
+    });
+  }
+  function guidePdf(share) {
+    guideRun(function (text) {
+      return guideFiles(text).then(function (f) {
+        if (!share) {
+          window.GuidePaper.download(f.pdf, f.names.pdf);
+          return 'PDF를 저장했어요 — 표지와 ' + f.pageCount + '장이 한 파일에 들어 있어요.';
+        }
+        return window.GuidePaper.shareList([{ blob: f.pdf, name: f.names.pdf, type: 'application/pdf' }], '윤이세 감정서')
+          .then(function (ok) {
+            if (ok) return '공유 창을 열었어요 — 카톡을 고르시면 됩니다.';
+            window.GuidePaper.download(f.pdf, f.names.pdf);
+            return '이 브라우저에서는 PDF 공유가 안 돼서 파일로 저장했어요.';
+          });
+      });
+    });
+  }
+  function guidePages(share) {
+    guideRun(function (text) {
+      return guideFiles(text).then(function (f) {
+        if (share) {
+          var items = f.pages.map(function (b, i) { return { blob: b, name: f.names.page(i + 1), type: 'image/png' }; });
+          return window.GuidePaper.shareList(items, '윤이세 감정서').then(function (ok) {
+            if (ok) return '페이지 ' + f.pageCount + '장을 공유 창으로 넘겼어요 — 순서대로 보내 주세요.';
+            window.GuidePaper.download(f.zip, f.names.pagesZip);
+            return '이 브라우저에서는 여러 장 공유가 안 돼서 ZIP으로 저장했어요.';
+          });
+        }
+        window.GuidePaper.download(f.zip, f.names.pagesZip);
+        return '페이지 ' + f.pageCount + '장을 ZIP 하나로 저장했어요 — 풀면 순서대로 들어 있어요.';
+      });
+    });
+  }
+
   function closeGuide() {
     var m = $('#specialGuideModal');
     if (!m || m.hidden) return;
     m.hidden = true;
     mem.guideOpen = false;
     if (!mem.modalOpen) document.body.classList.remove('is-sgift-modal');
+    /* 다 보고 닫으면 큰 도착 카드는 자리를 비우고, 2027 카드 아래 보관 버튼만 남는다 */
+    refresh();
   }
 
   function startPoll(d) {
@@ -946,6 +1137,7 @@
       if (x) {
         e.preventDefault();
         setClosed(true);
+        if (mem.claim && guideOf(mem.claim)) markSeen(mem.claim.claim_no);
         refresh();
         return;
       }
@@ -958,6 +1150,31 @@
       }
       var gopen = e.target.closest('#specialGuideOpen');
       if (gopen) { e.preventDefault(); openGuide(); return; }
+      /* 2027 카드 아래 보관 버튼 — 받은 그 감정서를 다시 연다 (새로 만들지 않는다) */
+      var arch = e.target.closest('#sgArchive');
+      if (arch) {
+        e.preventDefault();
+        if (!guideOf(mem.claim)) {
+          var cc = cachedClaim();
+          if (cc && guideOf(cc)) { mem.claim = cc; renderClaim(); }
+          else {
+            var c0 = cal();
+            if (c0 && paidNow(c0)) { mem.openAfterClaim = true; mem.claimTried = false; maybeClaim(c0); }
+          }
+        }
+        if (guideOf(mem.claim)) openGuide();
+        return;
+      }
+      var gc = e.target.closest('#sgCover');
+      if (gc) { e.preventDefault(); guideCover(); return; }
+      var gp = e.target.closest('#sgPdf');
+      if (gp) { e.preventDefault(); guidePdf(false); return; }
+      var gps = e.target.closest('#sgPdfShare');
+      if (gps) { e.preventDefault(); guidePdf(true); return; }
+      var gpg = e.target.closest('#sgPagesSave');
+      if (gpg) { e.preventDefault(); guidePages(false); return; }
+      var gpgs = e.target.closest('#sgPagesShare');
+      if (gpgs) { e.preventDefault(); guidePages(true); return; }
       var gclose = e.target.closest('#specialGuideModal [data-sgguide-close]');
       if (gclose) { e.preventDefault(); closeGuide(); return; }
       var more = e.target.closest('#specialGiftMore');
