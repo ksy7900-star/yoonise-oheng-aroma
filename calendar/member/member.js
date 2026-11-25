@@ -3024,12 +3024,17 @@
      · 카카오 SDK 가 있으면 공식 피드(대표 부적 그림 + 문구 + 링크 버튼)로,
        없으면 navigator.share(문구 + 링크 1개), 그것도 없으면 복사로 떨어진다. */
   var KAKAO_JS_KEY = '24485cf462cb3fa08ecc21117bb3b6e4';   // 카카오 디벨로퍼스 앱 1660074 · JavaScript 키
-  var SHARE_TEXT = '2027년 내 사주 타이밍 달력 나도 보고 있는데 꽤 잘 맞아서 공유해. 행운 부적도 무료래!';
+  /* 문구·제목은 김나영 님 확정(2026-11-25) — "내가 봤는데 잘 맞더라 너도 해봐" */
+  var SHARE_TITLE = '사주타이밍 · 무료 부적';
+  var SHARE_TEXT = '2027 사주타이밍, 내가 봤는데 잘 맞더라 너도 해봐!';
   var SHARE_IMG_BASE = CALENDAR_LIVE_BASE.replace(/\/calendar\/?$/, '/calendar/assets/share/');
+  /* 2026-11-25: 옛 연두 대나무 그림이 카톡에 그대로 떠서(카카오 이미지 캐시) 파일 이름과 버전을 함께 바꿨다.
+     이름만 같으면 캐시가 남으므로 friend-2027.jpg + ?v= — 둘 중 하나는 반드시 갱신한다. */
+  var SHARE_IMG_VER = '?v=20261126b';
   var SHARE_IMG = {
-    friend: SHARE_IMG_BASE + 'friend.jpg',
-    love: SHARE_IMG_BASE + 'love.jpg',
-    luck: SHARE_IMG_BASE + 'luck.jpg'
+    friend: SHARE_IMG_BASE + 'friend-2027.jpg' + SHARE_IMG_VER,
+    love: SHARE_IMG_BASE + 'love-2027.jpg' + SHARE_IMG_VER,
+    luck: SHARE_IMG_BASE + 'luck-2027.jpg' + SHARE_IMG_VER
   };
 
   /** 카카오 SDK 준비 — 없으면 null (일반 공유로 떨어진다) */
@@ -3058,7 +3063,7 @@
         K.Share.sendDefault({
           objectType: 'feed',
           content: {
-            title: '2027 내 사주 타이밍 달력',
+            title: SHARE_TITLE,
             description: SHARE_TEXT,
             imageUrl: SHARE_IMG[rel] || SHARE_IMG.luck,
             link: { mobileWebUrl: url, webUrl: url }
@@ -3070,7 +3075,7 @@
     }
     if (navigator.share) {
       try {
-        navigator.share({ title: '2027 내 사주 타이밍 달력', text: SHARE_TEXT, url: url })
+        navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: url })
           .then(function () {}, function (err) {
             if (err && err.name === 'AbortError') return;
             copyShareFallback(url);
