@@ -6287,6 +6287,10 @@ body.has-sgift #passFoot{display:none !important}
 }
 .sgguide__grid button[hidden]{display:none !important}
 .sgguide__grid button:disabled{opacity:.5}
+.sgguide__grid .sgguide__send{grid-column:1 / -1; background:#FDF3E3; border-color:rgba(180,83,9,.42); color:#8A4E0B}
+.sgguide__pages canvas{cursor:zoom-in}
+.sgguide__shot{position:relative; width:100%; display:block}
+.sgguide__cta{position:absolute; display:block; border-radius:12px; background:transparent; cursor:pointer; -webkit-tap-highlight-color:rgba(22,35,58,.14)}
 .sgguide__textwrap{
   margin:14px 0 0; border:1px solid rgba(165,101,15,.16);
   border-radius:14px; padding:0 12px; background:#FFFCF5;

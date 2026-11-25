@@ -691,19 +691,18 @@
       '<p class="sgguide__meta">' + esc(d.claim_no || '') + (when ? ' · ' + when + ' 도착' : '') + '</p>' +
       '<div class="sgguide__pages" id="sgPages"><p class="sgguide__loading">가이드를 펼치는 중…</p></div>' +
       '<div class="sgguide__acts" id="sgActs" hidden>' +
-      '<button type="button" class="sgift__buy" id="sgCover">표지 이미지 저장</button>' +
+      '<button type="button" class="sgift__buy" id="sgPreview">최종 감정서 미리보기</button>' +
       '<div class="sgguide__grid">' +
       '<button type="button" id="sgPdf">PDF 저장</button>' +
-      '<button type="button" id="sgPdfShare" hidden>PDF 공유</button>' +
-      '<button type="button" id="sgPagesSave">페이지 저장</button>' +
-      '<button type="button" id="sgPagesShare" hidden>페이지 공유</button>' +
+      '<button type="button" id="sgPages">페이지별 이미지 저장</button>' +
+      '<button type="button" id="sgSend" class="sgguide__send">감정서 보내기</button>' +
       '</div>' +
-      '<p class="sgguide__note">페이지는 주제와 문단 단위로 나뉘고, 마지막 장에 윤이세 직인과 서명이 있습니다.</p>' +
+      '<p class="sgguide__note">표지 1장 + 본문. 본문 1장 위에 사주 원국, 마지막 장에 윤이세 서명·직인과 1:1 상담 안내가 함께 들어 있습니다.</p>' +
       '</div>' +
       '<details class="sgguide__textwrap"><summary>글자로 보기 · 복사하기</summary>' +
       '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>' +
       '<div class="sgguide__sign">' +
-      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126q" alt="윤이세 직인" loading="lazy">' +
+      '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126r" alt="윤이세 직인" loading="lazy">' +
       '<p class="sgguide__name">— 윤이세</p>' +
       '<p class="sgguide__note">가이드는 언제든 다시 열어 보실 수 있어요.</p>' +
       '</div></details>' +
@@ -717,7 +716,16 @@
     syncArchive();
   }
 
-  /* 표지와 페이지를 캔버스로 그려 팝업 안에 그대로 보여 준다 — 저장물과 같은 그림 */
+  /* 페이지를 캔버스로 그려 팝업 안에 그대로 보여 준다 — 저장물과 같은 그림.
+     표지 전용 장은 없다. 1장 위에 원국, 마지막 장에 서명·직인. */
+  function gopts(text, scale) {
+    return {
+      seal: 'assets/yoonise-seal.png?v=20261126r',
+      name: nameIn(text),
+      saju: (mem.claim && mem.claim.saju_snapshot) || null,
+      scale: scale || 1
+    };
+  }
   function paintGuide(text) {
     var host = $('#sgPages');
     if (!host) return;
@@ -726,34 +734,40 @@
       return Promise.resolve(null);
     }
     var seq = ++mem.guideSeq;
-    return window.GuidePaper.render(text, { seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text), scale: 0.6 })
+    return window.GuidePaper.render(text, gopts(text, 0.6))
       .then(function (r) {
         if (seq !== mem.guideSeq) return null;
         host.innerHTML = '';
-        r.cover.className = 'sgguide__page sgguide__page--cover';
-        host.appendChild(r.cover);
-        var cap = document.createElement('p');
-        cap.className = 'sgguide__cap';
-        cap.textContent = '표지';
-        host.appendChild(cap);
-        r.pages.forEach(function (cv, i) {
+        r.all.forEach(function (cv, i) {
           cv.className = 'sgguide__page';
-          host.appendChild(cv);
+          cv.setAttribute('data-i', String(i));
+          if (cv.__cta) {
+            /* 마지막 장에 그린 상담 버튼 위에 실제 링크 — 누르면 신청서로 바로 (2026-11-26) */
+            var wrap = document.createElement('div');
+            wrap.className = 'sgguide__shot';
+            wrap.appendChild(cv);
+            var a = document.createElement('a');
+            a.className = 'sgguide__cta';
+            a.href = window.GuidePaper.APPLY_URL;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.setAttribute('aria-label', '윤이세 1:1 맞춤 상담 알아보기');
+            a.style.left = (cv.__cta.x / window.GuidePaper.W * 100) + '%';
+            a.style.top = (cv.__cta.y / window.GuidePaper.H * 100) + '%';
+            a.style.width = (cv.__cta.w / window.GuidePaper.W * 100) + '%';
+            a.style.height = (cv.__cta.h / window.GuidePaper.H * 100) + '%';
+            wrap.appendChild(a);
+            host.appendChild(wrap);
+          } else {
+            host.appendChild(cv);
+          }
           var c2 = document.createElement('p');
           c2.className = 'sgguide__cap';
-          c2.textContent = (i + 1) + ' / ' + r.pages.length + '장';
+          c2.textContent = i === 0 ? '표지' : (i + ' / ' + r.pages.length + '장');
           host.appendChild(c2);
         });
         var acts = $('#sgActs');
-        if (acts) {
-          acts.hidden = false;
-          if (window.GuidePaper.canShare) {
-            var p = new File([new Blob([new Uint8Array([1])], { type: 'image/png' })], 'a.png', { type: 'image/png' });
-            var d = new File([new Blob([new Uint8Array([1])], { type: 'application/pdf' })], 'a.pdf', { type: 'application/pdf' });
-            if (navigator.canShare && navigator.canShare({ files: [p, p] })) { var sb = $('#sgPagesShare'); if (sb) sb.hidden = false; }
-            if (navigator.canShare && navigator.canShare({ files: [d] })) { var pb = $('#sgPdfShare'); if (pb) pb.hidden = false; }
-          }
-        }
+        if (acts) acts.hidden = false;
         return r;
       }, function () {
         host.innerHTML = '<div class="sgguide__paper">' + esc(plainText(text)) + '</div>';
@@ -765,13 +779,11 @@
   function guideFiles(text) {
     if (gfiles && gfilesNo === (mem.claim && mem.claim.claim_no)) return gfiles;
     gfilesNo = mem.claim && mem.claim.claim_no;
-    gfiles = window.GuidePaper.files(text, {
-      seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text)
-    });
+    gfiles = window.GuidePaper.files(text, gopts(text, 1));
     return gfiles;
   }
   function guideBusy(on) {
-    ['sgCover', 'sgPdf', 'sgPdfShare', 'sgPagesSave', 'sgPagesShare'].forEach(function (id) {
+    ['sgPreview', 'sgPdf', 'sgPages', 'sgSend'].forEach(function (id) {
       var b = $('#' + id); if (b) b.disabled = !!on;
     });
   }
@@ -791,45 +803,73 @@
       });
     }, 40);
   }
-  function guideCover() {
-    guideRun(function (text) {
-      return window.GuidePaper.cover({ seal: 'assets/yoonise-seal.png?v=20261126q', name: nameIn(text) }, 1)
-        .then(function (cv) { return window.GuidePaper.toBlob(cv, 'image/png'); })
-        .then(function (b) {
-          window.GuidePaper.download(b, '윤이세_감정서_' + (nameIn(text) || '고객') + '_표지.png');
-          return '표지를 저장했어요 — 카톡에 사진으로 보내면 됩니다.';
-        });
-    });
+  /* 미리보기 — 1장부터 끝장까지 크게, 썸네일로 넘겨 보기 */
+  function guidePreview(start) {
+    var text = guideTextNow();
+    if (!text || !window.GuidePaper) return;
+    guideBusy(true);
+    window.GuidePaper.render(text, gopts(text, 0.62)).then(function (r) {
+      guideBusy(false);
+      window.GuidePaper.viewer(r.all, {
+        title: '최종 감정서 미리보기', start: start || 0,
+        actions: [
+          { icon: 'PDF', label: 'PDF 저장', desc: '표지 포함 ' + (r.pageCount + 1) + '장을 한 파일로', onClick: guidePdf },
+          { icon: 'PNG', label: '페이지별 이미지 저장', desc: '표지 포함 ' + (r.pageCount + 1) + '장을 ZIP으로', onClick: guidePages },
+          { icon: '↗', label: '감정서 보내기', desc: 'PDF 또는 페이지별 이미지로 카톡에', onClick: guideSend }
+        ]
+      });
+    }, function () { guideBusy(false); toast('미리보기를 열지 못했어요 — 다시 시도해 주세요.'); });
   }
-  function guidePdf(share) {
+  function guidePdf() {
     guideRun(function (text) {
       return guideFiles(text).then(function (f) {
-        if (!share) {
-          window.GuidePaper.download(f.pdf, f.names.pdf);
-          return 'PDF를 저장했어요 — 표지와 ' + f.pageCount + '장이 한 파일에 들어 있어요.';
-        }
-        return window.GuidePaper.shareList([{ blob: f.pdf, name: f.names.pdf, type: 'application/pdf' }], '윤이세 감정서')
-          .then(function (ok) {
-            if (ok) return '공유 창을 열었어요 — 카톡을 고르시면 됩니다.';
-            window.GuidePaper.download(f.pdf, f.names.pdf);
-            return '이 브라우저에서는 PDF 공유가 안 돼서 파일로 저장했어요.';
-          });
+        window.GuidePaper.download(f.pdf, f.names.pdf);
+        return 'PDF를 저장했어요 — 표지까지 ' + f.pageCount + '장이 한 파일에 들어 있어요.';
       });
     });
   }
-  function guidePages(share) {
+  function guidePages() {
     guideRun(function (text) {
       return guideFiles(text).then(function (f) {
-        if (share) {
+        window.GuidePaper.download(f.zip, f.names.pagesZip);
+        return '표지까지 ' + f.pageCount + '장을 ZIP 하나로 저장했어요 — 풀면 순서대로 들어 있어요.';
+      });
+    });
+  }
+  /* 감정서 보내기 — PDF / 페이지별 이미지 고르고 기기 공유창으로.
+     공유창을 열었다고 ‘전달 완료’가 되지는 않는다(그건 윤이세가 직접 누른다). */
+  function guideSend() {
+    guideRun(function (text) {
+      return guideFiles(text).then(function (f) {
+        return window.GuidePaper.chooser({ pageCount: f.pageCount }).then(function (pick) {
+          if (!pick) return '';
+          if (pick === 'pdf') {
+            return window.GuidePaper.shareList([{ blob: f.pdf, name: f.names.pdf, type: 'application/pdf' }], '윤이세 감정서')
+              .then(function (ok) {
+                if (ok) return '공유 창을 열었어요 — 카톡을 고르시면 PDF로 전달돼요.';
+                window.GuidePaper.download(f.pdf, f.names.pdf);
+                window.GuidePaper.notice({
+                  title: '파일 공유가 제한된 브라우저예요', copyUrl: true,
+                  html: '<p>지금 브라우저에서는 직접 파일 공유가 제한됩니다. <b>PDF 파일은 방금 저장했어요.</b></p>' +
+                    '<p>카카오톡 대화상에서 <b>＋ → 파일</b>을 눌러 방금 저장한 PDF를 보내 주세요.</p>' +
+                    '<p>상담 링크: <b>윤이세 1:1 맞춤 상담 알아보기 →</b> ' + window.GuidePaper.APPLY_URL + '</p>'
+                });
+                return '';
+              });
+          }
           var items = f.pages.map(function (b, i) { return { blob: b, name: f.names.page(i + 1), type: 'image/png' }; });
           return window.GuidePaper.shareList(items, '윤이세 감정서').then(function (ok) {
             if (ok) return '페이지 ' + f.pageCount + '장을 공유 창으로 넘겼어요 — 순서대로 보내 주세요.';
             window.GuidePaper.download(f.zip, f.names.pagesZip);
-            return '이 브라우저에서는 여러 장 공유가 안 돼서 ZIP으로 저장했어요.';
+            window.GuidePaper.notice({
+              title: '여러 장 공유가 제한된 브라우저예요', copyUrl: true,
+              html: '<p>지금 브라우저에서는 사진 여러 장을 한 번에 공유할 수 없습니다. <b>페이지 ' + f.pageCount + '장을 ZIP으로 저장했어요.</b></p>' +
+                '<p>카카오톡 대화상에서 <b>＋ → 파일</b>로 ZIP을 보내거나, ZIP을 풀어 사진으로 한 장씩 보내 주세요.</p>' +
+                '<p>사진에는 링크를 넣을 수 없어요. 함께 보낼 문구: <b>윤이세 1:1 맞춤 상담 알아보기 → ' + window.GuidePaper.APPLY_URL + '</b></p>'
+            });
+            return '';
           });
-        }
-        window.GuidePaper.download(f.zip, f.names.pagesZip);
-        return '페이지 ' + f.pageCount + '장을 ZIP 하나로 저장했어요 — 풀면 순서대로 들어 있어요.';
+        });
       });
     });
   }
@@ -1170,16 +1210,17 @@
         if (guideOf(mem.claim)) openGuide();
         return;
       }
-      var gc = e.target.closest('#sgCover');
-      if (gc) { e.preventDefault(); guideCover(); return; }
+      var gc = e.target.closest('#sgPreview');
+      if (gc) { e.preventDefault(); guidePreview(0); return; }
       var gp = e.target.closest('#sgPdf');
-      if (gp) { e.preventDefault(); guidePdf(false); return; }
-      var gps = e.target.closest('#sgPdfShare');
-      if (gps) { e.preventDefault(); guidePdf(true); return; }
-      var gpg = e.target.closest('#sgPagesSave');
-      if (gpg) { e.preventDefault(); guidePages(false); return; }
-      var gpgs = e.target.closest('#sgPagesShare');
-      if (gpgs) { e.preventDefault(); guidePages(true); return; }
+      if (gp) { e.preventDefault(); guidePdf(); return; }
+      var gpg = e.target.closest('#sgPages');
+      if (gpg) { e.preventDefault(); guidePages(); return; }
+      var gsend = e.target.closest('#sgSend');
+      if (gsend) { e.preventDefault(); guideSend(); return; }
+      /* 팝업 안의 장을 누르면 그 장부터 크게 */
+      var gcv = e.target.closest('#sgPages canvas');
+      if (gcv) { e.preventDefault(); guidePreview(Number(gcv.getAttribute('data-i') || 0)); return; }
       var gclose = e.target.closest('#specialGuideModal [data-sgguide-close]');
       if (gclose) { e.preventDefault(); closeGuide(); return; }
       var more = e.target.closest('#specialGiftMore');
