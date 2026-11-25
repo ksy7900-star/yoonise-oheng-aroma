@@ -6588,6 +6588,33 @@ body:not(.is-result) #heroJump { display: none !important; }
 #burnCard .acc__chev, #careCard .acc__chev { position: relative; z-index: 2; }
 
 /* ══════════════════════════════════════════════════════════════════════
+   2026-11-26 — `MORE · 더 해 볼 것` 4칸 → 상세 카드 한 장만
+   · 위 4칸은 그대로, 아래 상세 카드 3장(#burnCard · #duoCard · #careCard)은
+     hidden 으로 처음부터 화면에서 완전히 사라진다 — 자리도 차지하지 않는다
+     (style.css 위쪽 `[hidden] { display: none !important; }`).
+   · 4칸에서 고른 카드 하나만 펼쳐 보이고, 카드 맨 위 `닫기` 로 다시 숨는다.
+   ══════════════════════════════════════════════════════════════════════ */
+.more-back {
+  position: relative; z-index: 3;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin: -6px 0 7px; padding: 4px 10px 5px;
+  border-radius: 999px; border: 1px solid rgba(199, 154, 78, .34);
+  background: #FCF8F1; color: #8A6B37;
+  font-family: var(--sans); font-size: 10.5px; font-weight: 800;
+  letter-spacing: -.02em; line-height: 1.35; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.more-back span { font-size: 10px; line-height: 1; }
+.more-back:active { transform: scale(.97); }
+#duoCard .more-back { align-self: flex-start; margin: 0 0 2px 2px; background: rgba(255, 255, 255, .96); }
+/* 케미 · 수호부적 — 한 기능만 열었을 때는 머리 줄을 감추고 그 카드 한 장만 */
+#duoCard.is-more-chemi .acc__head--duo,
+#duoCard.is-more-talis .acc__head--duo { display: none !important; }
+#duoCard.is-more-chemi .duo__card--talis,
+#duoCard.is-more-talis .duo__card--chemi { display: none !important; }
+#burnCard, #duoCard, #careCard { scroll-margin-top: 12px; }
+
+/* ══════════════════════════════════════════════════════════════════════
    2026-11-24 #18494 — '이번 달 나의 타이밍' 안의 달력 접기·펼치기
    달력 자체는 그대로 두고 이 자리에서 보이기만 한다.
    ══════════════════════════════════════════════════════════════════════ */

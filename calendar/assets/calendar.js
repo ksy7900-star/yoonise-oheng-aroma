@@ -5427,23 +5427,23 @@
       if (k !== except) accSet(k, false);
     });
   }
-  /** 2×2 에서 고른 카드만 펼친다 — 다른 카드는 접는다 */
-  function accOpenOnly(key) {
-    if (!ACC_CARDS[key]) return;
-    accCloseAll(key);
-    accSet(key, true);
-  }
+  /** 2×2 에서 고른 카드만 펼친다 — 다른 카드는 접는다
+      2026-11-26: 카드가 숨김(hidden) 상태로 시작하므로, 펼치기만 하고 끝나면
+      보이지 않는 카드가 열려 있게 된다. 그래서 숨김 해제까지 moreOpen 이 맡는다. */
+  function accOpenOnly(key) { moreOpen(key, false); }
   function accIsOpen(key) {
     var cfg = ACC_CARDS[key];
     var card = cfg ? $(cfg.card) : null;
     return !!(card && card.classList.contains('is-acc-open'));
   }
   function accToggle(key) {
-    if (accIsOpen(key)) accSet(key, false);
-    else accOpenOnly(key);
+    /* 2026-11-26 — 상세 카드는 4칸에서만 열린다. 머리를 다시 누르면 접는 대신
+       카드째 감추고 4칸 자리로 돌아간다(`닫기` 와 같은 동작). */
+    if (accIsOpen(key)) moreClose();
+    else moreOpen(key, true);
   }
   function accInit() {
-    Object.keys(ACC_CARDS).forEach(function (k) { accSet(k, false); });   // 기본 접힘
+    moreHideAll();   // 2026-11-26 — 상세 카드 3장은 처음엔 화면에서 완전히 숨김(자리도 안 차지)
     var heads = $$('[data-acc-head]');
     heads.forEach(function (h) {
       if (h.getAttribute('data-acc-bound') === '1') return;
@@ -5457,6 +5457,53 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); accToggle(key); }
       });
     });
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     2026-11-26 — `MORE · 더 해 볼 것` 4칸 → 상세 카드 한 장만 (김나영 님 요청)
+     · 위 4칸(액운 태우기 · 케미테스트 · 1년 수호부적 · 긴급 개운템)은 그대로 두고,
+       아래 상세 카드 3장(#burnCard · #duoCard · #careCard)은 처음엔 hidden.
+       hidden 은 화면에서 완전히 사라져 빈 자리도 남기지 않는다(style.css `[hidden]`).
+     · 4칸 중 하나를 누르면 그 카드만 펼친 채로 보여 주고 그 자리로 부드럽게 내려간다.
+       다른 카드는 다시 hidden — 한 번에 한 기능만.
+     · 케미테스트 · 1년 수호부적은 한 카드(#duoCard) 안의 두 장이라, 누른 쪽 한 장만
+       남기고 머리 줄은 감춘다(.is-more-chemi / .is-more-talis).
+     · 카드 위 `닫기`(data-more-close)를 누르면 다시 hidden 으로 돌리고 4칸 자리로 올라간다.
+     · 카드 안의 내용·저장값·결제·카톡 연결·이용 횟수 로직은 하나도 건드리지 않는다.
+     ══════════════════════════════════════════════════════════════════ */
+  function morePane(key) { var c = ACC_CARDS[key]; return c ? $(c.card) : null; }
+  function moreSolo(kind) {
+    var duo = $('#duoCard');
+    if (!duo) return;
+    duo.classList.toggle('is-more-chemi', kind === 'chemi');
+    duo.classList.toggle('is-more-talis', kind === 'talis');
+  }
+  function moreHideAll() {
+    Object.keys(ACC_CARDS).forEach(function (k) {
+      var el = morePane(k);
+      if (el) el.hidden = true;
+      accSet(k, false);
+    });
+    moreSolo('');
+  }
+  /** kind: 'burn' | 'chemi' | 'talis' | 'care' | 'duo'(두 장 함께 — 예전 바로가기용) */
+  function moreOpen(kind, scroll) {
+    var key = (kind === 'chemi' || kind === 'talis') ? 'duo' : kind;
+    if (!ACC_CARDS[key]) return null;
+    Object.keys(ACC_CARDS).forEach(function (k) {
+      var el = morePane(k);
+      if (el) el.hidden = (k !== key);
+    });
+    accCloseAll(key);
+    accSet(key, true);
+    moreSolo(kind === 'chemi' || kind === 'talis' ? kind : '');
+    var target = morePane(key);
+    if (target && scroll !== false) jumpToEl(target);
+    return target;
+  }
+  function moreClose() {
+    moreHideAll();
+    jumpToEl($('#quick2x2'));
   }
 
   /* ══════════════════════════════════════════════════════════════════
@@ -5529,15 +5576,15 @@
   }
 
   function jumpToSection(kind) {
-    /* #18405 — 기능 카드는 접힌 채 시작한다. 그 카드로 가라는 요청이면 먼저 펼친다. */
-    if (kind === 'burn' || kind === 'care' || kind === 'duo') accOpenOnly(kind);
+    /* 2026-11-26 — 상세 카드는 기본 숨김. 그 기능으로 가라는 요청이면
+       한 장만 펼쳐 보이고 그 자리로 내려간다(moreOpen 이 스크롤까지 한다). */
+    if (kind === 'burn' || kind === 'care' || kind === 'duo') { moreOpen(kind, true); return; }
     /* #18494 — 달력은 접혀 있어도 '달력'을 눌렀으면 먼저 펼친다.
        #18624 — 이 자동 펼침은 저장하지 않는다. 기본값은 계속 '접힘'이고,
        기억은 접기/펼치기 버튼으로 사용자가 고른 것만 남긴다. */
     if (kind === 'cal') calSetFold(true, false, false);
-    var target = kind === 'burn' ? $('#burnCard')
-      : (kind === 'care' ? $('#careCard') : (kind === 'duo' ? $('#duoCard') : null));
-    if (!target && kind === 'cal') {
+    var target = null;
+    if (kind === 'cal') {
       var grid = $('#calGrid');
       target = (grid && grid.closest) ? (grid.closest('.card--cal') || grid) : grid;
     }
@@ -9441,11 +9488,19 @@
       });
     }
 
-    /* #18405 — 케미테스트는 ./member/ 로 바로 가는 링크 그대로 둔다.
-       페이지 안 카드(#duoCard)도 같이 펼쳐 두어, 돌아왔을 때 접힌 채 어색하지 않게. */
+    /* 2026-11-26 — '더 해 볼 것' 4칸 → 그 기능의 상세 카드 한 장만 펼친다.
+       케미테스트 칸은 ./member/ 로 가던 링크를 그대로 둔다(스크립트가 막히면 링크대로 이동).
+       /member/ 로 가는 길은 카드 안 '너랑나랑 케미테스트' 링크에 그대로 남아 있다. */
     document.addEventListener('click', function (e) {
-      if (!e.target.closest || !e.target.closest('.q2--chemi')) return;
-      accOpenOnly('duo');
+      if (!e.target.closest || !e.target.closest('[data-more]')) return;
+      e.preventDefault();
+      moreOpen(e.target.closest('[data-more]').getAttribute('data-more'), true);
+    });
+    /* 상세 카드 맨 위 `닫기` — 다시 숨기고 4칸 자리로 올라간다 */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('[data-more-close]')) return;
+      e.preventDefault();
+      moreClose();
     });
 
     // 🧭 4칸 바로가기 · 2×2 바로가기 — 달력 · 액운 태우기 · 긴급 개운템 (케미테스트는 링크)
@@ -9518,8 +9573,10 @@
     document.addEventListener('click', function (e) {
       if (!e.target.closest || !e.target.closest('#talisGet, [data-talis-get]')) return;
       e.preventDefault();
-      accOpenOnly('duo');                      // #18405 — 페이지 안 수호부적 카드를 먼저 펼친다
-      if (e.target.closest('[data-talis-get]')) jumpToEl($('#duoCard') || $('#talisGet'));
+      /* 2026-11-26 — 카드가 숨겨져 있으면(4칸을 거치지 않고 들어온 경우) 먼저 펼친다 */
+      var duoPane = $('#duoCard');
+      if (duoPane && duoPane.hidden) moreOpen('talis', false);
+      if (e.target.closest('[data-talis-get]') && duoPane) jumpToEl(duoPane);
       if (state.repTalis && hasSbSession()) { openTalisModal(); return; }
       location.href = './member/?autologin=1&next=talis';
     });
