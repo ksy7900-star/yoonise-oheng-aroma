@@ -298,9 +298,9 @@
   }
 
   function offerHTML() {
-    return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+    return '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
       '<h2 class="sgift__title" id="specialGiftTitle">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</h2>' +
-      '<p class="sgift__desc">첫 사주 입력 후 72시간 이내에 이용권을 구매하시면, 윤이세가 직접 확인한 나만의 맞춤 운세 활용 가이드를 카카오톡으로 선물해 드립니다.</p>' +
+      '<p class="sgift__desc">첫 사주 입력 후 3일(72시간) 이내에 이용권을 구매하시면, 윤이세가 직접 확인한 나만의 맞춤 운세 활용 가이드를 카카오톡으로 선물해 드립니다.</p>' +
       '<p class="sgift__sub">7일 무료 체험은 그대로 이용할 수 있어요.</p>' +
       '<div class="sgift__clock"><span class="sgift__clock-k">특별 선물까지 남은 시간</span>' +
       '<b class="sgift__clock-v" id="specialGiftLeft">—</b></div>' +
@@ -452,12 +452,12 @@
     }).join('');
 
     var head = delivered
-      ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+      ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
         '<h2 class="sgift__title" id="specialGiftTitle">전달 완료</h2>' +
         '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 카카오톡으로 보내 드렸습니다.</p>' +
         '<p class="sgift__sub">카카오톡 채널 대화를 확인해 주세요.</p>'
       : (needConsent
-        ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+        ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
           '<h2 class="sgift__title" id="specialGiftTitle">' + (d.status === 'eligible'
             ? '특별 선물 대상자로 확인되었습니다!'
             : '맞춤 운세 가이드가 접수됐어요') + '</h2>' +
@@ -466,21 +466,21 @@
             : '한 번만 동의해 주시면 윤이세가 사주를 읽고 가이드를 만들어 카카오톡으로 보내 드려요.') + '</p>' +
           '<p class="sgift__sub">동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없습니다.</p>'
         : (step === 2
-        ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+        ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
           '<h2 class="sgift__title" id="specialGiftTitle">가이드를 준비하고 있어요</h2>' +
           '<p class="sgift__desc">윤이세가 사주를 직접 읽고 가이드를 고치는 중입니다.</p>' +
           '<p class="sgift__sub">준비가 끝나면 카카오톡으로 개별 전달해 드립니다.</p>'
         : (auto
-          ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+          ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
             '<h2 class="sgift__title" id="specialGiftTitle">맞춤 운세 가이드가 자동 접수되었어요!</h2>' +
             '<p class="sgift__desc">결제가 확인되어 별도 신청 없이 접수됐어요. 윤이세가 확인 후 카카오톡으로 보내드릴게요.</p>' +
             '<p class="sgift__sub">보내드릴 때 카카오톡으로 연락드려요. 원하지 않으시면 카카오톡으로 알려 주세요.</p>'
           : (step === 1
-            ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+            ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
               '<h2 class="sgift__title" id="specialGiftTitle">신청이 접수되었습니다</h2>' +
               '<p class="sgift__desc">윤이세가 신청 내용을 확인하고 있어요.</p>' +
               '<p class="sgift__sub">가이드가 준비되면 카카오톡으로 개별 전달해 드립니다.</p>'
-            : '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+            : '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
               '<h2 class="sgift__title" id="specialGiftTitle">특별 선물 대상자로 확인되었습니다!</h2>' +
               '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.</p>' +
               '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 후 카카오톡으로 개별 전달해 드립니다.</p>'))));
@@ -542,7 +542,7 @@
 
   /* ── 도착한 가이드 카드 ─────────────────────────────── */
   function guideArrivedHTML(d) {
-    return '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+    return '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
       '<h2 class="sgift__title" id="specialGiftTitle">윤이세 선생님의 2027 맞춤 가이드가 도착했어요</h2>' +
       '<p class="sgift__sub">오늘 닫아 두셔도 괜찮아요. 며칠 뒤에 다시 들어와도 같은 가이드를 언제든 다시 열어 볼 수 있습니다.</p>' +
       '<div class="sgift__acts"><button type="button" class="sgift__buy" id="specialGuideOpen">가이드 열기</button></div>';
@@ -717,7 +717,7 @@
       body.innerHTML =
         '<p class="sgiftm__eyebrow">GIFT · FIRST 3 DAYS</p>' +
         '<h2 class="sgiftm__title" id="specialModalTitle">윤이세가 직접 전하는<br><em>2027년 맞춤 운세 활용 가이드</em></h2>' +
-        '<p class="sgiftm__sub">첫 사주 입력 후 72시간 이내에 이용권을 구매하신 분께, 다섯 가지로 정리한 맞춤 가이드를 카카오톡으로 보내 드립니다.</p>' +
+        '<p class="sgiftm__sub">첫 사주 입력 후 3일(72시간) 이내에 이용권을 구매하신 분께, 다섯 가지로 정리한 맞춤 가이드를 카카오톡으로 보내 드립니다.</p>' +
         '<ol class="sgiftm__list">' + GUIDE_FIVE.map(function (x, i) {
           return '<li><span class="sgiftm__n">' + (i + 1) + '</span><span class="sgiftm__b"><b>' + x[0] + '</b><span>' + x[1] + '</span></span></li>';
         }).join('') + '</ol>' +
