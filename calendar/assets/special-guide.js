@@ -192,7 +192,7 @@
     return '<div class="shopgift" id="shopGift">' +
       '<p class="shopgift__k">🎁 첫 3일 결제 고객 특별 혜택</p>' +
       '<p class="shopgift__t">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드</p>' +
-      '<p class="shopgift__d">결제하시면 1년 달력이 바로 열리고, 72시간 맞춤 운세 가이드도 자동 접수돼요. 별도 신청 없이 카카오톡으로 보내드려요.</p>' +
+      '<p class="shopgift__d">결제하시면 1년 달력이 바로 열려요. 72시간 맞춤 운세 가이드는 결제 후 화면에서 한 번 동의해 주시면 카카오톡으로 보내드려요. (동의하지 않아도 이용에는 아무 영향이 없어요.)</p>' +
       '</div>';
   }
 
@@ -350,13 +350,15 @@
       p_code: code.code || '',
       p_phone: code.phone || null,
       p_ymd: code.ymd || null,
-      p_gender: code.gender || null,
-      p_saju: buildSnapshot(c.res)
+      p_gender: code.gender || null
     };
+    /* 사주 스냅샷은 여기서 보내지 않는다 — 고객이 동의한 뒤(special_guide_saju)에만 서버에 저장된다. */
     rpc('claim_or_get_special_guide', body).then(function (d) {
       mem.busy = false;
       mem.claim = d || null;
       try { localStorage.setItem(CLAIM_KEY, JSON.stringify(d || null)); } catch (e) { }
+      /* 동의는 이미 있는데 사주가 아직 없으면(옛 화면에서 동의한 건·전송 실패) 이 기기 사주로 채운다 */
+      if (d && d.ok && d.claim_no && d.consent_at) fillSaju(d);
       renderClaim();
     }, function () {
       mem.busy = false;
@@ -435,8 +437,11 @@
     var delivered = d.status === 'delivered';
     var applied = !!d.apply_clicked_at;
     /* 결제와 함께 자동 접수된 건 — 고객이 '신청하기'를 누른 적이 없다.
-       화면은 '자동 접수됐어요'로 열고, 신청 버튼 대신 선택형 카톡 채널 링크만 둔다. */
-    var auto = !delivered && step <= 1 && (d.eligibility_source === 'payment_auto' || d.auto_applied === true);
+       화면은 '자동 접수됐어요'로 열고, 신청 버튼 대신 선택형 카톡 채널 링크만 둔다.
+       단, 개인정보 동의(consent_at)가 없으면 아직 서버에 저장하지 않은 상태이므로 '동의' 카드로 연다. */
+    var auto = !delivered && step <= 1 && !!d.consent_at &&
+      (d.eligibility_source === 'payment_auto' || d.auto_applied === true);
+    var needConsent = !delivered && !auto && d.status !== 'cancelled' && !d.consent_at;
     var no = d.claim_no || '';
     var labels = auto ? ['자동 접수', '접수 완료', '준비 중', '전달 완료'] : STEP_LABEL;
     var steps = labels.map(function (label, i) {
@@ -450,7 +455,16 @@
         '<h2 class="sgift__title" id="specialGiftTitle">전달 완료</h2>' +
         '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 카카오톡으로 보내 드렸습니다.</p>' +
         '<p class="sgift__sub">카카오톡 채널 대화를 확인해 주세요.</p>'
-      : (step === 2
+      : (needConsent
+        ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
+          '<h2 class="sgift__title" id="specialGiftTitle">' + (d.status === 'eligible'
+            ? '특별 선물 대상자로 확인되었습니다!'
+            : '맞춤 운세 가이드가 접수됐어요') + '</h2>' +
+          '<p class="sgift__desc">' + (d.status === 'eligible'
+            ? '윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.'
+            : '한 번만 동의해 주시면 윤이세가 사주를 읽고 가이드를 만들어 카카오톡으로 보내 드려요.') + '</p>' +
+          '<p class="sgift__sub">동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없습니다.</p>'
+        : (step === 2
         ? '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
           '<h2 class="sgift__title" id="specialGiftTitle">가이드를 준비하고 있어요</h2>' +
           '<p class="sgift__desc">윤이세가 사주를 직접 읽고 가이드를 고치는 중입니다.</p>' +
@@ -468,10 +482,12 @@
             : '<p class="sgift__label">🎁 첫 3일 특별 선물</p>' +
               '<h2 class="sgift__title" id="specialGiftTitle">특별 선물 대상자로 확인되었습니다!</h2>' +
               '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.</p>' +
-              '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 후 카카오톡으로 개별 전달해 드립니다.</p>')));
+              '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 후 카카오톡으로 개별 전달해 드립니다.</p>'))));
 
     var statusLine = '';
-    if (auto) {
+    if (needConsent) {
+      statusLine = '<p class="sgift__state">위 동의에 체크하면 진행할 수 있어요. 동의 전에는 사주 자료가 서버에 저장되지 않아요.</p>';
+    } else if (auto) {
       statusLine = '<p class="sgift__state">🟢 자동 접수 완료 — 결제와 함께 접수됐어요. 가이드가 준비되면 카카오톡으로 보내 드립니다.</p>';
     } else if (d.status === 'submitted') {
       statusLine = '<p class="sgift__state">신청이 접수되었습니다. 윤이세가 확인하고 있어요.</p>';
@@ -488,33 +504,35 @@
 
     /* ── 개인정보 동의 — 일반 달력('기기에만 저장')과 별개 단계 ────────
        특별 가이드는 이름·생년월일시·성별·사주 분석 데이터를 서버에 저장하고 운영자가 확인해야 만들 수 있다.
-       그 사실을 이 단계에서 따로 동의받고, 동의 시각을 서버에 남긴다(consent_at).
-       동의하지 않으면 신청 버튼이 진행되지 않고, 서버도 mark_applied 를 거부한다. */
-    var canApplyStep = !delivered && d.status === 'eligible';
+       동의 시점에 consent_at 과 사주 스냅샷이 함께 저장되고, 동의 전에는 서버에 아무것도 저장되지 않는다.
+       동의하지 않으면 진행 버튼이 잠기고, 서버도 동의 없는 기록·전달을 거부한다. */
     var consented = !!d.consent_at || !!mem.consentChecked;
-    var consent = canApplyStep
+    var consent = needConsent
       ? '<label class="sgift__consent" for="sgiftConsent">' +
         '<input type="checkbox" id="sgiftConsent" data-sgift-consent' + (consented ? ' checked' : '') + '>' +
-        '<span class="sgift__consent-t"><b>[필수]</b> 특별 가이드 제작·전달을 위해 이름·생년월일시·성별·사주 분석 데이터를 서버에 저장하고 윤이세 운영자가 확인하는 데 동의합니다</span>' +
-        '</label>' +
-        (d.consent_at ? '<p class="sgift__consent-n">동의한 시각은 서버에 함께 남습니다.</p>' : '')
+        '<span class="sgift__consent-t"><b>[필수]</b> 특별 가이드 제작·전달을 위해 이름·생년월일시·성별·사주 분석 자료를 서버에 저장하고 윤이세가 확인하는 데 동의합니다 (보유: 가이드 전달 후 1년, 요청 시 지체 없이 삭제 · <b>동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없습니다.</b>)</span>' +
+        '</label>'
       : '';
 
     var btn = delivered
       ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기</a>'
       : (auto
         ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기 (선택)</a>'
-        : '<button type="button" class="sgift__buy" id="specialApply"' + (canApplyStep && !consented ? ' disabled' : '') + '>' +
-          (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기') + '</button>');
+        : '<button type="button" class="sgift__buy" id="specialApply"' + (needConsent && !consented ? ' disabled' : '') + '>' +
+          (needConsent
+            ? (d.status === 'eligible' ? '🎁 동의하고 특별 가이드 신청하기' : '🎁 동의하고 특별 가이드 받기')
+            : (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기')) + '</button>');
 
     var hint = delivered ? '' :
       '<p class="sgift__hint">' + (auto
         ? '가이드는 윤이세가 확인한 뒤 카카오톡으로 보내드려요. 문의는 카카오톡 채널로 남겨 주세요.'
-        : (canApplyStep && !consented
-          ? '위 동의에 체크하면 신청할 수 있어요.'
+        : (needConsent && !consented
+          ? '위 동의에 체크하면 진행할 수 있어요.'
+          : (needConsent
+            ? '동의하면 사주 분석 자료가 서버에 저장되고, 가이드가 준비되는 대로 카카오톡으로 보내 드려요.'
           : (applied
             ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
-            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'))) + '</p>';
+            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')))) + '</p>';
 
     return head +
       '<ol class="sgift__steps">' + steps + '</ol>' +
@@ -548,7 +566,7 @@
       '<p class="sgguide__meta">' + esc(d.claim_no || '') + (when ? ' · ' + when + ' 도착' : '') + '</p>' +
       '<div class="sgguide__paper">' + esc(text) + '</div>' +
       '<div class="sgguide__sign">' +
-        '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261125i" alt="윤이세 직인" loading="lazy">' +
+        '<img class="sgguide__seal" src="assets/yoonise-seal.png?v=20261126a" alt="윤이세 직인" loading="lazy">' +
         '<p class="sgguide__name">— 윤이세</p>' +
         '<p class="sgguide__note">가이드는 카카오톡으로도 보내 드려요. 언제든 다시 열어 보실 수 있어요.</p>' +
       '</div>' +
@@ -582,25 +600,74 @@
   }
   function stopPoll() { if (mem.pollTimer) { clearInterval(mem.pollTimer); mem.pollTimer = 0; } }
 
+  /* ── 동의 → 사주 저장 ───────────────────────────────
+     고객이 동의를 누른 시점에만 consent_at 과 사주 스냅샷을 서버에 남긴다.
+     (결제·코드 확인만으로는 서버에 사주가 저장되지 않는다) */
+  function saveConsent(d, cb) {
+    rpc('special_guide_consent', { p_client_uid: ensureUid(), p_claim_no: d.claim_no, p_consent: true })
+      .then(function (r) {
+        if (!r || !r.ok || !r.consent_at) {
+          if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('동의 기록을 남기지 못했어요 — 잠시 뒤 다시 눌러 주세요');
+          return;
+        }
+        d.consent_at = r.consent_at;
+        if (mem.claim) mem.claim.consent_at = r.consent_at;
+        try { localStorage.setItem(CLAIM_KEY, JSON.stringify(mem.claim || d)); } catch (e) { }
+        cb();
+      }, function () {
+        if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('연결을 확인한 뒤 다시 눌러 주세요');
+      });
+  }
+  /** 동의가 확인된 뒤, 이 기기의 사주 계산 자료를 서버에 저장한다(동의 전이면 서버가 거부). */
+  function fillSaju(d, cb) {
+    var c = cal();
+    var snap = (c && c.res) ? buildSnapshot(c.res) : null;
+    if (!snap) { if (cb) cb(); return; }
+    rpc('special_guide_saju', { p_client_uid: ensureUid(), p_claim_no: d.claim_no, p_saju: snap })
+      .then(function () { if (cb) cb(); }, function () { if (cb) cb(); });
+  }
+
   function applyClaim() {
     var d = mem.claim;
     var c = cal();
     if (!d || !d.claim_no) return;
-    /* 동의 없이는 신청이 진행되지 않는다 — 화면(버튼 비활성)과 서버(mark_applied 거부)가 함께 막는다. */
-    if (d.status === 'eligible' && !d.consent_at && !mem.consentChecked) {
-      var box = $('#sgiftConsent');
-      if (box) { try { box.focus({ preventScroll: true }); } catch (e) { } }
-      if (window.YoonCalendar && window.YoonCalendar.toast) {
-        window.YoonCalendar.toast('아래 동의에 체크해야 신청할 수 있어요');
+    /* 동의 없이는 진행되지 않는다 — 화면(버튼 비활성)과 서버(동의 없는 저장·전달 거부)가 함께 막는다. */
+    if (!d.consent_at && d.status !== 'delivered' && d.status !== 'cancelled') {
+      if (!mem.consentChecked) {
+        var box = $('#sgiftConsent');
+        if (box) { try { box.focus({ preventScroll: true }); } catch (e) { } }
+        if (window.YoonCalendar && window.YoonCalendar.toast) {
+          window.YoonCalendar.toast('아래 동의에 체크해야 진행할 수 있어요');
+        }
+        return;
       }
+      saveConsent(d, function () {
+        fillSaju(d, function () {
+          /* 이미 접수된 건(결제 자동 접수 등)은 동의만 남기면 끝 — 가이드는 윤이세가 준비해 카톡으로 보낸다 */
+          if (d.status !== 'eligible') {
+            if (window.YoonCalendar && window.YoonCalendar.toast) {
+              window.YoonCalendar.toast('동의를 남겼어요 — 가이드가 준비되면 카카오톡으로 보내 드려요');
+            }
+            renderClaim();
+            return;
+          }
+          sendApply(d);
+        });
+      });
       return;
     }
+    sendApply(d);
+  }
+
+  /** 신청 문구 복사 + 카카오톡 채널 열기 (접수 전 'eligible' 건) */
+  function sendApply(d) {
+    var c = cal();
     var code = (c && c.code) || {};
     var msg = [
       '[윤이세 특별 가이드 신청]',
       '2027년 맞춤 운세 활용 가이드 신청합니다.',
       '신청번호: ' + d.claim_no,
-      '결제 확인 정보: ' + (code.phone ? maskPhone(code.phone) : '휴대폰 번호 확인 완료') + ' / 1년 전체 패스',
+      '결제 확인 정보: ' + (code.phone ? maskPhone(code.phone) : '휴대폰 번호 확인 완료'),
       '궁금한 점 또는 요청사항(선택): '
     ].join('\n');
 
@@ -612,41 +679,23 @@
       else window.open(KAKAO, '_blank', 'noopener');
     };
 
-    var mark = function () {
-      rpc('special_guide_mark_applied', { p_client_uid: ensureUid(), p_claim_no: d.claim_no })
-        .then(function (r) {
-          if (r && r.apply_clicked_at) {
-            mem.claim.apply_clicked_at = r.apply_clicked_at;
-          }
-          if (window.YoonCalendar && window.YoonCalendar.copyText) {
-            window.YoonCalendar.copyText(msg, go);
-          } else {
-            try { navigator.clipboard.writeText(msg).then(function () { go(true); }, function () { go(false); }); }
-            catch (e) { go(false); }
-          }
-          renderClaim();
-        }, function () {
-          if (window.YoonCalendar && window.YoonCalendar.copyText) window.YoonCalendar.copyText(msg, go);
-          else go(false);
-        });
-    };
-
-    /* 동의 시각을 먼저 남기고 → 신청 표시 → 카톡 열기. 동의 기록이 실패하면 카톡을 열지 않는다. */
-    if (d.status === 'eligible' && !d.consent_at) {
-      rpc('special_guide_consent', { p_client_uid: ensureUid(), p_claim_no: d.claim_no, p_consent: true })
-        .then(function (r) {
-          if (!r || !r.ok || !r.consent_at) {
-            if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('동의 기록을 남기지 못했어요 — 잠시 뒤 다시 눌러 주세요');
-            return;
-          }
-          mem.claim.consent_at = r.consent_at;
-          mark();
-        }, function () {
-          if (window.YoonCalendar && window.YoonCalendar.toast) window.YoonCalendar.toast('연결을 확인한 뒤 다시 눌러 주세요');
-        });
-      return;
-    }
-    mark();
+    rpc('special_guide_mark_applied', { p_client_uid: ensureUid(), p_claim_no: d.claim_no })
+      .then(function (r) {
+        if (r && r.apply_clicked_at) {
+          d.apply_clicked_at = r.apply_clicked_at;
+          if (mem.claim) mem.claim.apply_clicked_at = r.apply_clicked_at;
+        }
+        if (window.YoonCalendar && window.YoonCalendar.copyText) {
+          window.YoonCalendar.copyText(msg, go);
+        } else {
+          try { navigator.clipboard.writeText(msg).then(function () { go(true); }, function () { go(false); }); }
+          catch (e) { go(false); }
+        }
+        renderClaim();
+      }, function () {
+        if (window.YoonCalendar && window.YoonCalendar.copyText) window.YoonCalendar.copyText(msg, go);
+        else go(false);
+      });
   }
 
   function maskPhone(d) {
@@ -891,9 +940,12 @@
       }
       var h = $('#specialGift .sgift__hint');
       if (h) {
+        var alreadyIn = !!(mem.claim && (mem.claim.status !== 'eligible'));
         h.textContent = mem.consentChecked
-          ? '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
-          : '위 동의에 체크하면 신청할 수 있어요.';
+          ? (alreadyIn
+            ? '동의하면 사주 분석 자료가 서버에 저장되고, 가이드가 준비되는 대로 카카오톡으로 보내 드려요.'
+            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')
+          : '위 동의에 체크하면 진행할 수 있어요.';
       }
     });
     document.addEventListener('visibilitychange', function () {

@@ -12,13 +12,13 @@
   var RANGE_TO = '2027-12-31';   // 2027년 1~12월 1년 패스 — 달력은 2026-11 ~ 2027-12까지
   var TERMS_FROM = '2026-01-01';  // 세운(입춘) 기준을 잡기 위해 앞해 입춘부터 절기 표를 만든다
   /* ── 무료 체험 잠금 스위치 (판매 세팅은 이 두 줄만 보면 됩니다) ──────────
-     FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). **첫 방문일(달력을 처음 연 날)부터 딱 FREE_DAYS일**만 열리고,
+     FREE_TRIAL_ENABLED = true  → 판매 모드(2026-11-20부터). **첫 사주 입력일(달력이 처음 열린 날)부터 딱 FREE_DAYS일**만 열리고,
         그 뒤로는 오늘 날짜까지 전부 잠겨 어두운 잠금 카드(정미년 패스 · 1:1 원포인트 리딩 안내)가 뜹니다.
         (매일 '오늘~모레'로 굴러가면 결제 없이 계속 무료로 쓸 수 있어서 2026-11-21 첫 방문일 고정으로 바꿨습니다.)
      FREE_TRIAL_ENABLED = false → 모든 날짜(과거 포함)를 누르면 잠금 카드 없이 부적 팝업·1.5초 의식·스티커·처방이 바로 열립니다(테스트용).
      → 무료 일수를 바꾸려면 FREE_DAYS 도 함께 조정합니다. (index.html 문구도 js-trial/js-trial-over/js-open 로 자동 전환) */
   var FREE_TRIAL_ENABLED = true;
-  var FREE_DAYS_BASE = 7;   // 그냥 들어온 손님 — 첫 방문일 포함 7일(D+0~D+6). 8일째부터 잠금(2026-11-23 확정)
+  var FREE_DAYS_BASE = 7;   // 그냥 들어온 손님 — 첫 사주 입력일 포함 7일(D+0~D+6). 8일째부터 잠금(2026-11-23 확정)
   /* ── 2.0 첫 화면 (2026-11-23 김나영 님 확정) ────────────────────────────
      "3초 만에 이해되는 첫 화면" — ① 미니 원국 1줄 ② 명리 원국 기반 3줄 후킹
      ③ 3색 달력(⚠️ 조심 · ⚡ 기운 UP · 🌿 실속·정리) ④ 🔥 오늘 액운 태우기.
@@ -164,7 +164,7 @@
   var MONTH_DAYS = 30;   // 1개월 이용권 — 코드를 넣은 날부터 30일
   var UNLOCK_KEY = 'yoonise.timing.unlock.v2';          // { code, tier, ymd, gender } JSON
   var LEGACY_UNLOCK_KEY = 'yoonise.timing.unlock.v1';   // 예전 고정 코드 시절 값 ('pass' | 'allinone' | 'diary' | '1')
-  var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 방문일(YYYY-MM-DD) — 무료 7일은 이 날부터 고정
+  var TRIAL_KEY = 'yoonise.timing.trialStart.v1';       // 첫 사주 입력일(YYYY-MM-DD) — 무료 7일은 이 날부터 고정
   var FIRST_SAJU_KEY = 'yoonise.timing.firstSaju.v1';   // 사주를 처음 넣은 날 — 2027 해석 첫날 펼침 판단 (2026-11-24 #18370)
   var CAL_FOLD_KEY = 'yoonise.timing.calFold.v2';   // 이번 달 달력 본문 접힘(1 펼침 · 0 접힘) — 사용자가 버튼으로 고른 상태만 기억, 저장값이 없으면 접힘 (#18624)
   var CAL_FOLD_LEGACY_KEY = 'yoonise.timing.calFold.v1';   // #18494 '기본 펼침' 시절 키 — 값은 읽지 않고 지우기만 한다 (#18624)
@@ -698,16 +698,16 @@
     if (v > hi) v = hi;
     return { y: Math.floor(v / 12), m: (v % 12) + 1 };
   }
-  /* ── 무료 체험 기간 — '오늘~모레'로 굴러가지 않고 첫 방문일에 못 박는다 ──────────
-     달력이 처음 열린 날(첫 방문일)을 localStorage 에 남기고, 그 날부터 FREE_DAYS일만 무료.
-     4일째부터는 오늘 날짜까지 전부 잠겨서, 눌러도 부적 대신 결제 안내가 나온다. */
+  /* ── 무료 체험 기간 — '오늘~모레'로 굴러가지 않고 첫 사주 입력일에 못 박는다 ──────────
+     사주를 넣어 달력이 처음 열린 날을 localStorage 에 남기고, 그 날부터 FREE_DAYS일만 무료.
+     8일째부터는 오늘 날짜까지 전부 잠겨서, 눌러도 부적 대신 결제 안내가 나온다. */
   function trialStartISO() {
     if (!FREE_TRIAL_ENABLED || state.unlocked || !state.todayISO || !state.res) return '';
     if (trialStartMemo) return trialStartMemo;
     var v = '';
     try { v = localStorage.getItem(TRIAL_KEY) || ''; } catch (e) { v = ''; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) {
-      v = state.todayISO;                     // 달력을 처음 연 날 = 첫 방문일 (이미 있으면 그대로 둔다)
+      v = state.todayISO;                     // 달력이 처음 열린 날 = 첫 사주 입력일 (이미 있으면 그대로 둔다)
       try { localStorage.setItem(TRIAL_KEY, v); } catch (e) {}
     }
     trialStartMemo = v;
@@ -1260,6 +1260,10 @@
   /** 코드가 맞지 않을 때 — 무엇이 문제인지에 맞춰 한 줄로 알려 준다 */
   function codeErrorText(p) {
     if (p.status === 'offline') return '지금은 코드 확인이 잠시 안 돼요 — 연결을 확인하고 다시 눌러 주세요.';
+    if (p.status === 'throttled') {
+      var min = Math.max(1, Math.ceil(Number(p.retry_after || 300) / 60));
+      return '시도가 잠시 많았어요 — ' + min + '분 뒤에 다시 넣어 주세요. 맞는 코드는 바로 열려요.';
+    }
     if (p.status === 'needphone') return '결제하신 휴대폰 번호도 함께 넣어 주세요 — 번호와 6자리 코드가 맞아야 열려요.';
     if (p.status === 'mismatch') {
       return p.phone
@@ -2082,16 +2086,18 @@
           '</button>';
       }).join('') + '</div>'
       : '<div class="dbook__empty">' +
-        '<p class="dbook__empty-title">아직 남긴 한 줄이 없어요</p>' +
-        '<p class="dbook__empty-sub">달력에서 날짜를 눌러 오늘의 질문에 한 줄만 남겨 보세요.<br>한 줄이 쌓이면 1년 뒤 내 기록이 됩니다.</p>' +
+        '<p class="dbook__empty-title">아직 남긴 기록이 없어요</p>' +
+        '<p class="dbook__empty-sub">날짜를 눌러 저녁 1초 체크를 남기면 여기에 쌓여요.<br>백업 파일로 기기를 옮길 수도 있어요.</p>' +
         '</div>';
 
     return '<p class="modal__eyebrow">MY REFLECTIONS · 성찰 기록</p>' +
       '<h2 class="dbook__title" id="dbookTitle">📖 내 성찰 기록</h2>' +
       '<p class="dbook__sub">' + (keys.length
-        ? '<b>' + keys.length + '일</b>의 한 줄이 쌓였어요. 날짜를 누르면 그날 팝업이 열려요.'
+        ? '<b>' + keys.length + '일</b>의 기록이 쌓였어요. 날짜를 누르면 그날 팝업이 열려요.'
         : '아직 남긴 기록이 없어요.') + '</p>' +
-      '<button type="button" class="dbook__today" data-dbook-today>+ 오늘 성찰 바로 쓰기</button>' +
+      /* ＋ 오늘 성찰 바로 쓰기 — 성찰 입력칸이 있는 팝업(briefModalHTML)으로 이어질 때만.
+         간결 버전(LITE_MODE) 팝업에는 성찰칸이 없어 눌러도 아무 일이 없으므로 아예 그리지 않는다(2026-11-25). */
+      (LITE_MODE ? '' : '<button type="button" class="dbook__today" data-dbook-today>+ 오늘 성찰 바로 쓰기</button>') +
       (keys.length
         ? '<div class="dbook__acts">' +
           '<button type="button" class="dbook__act" data-diary-copy>전체 복사</button>' +
@@ -2104,7 +2110,7 @@
       '<button type="button" class="dbook__act" data-backup-up>↩️ 백업 파일로 복원</button>' +
       '</div>' +
       body +
-      '<p class="dbook__note">백업 파일(.json)에는 <b>사주 정보 · 저녁 1초 체크 · 성찰 기록 · 부적 도장</b>이 함께 담겨요. 입장 코드는 담기지 않으니 새 기기에서 카톡 코드를 다시 넣어 주세요. 기록은 <b>이 브라우저에만</b> 저장되니 기기를 바꾸기 전에 한 번 저장해 두세요.</p>'; 
+      '<p class="dbook__note">백업 파일(.json)에는 <b>사주 정보 · 저녁 1초 체크 · 성찰 기록</b>이 함께 담겨요. 입장 코드는 담기지 않으니 새 기기에서 카톡 코드를 다시 넣어 주세요. 기록은 <b>이 브라우저에만</b> 저장되니 기기를 바꾸기 전에 한 번 저장해 두세요.</p>'; 
   }
   function openDiaryBook() {
     if (!dbookEl) return;
@@ -2239,7 +2245,7 @@
     }, 180);
   }
   /** 사용법 팝업 맨 위 '무료 체험' 배지 — 판매 모드이고 아직 코드를 넣지 않았을 때만.
-      날짜는 첫 방문일~첫 방문일+2(FREE_DAYS=3)로 고정. 체험이 끝났으면 종료 안내로 바꾼다. */
+      날짜는 첫 사주 입력일~+6일(FREE_DAYS=7)로 고정. 체험이 끝났으면 종료 안내로 바꾼다. */
   function syncGuideTrial() {
     syncGuideCopy();
     var el = $('#guideTrial');
@@ -4866,7 +4872,9 @@
     }
     var bookBtn = $('#diaryBookBtn');
     /* 2026-11-24 — 성찰 기록이 없어도 저녁 1초 체크가 있다면 백업할 것이 있다.
-       (백업/복원은 글을 쓴 사람만의 것이 아니라, 이 기기에 쌓인 기록 전부의 것이다) */
+       (백업/복원은 글을 쓴 사람만의 것이 아니라, 이 기기에 쌓인 기록 전부의 것이다)
+       2026-11-25 — 성찰 기록이 없어도 책을 열어 둔다. 기기를 바꿔 온 손님이 '백업 파일로 복원'을
+       찾을 수 있는 길이 이 책 안에만 있어서, 기록 수만으로 버튼을 숨기면 복원 길이 막힌다. */
     if (bookBtn) bookBtn.hidden = !(diaryAllowed() || diaryCount() > 0 || nightCountAll() > 0);
   }
 
@@ -5333,7 +5341,7 @@
         ? '<p class="lock__title">🔒 이 날은 친구 초대 보상 기간 밖이에요<br>1년 전체 패스를 열면 전부 열려요</p>'
         : (over
           ? '<p class="lock__title">🔒 무료 ' + FREE_DAYS + '일 체험이 끝났어요<br>1년 전체 패스를 열면 전부 열려요</p>'
-          : '<p class="lock__title">🔒 ' + FREE_DAYS + '일 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>')) +
+          : '<p class="lock__title">🔒 <b>사주를 넣은 날부터 ' + FREE_DAYS + '일</b> 무료 체험 이후<br>2026년 11월 ~ 2027년 12월 전체 열기</p>')) +
       '<p class="lock__sub">1년 전체 패스 하나예요 — 결제하시면 <b>결제하신 휴대폰 번호 + 6자리 코드</b>를 카톡으로 보내 드려요</p>' +
       diaryTrialLine() +
       '<p class="lock__early">지금 열면 2026년 11월부터 2027년 12월까지 14개월이 한 번에 열려요!</p>' +
@@ -5813,6 +5821,8 @@
     } catch (e) { }
     try { return localStorage.getItem('yoonise.clientUid.v1') || ''; } catch (e) { return ''; }
   }
+  /* 2026-11-25 — 사주 스냅샷은 결제 확인 단계에서 보내지 않는다(고객 동의 후 special_guide_saju 로만 저장).
+     이 함수는 지금 부르는 곳이 없지만, 동의 후 전송 경로에서 다시 쓸 수 있어 남겨 둔다. */
   function paySajuSnapshot() {
     try {
       if (window.SpecialGuide && typeof SpecialGuide.buildSnapshot === 'function') return SpecialGuide.buildSnapshot(state.res);
@@ -5953,8 +5963,7 @@
     var body = { p_phone: o.phone, p_order_no: o.order_no };
     var uid = clientUid();
     if (uid) body.p_client_uid = uid;
-    var snap = paySajuSnapshot();
-    if (snap) body.p_saju = snap;
+    /* 사주 스냅샷은 보내지 않는다 — 고객이 특별 가이드에 동의한 뒤에만 서버에 저장된다(2026-11-25) */
     var opt = {
       method: 'POST', cache: 'no-store',
       headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
@@ -6076,8 +6085,7 @@
     var body = { p_phone: o.phone, p_order_no: o.order_no };
     var uid = clientUid();
     if (uid) body.p_client_uid = uid;
-    var snap = paySajuSnapshot();
-    if (snap) body.p_saju = snap;
+    /* 사주 스냅샷은 보내지 않는다 — 동의 후 special_guide_saju 로만 저장된다 */
     var opt = {
       method: 'POST', cache: 'no-store',
       headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
@@ -6113,7 +6121,7 @@
       '<input class="payphone__inp" id="payPhone-' + esc(item) + '" type="tel" inputmode="numeric"' +
       ' autocomplete="tel" maxlength="13" placeholder="010-1234-5678"' +
       ' value="' + esc(payPhone) + '" data-pay-phone="' + esc(item) + '">' +
-      '<span class="payphone__hint">결제 확인에만 써요 · 이 기기에만 기억해요</span>' +
+      '<span class="payphone__hint">결제 확인에만 써요 · 이 기기에 기억해요</span>' +
       (consult ? '' :
         /* 결제 절차 한 줄 — 번호를 적은 김에 다음에 무슨 일이 일어나는지 한눈에 (2026-11-24 → 11-25 자동 열림) */
         '<span class="payphone__flow"><b>결제 완료</b> → <b>1년 전체 바로 열림</b> <span class="payphone__flow-n">코드 입력 없이</span></span>') +
@@ -6631,7 +6639,7 @@
   function trialShopNote() {
     if (!FREE_TRIAL_ENABLED || state.unlocked) return '';
     if (trialOver()) return '<p class="shop__trial">무료 ' + FREE_DAYS + '일 체험은 끝났어요 — 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
-    return '<p class="shop__trial">먼저 <b>' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
+    return '<p class="shop__trial">먼저 <b>사주를 넣은 날부터 ' + FREE_DAYS + '일 무료 체험</b>으로 충분히 써 보세요. 결제하시면 바로 1년 전체가 열려요 <b>코드 입력 없이</b>. (계좌이체는 입금 확인 뒤 코드로 안내드려요.)</p>';
   }
   /** 가격 한 줄 — 정가 취소선 → 14,900원 → 하루 40원 (팝업·잠금 카드 공통) */
   function passPriceHTML(prefix) {

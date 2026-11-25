@@ -533,6 +533,8 @@ body.locked{overflow:hidden}
       </div>
       <p class="state" id="sgState">불러오는 중…</p>
       <ul class="sglist" id="sgList" hidden></ul>
+      <!-- 개인정보 보유 1년 — 지난 접수 정리 (2026-11-25). 결제·거래 원장은 남긴다. -->
+      <button type="button" id="sgCleanup" style="margin-top:12px;width:100%;font-size:13px;font-weight:700;padding:11px 12px;border-radius:10px;border:1px solid rgba(190,18,60,.22);background:#FFF1F2;color:#BE123C;cursor:pointer">🧹 1년 지난 개인정보 정리</button>
     </section>
 
     <section class="card" id="sgDetail" hidden></section>
@@ -630,10 +632,12 @@ body.locked{overflow:hidden}
       </div>
     </section>
 
-    <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.</p>
+    <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.<br>
+      <b>개인정보</b> — 결제로 자동 접수된 건은 고객이 화면에서 <b>동의</b>를 누른 뒤에만 이름·사주 자료가 서버에 저장되고(<b>동의 X</b>인 건은 저장되지 않음), 동의 없이는 <b>전달 완료</b>를 누를 수 없어요. 접수 정보는 접수일부터 1년 뒤 위 <b>1년 지난 개인정보 정리</b>로 지우고, 고객이 삭제를 요청하면 상세의 <b>고객 요청 · 개인정보 지우기</b>로 바로 지웁니다. 결제·거래 기록(주문·입장 코드 원장)은 전자상거래법에 따라 5년간 남기고 지우지 않아요.</p>
   </div><!-- /tabSpecial -->
 
-  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261125n<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+  <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126a<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
+
 </div>
 
 <script>
@@ -910,6 +914,11 @@ body.locked{overflow:hidden}
       }
       if (st === 'needphone') {
         out.innerHTML = 'ℹ️ 6자리 코드는 <b>손님 휴대폰 번호</b>와 함께 확인해요. 위에 번호를 먼저 넣어 주세요.';
+        return;
+      }
+      if (st === 'throttled') {
+        var mins = Math.max(1, Math.ceil(Number((d && d.retry_after) || 300) / 60));
+        out.innerHTML = '⏳ 이 번호로 시도가 많아 잠시 잠겼어요 — <b>' + mins + '분 뒤</b>에 다시 확인할 수 있어요. (손님도 같은 번호로는 그동안 넣을 수 없어요. 맞는 코드는 시간이 지나면 바로 열립니다.)';
         return;
       }
       if (st === 'mismatch') {
@@ -1467,6 +1476,8 @@ body.locked{overflow:hidden}
           '<span class="c-sub">' + esc(r.product || '') + (r.contact ? ' · ' + esc(r.contact) : '') + '</span>' +
         '</summary>' +
         '<pre>' + esc(r.body || '') + '</pre>' +
+        /* 고객이 신청서 삭제를 요청했을 때 — 이름·연락처·사주 내용을 바로 지운다 (2026-11-25) */
+        '<p class="c-del"><button type="button" data-consult-del="' + esc(String(r.id || '')) + '" style="margin:8px 0 0;font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;border:1px solid rgba(190,18,60,.22);background:#FFF1F2;color:#BE123C;cursor:pointer">🗑️ 개인정보 지우기</button></p>' +
         '</details></li>';
     }).join('');
     ul.hidden = false;
@@ -1485,6 +1496,24 @@ body.locked{overflow:hidden}
   $('#tabBtnSpecial').addEventListener('click', function () { showTab('special'); });
   $('#mReload').addEventListener('click', load);
   $('#cReload').addEventListener('click', loadConsults);
+  $('#cList').addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('[data-consult-del]') : null;
+    if (!b) return;
+    e.preventDefault();
+    var id = b.getAttribute('data-consult-del');
+    if (!id) return;
+    if (!confirm('이 신청서(이름·연락처·사주 내용)를 지웁니다. 되돌릴 수 없어요. 지울까요?')) return;
+    b.disabled = true;
+    sbRpc('admin_purge_personal_data', { p_pin: pin(), p_kind: 'consult', p_ref: String(id) }).then(function (d) {
+      b.disabled = false;
+      if (!d || !d.ok) { alert('지우지 못했어요 · ' + ((d && d.error) || '다시 시도해 주세요')); return; }
+      toast('신청서 개인정보를 지웠어요.');
+      loadConsults();
+    }, function (err) {
+      b.disabled = false;
+      alert('지우지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  });
   $('.tabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     var order = ['issue', 'consults', 'members', 'special'];
@@ -1503,7 +1532,7 @@ body.locked{overflow:hidden}
 </script>
 
 <!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
-<script src="../assets/special-guide-draft.js?v=20261125n"></script>
+<script src="../assets/special-guide-draft.js?v=20261126a"></script>
 <script>
 (function () {
   'use strict';
@@ -1752,7 +1781,8 @@ body.locked{overflow:hidden}
 
     var canConfirm = !r.confirmed_at && r.status !== 'delivered';
     var canPrepare = ['submitted', 'awaiting_draft', 'draft_ready'].indexOf(r.status) >= 0;
-    var canDeliver = !!r.approved_at && r.status !== 'delivered' && hasDraft;
+    /* 2026-11-25 — 고객 동의(consent_at)가 없으면 전달 완료를 열지 않는다(서버도 거부). */
+    var canDeliver = !!r.approved_at && r.status !== 'delivered' && hasDraft && !!r.consent_at;
 
     box.innerHTML =
       '<div class="sgdetail__head"><div><span class="sgbadge sgbadge--' + (r.needs_review && r.status === 'cancelled' ? 'review' : s.cls) + '">' + esc(s.label) + '</span>' +
@@ -1769,7 +1799,9 @@ body.locked{overflow:hidden}
       '</div>' +
       (snap ? card +
         (r.needs_review ? '<p class="sgmc__warn">확인 필요 · ' + esc(r.review_note || '결제 시각을 확인해 주세요') + '</p>' : '')
-        : '<p class="note">사주 계산 자료가 없습니다. 고객이 코드를 다시 넣으면 함께 저장됩니다.</p>') +
+        : '<p class="note">사주 계산 자료가 없습니다. ' + (r.consent_at
+          ? '고객이 코드를 다시 넣거나 잠시 뒤 화면을 다시 열면 함께 저장됩니다.'
+          : '고객이 특별 가이드에 동의한 뒤에만 서버에 저장됩니다(현재 동의 전).') + '</p>') +
       '<div class="sgedit"><label for="sgDraft">가이드 본문 (AI 초안 → 윤이세 수정)</label>' +
       '<textarea id="sgDraft" spellcheck="false" placeholder="위의 ‘AI 초안 다시 만들기’를 누르면 고정 뼈대(도입·마음 짚기·1~5번)로 초안이 채워집니다.">' + esc(draft) + '</textarea>' +
       '<p class="sgforbid" id="sgForbid" hidden></p>' +
@@ -1784,8 +1816,14 @@ body.locked{overflow:hidden}
       (canPrepare ? '<button type="button" class="full" id="sgPrepare">준비 중으로 표시</button>' : '') +
       (r.status !== 'delivered' && r.status !== 'cancelled' ? '<button type="button" class="full" id="sgDeliver"' + (canDeliver ? '' : ' disabled') + '>전달 완료 (카톡 발송 후)</button>' : '') +
       (r.status !== 'cancelled' ? '<button type="button" class="warn full" id="sgCancel">취소 또는 확인 필요로 표시</button>' : '<button type="button" class="full" id="sgReopen">되돌리기</button>') +
+      /* 고객이 개인정보 삭제를 요청했을 때 — 이 접수 건(사주·번호·가이드 본문)을 바로 지운다 (2026-11-25) */
+      '<button type="button" class="warn full" id="sgPurge" style="margin-top:10px">🗑️ 고객 요청 · 개인정보 지우기</button>' +
       '</div>' +
-      (!canDeliver && r.status !== 'delivered' ? '<p class="note" id="sgDeliverNote" style="text-align:center">전달 완료는 <b>승인</b> 뒤에만 누를 수 있어요.</p>' : '');
+      (!canDeliver && r.status !== 'delivered'
+        ? '<p class="note" id="sgDeliverNote" style="text-align:center">' + (!r.consent_at
+          ? '전달 완료는 <b>고객 동의</b> 뒤에만 누를 수 있어요. 고객 화면에 동의 카드가 떠 있습니다.'
+          : '전달 완료는 <b>승인</b> 뒤에만 누를 수 있어요.') + '</p>'
+        : '');
 
     box.hidden = false;
     checkForbidden();
@@ -1798,7 +1836,7 @@ body.locked{overflow:hidden}
      종이 위에 도장을 떠온 것처럼 보이게 했다. 카카오톡 복붙용 글에는 이미지를 섞지 않고,
      글을 붙여 넣은 다음 이 이미지를 사진으로 한 장 더 보내면 마무리가 된다. */
   function signBlock() {
-    var src = '../assets/yoonise-seal.png?v=20261125i';
+    var src = '../assets/yoonise-seal.png?v=20261126a';
     return '<div class="sgsign">' +
       '<p class="sgsign__k">가이드 마지막 장</p>' +
       '<img class="sgsign__seal" src="' + src + '" alt="윤이세 직인" width="720" height="381" loading="lazy">' +
@@ -1904,6 +1942,42 @@ body.locked{overflow:hidden}
     });
   }
 
+  /* ── 고객 삭제 요청 — 접수 건 개인정보 파기 ───────────────────
+     결제·거래 원장(payapp_orders · 입장 코드 원장)은 법령 보존 대상이라 지우지 않고 그대로 남긴다. */
+  function purgeClaim() {
+    if (!current || !current.claim_no || busy) return;
+    var who = (current.saju_snapshot && current.saju_snapshot.name) ? current.saju_snapshot.name + ' 님' : (current.phone_or_email || '이 접수 건');
+    if (!confirm(who + '의 특별 가이드 접수 정보(사주·번호·가이드 본문)를 지웁니다.\n되돌릴 수 없어요. 지울까요?')) return;
+    busy = true;
+    rpc('admin_purge_personal_data', { p_pin: pin(), p_kind: 'special_guide', p_ref: current.claim_no }).then(function (d) {
+      busy = false;
+      if (!d || !d.ok) { alert('지우지 못했어요 · ' + ((d && d.error) || '다시 시도해 주세요')); return; }
+      $('#sgDetail').hidden = true;
+      current = null;
+      load();
+      toast('이 접수 건의 개인정보를 지웠어요.');
+    }, function (err) {
+      busy = false;
+      alert('지우지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  }
+
+  /* ── 1년 지난 개인정보 정리 — 접수일부터 1년 지난 접수만 지운다 ──────── */
+  function cleanupOld() {
+    if (busy) return;
+    if (!confirm('접수일부터 1년이 지난 특별 가이드·상담 접수 정보를 지웁니다.\n결제·거래 기록은 남아요. 지금 정리할까요?')) return;
+    busy = true;
+    rpc('admin_cleanup_personal_data', { p_pin: pin() }).then(function (d) {
+      busy = false;
+      if (!d || !d.ok) { alert('정리하지 못했어요 · ' + ((d && d.error) || '다시 시도해 주세요')); return; }
+      load();
+      toast('1년 지난 접수 정보를 정리했어요 · 특별 가이드 ' + (d.special_guide_requests || 0) + '건, 상담 ' + (d.consult_requests || 0) + '건');
+    }, function (err) {
+      busy = false;
+      alert('정리하지 못했어요 · ' + (err.message || '연결을 확인해 주세요'));
+    });
+  }
+
   function saveDraft(approve) {
     if (!current || !current.claim_no) return;
     /* 목록 새로고침(busy)과 별개로 둔다 — 초안 자동 저장이 도는 동안 눌러도 승인이 삼켜지지 않게 */
@@ -1993,6 +2067,8 @@ body.locked{overflow:hidden}
         return;
       }
       if (id === 'sgConfirm') { act('confirm'); return; }
+      if (id === 'sgPurge') { purgeClaim(); return; }
+      if (id === 'sgCleanup') { cleanupOld(); return; }
       if (id === 'sgPrepare') { act('awaiting_draft'); return; }
       if (id === 'sgDeliver') { act('deliver'); return; }
       if (id === 'sgCancel') { act('cancel', { note: '운영자 취소' }); return; }

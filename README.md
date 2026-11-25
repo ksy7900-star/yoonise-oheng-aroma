@@ -2900,6 +2900,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - `special_guide_mark_applied` 는 서버에서도 `consent_at` 이 없으면 `consent_required` 로 거부한다(화면·서버 이중 차단).
 - 일반 달력의 `기기에만 저장` 문구와 충돌하지 않게, 동의는 **특별 가이드 신청 단계에서만** 받는다.
 - `/calendar/yoon-key/` 상세에 `신청 동의 시각`(없으면 `동의 기록 없음`)과 목록 배지 `동의 O / 동의 X` 를 추가했다.
+- ⚠️ **2026-11-25 §128에서 바뀜** — 결제 자동 접수 건도 동의 전에는 `consent_at`·사주 스냅샷을 남기지 않고, 동의는 `eligible`·`submitted`·준비 중 단계에서 받으며, 동의 없는 건은 `deliver` 가 거부된다.
 
 ### 3. 5가지 항목 제목 통일 + 초안 개인화 (`special-guide-draft.js`)
 - 제목을 요청서 §8 원문으로 통일: `1. 2027년 가장 집중해야 할 인생 영역 1가지` / `2. 나에게 기회가 되는 상황과 활용 방법` / `3. 반복적으로 주의해야 할 나의 행동 패턴` / `4. 2027년을 위한 실천 조언 3가지` / `5. 윤이세가 전하는 개인 맞춤 응원 메시지`.
@@ -3313,6 +3314,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 6. **예약이 실패하거나 계좌이체·상담이면** 지금까지처럼 결제 후 복귀 배너 + 카톡 코드 길이 그대로 남아 있다(카드결제 JS가 안 실린 환경 포함).
 7. **문구** — 결제 팝업: `📱 결제 확인용 휴대폰 번호`, 절차 한 줄 `결제 완료 → 1년 전체 바로 열림 (코드 입력 없이)`, 목록 `결제하면 바로 열려요 — 카드결제는 코드 입력 없이, 이 기기에 바로 저장`, 72시간 카드 `결제하시면 1년 달력이 바로 열리고, 72시간 맞춤 운세 가이드도 자동 접수돼요. 별도 신청 없이 카카오톡으로 보내드려요.`
 8. **72시간 특별 선물 자동 접수** — 결제가 확인되면 고객이 `신청하기`를 누르지 않아도 `special_guide_requests` 에 `status='submitted'` 로 접수된다(첫 사주 입력 72시간 이내일 때). `eligibility_source='payment_auto'`, 동의·접수·확인 시각을 결제 시각으로 남기고, 고객 카드는 **`맞춤 운세 가이드가 자동 접수되었어요!` + 신청번호(`YG-2027-…`) + `카카오톡 채널 열기 (선택)`**, 단계 이름표는 `자동 접수 → 접수 완료 → 준비 중 → 전달 완료`. 관리자 🎁 특별 가이드 탭은 같은 행을 `신청 접수`로 보여 주고 목록에 `결제 시 자동 접수` 로 표시한다(초안 생성 → 승인 → 전달 완료 흐름 그대로).
+   - ⚠️ **2026-11-25 §128에서 바뀜** — 자동 접수는 그대로지만 `consent_at`·사주 스냅샷·`apply_clicked_at`·`confirmed_at` 을 자동으로 남기지 않는다. 고객이 동의 카드에서 동의한 시점에만 `consent_at` 과 사주가 저장되고, 동의 없는 건은 `전달 완료`가 거부된다.
 9. **관리자 알림** — 자동 접수가 생기면 기존 텔레그램 봇(`notify-consult-telegram` v5)이 `🎁 맞춤 운세 가이드 · 자동 접수` 메시지(신청번호·성함·연락처·결제시각·사주 8글자 요약)를 보낸다. `/apply/` 신청서 알림 문구·경로는 그대로다.
 10. **손대지 않은 것** — `/calendar/yoon-key/` 6자리 코드(1개월 `M`·이벤트·수동 발급)와 `verify_entry_code`/`issue_entry_code`, 계좌이체 안내, 사주 계산·일진 문구·1초 체크·액운 태우기·케미·`/apply/` 접수.
 
@@ -3684,3 +3686,64 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 - 아이폰 사파리에서 `download` 가 막히면 이미지가 새 창으로 열린다. 그때는 공유 버튼(카톡 → 사진 저장)이나 길게 눌러 저장하면 된다.
 - PNG 는 2.8MB 안팎이다. 카톡 사진 전송에는 문제없지만, 더 가볍게 보내야 하면 JPG 저장 버튼을 따로 붙일 수 있다(대표님 확인 뒤).
 - 본문에서 마지막 `— 윤이세` 줄을 지웠어도 이미지에는 서명과 직인이 들어간다(버튼 이름이 ‘도장 포함’이라 그렇게 두었다). 빼야 하면 알려 주세요.
+
+## §132. 🛡️ 4대 보완 — 개인정보 1년·삭제 / 사주는 동의 후 저장 / 성찰 죽은 버튼 정리 / 입장 코드 시도 제한 (?v=20261126a, 2026-11-25 · **배포 완료**)
+
+자산: `calendar/assets/calendar.js` · `calendar/assets/special-guide.js` · `calendar/index.html` · `apply/index.html` · `calendar/yoon-key/index.html` · `calendar/sw.js` · Supabase(`special_guide_auto_apply`·`special_guide_consent`·`admin_special_guide_action`·`claim_or_get_special_guide`·`claim_paid_unlock`·`payapp_feedback`·`verify_entry_code` 수정 + `entry_code_guard`·`special_guide_saju`·`cleanup_expired_personal_data`·`admin_purge_personal_data`·`admin_cleanup_personal_data` 신규) · 버전 **`20261126a`**(sw.js `VERSION` 동시)
+
+> 2026-11-25 **배포 완료** (`?v=20261126a`). 작업 중 같은 저장소에 §128~§131(감정서) 커밋 15개가 먼저 올라와 있어, 이 절의 7개 파일은 그 위(`aab2881`)로 rebase 해 합쳤다 — § 번호가 겹쳐 이 절은 **§132** 다. `calendar/yoon-key/index.html` 은 감정서 카드(§129~§131)를 그대로 두고 이 절의 동의 잠금·삭제 버튼·정리 버튼만 더한 상태다. DB 변경은 시그니처·반환 필드가 그대로라 배포 전 라이브 화면도 그대로 동작한다(아래 4번 '하위 호환' 참고).
+
+### 1. 개인정보 보유 1년 · 삭제 처리 (문구만이 아니라 실제 삭제)
+- **보유 기간** — 사주·이름·연락처가 서버에 남는 접수는 **접수일부터 1년**(`special_guide_requests`, `consult_requests`). 결제·거래 기록(`payapp_orders`, `orders`, `entry_code_ledger`)은 전자상거래법 보존 대상이라 **5년**으로 따로 두고 정리 대상에서 제외한다.
+- **1년 경과 정리** — DB 함수 `cleanup_expired_personal_data()`: 1년 지난 특별 가이드 접수·상담 신청서·기기 익명키(1년)·입장 코드 시도 기록(30일)을 지우고 건수를 돌려준다. `anon` 실행 권한은 회수. 관리자에서는 `admin_cleanup_personal_data(pin)` → `/calendar/yoon-key/` 🎁 특별 가이드 탭의 **🧹 1년 지난 개인정보 정리** 버튼.
+- **고객 삭제 요청 즉시 파기** — DB 함수 `admin_purge_personal_data(pin, kind, ref)`: `kind='special_guide'`(신청번호) / `'consult'`(신청서 id) / `'device'`(기기키) 행을 바로 지운다(결제 원장은 남김). 화면: 특별 가이드 상세의 **🗑️ 고객 요청 · 개인정보 지우기**, 📋 신청서 목록의 **🗑️ 개인정보 지우기**.
+- **문구 10곳 정리** — `calendar/index.html` 사주 입력 아래 안내(197) · 히어로 사실(72) · 개인정보처리방침(806) · 웰컴 팝업(859) · 결제 번호칸(`calendar.js` phoneFieldHTML) · 특별 가이드 동의 카드 · 결제 팝업 선물 카드 · `apply/index.html` 동의(587)·안내(620). "기기에만 저장/서버로 보내지 않습니다"를 **실제 전송·저장 구조**대로 바꿨다(① 결제·코드 확인 시 번호·주문번호, ② 특별 가이드 **동의 시** 이름·생년월일시·성별·사주 분석 자료, ③ 상담 접수 시 입력 내용·연락처).
+
+### 2. 사주 스냅샷은 **동의한 뒤에만** 서버 저장 (선택안 B)
+- `special_guide_auto_apply`(결제 자동 접수)는 이제 `saju_snapshot = null`, `consent_at = null`, `apply_clicked_at = null`, `confirmed_at = null` 로 행을 만든다. `status='submitted'` 와 `review_note='결제 자동 접수 · 고객 동의 대기'` 는 유지 — **자동 접수 기능 자체는 그대로**다.
+- `claim_or_get_special_guide` 도 `p_saju` 를 받기만 하고 저장하지 않는다(시그니처는 그대로, 새 코드는 보내지도 않는다: `calendar.js` `claim_paid_unlock` 본문·`special-guide.js` `code` 조회).
+- 새 RPC **`special_guide_saju(client_uid, claim_no, saju)`** — `consent_at` 이 없으면 `consent_required`, 이미 스냅샷이 있으면 덮어쓰지 않는다.
+- `special_guide_consent` 는 동의를 **접수 전(`eligible`)·자동 접수(`submitted`)·준비 중 단계**에서 한 번 받는다(전달·취소된 건은 덮어쓰지 않음). 고객 카드는 동의가 없으면 `동의하고 특별 가이드 신청하기`(접수 전) / `동의하고 특별 가이드 받기`(자동 접수) 로 열리고, 동의를 누른 그 순간 `consent_at` + 사주 스냅샷이 함께 저장된다.
+- `admin_special_guide_action` 의 **`deliver`(전달 완료)는 `consent_at` 이 없으면 `consent_required` 로 거부**한다. `approve` 는 그대로. 관리자 화면도 동의 없는 건의 전달 버튼을 잠근다.
+- **결제·열기는 선물 로직과 분리** — `claim_paid_unlock`·`payapp_feedback` 안의 `special_guide_auto_apply` 호출을 `begin … exception when others then sg := null; end;` 로 감쌌다. 선물 쪽에 오류가 나도 결제 확인·1년 열기·결제 기록은 그대로 진행된다.
+- 옛 화면(캐시된 `20261125i`)으로 결제한 손님이 동의 없이 `자동 접수` 카드를 보는 짧은 구간은, 새 화면을 여는 순간 **동의 카드로 바뀌고** 동의하면 그 기기의 사주가 채워진다(자가 복구).
+
+### 3. 성찰·부적 — 죽은 길만 정리 (권장안 B)
+- `📖 내 성찰 기록 보기` 안의 **`＋ 오늘 성찰 바로 쓰기`** 버튼은 간결 버전(`LITE_MODE`)에서 **그리지 않는다**(눌러도 성찰칸이 없는 팝업으로 가 아무 일이 없던 버튼).
+- 빈 목록 문구 → `아직 남긴 기록이 없어요 / 날짜를 눌러 저녁 1초 체크를 남기면 여기에 쌓여요. 백업 파일로 기기를 옮길 수도 있어요.`
+- 백업 안내에서 `부적 도장` 삭제(파일에는 계속 담기지만 화면엔 표시하지 않는 값이라 문구만 정리, 백업 키·저장 로직 그대로).
+- **기록 조회·백업·복원·1초 체크는 그대로.** 책 버튼 노출 조건도 그대로 뒀다 — 기록 0건 기기에서도 `백업 파일로 복원` 이 이 책 안에만 있어서, 기록 수로 버튼을 숨기면 기기를 바꿔 온 손님의 복원 길이 막힌다(계획 B-1은 이 이유로 적용하지 않음).
+- `diary.v1`·`stamp.v1`·`night.v1`·`diary.try.v1` 은 읽기만 한다. 삭제·초기화·키 변경 없음.
+
+### 4. 입장 코드 시도 제한 (`verify_entry_code`)
+- 새 표 **`entry_code_guard`** (RLS 비공개 + `anon`/`authenticated` 권한 회수). 키는 **번호·생년월일·IP 원문이 아니라 md5 해시**(`ph:` / `sj:` / `ip:`).
+- 규칙 — **10분 안 5회 실패 → 5분 제한**(제한이 풀린 뒤 또 5회면 30분, 그다음 60분) · **IP 기준 10분 30회 → 10분 제한** · 실패 응답에 `pg_sleep(0.35)`. `empty`·`format`·`needphone` 은 세지 않고(정상 사용자의 실수), **성공하면 그 요청자의 실패 카운터를 지운다**(IP 카운터는 성공으로 지우지 않음).
+- 제한은 **DB 함수 안**에 있다 → 새로고침·직접 API 호출·`claim_or_get_special_guide` 우회 모두 같은 카운터를 본다. 특정 **코드 자체를 잠그지 않는다**(요청자 번호/생년월일 기준). 이미 발급된 코드·`code_digits`·`code_salt`·`code_sign`·18자리 규칙은 손대지 않았다.
+- 반환은 HTTP 200 + `{status:'throttled', retry_after:<초>}` → 손님 화면 `시도가 잠시 많았어요 — N분 뒤에 다시 넣어 주세요`, 관리자 `받은 코드 확인`에도 같은 안내.
+
+### 5. 무료 체험 문구 통일
+- 기준은 실제 계산(`trialStartISO`)과 같은 **"사주를 넣은 날부터 7일(8일째부터 잠금)"**.
+- `첫 방문일부터 7일` → `사주를 넣은 날부터 7일`: `calendar/index.html` 530·744·875, 결제 팝업 상단(`calendar.js` `trialShopNote`), 잠금 팝업 제목(`calendar.js` `lockModalHTML`), `사주를 넣는 날부터` → `넣은 날부터`(852). 코드 주석(15·21·167·701·2241)도 실제 동작으로 정리.
+- **"7일" 표기는 유지** — `syncInviteCopy()` 가 `7일`을 `FREE_DAYS` 로 치환하므로 초대 보너스 로직이 그대로 작동한다. 초대 재설정 화면의 "오늘부터 M/D~M/D" 문구는 그대로 정확하다.
+
+### 6. 검증 (로컬 · 실 DB)
+| 항목 | 결과 |
+|---|---|
+| DB 트랜잭션 테스트(`work/fix-…-db-test`) — 자동 접수에 `p_saju` 를 넘겨도 | `saju_snapshot=null`·`consent_at=null`·`confirmed_at=null`·`apply_clicked_at=null` · `status=submitted` · `review_note='결제 자동 접수 · 고객 동의 대기'` — **통과** |
+| 동의 전 `special_guide_saju` | `consent_required` — **통과** |
+| 동의 후 `special_guide_saju` | `saved=true` · 두 번째 호출은 `saved=false`(덮어쓰지 않음) · 다른 기기키는 `not_found` — **통과** |
+| 동의 없는 건 `deliver` | `consent_required` — **통과** / 동의 후 `deliver` → `delivered` — **통과** |
+| `claim_paid_unlock` (선물 함수가 예외를 던지도록 바꾼 상태) | `{ok:true, status:'paid', code, tier}` 그대로 열림, `claim_no=null` — **통과** |
+| `payapp_feedback` (같은 상태) | `state='paid'` 기록 + 코드 원장 기록, `claim_no=null` — **통과** |
+| `cleanup_expired_personal_data` | 400일 지난 특별 가이드 1건·상담 1건 삭제 / 같은 나이의 `payapp_orders`·`entry_code_ledger` **보존** — **통과** |
+| `admin_purge_personal_data` | 특별 가이드 1건·상담 1건 `deleted=1` → 0건, 잘못된 kind 는 `bad_kind` — **통과** |
+| `verify_entry_code` (anon REST) | 틀린 코드 5회 → 6회째 `throttled retry_after=300` · 새 호출(새로고침·직접 호출)에서도 유지 · 성공 뒤 카운터 초기화(다시 5회까지 `mismatch`) · 다른 번호는 영향 없음 · 맞는 코드는 즉시 `ok` — **통과** |
+| 테스트 잔류 | 테스트 행은 전부 트랜잭션 `rollback` / 시도 기록 삭제로 **0건**(`verify_entry_code` 시도 기록 포함) |
+
+### 7. 남은 것 / 배포 때 할 일
+- **배포**: 2026-11-25 `git push` 완료. `?v=20261126a` + `sw.js VERSION` 이 함께 올라가므로 실기기 **새로고침 1회**로 최신 화면이 뜬다.
+- **실기기 확인 항목**: 결제(또는 테스트 코드) → 카드가 `동의` 상태 → 동의 → `자동 접수` 로 바뀜 · 관리자 목록 `동의 X → O` · 동의 없이 `전달 완료` 잠김 · 성찰 책에서 `＋ 오늘 성찰` 없음 · 1초 체크·기록 조회·백업/복원 정상.
+- 옛 캐시 화면(`20261125i`)으로 결제한 손님은 다음 방문에 동의 카드가 뜬다(자가 복구). 그 전에 결제가 생기면 관리자 목록에 `동의 X` 로 보인다.
+- `pg_cron` 은 설치돼 있지 않다 — 1년 정리는 관리자 버튼(또는 필요하면 대시보드에서 `cleanup_expired_personal_data()`)으로 돈다. 자동화가 필요하면 다음 작업에서 스케줄을 붙인다.
+- 범위 밖으로 남긴 것: `admin_check_pin` 의 전역 단일 잠금(누구나 틀린 PIN 반복 시 관리자 전체 10분 잠금), 별도 「개인정보처리방침」 페이지(현재는 달력 하단 한 문단).
+
