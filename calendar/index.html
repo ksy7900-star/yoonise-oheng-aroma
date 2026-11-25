@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126d">
+<link rel="stylesheet" href="assets/style.css?v=20261126e">
 </head>
 <body>
 
@@ -275,9 +275,11 @@
 
     <!-- ──────── ✨ TODAY · 오늘의 운세 브리핑 (2026-11-24 #18370) ────────
          라벨 · 오늘 날짜 · 제목 1줄 · 본문 3~5문장 · `오늘 상세 운세 보기`
-         본문은 calendar.js briefOf() 가 그날 일진(천간·지지·십신·충합형해·귀인·재성·인성)과
-         날짜 시드로 만든다 — 말줄임·한 줄 축약 없이 문장을 그대로 보여 준다.
-         색·제목·할 일은 같은 날짜 팝업(liteDayText)과 같은 카드를 쓰므로 서로 어긋나지 않는다.
+         2026-11-25 개인화 개편 — 본문은 assets/brief.js (window.TodayBrief) 가
+         '내 사주 × 오늘 일진'으로 만든다(오늘 십신 × 그 자리가 내 사주에 원래 얼마나
+         있는지 × 여덟 글자에서 비거나 넘치는 오행). 제목도 같은 자리에서 나오므로
+         사주가 다르면 같은 날이라도 제목·문장이 다르다. 3~5문장, 120~220자.
+         달력 격자·날짜 팝업은 예전 그대로이고, TODAY는 팝업을 요약하지 않는다.
 
          3단 구성(2026-11-24 #19801 · #19841): TODAY 메인 카드 → 2027 접이식 카드
          → 저녁 한 줄 기록 카드. 아침엔 TODAY가 주인공, 저녁엔 기록 카드가 할 일이 되게. -->
@@ -1016,12 +1018,13 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126d"></script>
-<script src="assets/manse.js?v=20261126d"></script>
-<script src="assets/timing.js?v=20261126d"></script>
-<script src="assets/chars.js?v=20261126d"></script>
-<script src="assets/calendar.js?v=20261126d"></script>
-<script src="assets/special-guide.js?v=20261126d"></script>
-<script src="assets/pwa.js?v=20261126d"></script>
+<script src="vendor/lunar.js?v=20261126e"></script>
+<script src="assets/manse.js?v=20261126e"></script>
+<script src="assets/timing.js?v=20261126e"></script>
+<script src="assets/chars.js?v=20261126e"></script>
+<script src="assets/brief.js?v=20261126e"></script>
+<script src="assets/calendar.js?v=20261126e"></script>
+<script src="assets/special-guide.js?v=20261126e"></script>
+<script src="assets/pwa.js?v=20261126e"></script>
 </body>
 </html>
