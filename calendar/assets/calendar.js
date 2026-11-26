@@ -2579,7 +2579,7 @@
       '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기 인증</span></p>' +
-      '<p class="fhow__d">인스타에 사용 후기를 올린 뒤, <b>카카오톡 채널</b>을 친구 추가하고 <b>인증 캡처</b>를 보내 주세요. 확인 후 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b>을 드려요.</p>' +
+      '<p class="fhow__d">인스타에 사용 후기를 올린 뒤, <b>카카오톡 채널</b>을 친구 추가하고 <b>인증 캡처</b>를 보내 주세요. 확인 후 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b> 혜택이 지급됩니다.</p>' +
       '<p class="fhow__note">계정당 1회 · 나영 님이 캡처를 확인하고 승인하면 자동으로 들어와요</p>' +
       (mbInstaState(st) ? '<p class="fhow__note">' + mbInstaState(st) + '</p>' : '') +
       '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener" data-mben-insta>인스타그램 후기 인증하기 <span aria-hidden="true">→</span></a>' +

@@ -144,6 +144,8 @@ begin
     'ok', true,
     'member', coalesce((who ->> 'member')::boolean, false),
     'paid', coalesce((who ->> 'paid')::boolean, false),
+    -- 이 사람과 이어져 초대 인원을 셀 수 있는가(로그인 계정 또는 번호로 이어진 계정)
+    'linked', (coalesce(array_length(v_users, 1), 0) >= 1),
     'tier', who ->> 'tier',
     'code_kind', who ->> 'code_kind',
     'referrals', v_refs,
