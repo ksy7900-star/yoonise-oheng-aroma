@@ -358,7 +358,13 @@
   function refreshCore() {
     var c = cal();
     if (!c || !c.res) { hideAll(); return; }
-    if (mem.preexisting) { hideAll(); return; }
+    /* 이벤트 시작(2026-11-24 09:00) 전부터 쓰던 기기 — 72시간 선물 대상은 아니지만,
+       이용권이 없는 기기라면 무료 이용법 배너 위의 작은 이용권 안내 한 칸은 남긴다.
+       (2026-11-26 #23653 — 예전에는 이 기기에서 아무 안내도 뜨지 않았다) */
+    if (mem.preexisting) {
+      if (!paidNow(c) && !(c.unlocked || (c.tier && c.tier !== '')) && !bonusOn(c)) { renderPassBar(); return; }
+      hideAll(); return;
+    }
     var first = loadFirst();
     /* 승인된 가이드가 이미 있으면 72시간 기록이 지워져 있어도 계속 보여 준다(며칠 뒤 재방문) */
     if (!first && !guideOf(mem.claim) && !guideOf(cachedClaim())) { hideAll(); return; }   // 최초 입력 기록은 calendarOpened() 가 맡는다
@@ -1371,7 +1377,10 @@
     /** 결제 팝업을 그리는 쪽(calendar.js)이 왼쪽 칸을 처음부터 담담하게 그릴 때 본다 */
     payCmpOver: function () { return payCmpState() === 'over'; },
     /* 🏷️ 구매 유도 단계 — 'gift' = 첫 사주 입력 후 72시간 이내·미결제 (달력 버튼 이름표가 이 값을 먼저 본다) */
-    ctaPhase: function () { return offerActive() ? 'gift' : ''; }
+    ctaPhase: function () { return offerActive() ? 'gift' : ''; },
+    /* 72시간 창이 아직 열려 있는가 — 달력 하단 '첫 3일(72시간) 구매 시 특별 가이드 증정' 한 줄을
+       72시간 이내 미결제 화면에서만 보이게 하는 마지막 확인 (#23653-4) */
+    eventWindowOpen: function () { return eventActive(); }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);

@@ -903,6 +903,11 @@
        그 아래에 두고, 카드가 없는 기기(서버에 닿지 못한 경우)에는 기존 한 줄 버튼 아래에 붙인다.
        ② 72시간이 지난 무료 체험 중 — 금액 한 줄은 두지 않는다(#18925). 가격은 결제 설명창 안에서만. */
     var gift = phase === 'gift';
+    /* 72시간이 지난 뒤에는 이 한 줄('첫 3일(72시간) 구매 시 특별 가이드 증정')을 절대 남기지 않는다.
+       단계 문자열이 늦게 갱신되는 경우까지 막으려고 특별 선물 창의 실제 72시간 기록을 한 번 더 본다 (#23653-4). */
+    if (gift && window.SpecialGuide && typeof window.SpecialGuide.eventWindowOpen === 'function') {
+      try { if (!window.SpecialGuide.eventWindowOpen()) gift = false; } catch (e) { }
+    }
     var footCard = !!(sf && !sf.hidden);
     if (sfGuide) {
       sfGuide.hidden = !(gift && footCard);
@@ -2261,11 +2266,11 @@
     ];
     return '<p class="modal__eyebrow">FREE · 무료 이용법</p>' +
       '<h2 class="fhow__title" id="freeTitle">🎁 내 사주 타이밍 달력<br>무료로 쓰는 두 가지</h2>' +
-      '<p class="fhow__sub">이미 앱에 들어 있는 혜택 그대로예요.</p>' +
+      '<p class="fhow__sub">친구와 좋은 인연을 나누고, 특별한 혜택을 받아보세요.</p>' +
       mbRefsLine(mb.status, 'benefit') +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">①</span><span class="fhow__t">친구 초대</span></p>' +
-      '<p class="fhow__d">내 초대 링크로 친구가 들어오면 <b>자동으로</b> 기간이 늘어나요.</p>' +
+      '<p class="fhow__d">친구가 내 초대 링크로 들어와 카카오 연결을 완료하면 자동으로 이용기간이 늘어나요.</p>' +
       '<ul class="fhow__ladder">' + ladder.map(function (x) {
         return '<li><b>' + x.n + '</b><strong>' + x.v + '</strong></li>';
       }).join('') + '</ul>' +
@@ -3002,7 +3007,7 @@
       '</div>' +
       '<p class="iflow__note">사진을 누르면 크게 볼 수 있어요. 지원하는 기기에서는 공유 창이 열리니 <b>이미지 저장</b>을 골라 주세요.</p>' +
       '<p class="iflow__note">달력, 부적, 케미테스트, 액운 태우기, 오늘의 브리핑 등 어떤 화면이든 좋아요.</p>' +
-      '<p class="iflow__note">※ 캡처 시 이름, 생년월일, 전화번호 등 개인정보가 보이지 않도록 주의해 주세요.</p>' +
+      '<p class="iflow__note">※ 캡처 시 본인 및 상대방의 이름, 생년월일, 전화번호 등 개인정보가 보이지 않도록 주의해 주세요.</p>' +
       '</section>' +
 
       /* ② 해시태그 복사하기 */
