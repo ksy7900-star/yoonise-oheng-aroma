@@ -2218,6 +2218,7 @@
     dbookLastFocus = document.activeElement;
     dbookBody.innerHTML = diaryBookHTML();
     dbookEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('dbook', closeDiaryBook);   // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     dbookBody.scrollTop = 0;
     sfxOpen();
@@ -2225,6 +2226,7 @@
   }
   function closeDiaryBook() {
     if (!dbookEl || dbookEl.hidden || dbookClosing) return;
+    if (window.BackNav) window.BackNav.close('dbook');
     dbookClosing = true;
     dbookEl.classList.add('is-closing');
     setTimeout(function () {
@@ -2286,6 +2288,7 @@
     var go = freeBody.querySelector('[data-free-invite]');
     if (go) { try { go.setAttribute('href', memberHref()); } catch (e) {} }
     freeEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('free', closeFreeHow);      // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     freeBody.scrollTop = 0;
     sfxOpen();
@@ -2293,6 +2296,7 @@
   }
   function closeFreeHow() {
     if (!freeEl || freeEl.hidden || freeClosing) return;
+    if (window.BackNav) window.BackNav.close('free');
     freeClosing = true;
     freeEl.classList.add('is-closing');
     setTimeout(function () {
@@ -2327,12 +2331,14 @@
     welcomeShown = true;
     welcomeLastFocus = document.activeElement;
     welcomeEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('welcome', closeWelcome);   // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     if (!quiet) sfxOpen();      // 자동으로 뜰 때는 소리 없이 (손가락 없이 오디오를 열지 않는다)
     try { welcomeDialog.focus({ preventScroll: true }); } catch (e) { welcomeDialog.focus(); }
   }
   function closeWelcome() {
     if (!welcomeEl || welcomeEl.hidden || welcomeClosing) return;
+    if (window.BackNav) window.BackNav.close('welcome');
     welcomeClosing = true;
     markWelcomeSeen();          // 닫는 방법과 상관없이 '한 번 봤다'로 기록 — 다음 방문부터는 조용히
     welcomeEl.classList.add('is-closing');
@@ -2388,12 +2394,14 @@
     syncGuideTrial();
     guideLastFocus = document.activeElement;
     guideEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('guide', closeGuide);       // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     if (!quiet) sfxOpen();      // 자동으로 뜰 때는 소리 없이 (손가락 없이 오디오를 열지 않는다)
     try { guideDialog.focus({ preventScroll: true }); } catch (e) { guideDialog.focus(); }
   }
   function closeGuide() {
     if (!guideEl || guideEl.hidden || guideClosing) return;
+    if (window.BackNav) window.BackNav.close('guide');
     guideClosing = true;
     markGuideSeen();          // 닫는 방법과 상관없이 '한 번 봤다'로 기록 — 다음 방문부터는 조용히
     var toForm = guideAtEntry();
@@ -2783,6 +2791,7 @@
       '<p class="talis-bless__note">부적을 톡 두드리면 오늘 하루 기운이 켜져요.</p>' +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-talis-close>닫기</button>';
     talisEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('talis', closeTalisModal);  // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     talisBody.scrollTop = 0;
     sfxOpen();                              // 뿅 — 사용자 클릭 안에서 재생
@@ -2791,6 +2800,7 @@
 
   function closeTalisModal() {
     if (!talisEl || talisEl.hidden || talisClosing) return;
+    if (window.BackNav) window.BackNav.close('talis');
     talisClosing = true;
     talisEl.classList.add('is-closing');
     setTimeout(function () {
@@ -4507,6 +4517,11 @@
     if (!inline) return;
     if (typeof open !== 'boolean') open = inline.hidden;
     inline.hidden = !open;
+    /* 휴대폰 뒤로가기 — 펼친 원국표부터 닫기 (열기/접기 동작은 그대로) */
+    if (window.BackNav) {
+      if (open) window.BackNav.open('natal', function () { toggleNatal(false); });
+      else window.BackNav.close('natal');
+    }
     if (row) row.hidden = open;
     if (cap) cap.hidden = !open;
     if (tog) {
@@ -4985,6 +5000,7 @@
       modalDialog.classList.remove('modal__dialog--lock');
       modalDialog.classList.add('modal__dialog--lite');
       modalEl.hidden = false;
+      if (window.BackNav) window.BackNav.open('day', closeDayModal);  // 휴대폰 뒤로가기 → 이 팝업부터 닫기
       document.body.classList.add('is-modal-open');
       modalBody.scrollTop = 0;
       sfxOpen();
@@ -5012,6 +5028,7 @@
     modalDialog.classList.toggle('modal__dialog--lock', lock);
     modalDialog.classList.remove('is-lock-scrolled');
     modalEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('day', closeDayModal);      // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     modalBody.scrollTop = 0;
     sfxOpen();                              // 뿅 — 사용자 클릭 안에서 재생
@@ -5022,6 +5039,7 @@
 
   function closeDayModal() {
     if (!modalEl || modalEl.hidden || modalClosing) return;
+    if (window.BackNav) window.BackNav.close('day');
     modalClosing = true;
     modalEl.classList.add('is-closing');
     var backIso = state.sel;
@@ -5532,6 +5550,7 @@
   function moreOpen(kind, scroll) {
     var key = (kind === 'chemi' || kind === 'talis') ? 'duo' : kind;
     if (!ACC_CARDS[key]) return null;
+    if (window.BackNav) window.BackNav.open('more', moreClose);         // 휴대폰 뒤로가기 → 펼친 상세 카드부터 닫기
     Object.keys(ACC_CARDS).forEach(function (k) {
       var el = morePane(k);
       if (el) el.hidden = (k !== key);
@@ -5544,6 +5563,7 @@
     return target;
   }
   function moreClose() {
+    if (window.BackNav) window.BackNav.close('more');
     moreHideAll();
     jumpToEl($('#quick2x2'));
   }
@@ -5664,6 +5684,11 @@
     /* 접을 때만 스크롤을 맞춘다(문서가 짧아져 화면이 튀는 것을 막는다).
        펼칠 때는 누른 자리에서 그대로 아래로 열리게 두어 '달력 접기' 버튼이 계속 보이게 한다 (#18624). */
     calSetFold(!open, true, open);
+    /* 휴대폰 뒤로가기 — 펼친 달력(#calBody)부터 닫기. 접근 버튼으로 접은 것과 같은 동작. */
+    if (window.BackNav) {
+      if (open) window.BackNav.close('calbody');
+      else window.BackNav.open('calbody', function () { calSetFold(false, true, true); });
+    }
   }
   function calInitFold() {
     var stored = calFoldStored();
@@ -5677,7 +5702,14 @@
     /* #18494 — 달력은 접혀 있어도 '달력'을 눌렀으면 먼저 펼친다.
        #18624 — 이 자동 펼침은 저장하지 않는다. 기본값은 계속 '접힘'이고,
        기억은 접기/펼치기 버튼으로 사용자가 고른 것만 남긴다. */
-    if (kind === 'cal') calSetFold(true, false, false);
+    if (kind === 'cal') {
+      var wasOpen = !!($('#calBody') && !$('#calBody').hidden);
+      calSetFold(true, false, false);
+      /* 휴대폰 뒤로가기 — '달력' 바로가기로 펼쳤을 때도 뒤로가기로 그 펼침이 접힌다 */
+      if (!wasOpen && window.BackNav) {
+        window.BackNav.open('calbody', function () { calSetFold(false, true, true); });
+      }
+    }
     var target = null;
     if (kind === 'cal') {
       var grid = $('#calGrid');
@@ -7933,6 +7965,7 @@
     shopKind = kind;
     shopBody.innerHTML = shopHTMLFor(kind) + shopCodeLinkHTML(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
     shopEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('shop', closeShop);         // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
     shopBody.scrollTop = 0;
     if (kind === 'care') initCare();
@@ -7942,6 +7975,7 @@
 
   function closeShop() {
     if (!shopEl || shopEl.hidden || shopClosing) return;
+    if (window.BackNav) window.BackNav.close('shop');
     stopBowl();
     shopClosing = true;
     shopEl.classList.add('is-closing');
@@ -8311,6 +8345,7 @@
     // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 소각 금지)
     if (burnBurnedToday()) {
       burnEl.hidden = false;
+      if (window.BackNav) window.BackNav.open('burn', closeBurnModal);  // 휴대폰 뒤로가기 → 이 팝업부터 닫기
       burn.stage = 'done';
       burnBody.innerHTML = burnTodayDoneHTML();
       burnDialog.classList.add('is-dark');
@@ -8323,6 +8358,7 @@
     // 무료 5회를 다 썼으면 리추얼 대신 단일 패스 안내 팝업으로 자연스럽게 넘긴다
     if (!burnUnlimited() && burnLeft() <= 0) { openShop('burn'); return; }
     burnEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('burn', closeBurnModal);    // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     burn.stage = 'prep';
     burnBody.innerHTML = burnPrepHTML();
     burnDialog.classList.add('is-dark');       // 어두운 제단 위 촛불
@@ -8356,6 +8392,7 @@
 
   function closeBurnModal() {
     if (!burnEl || burnEl.hidden || burnClosing) return;
+    if (window.BackNav) window.BackNav.close('burn');
     burnClosing = true;
     clearTimeout(burn.timer);
     clearTimeout(burn.holdTimer);
@@ -9321,6 +9358,7 @@
        입력칸만 열고 위의 큰 '입장 코드 입력' 바(#lockBtn)는 띄우지 않는다 — 메인 화면을 깔끔하게 (2026-11-23) */
     if (p.classList.contains('v2-parked')) p.classList.remove('v2-parked');
     p.hidden = false;
+    if (window.BackNav) window.BackNav.open('lock', closeLockPanel);     // 휴대폰 뒤로가기 → 코드 칸부터 닫기
     if (btn) btn.setAttribute('aria-expanded', 'true');
     syncLockUI();
     fillLockPhone();       // 결제할 때 넣은 번호를 손님이 다시 찾지 않아도 되게
@@ -9340,6 +9378,7 @@
   function closeLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
     if (!p || p.hidden) return;
+    if (window.BackNav) window.BackNav.close('lock');
     p.hidden = true;
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }

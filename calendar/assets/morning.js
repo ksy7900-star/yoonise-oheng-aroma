@@ -214,6 +214,7 @@
     mem.writing = true;
     input.value = answerOf(cardIso);
     box.hidden = false;
+    if (global.BackNav) global.BackNav.open('mqwrite', closeWriter);   // 휴대폰 뒤로가기 → 쓰기 칸부터 닫기
     /* 쓰는 동안에는 아래 버튼·이미 남긴 생각을 접어 둔다 — 같은 일을 두 번 시키지 않게 */
     var foot = document.querySelector('#morningCard .mq__foot');
     if (foot) foot.hidden = true;
@@ -227,6 +228,7 @@
   }
   function closeWriter() {
     var box = $('#mqWrite');
+    if (global.BackNav) global.BackNav.close('mqwrite');
     mem.writing = false;
     if (box) box.hidden = true;
     var foot = document.querySelector('#morningCard .mq__foot');
@@ -236,6 +238,7 @@
   function commitCard() {
     var input = $('#mqInput');
     if (!input) return false;
+    if (global.BackNav) global.BackNav.close('mqwrite');
     setAnswer(cardIso, input.value);
     mem.writing = false;
     var box = $('#mqWrite');

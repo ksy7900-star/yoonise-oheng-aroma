@@ -223,6 +223,7 @@
     fillAddr();
     lastFocus = document.activeElement;
     modal.hidden = false;
+    if (window.BackNav) window.BackNav.open('install', closeModal);     // 휴대폰 뒤로가기 → 설치 안내부터 닫기
     document.body.classList.add('is-modal-open');
     /* 닫기(✕)에 초점을 주면 닫기 버튼에 테두리가 잡혀 '닫으세요'처럼 보인다 — 팝업 자체에 초점 */
     try { dialog.focus({ preventScroll: true }); } catch (e) {}
@@ -231,6 +232,7 @@
 
   function closeModal() {
     if (modal.hidden) return;
+    if (window.BackNav) window.BackNav.close('install');
     modal.hidden = true;
     body.innerHTML = '';
     if (!document.querySelector('.modal:not([hidden])')) {

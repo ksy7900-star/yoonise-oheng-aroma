@@ -709,6 +709,7 @@
       '<button type="button" class="sgift__buy sgguide__close" data-sgguide-close>가이드 닫기</button>';
     m.hidden = false;
     mem.guideOpen = true;
+    if (window.BackNav) window.BackNav.open('sgguide', closeGuide);    // 휴대폰 뒤로가기 → 감정서부터 닫기
     document.body.classList.add('is-sgift-modal');
     try { $('#specialGuideDialog').focus({ preventScroll: true }); } catch (e) { }
     try { body.parentNode.scrollTop = 0; } catch (e) { }
@@ -877,6 +878,7 @@
   function closeGuide() {
     var m = $('#specialGuideModal');
     if (!m || m.hidden) return;
+    if (window.BackNav) window.BackNav.close('sgguide');
     m.hidden = true;
     mem.guideOpen = false;
     if (!mem.modalOpen) document.body.classList.remove('is-sgift-modal');
@@ -1030,12 +1032,14 @@
     }
     m.hidden = false;
     mem.modalOpen = true;
+    if (window.BackNav) window.BackNav.open('sgift', closeModal);       // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-sgift-modal');
     try { $('#specialModalDialog').focus({ preventScroll: true }); } catch (e) { }
   }
   function closeModal() {
     var m = $('#specialModal');
     if (!m || m.hidden) return;
+    if (window.BackNav) window.BackNav.close('sgift');
     m.hidden = true;
     mem.modalOpen = false;
     document.body.classList.remove('is-sgift-modal');
