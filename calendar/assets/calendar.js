@@ -4993,7 +4993,9 @@
     // 기운 태그가 없는 보통 날은 원래 팝업을 열지 않는다.
     // 단, 성찰 다이어리가 열려 있는 동안은 365일 매일 한 줄을 남길 수 있게 팝업을 열고,
     // 잠긴 날(체험 범위 밖 미래)은 누르면 여는 방법을 알려 준다.
-    if (!hasBadges && !diaryAllowed() && !lock) {
+    /* ☀️ 아침의 질문에 답을 남긴 날은 그 답을 다시 보러 팝업을 연다 (2026-11-26 #22311) */
+    var hasMorningAnswer = !!(window.MorningQ && window.MorningQ.hasAnswer && window.MorningQ.hasAnswer(iso));
+    if (!hasBadges && !diaryAllowed() && !lock && !hasMorningAnswer) {
       toast(state.unlocked || !FREE_TRIAL_ENABLED
         ? '이 날은 특별히 피할 일 없이 내 페이스대로 가면 되는 날이에요.'
         : '이 날은 딱지가 붙지 않은 무난한 날이에요 — 부적은 기운이 흔들리는 날에만 나와요');
