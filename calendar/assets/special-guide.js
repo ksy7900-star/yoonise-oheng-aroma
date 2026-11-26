@@ -210,7 +210,9 @@
     if (!c || !c.res) return false;
     if (mem.preexisting) return false;
     if (paidNow(c)) return false;                 // 이미 1년 패스가 열린 기기
-    if (c.unlocked || (c.tier && c.tier !== '')) return false;   // 선물 코드·추천 보상
+    /* 무료 이용권·친구 초대 보상으로 달력이 열려 있어도 72시간 안이라면 특별 선물 안내를 막지 않는다.
+       (2026-11-27 #24504 — 배너를 숨기는 기준은 '유효한 유료 결제 고객' 하나뿐) */
+    if (c.expired) return false;                  // 이용권 기간이 끝난 기기 — 종료된 혜택은 다시 열지 않는다
     if (!eventActive()) return false;             // 72시간 만료
     return true;
   }
@@ -360,10 +362,10 @@
     var c = cal();
     if (!c || !c.res) { hideAll(); return; }
     /* 이벤트 시작(2026-11-24 09:00) 전부터 쓰던 기기 — 72시간 선물 대상은 아니지만,
-       이용권이 없는 기기라면 무료 이용법 배너 위의 작은 이용권 안내 한 칸은 남긴다.
-       (2026-11-26 #23653 — 예전에는 이 기기에서 아무 안내도 뜨지 않았다) */
+       유효한 유료 결제 고객이 아니라면 무료 이용법 배너 위의 작은 이용권 안내 한 칸은 남긴다.
+       (2026-11-26 #23653 → 2026-11-27 #24504 — 무료 이용권·친구 초대 보상 기기도 함께 노출) */
     if (mem.preexisting) {
-      if (!paidNow(c) && !(c.unlocked || (c.tier && c.tier !== '')) && !bonusOn(c)) { renderPassBar(); return; }
+      if (!paidNow(c)) { renderPassBar(); return; }
       hideAll(); return;
     }
     var first = loadFirst();
@@ -386,21 +388,21 @@
       return;
     }
 
-    /* 1개월 선물 코드·추천 보상 등 — 특별 선물 대상 아님 */
-    if (c.unlocked || (c.tier && c.tier !== '')) { hideAll(); return; }
+    /* 여기까지 왔다면 아직 유효한 유료 결제 고객이 아니다 — 무료 이용권·친구 초대 보상 기기도
+       결제 유도 배너를 숨기지 않는다 (2026-11-27 #24504). 무료 이용 기간과 혜택은 그대로다. */
 
-    /* 무료 혜택(친구 초대 보상)으로 달력이 열려 있는 기기 — 결제 유도 배너를 띄우지 않는다 */
-    if (bonusOn(c)) { hideAll(); return; }
-
-    /* 이용권 기간이 끝나 다시 잠긴 기기 — 이미 산 고객이므로 첫 3일 선물 대신 이용권 안내 */
+    /* 이용권 기간이 끝나 다시 잠긴 기기 — 첫 3일 선물 대신 이용권 안내 (종료된 혜택은 다시 열지 않는다) */
     if (c.expired) { renderPassBar(); return; }
 
-    /* 72시간이 지났거나 이용권 기간이 끝난 기기 — 작은 이용권 안내 한 칸 */
+    /* 72시간이 지난 기기 — 작은 이용권 안내 한 칸 */
     if (!eventActive()) { renderPassBar(); return; }
+
+    /* 72시간 이내 미결제 — 기존 72시간 특별 혜택 카드 그대로 */
     renderOffer();
   }
 
-  /* 친구 초대 보상 기간이 살아 있는가 — calendar.js bonusActive() 와 같은 판단을 받아 온다 */
+  /* 친구 초대 보상 기간이 살아 있는가 — calendar.js bonusActive() 와 같은 판단을 받아 온다.
+     2026-11-27 #24504 부터는 이 값으로 배너를 숨기지 않는다(유료 결제 고객만 숨김). 화면·다른 판단용으로 남겨 둔다. */
   function bonusOn(c) {
     if (c && typeof c.bonus === 'boolean') return c.bonus;
     return false;
