@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>개인정보처리방침 | 윤이세사주</title>
+<meta name="description" content="「내 사주 타이밍 달력」 개인정보처리방침 — 수집 항목, 지속 관리·장기 보관 기준, 파기 절차, 위탁·국외 이전, 안전성 확보 조치.">
+<meta name="theme-color" content="#FAF4E9">
+<meta name="format-detection" content="telephone=no">
+<link rel="canonical" href="https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/privacy/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+/* ==========================================================
+   윤이세사주 — 약관 3종 (이용약관 · 개인정보처리방침 · 환불 및 청약철회)
+   달력(/calendar/)과 같은 아이보리 · 먹색 · 네이비 · 골드 톤
+   1단 · 최대 폭 720px · 모바일 우선 (2026-11-26 제작)
+   ========================================================== */
+:root{
+  --bg:#FAF4E9; --paper:#FFFDF8;
+  --ink:#1A1712; --ink-2:#3B352C; --mute:#6E665A;
+  --hair:rgba(28,24,19,.10); --hair-soft:#E8E0D2;
+  --navy:#1B2940; --gold:#A5650F; --gold-soft:#FDF3DD; --gold-line:rgba(165,101,15,.34);
+  --serif:"Nanum Myeongjo","NanumMyeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","SamsungMyeongjo","Batang",serif;
+  --sans:"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:76px;overflow-x:hidden}
+body{
+  margin:0;font-family:var(--sans);font-size:15px;line-height:1.85;color:var(--ink-2);
+  background:
+    radial-gradient(120% 55% at 88% -6%, rgba(165,101,15,.065), transparent 62%),
+    radial-gradient(90% 45% at -10% 2%, rgba(27,41,64,.05), transparent 58%),
+    var(--bg);
+  letter-spacing:-.012em;word-break:keep-all;overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,ul,ol,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:var(--navy);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(27,41,64,.28)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--navy);outline-offset:3px;border-radius:6px}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.skip{position:absolute;left:-9999px;top:0;z-index:60;background:var(--navy);color:#F8F3E7;padding:10px 14px;border-radius:0 0 10px 0;font-size:13px}
+.skip:focus{left:0}
+
+/* ── 상단 · 달력으로 ─────────────────────────────── */
+.top{position:sticky;top:0;z-index:20;background:rgba(250,244,233,.93);border-bottom:1px solid var(--hair);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.top__row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px}
+.top__back{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding-right:8px;font-size:14px;font-weight:600;color:var(--navy);text-decoration:none}
+.top__back i{font-style:normal;font-size:16px;line-height:1;margin-top:-1px}
+.top__brand{font-family:var(--serif);font-size:12.5px;letter-spacing:.13em;color:var(--mute)}
+
+/* ── 약관 3종 탭 ─────────────────────────────────── */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0 0}
+.tabs a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:4px 3px;border:1px solid var(--hair-soft);border-radius:12px;background:rgba(255,255,255,.5);font-size:11.5px;font-weight:600;line-height:1.25;color:var(--mute);text-decoration:none;text-align:center}
+.tabs a[aria-current="page"]{background:var(--navy);border-color:var(--navy);color:#F8F3E7}
+.tabs a:not([aria-current]):hover{border-color:#D9CBB2;color:var(--ink-2)}
+
+/* ── 문서 머리 ───────────────────────────────────── */
+.doc{padding-top:26px}
+.doc__eyebrow{font-size:9.5px;letter-spacing:.26em;font-weight:600;color:var(--mute)}
+.doc__title{font-family:var(--serif);font-size:clamp(27px,7.6vw,34px);line-height:1.32;font-weight:500;color:var(--ink);margin-top:10px;letter-spacing:-.03em}
+.doc__meta{margin-top:10px;font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.doc__meta .sep{margin:0 7px;color:#CFC2AC}
+.doc__lead{margin-top:16px;padding-top:16px;border-top:1px solid var(--hair);font-size:14px;line-height:1.85;color:var(--mute)}
+
+/* 미확정 항목 표식 — 확정되면 글자만 바꾸면 된다(현재 사용 0) */
+.ph{font-style:normal;font-weight:600;color:var(--gold);background:var(--gold-soft);border:1px dashed var(--gold-line);border-radius:6px;padding:1px 6px;font-size:.94em;letter-spacing:0;white-space:nowrap}
+
+/* ── 적용 시점 안내 (신규·기존 구분) ──────────────── */
+.notice{margin-top:20px;padding:16px 15px 14px;border:1px solid var(--gold-line);border-radius:16px;
+  background:linear-gradient(180deg,rgba(253,243,221,.75),rgba(255,253,248,.9))}
+.notice__eyebrow{font-size:9.5px;letter-spacing:.2em;font-weight:700;color:var(--gold)}
+.notice__title{margin-top:8px;font-family:var(--serif);font-size:16px;line-height:1.62;font-weight:600;color:var(--ink);letter-spacing:-.025em}
+.notice__title b{color:var(--navy);font-weight:700}
+.notice__grid{display:grid;gap:8px;margin-top:12px}
+@media (min-width:620px){.notice__grid{grid-template-columns:1fr 1fr}}
+.notice__card{padding:11px 13px 12px;border:1px solid var(--hair-soft);border-radius:12px;background:#FFFDF8}
+.notice__card--later{border-color:rgba(165,101,15,.3);background:rgba(255,252,243,.92)}
+.notice__badge{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--navy);color:#F8F3E7;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.notice__card--later .notice__badge{background:var(--gold)}
+.notice__date{margin-top:8px;font-family:var(--serif);font-size:15.5px;font-weight:600;line-height:1.4;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums;word-break:keep-all}
+.notice__date small{margin-left:3px;font-family:var(--sans);font-size:11px;font-weight:500;color:var(--mute)}
+.notice__card .tx{margin-top:6px;font-size:12.5px;line-height:1.72;color:var(--ink-2)}
+.notice__calm{margin-top:11px;padding-top:10px;border-top:1px dashed rgba(165,101,15,.28);font-size:12.5px;line-height:1.75;color:var(--ink-2)}
+.notice__calm b{color:var(--ink);font-weight:700}
+.notice__list{margin-top:8px}
+.notice__list>li{font-size:12.5px;line-height:1.75}
+.notice__more{margin-top:10px;padding-top:2px;border-top:1px solid rgba(165,101,15,.22)}
+.notice__more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--navy);list-style:none}
+.notice__more>summary::-webkit-details-marker{display:none}
+.notice__more>summary::after{content:"＋";margin-left:8px;font-size:12px;color:var(--gold)}
+.notice__more[open]>summary::after{content:"−"}
+.notice__cap{margin:2px 0 8px;font-size:11.5px;line-height:1.7;color:var(--mute)}
+
+/* ── 목차 ────────────────────────────────────────── */
+.toc{margin-top:22px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper)}
+.toc summary{display:flex;align-items:center;min-height:48px;padding:0 16px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);list-style:none}
+.toc summary::-webkit-details-marker{display:none}
+.toc summary .cnt{margin-left:auto;font-size:11px;font-weight:500;color:var(--mute)}
+.toc summary::after{content:"＋";margin-left:10px;font-size:12px;font-weight:600;color:var(--gold)}
+.toc[open] summary::after{content:"−"}
+.toc ol{padding:2px 16px 12px;border-top:1px solid var(--hair-soft)}
+.toc a{display:block;padding:6px 0;font-size:12.5px;line-height:1.6;color:var(--ink-2);text-decoration:none}
+.toc a:hover{color:var(--navy);text-decoration:underline}
+
+/* ── 조항 · 절 ───────────────────────────────────── */
+.art{margin-top:32px;padding-top:28px;border-top:1px solid var(--hair)}
+.art:first-of-type{border-top:0;padding-top:18px}
+.art>h2{position:relative;padding-left:15px;font-family:var(--serif);font-size:18.5px;line-height:1.5;font-weight:600;color:var(--ink);letter-spacing:-.025em}
+.art>h2::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.art h3{margin-top:24px;font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.art p{margin-top:10px}
+.art p b{color:var(--ink);font-weight:700}
+.art b{color:var(--ink)}
+
+/* 번호 매긴 항 — 1. 2. 3. */
+.cl{counter-reset:cl;margin-top:10px}
+.cl>li{counter-increment:cl;position:relative;padding-left:22px;margin-top:6px}
+.cl>li::before{content:counter(cl) ".";position:absolute;left:0;top:1px;font-size:13.5px;font-weight:700;line-height:1.85;color:var(--gold);font-variant-numeric:tabular-nums}
+/* ─ 모양 항목 */
+.dash{margin-top:8px}
+.dash>li{position:relative;padding-left:14px;margin-top:5px}
+.dash>li::before{content:"·";position:absolute;left:3px;top:0;font-size:15px;line-height:1.8;color:var(--gold);font-weight:700}
+.dash>li b{color:var(--ink)}
+
+/* ── 강조 박스 ───────────────────────────────────── */
+.callout{margin-top:18px;padding:14px 16px;border-radius:0 12px 12px 0;font-size:13.5px;line-height:1.82;color:var(--ink-2)}
+.callout p+p{margin-top:8px}
+.callout b{color:var(--ink);font-weight:700}
+.callout--gold{background:var(--gold-soft);border-left:3px solid var(--gold)}
+.callout--navy{background:rgba(27,41,64,.055);border-left:3px solid var(--navy)}
+
+/* ── 표 ──────────────────────────────────────────── */
+.tbl{margin-top:14px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.72}
+caption{padding:10px 14px 0;text-align:left;font-size:11.5px;color:var(--mute)}
+th,td{padding:11px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--hair-soft)}
+thead th{background:#F6EFE0;color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.03em}
+tbody td{color:var(--ink-2)}
+tbody td.key{font-weight:700;color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+
+/* ── 문의 ────────────────────────────────────────── */
+.help{margin-top:36px;padding:18px 18px 16px;border:1px solid var(--hair-soft);border-radius:16px;background:var(--paper)}
+.help__t{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink)}
+.help p{margin-top:8px;font-size:13px;line-height:1.8}
+
+/* ── 하단 ────────────────────────────────────────── */
+.foot{margin-top:40px;padding:24px 0 calc(44px + env(safe-area-inset-bottom, 0px));border-top:1px solid var(--hair-soft);text-align:center}
+.foot__links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;font-size:11.5px;font-weight:600}
+.foot__links a{color:var(--navy);text-decoration:none;border-bottom:1px solid rgba(27,41,64,.28);padding-bottom:1px}
+.foot__links span{color:#D3C7B3;font-size:10px}
+.foot__biz{margin-top:16px;font-size:11px;line-height:1.95;color:var(--mute)}
+.foot__biz b{font-weight:700;color:var(--ink-2)}
+.foot__biz a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid rgba(59,53,44,.22)}
+.foot__micro{margin-top:12px;font-size:11px;line-height:1.8;color:var(--mute)}
+.foot__back{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:16px;padding:0 16px;border:1px solid var(--hair-soft);border-radius:999px;background:rgba(255,255,255,.5);font-size:12.5px;font-weight:600;color:var(--navy);text-decoration:none}
+
+/* ── 모바일: 표를 카드로 쌓기 (가로 넘침 0) ───────── */
+@media (max-width:640px){
+  .tbl{border:0;border-radius:0;background:none;overflow:visible}
+  table,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  tr{padding:6px 0 8px;margin-top:10px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper);overflow:hidden}
+  td{border:0;padding:6px 14px;font-size:13.5px}
+  td::before{content:attr(data-label);display:block;margin-bottom:1px;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--gold)}
+  td.key{background:#FBF5E8;padding-top:9px;padding-bottom:9px;margin-bottom:2px}
+  caption{padding:0;font-size:11px}
+  .doc__title{word-break:keep-all}
+}
+
+@media print{
+  .top,.tabs,.foot__back{display:none}
+  body{background:#fff}
+  .art{break-inside:auto}
+  .tbl{border-color:#ccc}
+  a{text-decoration:none;color:#000}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#doc">본문으로 바로가기</a>
+
+<header class="top">
+  <div class="wrap top__row">
+    <a class="top__back" href="../"><i aria-hidden="true">←</i> 달력으로</a>
+    <span class="top__brand">윤이세사주</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" aria-label="약관 및 정책">
+    <a href="../terms/">이용약관</a>
+    <a href="../privacy/" aria-current="page">개인정보처리방침</a>
+    <a href="../refund/">환불 및 청약철회</a>
+  </nav>
+
+  <main id="doc" class="doc">
+    <p class="doc__eyebrow">YOONISE · PRIVACY</p>
+    <h1 class="doc__title">개인정보처리방침</h1>
+    <p class="doc__meta">버전 v1.0<span class="sep">·</span>2026. 11. 26 공지<span class="sep">·</span>2027. 1. 1 시행</p>
+    <p class="doc__lead">엔와이트레이드는 「내 사주 타이밍 달력」 서비스와 1:1 상담에서 이용자의 개인정보를 아래와 같이 처리합니다.</p>
+    <section class="notice" aria-labelledby="notice-h">
+      <p class="notice__eyebrow">적용 시점 안내 · 공지 2026년 11월 26일</p>
+      <h2 class="notice__title" id="notice-h">새로 이용하시는 분은 <b>2026년 11월 26일</b>부터, 이미 이용 중이신 분은 <b>2027년 1월 1일</b>부터 이 방침이 적용됩니다.</h2>
+      <div class="notice__grid">
+        <div class="notice__card">
+          <p class="notice__badge">신규 이용자</p>
+          <p class="notice__date">2026년 11월 26일<small> 부터</small></p>
+          <p class="tx">공개일 이후 새로 가입·결제하시는 분의 정보는 아래 기준으로 처리·보관합니다.</p>
+        </div>
+        <div class="notice__card notice__card--later">
+          <p class="notice__badge">기존 이용자</p>
+          <p class="notice__date">2027년 1월 1일<small> 부터</small></p>
+          <p class="tx">2026년 11월 26일부터 30일 이상 미리 알려 드리고, 시행일부터 적용합니다. 그 전까지는 종전 안내(1년 경과 시 파기)가 적용됩니다.</p>
+        </div>
+      </div>
+      <p class="notice__calm"><b>보관 기준이 바뀌어도 이미 받으신 상담 결과·감정서가 그날로 사라지는 것은 아닙니다.</b> 1년 뒤에도 보관하려면 별도 동의를 받고, 동의하지 않으시면 종전에 안내한 대로 1년이 지난 뒤 파기합니다. 어느 쪽이든 서비스 이용과 이미 결제한 이용권에는 영향이 없습니다.</p>
+      <ul class="dash notice__list">
+        <li><b>장기 보관은 별도 동의</b> — 재상담·이력 확인을 위한 장기 보관은 별도의 선택 동의를 받고, 동의하지 않으셔도 서비스 이용과 이미 결제한 이용권에는 영향이 없습니다.</li>
+        <li><b>삭제는 언제든</b> — 동의를 철회하거나 삭제를 요청하시면 법령상 보존 의무가 남은 결제 원장만 분리 보관하고 지체 없이 파기합니다.</li>
+      </ul>
+      <details class="notice__more">
+        <summary>종전 기준과 개정 방침 비교해서 보기</summary>
+        <p class="notice__cap">종전 기준은 2026년 12월 31일까지, 개정 기준은 2027년 1월 1일부터 적용됩니다(신규 이용자는 공개일부터).</p>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr><th scope="col">항목</th><th scope="col">종전 기준</th><th scope="col">개정 기준</th></tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td class="key" data-label="항목">보관 기간</td>
+              <td data-label="종전 기준">접수일부터 1년이 지나면 일괄 파기</td>
+              <td data-label="개정 기준">목적별 구분 — 지속 관리 자료(삭제 요청 시까지) · 거래 기록 5년 · 일회성 1년 · 접속 30일 · 백업 14회분</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">상담·감정서 이력</td>
+              <td data-label="종전 기준">1년 뒤 삭제</td>
+              <td data-label="개정 기준">덮어쓰지 않고 시간순으로 누적 관리, 마지막 이용일로부터 5년이 지나면 보관 연장·갱신 안내</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">보호책임자 연락처</td>
+              <td data-label="종전 기준">카카오톡 채널만 표기</td>
+              <td data-label="개정 기준">카카오톡 채널 · 전화 010-4848-7373 · 이메일 ksy7900so@naver.com</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">위탁·국외 이전</td>
+              <td data-label="종전 기준">안내 없음</td>
+              <td data-label="개정 기준">Supabase(서울·국내) · GitHub · jsDelivr · 페이앱 · 카카오 · Telegram 고지</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <div class="callout callout--navy">
+      <p><b>회사는 고객 정보와 운영 자료를 서비스 운영에 필요한 범위에서 지속적으로 관리합니다.</b> 다만 무조건 영구 보관하지 않으며, 처리 목적·보관 기간·파기 기준을 아래와 같이 구분합니다.</p>
+      <p>이용권 만료, 앱 삭제, 기기 변경, 기기 저장 정보 초기화로 인해 <b>서버에 보관된 고객 정보와 상담 이력이 삭제되지 않습니다.</b></p>
+    </div>
+
+    <details class="toc">
+      <summary>목차<span class="cnt">14개</span></summary>
+      <ol>
+        <li><a href="#p1">1. 총칙</a></li>
+        <li><a href="#p2">2. 수집하는 개인정보 항목과 수집 방법</a></li>
+        <li><a href="#p3">3. 개인정보의 처리 목적</a></li>
+        <li><a href="#p4">4. 보유 및 이용 기간</a></li>
+        <li><a href="#p5">5. 파기 절차 및 방법</a></li>
+        <li><a href="#p6">6. 정보주체의 권리와 행사 방법</a></li>
+        <li><a href="#p7">7. 개인정보의 제3자 제공</a></li>
+        <li><a href="#p8">8. 위탁 및 국외 이전</a></li>
+        <li><a href="#p9">9. 기기 저장 정보와 ‘저장된 정보 지우기’</a></li>
+        <li><a href="#p10">10. 쿠키 및 유사 기술</a></li>
+        <li><a href="#p11">11. 안전성 확보 조치</a></li>
+        <li><a href="#p12">12. 개인정보 보호책임자</a></li>
+        <li><a href="#p13">13. 고지의 의무</a></li>
+        <li><a href="#p14">14. 시행일</a></li>
+      </ol>
+    </details>
+
+    <section class="art" id="p1">
+      <h2>1. 총칙</h2>
+      <p>엔와이트레이드(이하 “회사”)는 이용자의 개인정보를 중요하게 생각하며, 「개인정보 보호법」 등 관련 법령을 준수합니다. 이 방침은 회사가 제공하는 「내 사주 타이밍 달력」 서비스와 1:1 상담에 적용됩니다.</p>
+      <p><b>회사는 고객 정보와 운영 자료를 서비스 운영에 필요한 범위에서 지속적으로 관리합니다.</b> 다만 무조건 영구 보관하지 않으며, 처리 목적·보관 기간·파기 기준을 아래와 같이 구분합니다.</p>
+    </section>
+
+    <section class="art" id="p2">
+      <h2>2. 수집하는 개인정보 항목과 수집 방법</h2>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">구분</th><th scope="col">항목</th><th scope="col">저장 위치</th><th scope="col">수집 시점</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="구분">기기 저장 정보<br>(서버 전송 없음)</td>
+              <td data-label="항목">이름(선택), 생년월일·시, 성별, 달력 종류, 1초 체크·성찰·저녁 기록, 아침 질문 답변, 액운 태우기 횟수, 케미 입력값(상대방 정보 포함)</td>
+              <td data-label="저장 위치">이용자 기기 브라우저(localStorage)</td>
+              <td data-label="수집 시점">이용자가 앱에 입력할 때</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">결제·입장 코드</td>
+              <td data-label="항목">휴대폰 번호, 주문번호, 결제금액·일시, 결제수단 응답값, 발급 코드</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">이용권 결제·코드 확인 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">72시간 특별 선물</td>
+              <td data-label="항목">이름, 생년월일시, 성별, 사주 분석 자료, 신청번호, 동의 시각, 전달 본문</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점"><b>이용자가 별도로 동의한 경우에만</b></td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">1:1 상담·작명</td>
+              <td data-label="항목">신청서에 입력한 이름·연락처·사주 정보·요청 내용, 상품 종류</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">상담 신청 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">친구 초대</td>
+              <td data-label="항목">카카오 계정 식별자(회원번호), 닉네임, 프로필 이미지 주소, 초대 코드, 초대 실적</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">카카오 로그인 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">인스타그램 후기 인증</td>
+              <td data-label="항목"><b>전화번호 또는 카카오 계정 식별자 또는 기기 익명키</b>, 카카오 닉네임, 신청 메모(선택, 300자), 인증 상태·처리일시, 지급한 할인권/이용권 정보</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">후기 인증 신청 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">기기 익명 키</td>
+              <td data-label="항목">앱이 만든 임의 문자열(개인 식별 정보 아님) — 72시간 특별 선물 기산점에만 사용</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">앱 첫 실행 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">자동 생성 정보</td>
+              <td data-label="항목">접속 IP(즉시 해시로 변환하여 저장, 원문 보관 안 함), 접속 일시, 입장 코드·관리자 접속 시도 기록</td>
+              <td data-label="저장 위치">서버</td>
+              <td data-label="수집 시점">서비스 이용 과정</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="dash">
+        <li><b>수집하지 않는 정보</b>: 주민등록번호, 여권번호, 운전면허번호, 카드번호 전체(CVC 포함). 카드 결제는 결제대행사(페이앱)가 직접 처리하며 회사는 카드정보를 저장하지 않습니다.</li>
+        <li><b>인스타그램 인증에서 사진·게시물 원본은 서버에 저장하지 않습니다.</b> 이용자가 카카오톡 채널로 보낸 인증 화면을 운영자가 확인한 뒤, 위 표의 신청 정보만 남깁니다.</li>
+        <li>앱 화면에서 이용자가 입력하는 <b>성찰 기록·아침 질문 답변·저녁 기록·케미테스트 상대방 정보는 서버로 전송되지 않습니다.</b></li>
+      </ul>
+    </section>
+
+    <section class="art" id="p3">
+      <h2>3. 개인정보의 처리 목적</h2>
+      <ol class="cl">
+        <li>서비스 제공: 사주 기반 운세·달력·기록 기능, 이용권 개설</li>
+        <li>본인 확인·부정 이용 방지: 입장 코드 확인, 중복 혜택 방지, 관리자 접근 제한</li>
+        <li>결제·정산·환불: 결제 확인, 전자상거래법상 거래 기록 보존</li>
+        <li><b>고객 관리</b>: 신규·기존 고객 등록 내역, 이용권 발급·이용 이력, 혜택 지급 이력의 지속적 관리(재문의 응대, 이용권 복구, 분쟁 대응)</li>
+        <li>상담·가이드 제공: 72시간 특별 선물 제작·전달, 1:1 상담 접수·진행·전달</li>
+        <li>서비스 개선: 오류 분석(개인을 식별하지 않는 형태)</li>
+      </ol>
+    </section>
+
+    <section class="art" id="p4">
+      <h2>4. 개인정보의 보유 및 이용 기간</h2>
+      <p>회사는 지속적인 고객관리와 재상담 연속성을 위해 아래 ①에 해당하는 고객 정보·상담 이력·감정서·72시간 특별 가이드 원본을 <b>1년·3년·5년 경과를 이유로 일괄 삭제하지 않습니다.</b> 법적으로 파기해야 하는 일회성·보안 기록과 미동의 거래 기록만 구분하여 파기합니다.</p>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">구분</th><th scope="col">해당 정보</th><th scope="col">보유 기간 및 갱신 기준</th><th scope="col">적법한 근거·동의</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="구분">① 지속 관리 자산 — 고객·사주·상담·가이드·재상담 이력</td>
+              <td data-label="해당 정보">고객 기본·연락처, 사주 정보·분석 자료, 최초 상담일·전체 상담 이력·고민·신청 내용, 상담 결과·감정서, 72시간 특별 가이드 원본, 결제·이용권 이력(법정 5년 이후 연속 관리분), 재상담 이력</td>
+              <td data-label="보유 기간 및 갱신 기준"><b>고객의 동의 철회·회원 탈퇴 또는 삭제 요청 시까지</b>(장기 보관 동의 기반). 마지막 상담·이용일로부터 <b>5년 경과 시</b> 보관 연장·갱신 안내 후 요청 시 파기</td>
+              <td data-label="적법한 근거·동의"><b>별도 장기 보관 동의</b>(신청·가입 시 재상담·이력 관리 목적 고지 후 동의)</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">② 지속 관리 미동의 — 결제·계약·상담 기록</td>
+              <td data-label="해당 정보">장기 보관에 별도 동의하지 않은 이용자의 주문·결제·상담 거래 기록</td>
+              <td data-label="보유 기간 및 갱신 기준"><b>거래 종료 후 5년</b>(전자상거래법 §6) — 이후 지체 없이 파기</td>
+              <td data-label="적법한 근거·동의">법령상 보존 의무</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">③ 일회성 운영·인증 시도 데이터</td>
+              <td data-label="해당 정보">기기 익명 키·72시간 기산 시각, 입장 코드·인스타 인증 시도 기록</td>
+              <td data-label="보유 기간 및 갱신 기준"><b>목적 달성 후 1년</b>(단, 유효한 이용권·혜택 원장은 ①/② 기준 유지)</td>
+              <td data-label="적법한 근거·동의">최소 보관</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">④ 접속·보안 기록</td>
+              <td data-label="해당 정보">접속 IP 해시, 관리자 접속 시도, 관리자 신뢰 지점 기억(해시)</td>
+              <td data-label="보유 기간 및 갱신 기준">접속 기록 <b>30일</b>, 관리자 신뢰 지점 기억 <b>90일</b></td>
+              <td data-label="적법한 근거·동의">보안·부정 이용 방지</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="구분">⑤ 백업 사본</td>
+              <td data-label="해당 정보">위 ①~④의 암호화 사본</td>
+              <td data-label="보유 기간 및 갱신 기준"><b>최근 14회분</b>(약 2주) 보관, 새 백업이 검증을 통과한 뒤에만 가장 오래된 것을 파기</td>
+              <td data-label="적법한 근거·동의">안전성 확보</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="dash">
+        <li><b>별도 동의 및 갱신 절차</b>: 상담·72시간 가이드·회원 연결 시 “수년 후 재상담과 기존 감정서·이력 확인을 위한 장기 보관(동의 철회·삭제 요청 시까지)”에 대한 <b>별도 선택 동의</b>를 받습니다. 동의를 철회하거나 삭제를 요청하면(법령상 5년 보존 의무가 남은 결제 원장만 분리 보관하고) 지체 없이 파기합니다.</li>
+        <li><b>기존 이력 보존 원칙</b>: 새로운 상담 신청이나 재방문이 있어도 기존 상담 이력·감정서를 덮어쓰지 않고 시간순으로 누적 관리하며, <b>이용권 만료·앱 삭제·기기 변경·‘저장된 정보 지우기’로 서버 고객 데이터가 사라지지 않습니다.</b></li>
+      </ul>
+    </section>
+
+    <section class="art" id="p5">
+      <h2>5. 개인정보의 파기 절차 및 방법</h2>
+      <ol class="cl">
+        <li>파기 사유가 발생하면 내부 방침에 따라 파기 대상으로 선정하고, 개인정보 보호책임자의 승인을 받아 파기합니다.</li>
+        <li>전자적 파일은 복구할 수 없는 방법으로 삭제하고, 종이 문서는 분쇄합니다.</li>
+        <li>법령에 따라 보존해야 하는 정보는 별도 저장공간에 분리 보관하며, 보존 기간이 끝나면 파기합니다.</li>
+        <li><b>이용자의 삭제 요청</b>은 카카오톡 채널로 접수하며, 본인 확인 후 지체 없이(늦어도 10일 이내) 처리하고 결과를 알립니다.</li>
+      </ol>
+    </section>
+
+    <section class="art" id="p6">
+      <h2>6. 정보주체의 권리와 행사 방법</h2>
+      <p>이용자는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
+      <ol class="cl">
+        <li>개인정보 열람 요구</li>
+        <li>오류 정정 요구</li>
+        <li>삭제 요구</li>
+        <li>처리 정지 요구</li>
+      </ol>
+      <ul class="dash">
+        <li>카카오톡 채널 ‘윤이세사주’ 또는 사업자 연락처로 요청할 수 있으며, 회사는 지체 없이 조치합니다.</li>
+        <li><b>동의 철회</b>: 72시간 특별 선물 등 별도 동의는 언제든지 철회할 수 있고, 철회 시 해당 자료를 파기합니다(이미 전달된 결과물 제외).</li>
+        <li><b>앱 화면의 ‘저장된 정보 지우기’</b>로 기기에 저장된 정보를 직접 삭제할 수 있습니다(아래 9번).</li>
+      </ul>
+    </section>
+
+    <section class="art" id="p7">
+      <h2>7. 개인정보의 제3자 제공</h2>
+      <p>회사는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 법령에 따라 제공하는 경우(수사기관의 적법한 요청 등)를 제외하고, 다음의 경우에만 제공합니다.</p>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">제공받는 자</th><th scope="col">제공 항목</th><th scope="col">목적</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="제공받는 자">페이앱(PayApp)</td>
+              <td data-label="제공 항목">결제 승인·취소에 필요한 정보(주문번호, 금액, 휴대폰 번호)</td>
+              <td data-label="목적">결제 처리·취소</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="제공받는 자">카카오</td>
+              <td data-label="제공 항목">카카오 로그인 식별자, 채널 메시지 발송 정보</td>
+              <td data-label="목적">로그인·혜택 안내</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="art" id="p8">
+      <h2>8. 개인정보 처리의 위탁 및 국외 이전</h2>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">수탁자</th><th scope="col">위탁 업무</th><th scope="col">이전 국가·리전</th><th scope="col">이전 항목·시점·방법</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="수탁자">Supabase Inc.</td>
+              <td data-label="위탁 업무">데이터베이스·인증 호스팅</td>
+              <td data-label="이전 국가·리전"><b>대한민국(ap-northeast-2 서울)</b> — 국외 이전 아님</td>
+              <td data-label="이전 항목·시점·방법">서버에 저장되는 정보 일체, 서비스 이용 시 API 호출</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="수탁자">GitHub, Inc.<br>(GitHub Pages)</td>
+              <td data-label="위탁 업무">웹 화면(정적 파일) 호스팅</td>
+              <td data-label="이전 국가·리전">미국</td>
+              <td data-label="이전 항목·시점·방법">개인정보를 저장하지 않음. 다만 접속 시 <b>이용자 IP·접속 기록이 GitHub에 남을 수 있음</b></td>
+            </tr>
+            <tr>
+              <td class="key" data-label="수탁자">jsDelivr (CDN)</td>
+              <td data-label="위탁 업무">화면 라이브러리 파일 배포</td>
+              <td data-label="이전 국가·리전">네덜란드·글로벌 CDN</td>
+              <td data-label="이전 항목·시점·방법">개인정보를 저장하지 않음. 접속 시 IP가 전달됨</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="수탁자">페이앱</td>
+              <td data-label="위탁 업무">결제 처리</td>
+              <td data-label="이전 국가·리전">대한민국</td>
+              <td data-label="이전 항목·시점·방법">결제 정보, 결제 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="수탁자">카카오</td>
+              <td data-label="위탁 업무">로그인·채널 알림</td>
+              <td data-label="이전 국가·리전">대한민국</td>
+              <td data-label="이전 항목·시점·방법">카카오 계정 식별자, 로그인 시</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="수탁자">Telegram<br>(Telegram FZ-LLC)</td>
+              <td data-label="위탁 업무">운영자 알림(신청 접수 알림)</td>
+              <td data-label="이전 국가·리전">국외(글로벌)</td>
+              <td data-label="이전 항목·시점·방법"><b>신청 사실·접수번호·성함·연락처 일부</b>가 운영자 수신 봇으로 전송됨</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="dash">
+        <li>국외 이전이 발생하는 항목(GitHub 접속 기록, jsDelivr 접속 IP, Telegram 알림)은 위 표와 같이 고지하며, 이전을 원하지 않는 경우 서비스 이용을 중단할 수 있습니다(다만 서비스 특성상 화면 호스팅 없이는 이용이 불가능합니다).</li>
+        <li>운영자의 신청 접수 알림은 Telegram 봇으로 수신합니다. 이 수신을 중단하면 해당 국외 이전은 발생하지 않습니다.</li>
+      </ul>
+    </section>
+
+    <section class="art" id="p9">
+      <h2>9. 기기 저장 정보와 ‘저장된 정보 지우기’</h2>
+      <ol class="cl">
+        <li>사주 정보와 기록은 이용자의 기기 브라우저에 저장되며, 회사 서버로 전송되지 않습니다.</li>
+        <li>화면 하단의 ‘저장된 정보 지우기’를 누르면 <b>이 기기에 저장된 사주 정보·기록·열린 입장 코드·결제 대기 기록·72시간 기산 기록이 삭제</b>됩니다. 되돌릴 수 없습니다.</li>
+        <li>다만 <b>회사 서버의 이용권·할인권·친구 초대 실적·인스타그램 인증 기록·결제 이력은 삭제되지 않으며</b>, 이 기기에서 열어 둔 입장 코드가 지워지므로 다시 이용하려면 입장 코드를 한 번 더 입력해야 합니다.</li>
+        <li>카카오 로그인 세션(로그아웃)은 이 버튼으로 이루어지지 않습니다. 로그아웃은 회원 화면의 ‘로그아웃’을 이용해 주세요.</li>
+      </ol>
+    </section>
+
+    <section class="art" id="p10">
+      <h2>10. 쿠키 및 유사 기술</h2>
+      <p>회사는 화면 상태를 기억하기 위해 브라우저의 로컬 저장소(localStorage)를 사용합니다. 이는 서버로 전송되지 않으며, 브라우저 설정 또는 ‘저장된 정보 지우기’로 삭제할 수 있습니다. 광고·추적 쿠키는 사용하지 않습니다.</p>
+    </section>
+
+    <section class="art" id="p11">
+      <h2>11. 개인정보의 안전성 확보 조치</h2>
+      <ol class="cl">
+        <li><b>전송 구간 암호화</b>: 모든 화면·API·결제 창은 HTTPS로 통신합니다.</li>
+        <li><b>관리자 접근 제한</b>: 관리자 화면은 6자리 비밀번호(해시로만 저장)로 보호하고, <b>접속 지점별 시도 횟수 제한</b>(10분 5회)과 <b>분산 공격 시 전체 일시 잠금</b>을 적용합니다. 정상 운영자는 이 잠금에서 예외 처리되어 업무가 중단되지 않습니다.</li>
+        <li><b>데이터베이스 접근 통제</b>: 공개 앱에는 공개용 키만 사용하고, 관리 권한 키는 서버·운영 환경에만 둡니다. 테이블 단위 접근 정책(RLS)을 적용합니다.</li>
+        <li><b>백업 암호화</b>: 고객 정보가 포함된 백업은 <b>AES-256 암호화</b> 후 별도 폴더에 시점별로 보관하며, 암호 키는 백업 파일과 분리해 두고 권한을 최소화합니다. 복구 절차는 정기적으로 실제 복호화·복원 검증을 합니다.</li>
+        <li><b>최소 수집</b>: 기기에만 두면 되는 기록은 서버로 보내지 않습니다.</li>
+        <li><b>접속 기록 최소화</b>: IP는 원문을 저장하지 않고 해시로 변환해 30일만 보관합니다.</li>
+      </ol>
+    </section>
+
+    <section class="art" id="p12">
+      <h2>12. 개인정보 보호책임자</h2>
+      <ul class="dash">
+        <li>성명: 김나영 (대표)</li>
+        <li>소속: 엔와이트레이드(N.Y.TRADE)</li>
+        <li>주소: 부산광역시 부산진구 전포대로 250, 1904호(전포동)</li>
+        <li>연락처: 카카오톡 채널 ‘윤이세사주’ / 전화 <a href="tel:01048487373">010-4848-7373</a> / 이메일 <a href="mailto:ksy7900so@naver.com">ksy7900so@naver.com</a></li>
+      </ul>
+      <p>개인정보 열람·정정·삭제·처리 정지 요구는 위 연락처로 받으며, 본인 확인 후 지체 없이 처리합니다.</p>
+    </section>
+
+    <section class="art" id="p13">
+      <h2>13. 고지의 의무</h2>
+      <p>이 방침의 내용이 추가·삭제·수정될 경우 시행 7일 전(이용자에게 불리한 변경은 30일 전)부터 서비스 화면을 통해 공지하며, 개정 전후 내용을 비교하여 확인할 수 있도록 안내합니다. <b>이미 고지한 보관 조건을 소급하여 불리하게 변경하지 않습니다.</b></p>
+    </section>
+
+    <section class="art" id="p14">
+      <h2>14. 시행일</h2>
+      <ol class="cl">
+        <li>이 방침은 <b>2027년 1월 1일</b>부터 시행합니다.</li>
+        <li>2026년 11월 26일 이후 새로 서비스를 이용하기 시작하는 이용자에게는 <b>그 이용을 시작한 날부터</b> 적용합니다.</li>
+        <li>2026년 11월 26일 전에 이미 서비스를 이용하던 이용자에게는 2026년 11월 26일부터 30일 이상 미리 알려 드리고 <b>2027년 1월 1일</b>부터 적용합니다. 시행일 전까지는 종전 안내가 적용됩니다.</li>
+        <li>종전 방침에서 예정했던 1년 경과 시 일괄 파기는 시행하지 않습니다. 종전에 수집·보관한 정보의 장기 보관은 <b>별도의 동의를 받은 범위에서만</b> 이 방침의 기준으로 관리하며, 동의하지 않은 정보는 종전에 안내한 기간(1년)과 법령상 보존 기간에 따라 파기합니다. 어느 경우든 삭제를 요청하시면 지체 없이 파기합니다.</li>
+      </ol>
+    </section>
+
+    <section class="help">
+      <p class="help__t">개인정보 열람·정정·삭제 요청</p>
+      <p>카카오톡 채널 ‘윤이세사주’로 요청하시면 본인 확인 후 지체 없이 처리해 드립니다.</p>
+      <p>전화 <a href="tel:01048487373">010-4848-7373</a> · 이메일 <a href="mailto:ksy7900so@naver.com">ksy7900so@naver.com</a></p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <nav class="foot__links" aria-label="약관 및 정책">
+      <a href="../terms/">이용약관</a><span aria-hidden="true">│</span><a href="../privacy/">개인정보처리방침</a><span aria-hidden="true">│</span><a href="../refund/">환불 및 청약철회</a>
+    </nav>
+    <p class="foot__biz"><b>엔와이트레이드(N.Y.TRADE)</b> · 대표 김나영 · 사업자등록번호 219-07-67996<br>
+      통신판매업 신고 제2022-부산부산진-1013호<br>
+      사업장(신고증상 소재지) 부산광역시 부산진구 전포대로 250, 1904호(전포동)<br>
+      전화 <a href="tel:01048487373">010-4848-7373</a> · 이메일 <a href="mailto:ksy7900so@naver.com">ksy7900so@naver.com</a><br>
+      문의 카카오톡 채널 ‘윤이세사주’</p>
+    <p class="foot__micro">본 서비스는 일상의 흐름과 자기 성찰을 위한 참고 자료입니다.<br>2026. 11. 26 공지 · 2027. 1. 1 시행(신규 이용자는 공개일부터)<br>© 윤이세사주</p>
+    <a class="foot__back" href="../"><span aria-hidden="true">←</span> 달력으로</a>
+  </footer>
+</div>
+</body>
+</html>

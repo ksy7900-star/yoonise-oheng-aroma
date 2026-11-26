@@ -50,7 +50,8 @@
     guideOpen: false,        // 도착한 가이드 팝업이 열려 있는지
     guideSeq: 0,             // 페이지를 그리는 순서 — 늦게 온 그림이 덮어쓰지 않게
     openAfterClaim: false,   // 보관 버튼을 눌렀는데 아직 신청 정보를 못 받아 온 경우
-    consentChecked: false    // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
+    consentChecked: false,   // 동의 체크 상태 — 다시 그려도 체크가 풀리지 않게 기억
+    longTermChecked: false   // [선택] 장기 보관 동의 체크 상태 (2026-11-26)
   };
 
   function toast(t) {
@@ -669,11 +670,21 @@
        동의 시점에 consent_at 과 사주 스냅샷이 함께 저장되고, 동의 전에는 서버에 아무것도 저장되지 않는다.
        동의하지 않으면 진행 버튼이 잠기고, 서버도 동의 없는 기록·전달을 거부한다. */
     var consented = !!d.consent_at || !!mem.consentChecked;
+    var ltcChecked = d.long_term_consent === true || (d.long_term_consent === undefined && !!mem.longTermChecked);
     var consent = needConsent
       ? '<label class="sgift__consent" for="sgiftConsent">' +
         '<input type="checkbox" id="sgiftConsent" data-sgift-consent' + (consented ? ' checked' : '') + '>' +
-        '<span class="sgift__consent-t"><b>[필수]</b> 특별 가이드 제작·전달을 위해 이름·생년월일시·성별·사주 분석 자료를 서버에 저장하고 윤이세가 확인하는 데 동의합니다 (보유: 가이드 전달 후 1년, 요청 시 지체 없이 삭제 · <b>동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없습니다.</b>)</span>' +
-        '</label>'
+        '<span class="sgift__consent-t"><b>[필수]</b> 특별 가이드 제작·전달을 위해 이름·생년월일시·성별·사주 분석 자료를 서버에 저장하고 윤이세가 확인하는 데 동의합니다 (거래·상담 기록은 5년 보관 · <b>동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없습니다.</b>)</span>' +
+        '</label>' +
+        '<div class="sgift__ltc">' +
+          '<label class="sgift__ltc-row" for="sgiftLongTerm">' +
+            '<input type="checkbox" id="sgiftLongTerm" data-sgift-long-term' + (ltcChecked ? ' checked' : '') + '>' +
+            '<span class="sgift__ltc-t"><b>[선택]</b> 고객 정보 및 상담 이력 장기 보관 동의 <i>(동의 철회·삭제 요청 시까지, 5년마다 갱신 안내)</i></span>' +
+          '</label>' +
+          '<button type="button" class="sgift__ltc-more" id="sgiftLongTermMore" aria-expanded="false" aria-controls="sgiftLongTermDetail">상세 보기</button>' +
+          '<div class="sgift__ltc-detail" id="sgiftLongTermDetail" hidden><p><b>보관하는 것</b> 이름, 생년월일시·성별, 연락처, 상담 신청 내용과 상담 이력(작명은 자녀·부모 사주)</p><p><b>보관 기간</b> 동의하신 날부터 동의를 철회하거나 삭제를 요청하실 때까지</p><p><b>5년마다 확인</b> 5년이 지날 때마다 계속 보관할지 다시 여쭙고, 답이 없으면 보관을 멈춥니다</p><p><b>쓰는 곳</b> 재상담 때 앞선 상담을 이어서 보기, 이미 받은 감정서·가이드를 다시 확인해 드리기</p><p><b>동의하지 않으면</b> 상담은 그대로 진행되고, 상담 기록은 거래·상담 기록 5년 보관 뒤 파기합니다</p><p><b>철회</b> 카카오톡 채널 ‘윤이세사주’로 알려 주시면 지체 없이 철회하고 보관하던 상담 이력을 삭제합니다</p><p class="sgift__ltc-links"><a href="privacy/" target="_blank" rel="noopener">개인정보처리방침 전문</a> · <a href="terms/" target="_blank" rel="noopener">이용약관</a></p></div>' +
+          '<p class="sgift__ltc-note">동의하지 않아도 신청과 가이드 전달에는 아무 영향이 없습니다.</p>' +
+        '</div>'
       : '';
 
     var btn = delivered
@@ -976,6 +987,21 @@
       .then(function () { if (cb) cb(); }, function () { if (cb) cb(); });
   }
 
+  /** [선택] 고객 정보·상담 이력 장기 보관 동의 (2026-11-26) — 동의/미동의를 v1.0 기준으로 남긴다 */
+  function saveLongTermConsent(d) {
+    var on = $('#sgiftLongTerm') ? !!$('#sgiftLongTerm').checked : !!mem.longTermChecked;
+    mem.longTermChecked = on;
+    rpc('special_guide_long_term_consent', {
+      p_client_uid: ensureUid(), p_claim_no: d.claim_no,
+      p_consent: on, p_terms_version: 'v1.0'
+    }).then(function (r) {
+      if (r && r.ok) {
+        d.long_term_consent = r.long_term_consent;
+        if (mem.claim) mem.claim.long_term_consent = r.long_term_consent;
+      }
+    }, function () { });
+  }
+
   function applyClaim() {
     var d = mem.claim;
     var c = cal();
@@ -991,6 +1017,7 @@
         return;
       }
       saveConsent(d, function () {
+        saveLongTermConsent(d);      /* [선택] 장기 보관 동의 — 실패해도 신청은 계속된다 */
         fillSaju(d, function () {
           /* 이미 접수된 건(결제 자동 접수 등)은 동의만 남기면 끝 — 가이드는 윤이세가 준비해 카톡으로 보낸다 */
           if (d.status !== 'eligible') {
@@ -1239,6 +1266,18 @@
   /* ── 이벤트 연결 ───────────────────────────────────── */
   function bind() {
     document.addEventListener('click', function (e) {
+      /* [선택] 장기 보관 동의 상세 보기 — 접기/펼치기 */
+      if (e.target && (e.target.id === 'sgiftLongTermMore')) {
+        e.preventDefault();
+        var more = e.target, det = $('#sgiftLongTermDetail');
+        if (det) {
+          var open = more.getAttribute('aria-expanded') === 'true';
+          more.setAttribute('aria-expanded', open ? 'false' : 'true');
+          det.hidden = open;
+          more.textContent = open ? '상세 보기' : '상세 접기';
+        }
+        return;
+      }
       if (!e.target.closest) return;
       var x = e.target.closest('#specialGiftX');
       if (x) {
@@ -1324,6 +1363,10 @@
     });
     /* [필수] 동의 체크 — 누를 때마다 신청 버튼과 안내 문구가 바뀐다 */
     document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'sgiftLongTerm') {
+        mem.longTermChecked = !!e.target.checked;
+        return;
+      }
       if (!e.target || e.target.id !== 'sgiftConsent') return;
       mem.consentChecked = !!e.target.checked;
       var b = $('#specialApply');

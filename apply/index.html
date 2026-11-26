@@ -235,6 +235,32 @@ a { color: inherit; }
   font-size: 11px; font-weight: 600; color: #475569;
 }
 .check input { width: 15px; height: 15px; accent-color: #1E293B; }
+/* ── [선택] 고객 정보 및 상담 이력 장기 보관 동의 (2026-11-26) ─────────── */
+.ltc {
+  margin-top: 10px; padding: 11px 12px 10px; border-radius: 13px;
+  background: #FFF; border: 1px solid rgba(15, 23, 42, .14);
+}
+.ltc__row { display: flex; align-items: flex-start; gap: 8px; margin: 0; cursor: pointer; }
+.ltc__row input {
+  flex: none; width: 16px; height: 16px; margin: 1px 0 0;
+  accent-color: #1E293B; cursor: pointer;
+}
+.ltc__t { font-size: 10.5px; line-height: 1.62; font-weight: 600; color: var(--ink-2); }
+.ltc__t b { font-weight: 800; color: #475569; letter-spacing: -.01em; margin-right: 2px; }
+.ltc__t i { display: block; margin-top: 3px; font-style: normal; font-weight: 500; color: var(--mute); }
+.ltc__more { margin: 7px 0 0 24px; }
+.ltc__toggle {
+  border: 0; background: none; padding: 2px 0; font: inherit; font-size: 10.5px;
+  font-weight: 700; color: #1E293B; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+.ltc__detail { margin-top: 7px; padding: 10px 11px; border-radius: 10px; background: #F8FAFC; }
+.ltc__detail p { margin: 0 0 6px; font-size: 10px; line-height: 1.6; font-weight: 500; color: var(--ink-2); }
+.ltc__detail p:last-child { margin-bottom: 0; }
+.ltc__detail b { display: block; font-weight: 800; color: #334155; margin: 0 0 1px; }
+.ltc__detail .ltc__links { margin-top: 8px; }
+.ltc__detail a { color: #1E293B; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.ltc__note { margin: 7px 2px 0; font-size: 10px; line-height: 1.55; font-weight: 500; color: var(--mute); }
+
 .privacy {
   display: flex; align-items: flex-start; gap: 8px; margin-top: 14px;
   padding: 11px 12px; border-radius: 13px;
@@ -620,8 +646,22 @@ a { color: inherit; }
 
     <label class="privacy" id="privacyRow">
       <input type="checkbox" id="fPrivacy">
-      <span><b>[필수]</b> 상담 접수 및 사주 풀이를 위해 이름·생년월일시·성별·연락처(작명은 자녀·부모 사주)를 수집·이용하며 서버에 저장하는 데 동의합니다. (보유: 접수일부터 1년, 요청 시 지체 없이 삭제 · 동의하지 않으면 접수할 수 없습니다.)</span>
+      <span><b>[필수]</b> 상담 접수 및 사주 풀이를 위해 이름·생년월일시·성별·연락처(작명은 자녀·부모 사주)를 수집·이용하며 서버에 저장하는 데 동의합니다. (거래·상담 기록은 5년 보관하고, 재상담·이력 확인을 위한 장기 보관은 아래에서 따로 여쭙습니다 · 동의하지 않으면 접수할 수 없습니다.)</span>
     </label>
+
+    <!-- [선택] 고객 정보 및 상담 이력 장기 보관 동의 (2026-11-26) — 체크하지 않아도 접수에 영향 없음 -->
+    <div class="ltc" id="ltcBox">
+      <label class="ltc__row" for="fLongTerm">
+        <input type="checkbox" id="fLongTerm">
+        <span class="ltc__t"><b>[선택]</b> 고객 정보 및 상담 이력 장기 보관 동의
+          <i>(동의 철회·삭제 요청 시까지, 5년마다 갱신 안내)</i></span>
+      </label>
+      <div class="ltc__more">
+        <button type="button" class="ltc__toggle" id="ltcToggle" aria-expanded="false" aria-controls="ltcDetail">상세 보기</button>
+        <div class="ltc__detail" id="ltcDetail" hidden><p><b>보관하는 것</b> 이름, 생년월일시·성별, 연락처, 상담 신청 내용과 상담 이력(작명은 자녀·부모 사주)</p><p><b>보관 기간</b> 동의하신 날부터 동의를 철회하거나 삭제를 요청하실 때까지</p><p><b>5년마다 확인</b> 5년이 지날 때마다 계속 보관할지 다시 여쭙고, 답이 없으면 보관을 멈춥니다</p><p><b>쓰는 곳</b> 재상담 때 앞선 상담을 이어서 보기, 이미 받은 감정서·가이드를 다시 확인해 드리기</p><p><b>동의하지 않으면</b> 상담은 그대로 진행되고, 상담 기록은 거래·상담 기록 5년 보관 뒤 파기합니다</p><p><b>철회</b> 카카오톡 채널 ‘윤이세사주’로 알려 주시면 지체 없이 철회하고 보관하던 상담 이력을 삭제합니다</p><p class="ltc__links"><a href="../calendar/privacy/" target="_blank" rel="noopener">개인정보처리방침 전문</a> · <a href="../calendar/terms/" target="_blank" rel="noopener">이용약관</a></p></div>
+      </div>
+      <p class="ltc__note">동의하지 않아도 상담 접수와 진행에는 아무 영향이 없습니다.</p>
+    </div>
 
     <p class="cform__msg" id="formMsg" role="alert" hidden></p>
   </section>
@@ -1062,6 +1102,19 @@ a { color: inherit; }
     if (el) el.addEventListener('input', clearMsg);
   });
   $('fPrivacy').addEventListener('change', clearMsg);
+  /* [선택] 장기 보관 동의 — 상세 보기 접기/펼치기 (2026-11-26) */
+  (function () {
+    var tg = $('ltcToggle'), dt = $('ltcDetail');
+    if (!tg || !dt) return;
+    tg.addEventListener('click', function () {
+      var open = tg.getAttribute('aria-expanded') === 'true';
+      tg.setAttribute('aria-expanded', open ? 'false' : 'true');
+      dt.hidden = open;
+      tg.textContent = open ? '상세 보기' : '상세 접기';
+    });
+    var box = $('fLongTerm');
+    if (box) box.addEventListener('change', clearMsg);
+  })();
 
   /* ── 결제 확인용 휴대폰 번호 (STEP 1) ───────
      입력하면 신청서 '연락처' 칸에 그대로 채우고, 칸을 벗어날 때 010-1234-5678 모양으로 정리한다. */
@@ -1427,7 +1480,10 @@ a { color: inherit; }
         coupon_title: cpn.paid ? cpn.paid.coupon_title : null
       },
       contact: ($('fWho').value.trim() || $('fPhone').value.trim() || ''),
-      page: location.href
+      page: location.href,
+      /* [선택] 장기 보관 동의 — 체크하지 않으면 false(동의하지 않음)로 남긴다. 미응답(NULL)과 구분된다. */
+      long_term_consent: !!($('fLongTerm') && $('fLongTerm').checked),
+      terms_version: 'v1.0'
     };
     submitRequest(row, function (ok) {
       submitting = false;

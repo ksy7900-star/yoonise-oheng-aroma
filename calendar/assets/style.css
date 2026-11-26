@@ -7628,3 +7628,37 @@ body.is-result .hero__share { margin-top: 8px; }
   .invt__acts { grid-template-columns: 1fr; }
   .iflow__t { font-size: 13.5px; }
 }
+
+/* ── [선택] 고객 정보 및 상담 이력 장기 보관 동의 (2026-11-26) ─────────── */
+.sgift__ltc { margin: 8px 0 0; padding: 10px 11px 9px; border-radius: 11px; border: 1px dashed rgba(15,23,42,.22); background: rgba(255,255,255,.72); }
+.sgift__ltc-row { display: flex; align-items: flex-start; gap: 7px; cursor: pointer; }
+.sgift__ltc-row input { flex: none; width: 15px; height: 15px; margin: 1px 0 0; accent-color: #1E293B; cursor: pointer; }
+.sgift__ltc-t { font-size: 11px; line-height: 1.6; font-weight: 600; color: #334155; }
+.sgift__ltc-t b { font-weight: 800; color: #475569; margin-right: 3px; }
+.sgift__ltc-t i { display: block; margin-top: 2px; font-style: normal; font-weight: 500; color: #64748B; }
+.sgift__ltc-more { margin: 6px 0 0 22px; padding: 2px 0; border: 0; background: none; font: inherit; font-size: 11px; font-weight: 700; color: #1E293B; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.sgift__ltc-detail { margin: 7px 0 0 0; padding: 9px 10px; border-radius: 9px; background: #F8FAFC; }
+.sgift__ltc-detail p { margin: 0 0 5px; font-size: 10.5px; line-height: 1.58; font-weight: 500; color: #334155; }
+.sgift__ltc-detail p:last-child { margin-bottom: 0; }
+.sgift__ltc-detail b { display: block; font-weight: 800; color: #1E293B; margin: 0 0 1px; }
+.sgift__ltc-detail .sgift__ltc-links { margin-top: 7px; }
+.sgift__ltc-detail a { color: #1E293B; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.sgift__ltc-note { margin: 7px 1px 0; font-size: 10px; line-height: 1.5; font-weight: 500; color: #64748B; }
+
+/* ── 푸터 약관 링크 · 연락처 (2026-11-26 #23999) ─────────────────────── */
+.foot__links{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:4px 8px;margin-top:14px;font-size:11.5px;font-weight:600;
+}
+.foot__links a{
+  color:var(--navy,#1B2940);text-decoration:none;
+  border-bottom:1px solid rgba(27,41,64,.28);padding-bottom:1px;
+}
+.foot__links span{color:#D3C7B3;font-size:10px}
+.foot__contact{margin-top:8px;font-size:10.5px;line-height:1.95;color:var(--mute,#6E665A)}
+.foot__contact a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(110,102,90,.32)}
+.foot__contact .ph{
+  font-style:normal;font-weight:600;color:var(--gold,#A5650F);
+  background:var(--gold-soft,#FDF3DD);border:1px dashed rgba(165,101,15,.34);
+  border-radius:6px;padding:1px 5px;font-size:.95em;white-space:nowrap;
+}

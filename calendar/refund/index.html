@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>환불 및 청약철회 안내 | 윤이세사주</title>
+<meta name="description" content="타이밍 달력 이용권과 1:1 상담 상품의 환불·청약철회 기준 — 7일 이내 청약철회, 3영업일 이내 환급, 작업 착수 전후 기준.">
+<meta name="theme-color" content="#FAF4E9">
+<meta name="format-detection" content="telephone=no">
+<link rel="canonical" href="https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/refund/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231C1B19'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23C79A4E' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+/* ==========================================================
+   윤이세사주 — 약관 3종 (이용약관 · 개인정보처리방침 · 환불 및 청약철회)
+   달력(/calendar/)과 같은 아이보리 · 먹색 · 네이비 · 골드 톤
+   1단 · 최대 폭 720px · 모바일 우선 (2026-11-26 제작)
+   ========================================================== */
+:root{
+  --bg:#FAF4E9; --paper:#FFFDF8;
+  --ink:#1A1712; --ink-2:#3B352C; --mute:#6E665A;
+  --hair:rgba(28,24,19,.10); --hair-soft:#E8E0D2;
+  --navy:#1B2940; --gold:#A5650F; --gold-soft:#FDF3DD; --gold-line:rgba(165,101,15,.34);
+  --serif:"Nanum Myeongjo","NanumMyeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","SamsungMyeongjo","Batang",serif;
+  --sans:"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:76px;overflow-x:hidden}
+body{
+  margin:0;font-family:var(--sans);font-size:15px;line-height:1.85;color:var(--ink-2);
+  background:
+    radial-gradient(120% 55% at 88% -6%, rgba(165,101,15,.065), transparent 62%),
+    radial-gradient(90% 45% at -10% 2%, rgba(27,41,64,.05), transparent 58%),
+    var(--bg);
+  letter-spacing:-.012em;word-break:keep-all;overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,ul,ol,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:var(--navy);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(27,41,64,.28)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--navy);outline-offset:3px;border-radius:6px}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.skip{position:absolute;left:-9999px;top:0;z-index:60;background:var(--navy);color:#F8F3E7;padding:10px 14px;border-radius:0 0 10px 0;font-size:13px}
+.skip:focus{left:0}
+
+/* ── 상단 · 달력으로 ─────────────────────────────── */
+.top{position:sticky;top:0;z-index:20;background:rgba(250,244,233,.93);border-bottom:1px solid var(--hair);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.top__row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px}
+.top__back{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding-right:8px;font-size:14px;font-weight:600;color:var(--navy);text-decoration:none}
+.top__back i{font-style:normal;font-size:16px;line-height:1;margin-top:-1px}
+.top__brand{font-family:var(--serif);font-size:12.5px;letter-spacing:.13em;color:var(--mute)}
+
+/* ── 약관 3종 탭 ─────────────────────────────────── */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0 0}
+.tabs a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:4px 3px;border:1px solid var(--hair-soft);border-radius:12px;background:rgba(255,255,255,.5);font-size:11.5px;font-weight:600;line-height:1.25;color:var(--mute);text-decoration:none;text-align:center}
+.tabs a[aria-current="page"]{background:var(--navy);border-color:var(--navy);color:#F8F3E7}
+.tabs a:not([aria-current]):hover{border-color:#D9CBB2;color:var(--ink-2)}
+
+/* ── 문서 머리 ───────────────────────────────────── */
+.doc{padding-top:26px}
+.doc__eyebrow{font-size:9.5px;letter-spacing:.26em;font-weight:600;color:var(--mute)}
+.doc__title{font-family:var(--serif);font-size:clamp(27px,7.6vw,34px);line-height:1.32;font-weight:500;color:var(--ink);margin-top:10px;letter-spacing:-.03em}
+.doc__meta{margin-top:10px;font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.doc__meta .sep{margin:0 7px;color:#CFC2AC}
+.doc__lead{margin-top:16px;padding-top:16px;border-top:1px solid var(--hair);font-size:14px;line-height:1.85;color:var(--mute)}
+
+/* 미확정 항목 표식 — 확정되면 글자만 바꾸면 된다(현재 사용 0) */
+.ph{font-style:normal;font-weight:600;color:var(--gold);background:var(--gold-soft);border:1px dashed var(--gold-line);border-radius:6px;padding:1px 6px;font-size:.94em;letter-spacing:0;white-space:nowrap}
+
+/* ── 적용 시점 안내 (신규·기존 구분) ──────────────── */
+.notice{margin-top:20px;padding:16px 15px 14px;border:1px solid var(--gold-line);border-radius:16px;
+  background:linear-gradient(180deg,rgba(253,243,221,.75),rgba(255,253,248,.9))}
+.notice__eyebrow{font-size:9.5px;letter-spacing:.2em;font-weight:700;color:var(--gold)}
+.notice__title{margin-top:8px;font-family:var(--serif);font-size:16px;line-height:1.62;font-weight:600;color:var(--ink);letter-spacing:-.025em}
+.notice__title b{color:var(--navy);font-weight:700}
+.notice__grid{display:grid;gap:8px;margin-top:12px}
+@media (min-width:620px){.notice__grid{grid-template-columns:1fr 1fr}}
+.notice__card{padding:11px 13px 12px;border:1px solid var(--hair-soft);border-radius:12px;background:#FFFDF8}
+.notice__card--later{border-color:rgba(165,101,15,.3);background:rgba(255,252,243,.92)}
+.notice__badge{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--navy);color:#F8F3E7;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.notice__card--later .notice__badge{background:var(--gold)}
+.notice__date{margin-top:8px;font-family:var(--serif);font-size:15.5px;font-weight:600;line-height:1.4;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums;word-break:keep-all}
+.notice__date small{margin-left:3px;font-family:var(--sans);font-size:11px;font-weight:500;color:var(--mute)}
+.notice__card .tx{margin-top:6px;font-size:12.5px;line-height:1.72;color:var(--ink-2)}
+.notice__calm{margin-top:11px;padding-top:10px;border-top:1px dashed rgba(165,101,15,.28);font-size:12.5px;line-height:1.75;color:var(--ink-2)}
+.notice__calm b{color:var(--ink);font-weight:700}
+.notice__list{margin-top:8px}
+.notice__list>li{font-size:12.5px;line-height:1.75}
+.notice__more{margin-top:10px;padding-top:2px;border-top:1px solid rgba(165,101,15,.22)}
+.notice__more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--navy);list-style:none}
+.notice__more>summary::-webkit-details-marker{display:none}
+.notice__more>summary::after{content:"＋";margin-left:8px;font-size:12px;color:var(--gold)}
+.notice__more[open]>summary::after{content:"−"}
+.notice__cap{margin:2px 0 8px;font-size:11.5px;line-height:1.7;color:var(--mute)}
+
+/* ── 목차 ────────────────────────────────────────── */
+.toc{margin-top:22px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper)}
+.toc summary{display:flex;align-items:center;min-height:48px;padding:0 16px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);list-style:none}
+.toc summary::-webkit-details-marker{display:none}
+.toc summary .cnt{margin-left:auto;font-size:11px;font-weight:500;color:var(--mute)}
+.toc summary::after{content:"＋";margin-left:10px;font-size:12px;font-weight:600;color:var(--gold)}
+.toc[open] summary::after{content:"−"}
+.toc ol{padding:2px 16px 12px;border-top:1px solid var(--hair-soft)}
+.toc a{display:block;padding:6px 0;font-size:12.5px;line-height:1.6;color:var(--ink-2);text-decoration:none}
+.toc a:hover{color:var(--navy);text-decoration:underline}
+
+/* ── 조항 · 절 ───────────────────────────────────── */
+.art{margin-top:32px;padding-top:28px;border-top:1px solid var(--hair)}
+.art:first-of-type{border-top:0;padding-top:18px}
+.art>h2{position:relative;padding-left:15px;font-family:var(--serif);font-size:18.5px;line-height:1.5;font-weight:600;color:var(--ink);letter-spacing:-.025em}
+.art>h2::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.art h3{margin-top:24px;font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.art p{margin-top:10px}
+.art p b{color:var(--ink);font-weight:700}
+.art b{color:var(--ink)}
+
+/* 번호 매긴 항 — 1. 2. 3. */
+.cl{counter-reset:cl;margin-top:10px}
+.cl>li{counter-increment:cl;position:relative;padding-left:22px;margin-top:6px}
+.cl>li::before{content:counter(cl) ".";position:absolute;left:0;top:1px;font-size:13.5px;font-weight:700;line-height:1.85;color:var(--gold);font-variant-numeric:tabular-nums}
+/* ─ 모양 항목 */
+.dash{margin-top:8px}
+.dash>li{position:relative;padding-left:14px;margin-top:5px}
+.dash>li::before{content:"·";position:absolute;left:3px;top:0;font-size:15px;line-height:1.8;color:var(--gold);font-weight:700}
+.dash>li b{color:var(--ink)}
+
+/* ── 강조 박스 ───────────────────────────────────── */
+.callout{margin-top:18px;padding:14px 16px;border-radius:0 12px 12px 0;font-size:13.5px;line-height:1.82;color:var(--ink-2)}
+.callout p+p{margin-top:8px}
+.callout b{color:var(--ink);font-weight:700}
+.callout--gold{background:var(--gold-soft);border-left:3px solid var(--gold)}
+.callout--navy{background:rgba(27,41,64,.055);border-left:3px solid var(--navy)}
+
+/* ── 표 ──────────────────────────────────────────── */
+.tbl{margin-top:14px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.72}
+caption{padding:10px 14px 0;text-align:left;font-size:11.5px;color:var(--mute)}
+th,td{padding:11px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--hair-soft)}
+thead th{background:#F6EFE0;color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.03em}
+tbody td{color:var(--ink-2)}
+tbody td.key{font-weight:700;color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+
+/* ── 문의 ────────────────────────────────────────── */
+.help{margin-top:36px;padding:18px 18px 16px;border:1px solid var(--hair-soft);border-radius:16px;background:var(--paper)}
+.help__t{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink)}
+.help p{margin-top:8px;font-size:13px;line-height:1.8}
+
+/* ── 하단 ────────────────────────────────────────── */
+.foot{margin-top:40px;padding:24px 0 calc(44px + env(safe-area-inset-bottom, 0px));border-top:1px solid var(--hair-soft);text-align:center}
+.foot__links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;font-size:11.5px;font-weight:600}
+.foot__links a{color:var(--navy);text-decoration:none;border-bottom:1px solid rgba(27,41,64,.28);padding-bottom:1px}
+.foot__links span{color:#D3C7B3;font-size:10px}
+.foot__biz{margin-top:16px;font-size:11px;line-height:1.95;color:var(--mute)}
+.foot__biz b{font-weight:700;color:var(--ink-2)}
+.foot__biz a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid rgba(59,53,44,.22)}
+.foot__micro{margin-top:12px;font-size:11px;line-height:1.8;color:var(--mute)}
+.foot__back{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:16px;padding:0 16px;border:1px solid var(--hair-soft);border-radius:999px;background:rgba(255,255,255,.5);font-size:12.5px;font-weight:600;color:var(--navy);text-decoration:none}
+
+/* ── 모바일: 표를 카드로 쌓기 (가로 넘침 0) ───────── */
+@media (max-width:640px){
+  .tbl{border:0;border-radius:0;background:none;overflow:visible}
+  table,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  tr{padding:6px 0 8px;margin-top:10px;border:1px solid var(--hair-soft);border-radius:14px;background:var(--paper);overflow:hidden}
+  td{border:0;padding:6px 14px;font-size:13.5px}
+  td::before{content:attr(data-label);display:block;margin-bottom:1px;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--gold)}
+  td.key{background:#FBF5E8;padding-top:9px;padding-bottom:9px;margin-bottom:2px}
+  caption{padding:0;font-size:11px}
+  .doc__title{word-break:keep-all}
+}
+
+@media print{
+  .top,.tabs,.foot__back{display:none}
+  body{background:#fff}
+  .art{break-inside:auto}
+  .tbl{border-color:#ccc}
+  a{text-decoration:none;color:#000}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#doc">본문으로 바로가기</a>
+
+<header class="top">
+  <div class="wrap top__row">
+    <a class="top__back" href="../"><i aria-hidden="true">←</i> 달력으로</a>
+    <span class="top__brand">윤이세사주</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" aria-label="약관 및 정책">
+    <a href="../terms/">이용약관</a>
+    <a href="../privacy/">개인정보처리방침</a>
+    <a href="../refund/" aria-current="page">환불 및 청약철회</a>
+  </nav>
+
+  <main id="doc" class="doc">
+    <p class="doc__eyebrow">YOONISE · REFUND</p>
+    <h1 class="doc__title">환불 및 청약철회 안내</h1>
+    <p class="doc__meta">버전 v1.0<span class="sep">·</span>2026. 11. 26 공지<span class="sep">·</span>2027. 1. 1 시행</p>
+    <p class="doc__lead">타이밍 달력 이용권과 1:1 상담 상품의 환불 기준을 한눈에 정리했습니다.</p>
+    <section class="notice" aria-labelledby="notice-h">
+      <p class="notice__eyebrow">적용 시점 안내 · 공지 2026년 11월 26일</p>
+      <h2 class="notice__title" id="notice-h">새로 결제하시는 분은 <b>2026년 11월 26일</b>부터, 이미 결제하신 분은 <b>2027년 1월 1일</b>부터 이 기준이 적용됩니다.</h2>
+      <div class="notice__grid">
+        <div class="notice__card">
+          <p class="notice__badge">신규 결제</p>
+          <p class="notice__date">2026년 11월 26일<small> 부터</small></p>
+          <p class="tx">공개일 이후 결제하시는 건은 아래 기준(개정판)이 바로 적용됩니다.</p>
+        </div>
+        <div class="notice__card notice__card--later">
+          <p class="notice__badge">기존 결제</p>
+          <p class="notice__date">2027년 1월 1일<small> 부터</small></p>
+          <p class="tx">이미 결제하신 건은 2027년 1월 1일부터 아래 기준이 적용됩니다. 그 전까지는 종전 안내가 적용됩니다.</p>
+        </div>
+      </div>
+      <p class="notice__calm"><b>이미 결제한 이용권의 남은 기간과 혜택은 줄어들지 않습니다.</b> 개정으로 환불 권리가 약해지지 않으며, 유리한 부분은 그대로 두었습니다.</p>
+      <ul class="dash notice__list">
+        <li><b>종전 기준과 차이</b> — 종전에는 “입장코드 발급·이용 개시 시 청약철회가 제한될 수 있음”만 적혀 있었습니다. 개정판은 법정 요건을 모두 갖춘 때에만 제한하고, 환급 기한을 3영업일로 명시합니다.</li>
+        <li><b>무료 체험</b> — 무료 체험을 이용하셨다는 사실만으로 환불 권리가 제한되지 않습니다.</li>
+      </ul>
+      <details class="notice__more">
+        <summary>종전 안내와 개정 기준 비교해서 보기</summary>
+        <p class="notice__cap">종전 기준은 2026년 12월 31일까지, 개정 기준은 2027년 1월 1일부터 적용됩니다(신규 결제는 공개일부터).</p>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr><th scope="col">항목</th><th scope="col">종전 기준</th><th scope="col">개정 기준</th></tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td class="key" data-label="항목">청약철회 제한</td>
+              <td data-label="종전 기준">“입장코드 발급·이용 개시 시 제한될 수 있음”(포괄)</td>
+              <td data-label="개정 기준">7일 이내가 원칙, 법정 요건(고지·동의·제공 개시)을 모두 갖출 때만 제한</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">환급 기한</td>
+              <td data-label="종전 기준">별도 표기 없음</td>
+              <td data-label="개정 기준">청약철회 의사를 받은 날부터 3영업일 이내</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">상담 상품</td>
+              <td data-label="종전 기준">별도 기준 없음</td>
+              <td data-label="개정 기준">착수 전 전액 / 착수 후 공제 / 전달 후 제한 / 회사 귀책 전액</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="항목">무료 체험</td>
+              <td data-label="종전 기준">제한될 수 있는 것으로 읽힘</td>
+              <td data-label="개정 기준">무료 체험만으로는 제한되지 않음</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <div class="callout callout--gold">
+      <p>결제일부터 <b>7일 이내</b> 청약철회 · 회사는 청약철회 의사를 받은 날부터 <b>3영업일 이내</b> 환급</p>
+      <p><b>무료 체험(7일)을 이용했다는 사실만으로 환불 권리가 제한되지 않습니다.</b></p>
+    </div>
+
+    <details class="toc">
+      <summary>목차<span class="cnt">5개</span></summary>
+      <ol>
+        <li><a href="#r1">1. 공통 — 청약철회 기간과 환급 기한</a></li>
+        <li><a href="#r2">2. 타이밍 달력 이용권</a></li>
+        <li><a href="#r3">3. 상담 상품</a></li>
+        <li><a href="#r4">4. 신청 방법</a></li>
+        <li><a href="#r5">5. 무료 혜택의 회수</a></li>
+      </ol>
+    </details>
+
+    <section class="art" id="r1">
+      <h2>1. 공통 — 청약철회 기간과 환급 기한</h2>
+      <ul class="dash">
+        <li>결제일부터 <b>7일 이내</b>에 청약철회할 수 있습니다(전자상거래법 §17①).</li>
+        <li>회사는 청약철회 의사를 받은 날(또는 재화 반환일)부터 <b>3영업일 이내</b>에 결제수단으로 환급합니다(같은 법 §18③).</li>
+        <li>카드 결제 취소는 카드사 정책에 따라 환급까지 영업일이 더 걸릴 수 있습니다.</li>
+      </ul>
+    </section>
+
+    <section class="art" id="r2">
+      <h2>2. 타이밍 달력 이용권</h2>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">상황</th><th scope="col">환불</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="상황">결제 후 입장 코드를 입력하지 않아 이용을 시작하지 않은 경우</td>
+              <td data-label="환불">7일 이내 <b>전액 환불</b></td>
+            </tr>
+            <tr>
+              <td class="key" data-label="상황">입장 코드를 입력해 이용을 시작한 경우</td>
+              <td data-label="환불">청약철회 제한(고지·동의·제공 개시 요건 충족 시). 단, 서비스 하자·회사 귀책이면 잔여 기간 비례 환불</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="상황">서비스의 중대한 오류로 이용 불가</td>
+              <td data-label="환불">전액 또는 잔여 기간 비례 환불</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="상황">결제 후 이용권이 열리지 않아 회사가 해결하지 못한 경우</td>
+              <td data-label="환불">전액 환불</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="상황">중복 결제·오결제</td>
+              <td data-label="환불">해당 결제 전액</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="상황">할인권 사용 결제</td>
+              <td data-label="환불">실제 결제금액 기준 환불, 사용한 할인권은 복원(최초 유효기간 유지)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout--gold">
+        <p><b>무료 체험(7일)을 이용했다는 사실만으로 위 환불 권리가 제한되지 않습니다.</b></p>
+      </div>
+    </section>
+
+    <section class="art" id="r3">
+      <h2>3. 상담 상품</h2>
+      <p>원포인트 리딩 49,000원 · 시그니처 리딩 100,000원 · 개명·작명 200,000원</p>
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th scope="col">단계</th><th scope="col">환불</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key" data-label="단계">작업 착수 전(회사가 착수 통지를 하기 전)</td>
+              <td data-label="환불"><b>전액 환불</b></td>
+            </tr>
+            <tr>
+              <td class="key" data-label="단계">작업 착수 후 ~ 결과물 전달 전</td>
+              <td data-label="환불"><b>진행 정도에 상당한 금액 공제 후</b> 환불(착수 직후는 30% 이내 공제)</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="단계">결과물 전달 후</td>
+              <td data-label="환불">원칙적으로 환불 제한. 내용의 중대한 오류·누락은 재작업 또는 해당 부분 환불</td>
+            </tr>
+            <tr>
+              <td class="key" data-label="단계">회사 사정으로 진행 불가</td>
+              <td data-label="환불"><b>전액 환불</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="dash">
+        <li>회사는 <b>작업 착수 시각을 문자·카카오톡으로 알리고</b>, 그 시각을 기준으로 위 기준을 적용합니다.</li>
+        <li>7일 이내 청약철회 권리는 상담 상품에도 적용되며, 착수 후의 공제는 회사가 미리 고지하고 이용자가 동의한 경우에 적용됩니다.</li>
+      </ul>
+    </section>
+
+    <section class="art" id="r4">
+      <h2>4. 신청 방법</h2>
+      <ol class="cl">
+        <li>카카오톡 채널 ‘윤이세사주’(또는 사업자 연락처)로 <b>주문번호 또는 결제 휴대폰 번호</b>와 사유를 보내 주세요.</li>
+        <li>회사는 접수 후 처리 결과를 안내하고, 환급은 위 기한 안에 진행합니다.</li>
+      </ol>
+    </section>
+
+    <section class="art" id="r5">
+      <h2>5. 무료 혜택의 회수</h2>
+      <p>친구 초대·인스타그램 후기 인증으로 받은 무료 이용권·할인권은 <b>부정 이용(중복 계정, 허위 인증 등)이 확인되면 회수</b>될 수 있습니다. 회수 시 그 사유와 내용을 개별 안내합니다.</p>
+    </section>
+
+    <section class="help">
+      <p class="help__t">문의</p>
+      <p>카카오톡 채널 ‘윤이세사주’ · 전화 <a href="tel:01048487373">010-4848-7373</a> · 이메일 <a href="mailto:ksy7900so@naver.com">ksy7900so@naver.com</a></p>
+      <p>이용약관 제7조·제7조의2·제7조의3과 같은 내용입니다. 약관 전문은 <a href="../terms/">이용약관</a>에서 보실 수 있습니다.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <nav class="foot__links" aria-label="약관 및 정책">
+      <a href="../terms/">이용약관</a><span aria-hidden="true">│</span><a href="../privacy/">개인정보처리방침</a><span aria-hidden="true">│</span><a href="../refund/">환불 및 청약철회</a>
+    </nav>
+    <p class="foot__biz"><b>엔와이트레이드(N.Y.TRADE)</b> · 대표 김나영 · 사업자등록번호 219-07-67996<br>
+      통신판매업 신고 제2022-부산부산진-1013호<br>
+      사업장(신고증상 소재지) 부산광역시 부산진구 전포대로 250, 1904호(전포동)<br>
+      전화 <a href="tel:01048487373">010-4848-7373</a> · 이메일 <a href="mailto:ksy7900so@naver.com">ksy7900so@naver.com</a><br>
+      문의 카카오톡 채널 ‘윤이세사주’</p>
+    <p class="foot__micro">본 서비스는 일상의 흐름과 자기 성찰을 위한 참고 자료입니다.<br>2026. 11. 26 공지 · 2027. 1. 1 시행(신규 이용자는 공개일부터)<br>© 윤이세사주</p>
+    <a class="foot__back" href="../"><span aria-hidden="true">←</span> 달력으로</a>
+  </footer>
+</div>
+</body>
+</html>
