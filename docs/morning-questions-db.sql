@@ -16,8 +16,7 @@ begin;
 create table if not exists public.morning_questions (
   day        date primary key,
   text       text not null,
-  updated_at timestamptz not null default now(),
-  updated_by text
+  updated_at timestamptz not null default now()
 );
 
 alter table public.morning_questions enable row level security;
@@ -72,7 +71,12 @@ declare
   v_text text;
 begin
   -- 기존 관리자 확인 함수를 그대로 쓴다 (오답 잠금·시도 기록도 그대로 적용된다)
-  v_auth := public.admin_login(p_pin);
+  --   admin_login 은 관리자 화면이 쓰는 것과 같은 계약(jsonb · {ok:true} 또는 {ok:false,error})이다.
+  begin
+    v_auth := public.admin_login(p_pin)::jsonb;
+  exception when others then
+    return jsonb_build_object('ok', false, 'error', 'pin_check_failed');
+  end;
   if v_auth is null or coalesce((v_auth->>'ok')::boolean, false) is not true then
     return jsonb_build_object('ok', false,
       'error', coalesce(v_auth->>'error', 'pin_mismatch'));
