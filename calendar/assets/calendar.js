@@ -2595,13 +2595,19 @@
     if (!uid) return;
     var code = String(state.code.code || '').replace(/[\s\-_]/g, '').toUpperCase();
     var phone = String(state.code.phone || '').replace(/[^0-9]/g, '');
+    var ask = function () {
+      if (!isMemberNow()) return;
+      mbStatusCb(function (st) { mbNotice(st); renderBurnCard(); }, true);
+    };
     if (/^[PADM][0-9]{5}$/.test(code)) {
+      /* 서버가 코드를 확인해 이 기기를 번호와 묶은 **뒤에** 현황을 읽는다(먼저 읽으면 번호를 몰라 빈손) */
       mbPost('member_bind', { p_client_uid: uid, p_code: code, p_phone: phone || null }, function (d) {
         if (d && d.ok) { mb.status = null; syncMemberBar(); renderBurnCard(); }
+        ask();
       });
+      return;
     }
-    if (!isMemberNow()) return;
-    mbStatusCb(function (st) { mbNotice(st); renderBurnCard(); }, true);
+    ask();
   }
 
   /** 혜택이 도착했다는 앱 내 알림 — 다음 접속에 1회만 */
@@ -8449,7 +8455,7 @@
   function burnLeftText() {
     var done = burnBurnedToday();
     var extra = burnExtraLeft();
-    var tail = extra > 0 ? ' · 추가 ' + extra + '회 남음' : '';
+    var tail = extra > 0 ? ' · 추가 이용권 ' + extra + '회 남음' : '';
     if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnPlanName()) + (done ? ' · 오늘 마침' : ' · 매일 1회') + tail;
     var l = burnLeft();
     if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
@@ -8526,11 +8532,19 @@
     '</div>';
 
   /* ⓿ 촛불 앞에서 숨 고르기 — 3·2·1 뒤에 '의식 시작하기'가 살아난다 */
+  /** 정식 회원 추가 이용권 안내 — 남아 있을 때만 작은 글씨로 (2026-11-26 #22956) */
+  function burnExtraNoteHTML() {
+    var extra = burnExtraLeft();
+    if (extra <= 0) return '';
+    return '<p class="burn__extra">정식 회원 <b>추가 이용권 ' + extra + '회</b> 남음 — 오늘 한 번 더 태우면 1회 차감돼요.</p>';
+  }
+
   function burnPrepHTML() {
     return '<p class="modal__eyebrow">BEFORE THE RITUAL · 준비</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">하루에 단 한 번, 진심을 담아 비워내는 의식입니다.</h2>' +
       '<div class="burn__altar" data-burn-altar>' + CANDLE_HTML + '</div>' +
       '<p class="burn__prep-sub">잠시 숨을 고른 뒤, 오늘 내려놓고 싶은 한 가지를 적어 주세요.</p>' +
+      burnExtraNoteHTML() +
       '<p class="burn__breath" data-burn-breath aria-live="polite">3…</p>' +
       '<button type="button" class="burn__go burn__go--start" data-burn="start" disabled>의식 시작하기</button>' +
       '<p class="burn__foot">' + esc(burnLeftText()) + '</p>';
