@@ -7207,3 +7207,76 @@ body.is-result .hero__share { margin-top: 8px; }
 @media (prefers-reduced-motion: reduce) {
   .hook3 .hk__more--wide { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   2026-11-26 #22631 — '이번 달 나의 타이밍' 카드 디자인 통일 (실기기 캡처 7571)
+   · 접힌 기본 상태에서는 흰 배경 띠(.card--cal)를 걷어 내고, 위(`저녁엔 나의 하루
+     한 줄 기록`)·아래(`MORE · 더 해 볼 것`) 카드와 같은 아이보리 바탕 위에 20px 카드
+     한 장만 놓는다 (좌우 16px·모서리 20px·테두리·그림자 동일).
+   · 연도·월은 카드 오른쪽 위에 작게(#monthSpecYm), 3색 일수는 균등 3열,
+     `🌙 이번 달 기록 N일`은 카드 안 버튼 옆, `이번 달 중요한 날 보기 →`는 카드 맨 아래.
+   · 달력을 펼치면 지금 모습 그대로(흰 달력 판 + 큰 월 제목·월 이동 화살표) 돌아온다 —
+     달력 본문(#calBody)·색·필터·날짜 팝업·기록·결제 로직은 하나도 건드리지 않는다.
+   · 범위: #calCard / .monthspec 안쪽 전용. 공통 클래스(.card·.hkn·.cal__summary 등)는
+     그대로 두고, 이 영역 안에서만 덮어쓴다.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── ① 접힌 상태 — 흰 띠 없이 아이보리 바탕 위 카드 한 장 ───────────── */
+#calCard.is-cal-closed {
+  margin-left: 0; margin-right: 0;
+  padding: 0;
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+}
+/* 접힌 동안 큰 `2026 / 11월` 머리는 숨긴다 — 연도·월은 카드 오른쪽 위가 맡는다 */
+#calCard.is-cal-closed .cal__head { display: none !important; }
+#calCard.is-cal-closed .monthspec {
+  margin: 0; padding: 15px 17px 14px;
+  background: #FFFFFF; border: 1px solid rgba(31, 27, 22, .10);
+  border-radius: 20px;
+  box-shadow: 0 6px 18px -14px rgba(31, 27, 22, .28);
+}
+
+/* ── ② 카드 윗줄 — 왼쪽 제목 · 오른쪽 위 연도·월 ───────────────────── */
+.monthspec__top {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.monthspec__t { font-size: 13px; letter-spacing: -.02em; color: var(--navy); }
+.monthspec__ym {
+  flex: none; font-family: var(--sans);
+  font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+  color: #A2988A; white-space: nowrap;
+}
+/* 펼친 동안에는 달력 판 위 큰 월 제목이 그 몫을 하므로 작은 연도·월은 숨긴다 */
+#calCard:not(.is-cal-closed) .monthspec__ym { display: none; }
+
+/* ── ③ 3색 일수 — 같은 크기 균등 3열 ────────────────────────────────── */
+#calCard .monthspec .cal__summary {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px; margin: 10px 0 0; text-align: center;
+}
+#calCard .monthspec .cal__summary .sum {
+  display: block; min-width: 0;
+  font-size: 11px; font-weight: 800; letter-spacing: -.045em;
+  white-space: nowrap;
+}
+#calCard .monthspec .cal__summary .sum__dot { display: none; }
+
+/* ── ④ 카드 아래 줄 — 기록 일수(왼쪽) + 보기 버튼(오른쪽 끝) ─────────── */
+#calCard .monthspec__foot {
+  display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap;
+  margin-top: 11px;
+}
+#calCard .monthspec__foot .cal__nightrec {
+  flex: 1 1 auto; min-width: 0; margin: 0;
+  font-size: 11px; line-height: 1.4;
+}
+#calCard .monthspec__foot .monthspec__go { margin: 0 0 0 auto; }
+
+@media (max-width: 430px) {
+  #calCard.is-cal-closed .monthspec { padding: 14px 15px 13px; }
+  #calCard .monthspec__foot .monthspec__go { padding: 9px 13px 10px; font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+  #calCard .monthspec .cal__summary .sum { font-size: 10px; letter-spacing: -.05em; }
+}

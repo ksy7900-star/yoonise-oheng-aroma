@@ -4656,6 +4656,9 @@
     _kindOrder = {};                 // 카드 배정 순서(monthKindOrder)도 같은 이유로 함께 비운다
     $('#calYear').textContent = v.y;
     $('#calTitle').textContent = v.m + '월';
+    /* #22631 — 카드 접힌 상태의 오른쪽 위 '2026년 11월' — 달을 옮겨도 같이 맞춘다. */
+    var ymEl = $('#monthSpecYm');
+    if (ymEl) ymEl.textContent = v.y + '년 ' + v.m + '월';
 
     var first = new Date(Date.UTC(v.y, v.m - 1, 1)).getUTCDay();
     var dim = T.daysInMonth(v.y, v.m);

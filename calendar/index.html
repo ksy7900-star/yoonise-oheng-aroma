@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126aa">
+<link rel="stylesheet" href="assets/style.css?v=20261126ab">
 </head>
 <body>
 
@@ -502,15 +502,22 @@
 
       <p class="cal__saeun v2-parked" id="calSaeun"></p>
 
-      <!-- ── 이번 달 나의 타이밍 (2026-11-24 #18370) ──
+      <!-- ── 이번 달 나의 타이밍 (2026-11-24 #18370 · 2026-11-26 #22631 카드 통일) ──
            이미 계산된 이번 달 3색 일수(#calSummary — ⚠️ 조심 N일 · ⚡ 기운 UP N일 · 🌿 실속·정리 N일)를
-           그대로 쓰고, 새 데이터는 만들지 않는다. 버튼은 달력 날짜 그리드로 바로 내려간다. -->
+           그대로 쓰고, 새 데이터는 만들지 않는다. 버튼은 달력 날짜 그리드로 바로 내려간다.
+           #22631 — 연도·월은 카드 오른쪽 위에 작게(#monthSpecYm, renderCalendar 가 맞춘다),
+           기록 일수(#calNightRec)는 카드 안 버튼 옆으로 옮겼다. 데이터·동작은 그대로. -->
       <div class="monthspec" id="monthSpec">
-        <p class="monthspec__t">이번 달 나의 타이밍</p>
+        <div class="monthspec__top">
+          <p class="monthspec__t">이번 달 나의 타이밍</p>
+          <p class="monthspec__ym" id="monthSpecYm">2026년 11월</p>
+        </div>
         <p class="cal__summary" id="calSummary"></p>
-        <button type="button" class="monthspec__go" id="monthSpecGo" aria-expanded="false" aria-controls="calBody">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
+        <div class="monthspec__foot">
+          <p class="cal__nightrec" id="calNightRec" hidden></p>
+          <button type="button" class="monthspec__go" id="monthSpecGo" aria-expanded="false" aria-controls="calBody">이번 달 중요한 날 보기 <span aria-hidden="true">→</span></button>
+        </div>
       </div>
-      <p class="cal__nightrec" id="calNightRec" hidden></p>
 
       <!-- 달력 위 한 줄 안내 — 달력을 처음 보는 자리에서 무엇을 하는지 바로 보이게 (2026-11-23 5차: 아래에서 위로)
            2026-11-24aa #19144: 고객 상태와 상관없이 calendar.js 의 CAL_NOTE_TEXT 한 문장만 쓴다. -->
@@ -1150,16 +1157,16 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126aa"></script>
-<script src="assets/manse.js?v=20261126aa"></script>
-<script src="assets/timing.js?v=20261126aa"></script>
-<script src="assets/chars.js?v=20261126aa"></script>
-<script src="assets/brief.js?v=20261126aa"></script>
-<script src="assets/morning-questions.js?v=20261126aa"></script>
-<script src="assets/morning.js?v=20261126aa"></script>
-<script src="assets/calendar.js?v=20261126aa"></script>
-<script src="assets/guide-paper.js?v=20261126aa"></script>
-<script src="assets/special-guide.js?v=20261126aa"></script>
-<script src="assets/pwa.js?v=20261126aa"></script>
+<script src="vendor/lunar.js?v=20261126ab"></script>
+<script src="assets/manse.js?v=20261126ab"></script>
+<script src="assets/timing.js?v=20261126ab"></script>
+<script src="assets/chars.js?v=20261126ab"></script>
+<script src="assets/brief.js?v=20261126ab"></script>
+<script src="assets/morning-questions.js?v=20261126ab"></script>
+<script src="assets/morning.js?v=20261126ab"></script>
+<script src="assets/calendar.js?v=20261126ab"></script>
+<script src="assets/guide-paper.js?v=20261126ab"></script>
+<script src="assets/special-guide.js?v=20261126ab"></script>
+<script src="assets/pwa.js?v=20261126ab"></script>
 </body>
 </html>
