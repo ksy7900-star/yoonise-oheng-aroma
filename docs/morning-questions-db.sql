@@ -72,8 +72,9 @@ declare
 begin
   -- 기존 관리자 확인 함수를 그대로 쓴다 (오답 잠금·시도 기록도 그대로 적용된다)
   --   admin_login 은 관리자 화면이 쓰는 것과 같은 계약(jsonb · {ok:true} 또는 {ok:false,error})이다.
+  --   (돌려주는 모양이 jsonb·json·문자열 어느 쪽이어도 읽히게 to_jsonb 로 감싼다)
   begin
-    v_auth := public.admin_login(p_pin)::jsonb;
+    v_auth := to_jsonb(public.admin_login(p_pin));
   exception when others then
     return jsonb_build_object('ok', false, 'error', 'pin_check_failed');
   end;
