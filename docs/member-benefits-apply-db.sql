@@ -270,11 +270,13 @@ begin
      returning * into o;
 
     -- 결제한 번호의 유효 코드를 원장에 남긴다 (관리자 발급기와 같은 규칙)
-    insert into public.entry_code_ledger(code, tier, phone, issued_at, paid_at, issued_by)
-    values (v_code, v_tier, o.phone, coalesce(o.paid_at, now()), coalesce(o.paid_at, now()), 'payapp')
+    insert into public.entry_code_ledger(code, tier, phone, issued_at, paid_at, issued_by, code_kind)
+    values (v_code, v_tier, o.phone, coalesce(o.paid_at, now()), coalesce(o.paid_at, now()), 'payapp',
+            case when v_tier = 'month' then 'gift' else 'paid' end)
     on conflict (code) do update
        set paid_at = coalesce(public.entry_code_ledger.paid_at, excluded.paid_at),
-           tier = excluded.tier;
+           tier = excluded.tier,
+           code_kind = coalesce(excluded.code_kind, public.entry_code_ledger.code_kind);
 
     /* 72시간 특별 선물 — 자동 접수 (오류가 나도 결제 기록은 남긴다) */
     if o.product <> 'up-allinone' then
@@ -436,11 +438,13 @@ begin
   v_letter := public.payapp_product(o.product)->>'letter';
   v_code := v_letter || public.code_digits(v_letter, v_phone);
 
-  insert into public.entry_code_ledger(code, tier, phone, issued_at, paid_at, issued_by)
-  values (v_code, v_tier, v_phone, coalesce(o.paid_at, now()), coalesce(o.paid_at, now()), 'payapp')
+  insert into public.entry_code_ledger(code, tier, phone, issued_at, paid_at, issued_by, code_kind)
+  values (v_code, v_tier, v_phone, coalesce(o.paid_at, now()), coalesce(o.paid_at, now()), 'payapp',
+          case when v_tier = 'month' then 'gift' else 'paid' end)
   on conflict (code) do update
      set paid_at = coalesce(public.entry_code_ledger.paid_at, excluded.paid_at),
-         tier = excluded.tier;
+         tier = excluded.tier,
+         code_kind = coalesce(excluded.code_kind, public.entry_code_ledger.code_kind);
 
   update public.payapp_orders
      set entry_code = v_code,

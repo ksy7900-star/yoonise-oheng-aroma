@@ -47,6 +47,18 @@ begin
 
   perform pg_advisory_xact_lock(hashtext('member_benefit:' || v_base));
 
+  -- 번호를 알게 됐으면 이 계정·이 기기의 발급권에도 번호를 채워 둔다(다른 기기에서도 보이게)
+  if v_phone is not null then
+    if p_user is not null then
+      update public.member_coupons set owner_phone = coalesce(owner_phone, v_phone) where owner_user = p_user;
+      update public.member_burn_credits set owner_phone = coalesce(owner_phone, v_phone) where owner_user = p_user;
+    end if;
+    if v_client is not null then
+      update public.member_coupons set owner_phone = coalesce(owner_phone, v_phone) where owner_client = v_client;
+      update public.member_burn_credits set owner_phone = coalesce(owner_phone, v_phone) where owner_client = v_client;
+    end if;
+  end if;
+
   -- 발급 때 알게 된 나머지 열쇠(계정·기기)를 비어 있는 발급권에 채운다
   update public.member_coupons
      set owner_client = coalesce(owner_client, v_client),
