@@ -1561,7 +1561,8 @@ a { color: inherit; }
     if (!force && cpn.loadedFor === key) { cpnPaint(); return; }
     cpn.loadedFor = key;
     if (!consultProductKey()) { cpn.list = []; cpn.picked = null; cpnPaint(); return; }
-    var body = { p_product: state.type };
+    /* 서버 상품 키 — 시그니처는 'signature' (탭 키 'saju'와 다르다) */
+    var body = { p_product: state.type === 'saju' ? 'signature' : state.type };
     body.p_client_uid = clientUid();
     sbRpc('member_coupons_for', body, function (d) {
       if (cpn.loadedFor !== key) return;      // 그새 다른 상품으로 옮겼다
