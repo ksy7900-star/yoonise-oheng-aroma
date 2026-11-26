@@ -2996,14 +2996,14 @@
       /* ① 사진 저장하기 */
       '<section class="iflow__step">' +
       '<div class="iflow__h"><span class="iflow__num">1</span><span class="iflow__t">사진 저장하기</span></div>' +
-      '<p class="iflow__d">윤이세가 준비한 감성 사진을 저장해 주세요.</p>' +
-      '<p class="iflow__pick">공식 사진 4장 중 <b>골라 저장</b>하고, <b>내 달력 화면 직접 캡처 1장</b>도 함께 올려 주세요.</p>' +
+      '<p class="iflow__pick">마음에 드는 사진 <b>2장</b>과 앱에서 가장 마음에 들었던 화면을 직접 캡처한 사진 <b>1장</b>을 함께 올려 주세요.</p>' +
       '<div class="iflow__grid">' + instaGridHTML() + '</div>' +
       '<div class="iflow__acts">' +
       '<button type="button" class="iflow__btn iflow__btn--gold" data-insta-save-all>사진 4장 한 번에 저장</button>' +
       '</div>' +
       '<p class="iflow__note">사진을 누르면 크게 볼 수 있어요. 지원하는 기기에서는 공유 창이 열리니 <b>이미지 저장</b>을 골라 주세요.</p>' +
-      '<p class="iflow__note">내 달력 캡처는 <b>선택</b>이에요 — 1장 더하면 후기가 훨씬 진짜 같아 보여요. 캡처할 때는 이름·번호 같은 <b>개인정보가 보이지 않게 가려</b> 주세요.</p>' +
+      '<p class="iflow__note">달력, 부적, 케미테스트, 액운 태우기, 오늘의 브리핑 등 어떤 화면이든 좋아요.</p>' +
+      '<p class="iflow__note">※ 캡처 시 개인정보가 보이지 않도록 주의해 주세요.</p>' +
       '</section>' +
 
       /* ② 해시태그 복사하기 */
@@ -3022,8 +3022,8 @@
       /* ③ 인스타그램에 올리기 */
       '<section class="iflow__step">' +
       '<div class="iflow__h"><span class="iflow__num">3</span><span class="iflow__t">인스타그램에 올리기</span></div>' +
-      '<p class="iflow__d">저장한 사진에 나만의 사용 소감 한 줄을 더해 주세요.</p>' +
-      '<p class="iflow__note">공식 사진 4장 중 고른 것 + 직접 캡처한 <b>내 달력 1장</b>을 함께 올리면 좋아요.</p>' +
+      '<p class="iflow__d">저장한 공식 사진 2장과 직접 캡처한 화면 1장, 총 3장에 나만의 사용 소감 한 줄을 더해 주세요.</p>' +
+      '<p class="iflow__note">공식 사진은 2장, 직접 캡처는 1장 — 합쳐 <b>3장</b>이 기본이에요.</p>' +
       '<div class="iflow__acts">' +
       '<button type="button" class="iflow__btn iflow__btn--navy" data-insta-open>인스타그램 열기</button>' +
       '</div>' +
@@ -3033,13 +3033,13 @@
       '<li><span aria-hidden="true">➕</span>인스타그램에서 <b>+</b> 버튼을 눌러요</li>' +
       '<li><span aria-hidden="true">🖼️</span><b>게시물</b>을 골라요</li>' +
       '<li><span aria-hidden="true">🗂️</span><b>여러 사진 선택</b>을 눌러요</li>' +
-      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진과 <b>직접 캡처한 1장</b>을 합쳐 <b>3장 이상</b> 골라요</li>' +
+      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진 <b>2장</b>과 직접 캡처한 화면 <b>1장</b>, 총 <b>3장</b>을 골라요</li>' +
       '<li><span aria-hidden="true">✍️</span>실제 사용 소감을 <b>한 줄 이상</b> 써요</li>' +
       '<li><span aria-hidden="true">#️⃣</span>복사한 해시태그를 붙여넣고 <b>' + esc(INSTA_CFG.account) + '</b>를 태그해요</li>' +
       '<li><span aria-hidden="true">📣</span>혜택 제공 사실을 <b>본문 첫 부분</b>에 적고 공유해요</li>' +
       '</ol>' +
       '</details>' +
-      '<p class="iflow__cond">공개 피드 사진 <b>3장 이상</b> 또는 <b>릴스</b>만 인정돼요(공식 사진 + 내 달력 캡처). 스토리만 올린 것은 인정되지 않아요.</p>' +
+      '<p class="iflow__cond">공개 피드 사진 <b>3장 이상</b>(공식 2장 + 직접 캡처 1장) 또는 <b>릴스</b>만 인정돼요. 스토리만 올린 것은 인정되지 않아요.</p>' +
       '</section>' +
 
       /* ④ 인증하고 혜택 받기 */
