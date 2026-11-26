@@ -6078,15 +6078,99 @@ body.has-bonus .js-trial{ display: none !important; }
 .paywait__kakao{background:#FEE500; color:#3C1E1E; border:1px solid rgba(60,30,30,.12)}
 .paywait__close{background:#FFFCF2; color:#6E665A; border:1px solid rgba(28,24,19,.12)}
 .paywait__kakao:active, .paywait__close:active{transform:translateY(1px)}
+/* ── 특별 선물 배너 · 이용권 안내 — 무료 이용법 배너 바로 위 한 칸 (2026-11-26 #22789)
+   · 고객 상태에 따라 한 칸이 두 모습으로 바뀐다(special-guide.js 가 .is-pass 를 붙인다).
+     ① 72시간 이내 미결제  = 샴페인 골드 카드 90~105px
+     ② 72시간 경과·이용권 만료 = 작은 이용권 안내 44~48px
+     ③ 결제·유효 이용권 보유 = 숨김
+   · 바로 아래 남색 `무료 이용법` 배너와 폭·모서리(16px)를 맞춘다.
+   · 낮은 채도의 골드 바탕 + 딥 브라운 글씨. 촌스러운 노랑·번쩍임·깜빡임 없음.
+   · 카드 전체가 클릭 영역이다(button). 안쪽 CTA 는 span 이라 중첩 버튼이 아니다. */
 .sgift__toggle{
-  display:flex; align-items:center; justify-content:center; gap:6px;
-  width:100%; margin:12px 0 2px; padding:11px 12px;
-  border-radius:13px; border:1px dashed rgba(165,101,15,.34);
-  background:#FFFDF8; color:#8A4E0B;
-  font-family:inherit; font-size:11.5px; font-weight:700; letter-spacing:-.01em;
+  display:block; width:100%; margin:12px 0 2px; padding:0; overflow:hidden;
+  border-radius:16px; border:1px solid #C3A575;
+  background:linear-gradient(158deg,#EEE3C9 0%,#E8D9BB 52%,#E2D0AC 100%);
+  box-shadow:0 12px 24px -24px rgba(90,62,17,.70);
+  font-family:inherit; text-align:left;
+  -webkit-tap-highlight-color:transparent;
 }
 .sgift__toggle[hidden]{display:none !important}
 .sgift__toggle:active{transform:translateY(1px)}
+.sgift__toggle:focus-visible{outline:2px solid #C21F46; outline-offset:3px}
+
+/* ① 72시간 이내 미결제 — 샴페인 골드 카드 */
+.sgift__toggle-g{
+  display:grid; grid-template-columns:auto minmax(0,1fr);
+  column-gap:11px; align-items:center; padding:11px 12px;
+}
+.sgift__toggle-ic{
+  grid-column:1; grid-row:1; align-self:center;
+  width:38px; height:38px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  background:#FAF2DE; color:#9C7A33;
+  box-shadow:inset 0 0 0 1px rgba(176,138,63,.22);
+}
+.sgift__toggle-ic svg{width:22px; height:22px; display:block}
+.sgift__toggle-tt{
+  grid-column:2; grid-row:1; min-width:0;
+  display:flex; flex-direction:column; justify-content:center; gap:0;
+}
+.sgift__toggle-k{
+  font-size:10px; font-weight:700; letter-spacing:.02em; line-height:1.4;
+  color:#8A7350;
+}
+.sgift__toggle-t{
+  font-family:inherit; font-size:20px; font-weight:800; letter-spacing:-.028em;
+  line-height:1.25; color:#594630; word-break:keep-all;
+}
+.sgift__toggle-go{
+  grid-column:1 / -1; grid-row:2; margin-top:7px;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  padding:9px 10px; border-radius:11px;
+  background:linear-gradient(135deg,#7A5A2C 0%,#5E4420 100%);
+  color:#FDF7EA; font-size:12.5px; font-weight:800; letter-spacing:-.02em;
+  line-height:1.2; text-align:center;
+  box-shadow:0 8px 16px -13px rgba(70,45,10,.85);
+}
+.sgift__toggle-go svg{width:12px; height:12px; flex:none; margin-top:1px}
+
+/* ② 72시간 경과 · 이용권 만료 — 작은 이용권 안내 (한 줄) */
+.sgift__toggle-p{display:none}
+.sgift__toggle.is-pass{
+  background:linear-gradient(135deg,#F3ECDC 0%,#EFE7D7 58%,#E9DECA 100%);
+  border-color:#DAC9A6;
+}
+.sgift__toggle.is-pass .sgift__toggle-g{display:none}
+.sgift__toggle.is-pass .sgift__toggle-p{
+  display:flex; align-items:center; gap:9px;
+  min-height:46px; padding:11px 14px;
+}
+.sgift__toggle-pic{flex:none; display:flex; color:#8B713E}
+.sgift__toggle-pic svg{width:18px; height:18px; display:block}
+.sgift__toggle-pt{
+  flex:1 1 auto; min-width:0;
+  font-size:12.5px; font-weight:700; letter-spacing:-.02em; line-height:1.3;
+  color:#594630; word-break:keep-all;
+}
+.sgift__toggle-pgo{
+  flex:none; display:flex; align-items:center; gap:3px;
+  font-size:11.5px; font-weight:800; letter-spacing:-.02em;
+  color:#7A5A2C; white-space:nowrap;
+}
+.sgift__toggle-pgo svg{width:11px; height:11px; flex:none; margin-top:1px}
+
+/* ── 결제한 고객이 자기 신청 카드를 접어 둔 때 — 예전과 같은 담백한 한 줄 (기존 기능 그대로) */
+.sgift__toggle-c{display:none}
+.sgift__toggle.is-claim{
+  background:#FFFDF8; border:1px dashed rgba(165,101,15,.34);
+  box-shadow:none;
+}
+.sgift__toggle.is-claim .sgift__toggle-g,
+.sgift__toggle.is-claim .sgift__toggle-p{display:none}
+.sgift__toggle.is-claim .sgift__toggle-c{
+  display:block; padding:11px 12px; text-align:center;
+  font-size:11.5px; font-weight:700; letter-spacing:-.01em; color:#8A4E0B;
+}
 
 /* 신청 카드 — 4단계 */
 .sgift__steps{

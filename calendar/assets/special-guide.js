@@ -296,13 +296,30 @@
     return !!(c && c.unlocked && PAID_TIERS[c.tier]);
   }
   function hideAll() {
-    var card = $('#specialGift'), foot = $('#specialFoot'), tg = $('#specialGiftToggle');
+    var card = $('#specialGift'), foot = $('#specialFoot');
     if (card) card.hidden = true;
     if (foot) foot.hidden = true;
-    if (tg) tg.hidden = true;
+    showToggle(null);
     document.body.classList.remove('has-sgift', 'has-sgift-claim');
     syncArchive();
     ctaSync();
+  }
+
+  /* ── 무료 이용법 배너 바로 위 한 칸의 모습 (2026-11-26 #22789) ──────────────
+     mode = 'gift'  ① 72시간 이내 미결제 → 샴페인 골드 카드(누르면 위 특별 선물 카드가 펼쳐진다)
+     mode = 'pass'  ② 72시간 경과·이용권 만료 → 작은 이용권 안내(누르면 기존 이용권·결제 화면)
+     mode = null    ③ 결제·유효 이용권 보유 → 칸 자체를 숨긴다
+     사용자가 카드를 '열어 둔' 동안에는 이 칸이 보이지 않는다(기존과 같은 자리 규칙). */
+  function showToggle(mode, label) {
+    var tg = $('#specialGiftToggle');
+    if (!tg) return;
+    tg.classList.toggle('is-pass', mode === 'pass');
+    tg.classList.toggle('is-claim', mode === 'claim');
+    if (mode === 'claim') {
+      var lab = $('#specialGiftToggleLabel');
+      if (lab) lab.textContent = label || '특별 선물 신청서 보기';
+    }
+    tg.hidden = !mode;
   }
 
   /* ── 🏷️ 구매 유도 버튼 이름표 (2026-11-24 #18672) ───────────────
@@ -365,21 +382,45 @@
     /* 1개월 선물 코드·추천 보상 등 — 특별 선물 대상 아님 */
     if (c.unlocked || (c.tier && c.tier !== '')) { hideAll(); return; }
 
-    if (!eventActive()) { hideAll(); return; }
+    /* 무료 혜택(친구 초대 보상)으로 달력이 열려 있는 기기 — 결제 유도 배너를 띄우지 않는다 */
+    if (bonusOn(c)) { hideAll(); return; }
+
+    /* 이용권 기간이 끝나 다시 잠긴 기기 — 이미 산 고객이므로 첫 3일 선물 대신 이용권 안내 */
+    if (c.expired) { renderPassBar(); return; }
+
+    /* 72시간이 지났거나 이용권 기간이 끝난 기기 — 작은 이용권 안내 한 칸 */
+    if (!eventActive()) { renderPassBar(); return; }
     renderOffer();
   }
 
-  function hideOfferOnly() {
-    var card = $('#specialGift'), foot = $('#specialFoot'), tg = $('#specialGiftToggle');
+  /* 친구 초대 보상 기간이 살아 있는가 — calendar.js bonusActive() 와 같은 판단을 받아 온다 */
+  function bonusOn(c) {
+    if (c && typeof c.bonus === 'boolean') return c.bonus;
+    return false;
+  }
+
+  /* ② 72시간 경과 · 이용권 만료 — 납색·금색 카드 대신 한 줄 안내 (2026-11-26 #22789) */
+  function renderPassBar() {
+    var card = $('#specialGift'), foot = $('#specialFoot');
     if (card) card.hidden = true;
     if (foot) foot.hidden = true;
-    if (tg) tg.hidden = true;
+    document.body.classList.remove('has-sgift', 'has-sgift-claim');
+    showToggle('pass');
+    syncArchive();
+    ctaSync();
+  }
+
+  function hideOfferOnly() {
+    var card = $('#specialGift'), foot = $('#specialFoot');
+    if (card) card.hidden = true;
+    if (foot) foot.hidden = true;
+    showToggle(null);
     document.body.classList.remove('has-sgift');
     ctaSync();
   }
 
   function renderOffer() {
-    var card = $('#specialGift'), foot = $('#specialFoot'), tg = $('#specialGiftToggle');
+    var card = $('#specialGift'), foot = $('#specialFoot');
     if (!card || !foot) return;
     document.body.classList.add('has-sgift');
     document.body.classList.remove('has-sgift-claim');
@@ -387,7 +428,7 @@
 
     var close = closedFlag();
     card.hidden = close;
-    if (tg) tg.hidden = !close;
+    showToggle(close ? 'gift' : null);
     var body = $('#specialGiftBody');
     if (body && !body.getAttribute('data-mode-offer')) {
       body.setAttribute('data-mode-offer', '1');
@@ -531,8 +572,9 @@
     var seen = !!guide && isDismissed(d);
     card.hidden = !!guide ? seen : close;
     if (tg) {
-      if (guide) tg.hidden = true;             // 다시 열기는 보관 버튼이 맡는다
-      else { tg.hidden = !close; tg.textContent = delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기'; }
+      /* 감정서를 받은 뒤에는 다시 열기가 보관 버튼 몫 — 신청서만 예전처럼 한 줄로 남긴다 */
+      if (guide) showToggle(null);
+      else showToggle(close ? 'claim' : null, delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기');
     }
 
     var body = $('#specialGiftBody');
@@ -1203,6 +1245,11 @@
       var tg = e.target.closest('#specialGiftToggle');
       if (tg) {
         e.preventDefault();
+        /* ② 이용권 안내 모습 — 기존 정식 이용권·결제 화면을 그대로 연다 (#22789) */
+        if (tg.classList.contains('is-pass')) {
+          if (window.YoonCalendar && typeof window.YoonCalendar.openShop === 'function') window.YoonCalendar.openShop('pass');
+          return;
+        }
         setClosed(false);
         refresh();
         return;

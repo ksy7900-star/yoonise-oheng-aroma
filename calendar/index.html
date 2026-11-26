@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126ac">
+<link rel="stylesheet" href="assets/style.css?v=20261126ad">
 </head>
 <body>
 
@@ -246,7 +246,29 @@
       <button type="button" class="sgift__x" id="specialGiftX" aria-label="특별 선물 안내 닫기">✕</button>
       <div class="sgift__body" id="specialGiftBody"></div>
     </section>
-    <button type="button" class="sgift__toggle" id="specialGiftToggle" hidden>🎁 첫 3일(72시간) 특별 선물 보기</button>
+    <!-- 🎁 첫 3일 특별 선물 · 이용권 안내 — 무료 이용법 배너 바로 위 한 칸 (2026-11-26 #22789)
+         · 한 칸이 고객 상태에 따라 두 모습으로 바뀐다(special-guide.js 가 is-pass 를 붙인다).
+           ① 72시간 이내 미결제  = 샴페인 골드 카드(약 90~105px). 누르면 위 특별 선물 카드가 펼쳐진다.
+           ② 72시간 경과·이용권 만료 = 작은 이용권 안내(약 44~48px). 누르면 기존 이용권·결제 화면.
+           ③ 결제·유효 이용권 보유 = 이 칸 자체를 숨긴다.
+         · 아이콘은 이모지 대신 골드 라인 SVG. -->
+    <button type="button" class="sgift__toggle" id="specialGiftToggle" aria-controls="specialGift" hidden>
+      <span class="sgift__toggle-g">
+        <span class="sgift__toggle-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.3" y="8.6" width="17.4" height="4.3" rx="1.2"/><path d="M4.9 12.9h14.2v7a1.25 1.25 0 0 1-1.25 1.25H6.15A1.25 1.25 0 0 1 4.9 19.9z"/><path d="M12 8.6v12.55"/><path d="M12 8.6C11.3 6.6 9.9 5 8.4 5a2 2 0 0 0 0 3.6z"/><path d="M12 8.6c.7-2 2.1-3.6 3.6-3.6a2 2 0 0 1 0 3.6z"/></svg></span>
+        <span class="sgift__toggle-tt">
+          <span class="sgift__toggle-k">첫 72시간 한정 특별 혜택</span>
+          <span class="sgift__toggle-t">첫 3일, 특별한 선물</span>
+        </span>
+        <span class="sgift__toggle-go">나의 특별 혜택 확인하기<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.4 15.6 12 9 18.6"/></svg></span>
+      </span>
+      <span class="sgift__toggle-p">
+        <span class="sgift__toggle-pic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.2h17.2v3.1a1.9 1.9 0 0 0 0 5.4v3.1H3.4v-3.1a1.9 1.9 0 0 0 0-5.4z"/><path d="M12 8.2v11.6"/></svg></span>
+        <span class="sgift__toggle-pt">나의 좋은 흐름 이어가기</span>
+        <span class="sgift__toggle-pgo">이용권 보기<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.4 15.6 12 9 18.6"/></svg></span>
+      </span>
+      <!-- 결제한 고객이 자기 신청 카드를 접어 둔 때만 (기존 그대로) — 결제 유도 배너가 아니다 -->
+      <span class="sgift__toggle-c" id="specialGiftToggleLabel">특별 선물 신청서 보기</span>
+    </button>
 
     <!-- 🎁 내 사주 타이밍 달력 무료 이용법 — `첫 3일(72시간) 특별 선물 보기` 바로 아래 (2026-11-25 #3581)
          · 혜택 자체는 이미 앱에 있는 두 가지(친구 초대 1/3/5/7 · 인스타 인증 +1개월)를 그대로 안내한다.
@@ -1157,17 +1179,17 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126ac"></script>
-<script src="assets/manse.js?v=20261126ac"></script>
-<script src="assets/timing.js?v=20261126ac"></script>
-<script src="assets/chars.js?v=20261126ac"></script>
-<script src="assets/brief.js?v=20261126ac"></script>
-<script src="assets/morning-questions.js?v=20261126ac"></script>
-<script src="assets/morning.js?v=20261126ac"></script>
-<script src="assets/backnav.js?v=20261126ac"></script>
-<script src="assets/calendar.js?v=20261126ac"></script>
-<script src="assets/guide-paper.js?v=20261126ac"></script>
-<script src="assets/special-guide.js?v=20261126ac"></script>
-<script src="assets/pwa.js?v=20261126ac"></script>
+<script src="vendor/lunar.js?v=20261126ad"></script>
+<script src="assets/manse.js?v=20261126ad"></script>
+<script src="assets/timing.js?v=20261126ad"></script>
+<script src="assets/chars.js?v=20261126ad"></script>
+<script src="assets/brief.js?v=20261126ad"></script>
+<script src="assets/morning-questions.js?v=20261126ad"></script>
+<script src="assets/morning.js?v=20261126ad"></script>
+<script src="assets/backnav.js?v=20261126ad"></script>
+<script src="assets/calendar.js?v=20261126ad"></script>
+<script src="assets/guide-paper.js?v=20261126ad"></script>
+<script src="assets/special-guide.js?v=20261126ad"></script>
+<script src="assets/pwa.js?v=20261126ad"></script>
 </body>
 </html>

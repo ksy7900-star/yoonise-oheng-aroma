@@ -10233,7 +10233,12 @@
     get: function () {
       return {
         res: state.res, unlocked: state.unlocked, tier: state.tier,
-        code: state.code, todayISO: state.todayISO
+        code: state.code, todayISO: state.todayISO,
+        /* 🎁 무료 이용법 배너 위 한 칸(2026-11-26 #22789) — 친구 초대 보상으로 달력이 열려 있는 기기에는
+           결제 유도 배너를 띄우지 않는다. 판단은 이 화면 하나(bonusActive)만 쓴다. */
+        bonus: bonusActive(),
+        /* 1개월 이용권 기간이 끝나 다시 잠긴 기기 — 특별 선물이 아니라 이용권 안내를 띄운다 */
+        expired: !!state.expiredCode
       };
     },
     openShop: function (kind) { openShop(kind); },
