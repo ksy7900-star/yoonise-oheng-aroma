@@ -2637,7 +2637,8 @@
     });
     mbPost('member_seen', {
       p_coupon_ids: cids.length ? cids : null,
-      p_burn_ids: bids.length ? bids : null
+      p_burn_ids: bids.length ? bids : null,
+      p_client_uid: clientUid() || null
     }, function () { });
   }
 
