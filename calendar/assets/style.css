@@ -3903,6 +3903,7 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 }
 .fhow__go:active { transform: translateY(1px); }
 .fhow__go--kakao { background: #FEE500; color: #3C1E1E; border: 1px solid rgba(60, 30, 30, .10); }
+.fhow__go--insta { background: linear-gradient(135deg, #E8CD93 0%, #C79A4E 100%); color: #241B0C; border: 1px solid rgba(140, 96, 24, .45); }
 .fhow__foot { margin: 16px 0 0; font-size: 10.5px; text-align: center; color: var(--mute); }
 
 /* ==========================================================
@@ -7424,4 +7425,203 @@ body.is-result .hero__share { margin-top: 8px; }
 
 @media (max-width: 360px) {
   #calCard .monthspec .cal__summary .sum { font-size: 10px; letter-spacing: -.05em; }
+}
+
+/* ==========================================================
+   💌 친구 초대 · 📸 인스타그램 후기 참여 (2026-11-26 #23095 · #23131)
+   · 아이보리(--paper) · 샴페인 골드 · 딥 네이비 세 색만 쓴다.
+   · 한 화면에서 스크롤로 4단계를 다 본다 — 하단에 겹치는 고정 버튼 없음.
+   ========================================================== */
+.modal__dialog--inv, .modal__dialog--insta { max-width: 430px; }
+.modal--inv, .modal--insta { z-index: 130; }
+
+/* 초대 인원 한 줄 — 혜택 카드·초대 화면 공통 */
+.mrefs {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 12px; padding: 10px 13px; border-radius: 13px;
+  background: linear-gradient(135deg, #1B2940 0%, #24334C 100%);
+  border: 1px solid rgba(201, 138, 34, .35);
+  color: #F6EBD6; word-break: keep-all;
+}
+.mrefs b { font-size: 11.5px; font-weight: 800; letter-spacing: -.02em; }
+.mrefs em { font-style: normal; font-size: 15px; font-weight: 800; color: #EBCE97; margin: 0 1px; }
+.mrefs span { flex: none; font-size: 9.5px; color: rgba(246, 235, 214, .78); }
+.mrefs span b { color: #EBCE97; font-size: inherit; }
+
+/* ── 💌 친구 초대 ─────────────────────────────────── */
+.invt__box {
+  margin-top: 12px; padding: 14px; border-radius: 17px;
+  background: #FFFFFF; border: 1px solid rgba(165, 101, 15, .22);
+  box-shadow: 0 12px 26px -24px rgba(28, 24, 19, .9);
+}
+.invt__label {
+  margin: 0; font-size: 9px; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; color: #8A4E0B;
+}
+.invt__url {
+  margin: 8px 0 0; padding: 11px 12px; border-radius: 11px;
+  background: #FBF7EE; border: 1px dashed rgba(165, 101, 15, .34);
+  font-size: 10.5px; line-height: 1.5; color: var(--ink-2);
+  word-break: break-all; -webkit-user-select: all; user-select: all;
+}
+.invt__acts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 10px; }
+.invt__btn {
+  padding: 12px 10px; border-radius: 12px; border: 1px solid rgba(28, 24, 19, .12);
+  background: #FFF; color: var(--ink); font-size: 11.5px; font-weight: 800;
+  letter-spacing: -.02em; word-break: keep-all;
+}
+.invt__btn:active { transform: translateY(1px); }
+.invt__btn--gold { background: linear-gradient(135deg, #E8CD93 0%, #C79A4E 100%); border-color: rgba(140, 96, 24, .45); color: #241B0C; }
+.invt__more {
+  width: 100%; margin-top: 7px; padding: 9px 10px; border-radius: 11px;
+  border: 0; background: #F6F0E4; color: #8A4E0B; font-size: 10.5px; font-weight: 800;
+}
+.invt__box--login { text-align: center; }
+.invt__login-q { margin: 9px 0 0; font-family: var(--serif); font-size: 13.5px; line-height: 1.55; color: var(--ink); letter-spacing: -.02em; }
+.invt__kakao {
+  display: flex; align-items: center; justify-content: center; margin-top: 11px;
+  padding: 13px 12px; border-radius: 13px; background: #FEE500; color: #3C1E1E;
+  font-size: 12.5px; font-weight: 800; text-decoration: none; border: 1px solid rgba(60, 30, 30, .1);
+}
+.invt__note { margin: 9px 0 0; font-size: 9.5px; line-height: 1.6; color: var(--mute); word-break: keep-all; }
+
+.invt__ladder { display: grid; gap: 7px; margin: 14px 0 0; padding: 0; list-style: none; }
+.invt__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 11px 12px; border-radius: 13px;
+  background: #FFF; border: 1px solid rgba(28, 24, 19, .09);
+}
+.invt__row.is-done {
+  background: linear-gradient(160deg, #F8EEDA 0%, #EBD9B4 100%);
+  border-color: rgba(165, 101, 15, .28);
+}
+.invt__b { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.invt__n { font-size: 9.5px; font-weight: 800; letter-spacing: .03em; color: #8A4E0B; }
+.invt__t { font-family: var(--serif); font-size: 12.5px; line-height: 1.35; font-weight: 700; color: var(--ink); letter-spacing: -.02em; word-break: keep-all; }
+.invt__s { font-size: 9.3px; line-height: 1.45; color: var(--mute); }
+.invt__st { flex: none; font-size: 9.5px; font-weight: 800; color: #8A4E0B; letter-spacing: -.01em; word-break: keep-all; }
+.invt__row.is-done .invt__st { color: #067F5B; }
+
+/* ── 📸 인스타그램 후기 참여 ───────────────────────── */
+.iflow__prize {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 12px; padding: 12px 14px; border-radius: 15px;
+  background: linear-gradient(135deg, #F8EEDA 0%, #EBD9B4 100%);
+  border: 1px solid rgba(165, 101, 15, .28);
+}
+.iflow__prize b { font-family: var(--serif); font-size: 13px; line-height: 1.35; color: #5A3A08; letter-spacing: -.02em; word-break: keep-all; }
+.iflow__prize span { flex: none; font-size: 9.5px; font-weight: 800; color: #8A4E0B; }
+
+.iflow__step {
+  margin-top: 14px; padding: 15px 14px 14px; border-radius: 18px;
+  background: #FFFFFF; border: 1px solid rgba(28, 24, 19, .10);
+  box-shadow: 0 12px 26px -26px rgba(28, 24, 19, .9);
+}
+.iflow__step--last { border-color: rgba(165, 101, 15, .26); }
+.iflow__h { display: flex; align-items: center; gap: 8px; }
+.iflow__num {
+  flex: none; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #1B2940; color: #EBCE97; font-size: 11px; font-weight: 800;
+}
+.iflow__t { font-family: var(--serif); font-size: 14.5px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+.iflow__d { margin: 8px 0 0; font-size: 11px; line-height: 1.68; color: var(--ink-2); word-break: keep-all; }
+
+.iflow__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 10px; }
+.iflow__ph { position: relative; margin: 0; border-radius: 12px; overflow: hidden; background: #F1E9DA; border: 1px solid rgba(28, 24, 19, .08); }
+.iflow__zoom { display: block; width: 100%; padding: 0; border: 0; background: none; }
+.iflow__zoom img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
+/* 사진 아래 저장 줄 — 사진 위에 글자를 덮지 않는다 */
+.iflow__save {
+  display: block; width: 100%; margin: 0; padding: 7px 6px;
+  border: 0; border-top: 1px solid rgba(165, 101, 15, .18);
+  background: #FBF3E2; color: #8A4E0B;
+  font-size: 9.6px; font-weight: 800; letter-spacing: -.02em;
+}
+.iflow__ph { display: flex; flex-direction: column; }
+.iflow__save:active { background: #F4E7CC; }
+
+.iflow__acts { display: grid; gap: 6px; margin-top: 10px; }
+.iflow__btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 10px; border-radius: 12px; border: 1px solid rgba(28, 24, 19, .12);
+  background: #FFF; color: var(--ink); font-size: 12px; font-weight: 800;
+  letter-spacing: -.02em; text-decoration: none; word-break: keep-all; text-align: center;
+}
+.iflow__btn:active { transform: translateY(1px); }
+.iflow__btn--gold { background: linear-gradient(135deg, #E8CD93 0%, #C79A4E 100%); border-color: rgba(140, 96, 24, .45); color: #241B0C; }
+.iflow__btn--navy { background: #1B2940; border-color: #1B2940; color: #F6EBD6; }
+.iflow__btn--kakao { background: #FEE500; border-color: rgba(60, 30, 30, .12); color: #3C1E1E; }
+.iflow__note { margin: 9px 0 0; font-size: 9.5px; line-height: 1.62; color: var(--mute); word-break: keep-all; }
+.iflow__note b { color: #8A4E0B; font-weight: 800; }
+
+.iflow__tags { margin: 9px 0 0; line-height: 1.9; }
+.iftag {
+  display: inline-block; margin: 0 4px 4px 0; padding: 4px 8px; border-radius: 8px;
+  background: #FBF7EE; border: 1px solid rgba(165, 101, 15, .22);
+  font-size: 9.8px; font-weight: 700; color: #8A4E0B; letter-spacing: -.01em;
+}
+.iftag--acct { background: #1B2940; border-color: #1B2940; color: #EBCE97; }
+.iflow__disc {
+  margin: 8px 0 0; padding: 9px 10px; border-radius: 10px;
+  background: #FCFAF4; border: 1px dashed rgba(165, 101, 15, .24);
+  font-size: 9.6px; line-height: 1.55; color: var(--ink-2); word-break: keep-all;
+}
+
+.iflow__guide { margin-top: 10px; border-radius: 11px; background: #FBF7EE; border: 1px solid rgba(28, 24, 19, .08); }
+.iflow__guide summary {
+  padding: 11px 12px; font-size: 11px; font-weight: 800; color: #1B2940;
+  letter-spacing: -.01em; cursor: pointer; list-style: none;
+}
+.iflow__guide summary::-webkit-details-marker { display: none; }
+.iflow__guide summary::after { content: '＋'; float: right; color: #8A4E0B; font-weight: 800; }
+.iflow__guide[open] summary::after { content: '－'; }
+.iflow__how { margin: 0; padding: 2px 12px 12px 12px; list-style: none; }
+.iflow__how li {
+  display: flex; align-items: flex-start; gap: 8px; padding: 6px 0;
+  font-size: 10.3px; line-height: 1.55; color: var(--ink-2); word-break: keep-all;
+  border-top: 1px dashed rgba(28, 24, 19, .07);
+}
+.iflow__how li span { flex: none; width: 17px; text-align: center; font-size: 11px; }
+.iflow__how li b { color: #8A4E0B; font-weight: 800; }
+.iflow__cond { margin: 10px 0 0; font-size: 9.8px; line-height: 1.6; color: var(--mute); word-break: keep-all; }
+.iflow__cond b { color: #8A4E0B; }
+.iflow__state { margin: 9px 0 0; font-size: 10px; font-weight: 700; color: #8A4E0B; }
+.iflow__state--done { color: #067F5B; }
+
+
+.iflow__pick {
+  margin: 9px 0 0; padding: 9px 11px; border-radius: 10px;
+  background: linear-gradient(135deg, #FBF3E2 0%, #F4E7CC 100%);
+  border: 1px solid rgba(165, 101, 15, .22);
+  font-size: 10.2px; line-height: 1.6; color: #5A3A08; word-break: keep-all;
+}
+.iflow__pick b { color: #8A4E0B; font-weight: 800; }
+
+/* 확대 보기 */
+.insta-zoom {
+  position: fixed; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 18px 12px calc(18px + env(safe-area-inset-bottom, 0px));
+  background: rgba(12, 12, 12, .94);
+}
+.insta-zoom[hidden] { display: none; }
+.insta-zoom__img { max-width: 100%; max-height: calc(100dvh - 150px); border-radius: 12px; object-fit: contain; }
+.insta-zoom__x {
+  position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .12);
+  color: #FFF; font-size: 15px;
+}
+.insta-zoom__bar { margin-top: 14px; }
+.insta-zoom__save {
+  padding: 11px 22px; border-radius: 999px; border: 0;
+  background: linear-gradient(135deg, #E8CD93 0%, #C79A4E 100%); color: #241B0C;
+  font-size: 12px; font-weight: 800;
+}
+
+@media (max-width: 360px) {
+  .mrefs b { font-size: 10.8px; }
+  .mrefs span { font-size: 9px; }
+  .invt__acts { grid-template-columns: 1fr; }
+  .iflow__t { font-size: 13.5px; }
 }

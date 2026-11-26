@@ -4,7 +4,7 @@
      저장하면 **재배포 없이** 고객 화면(혜택 팝업)과 이후 지급에 바로 반영된다.
      이미 발급된 할인권은 발급 당시 조건(금액·만료일)을 그대로 간직한다.
    · 인스타그램 인증은 관리자가 '승인'만 누르면 회원 상태에 따라 자동 분기된다.
-       정식 회원 → 상담 1만원 할인권 1매 / 무료 회원 → 기존 30일 이용권(M 코드)
+       정식 회원 → 전 상품 10,000원 할인권 1매 / 무료 회원 → 기존 30일 이용권(M 코드)
    · 손님 화면과 같은 서버 상태(member_who)를 본다 — 코드 발급기·가입자·달력과 같은 기준.
    서버: public.admin_member_benefits(pin, action, payload) · docs/member-benefits-*.sql
    ========================================================== */
@@ -46,7 +46,7 @@
   }
   function state(el, t) { var e = $(el); if (e) { e.textContent = t; e.hidden = !t; } }
 
-  var AREA = { onepoint: '원포인트', signature: '시그니처' };
+  var AREA = { onepoint: '원포인트', signature: '시그니처', naming: '개명·작명', all: '모든 상품' };
 
   /* ── 규칙 목록 ───────────────────────────────────── */
   function rulesHTML() {
@@ -74,8 +74,10 @@
         (isBurn ? '' :
           '<label class="bnr__lb">적용 상품' +
           '<span class="bnr__chk">' +
+          '<label><input type="checkbox" data-f="apply_all"' + (((r.applies_to || []).indexOf('all') >= 0) ? ' checked' : '') + '> 모든 상품</label>' +
           '<label><input type="checkbox" data-f="apply_onepoint"' + ((r.applies_to || []).indexOf('onepoint') >= 0 ? ' checked' : '') + '> 원포인트</label>' +
           '<label><input type="checkbox" data-f="apply_signature"' + ((r.applies_to || []).indexOf('signature') >= 0 ? ' checked' : '') + '> 시그니처</label>' +
+          '<label><input type="checkbox" data-f="apply_naming"' + ((r.applies_to || []).indexOf('naming') >= 0 ? ' checked' : '') + '> 개명·작명</label>' +
           '</span></label>' +
           '<p class="bnr__sub">고객 화면 표시: ' + esc(r.subtitle || '') + (applies ? ' · ' + esc(applies) : '') + '</p>') +
         '<p class="bnr__meta">' + (r.trigger === 'insta' ? '인스타 인증 · 계정당 1회' : '친구 ' + r.stage + '명 달성 · 계정당 1회') + '</p>' +
@@ -90,9 +92,14 @@
       var base = st.rules.filter(function (x) { return x.id === id; })[0] || {};
       function val(f) { var el = li.querySelector('[data-f="' + f + '"]'); return el ? el.value : ''; }
       function chk(f) { var el = li.querySelector('[data-f="' + f + '"]'); return el ? !!el.checked : false; }
+      /* 2026-11-26 #23131 — '모든 상품'을 고르면 앞으로 추가되는 상품에도 그대로 적용된다(all) */
       var applies = [];
-      if (chk('apply_onepoint')) applies.push('onepoint');
-      if (chk('apply_signature')) applies.push('signature');
+      if (chk('apply_all')) applies = ['all'];
+      else {
+        if (chk('apply_onepoint')) applies.push('onepoint');
+        if (chk('apply_signature')) applies.push('signature');
+        if (chk('apply_naming')) applies.push('naming');
+      }
       var row = {
         id: id,
         title: val('title'),
@@ -267,7 +274,7 @@
           }
           alert(d.kind === 'month'
             ? '30일 이용권을 발급했어요 — 코드 ' + d.code + ' (카톡으로 보내 주세요)'
-            : '상담 1만원 할인권 1매를 자동 발급했어요.');
+            : '전 상품 10,000원 할인권 1매를 자동 발급했어요.');
           load();
         }, function (err) { t.disabled = false; alert('승인하지 못했어요 · ' + err.message); });
         return;
@@ -286,7 +293,7 @@
         return;
       }
       if ((id = t.getAttribute('data-grant'))) {
-        if (!confirm('이 번호로 상담 1만원 할인권 1매를 지급할까요? (6개월 · 1회용)')) return;
+        if (!confirm('이 번호로 전 상품 10,000원 할인권 1매를 지급할까요? (6개월 · 1회용)')) return;
         rpc('grant', { phone: id, coupon_kind: 'amount', coupon_value: 10000, valid_months: 6, note: '관리자 수동 지급' })
           .then(function (d) { alert(d && d.ok ? '지급했어요.' : '지급하지 못했어요 · ' + ((d && d.error) || '')); load(); });
         return;
@@ -300,7 +307,7 @@
         if (!confirm('이 회원의 인스타 인증을 승인할까요? (회원 상태에 따라 자동 분기 발급)')) return;
         rpc('insta_approve', { user_id: id }).then(function (d) {
           if (!d || !d.ok) { alert(d && d.error === 'need_phone' ? '이 회원은 연결된 번호가 없어요 — 코드 발급기에서 30일 이용권을 만들어 주세요.' : '승인하지 못했어요 · ' + ((d && d.error) || '')); return; }
-          alert(d.kind === 'month' ? '30일 이용권을 발급했어요 — 코드 ' + d.code : '상담 1만원 할인권 1매를 자동 발급했어요.');
+          alert(d.kind === 'month' ? '30일 이용권을 발급했어요 — 코드 ' + d.code : '전 상품 10,000원 할인권 1매를 자동 발급했어요.');
           load();
         });
         return;

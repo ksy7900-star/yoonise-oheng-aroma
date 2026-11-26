@@ -1500,10 +1500,12 @@ a { color: inherit; }
   }
   function won(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
 
-  /** 이 상품이 서버 주문(할인권·결제 확인)을 쓰는 상품인가 — 원포인트·시그니처 둘만 */
+  /** 이 상품이 서버 주문(할인권·결제 확인)을 쓰는 상품인가 — 원포인트·시그니처·개명·작명 (2026-11-26 #23131)
+      개명·작명도 '전 상품 10,000원 할인권'을 쓸 수 있어 서버 주문(payapp_prepare_order)으로 결제한다. */
   function consultProductKey() {
     if (state.type === 'onepoint') return 'consult-onepoint';
     if (state.type === 'saju') return 'consult-signature';
+    if (state.type === 'naming') return 'naming';
     return '';
   }
 

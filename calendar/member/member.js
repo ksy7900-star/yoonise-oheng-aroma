@@ -69,6 +69,9 @@
      카카오OAuth 는 주소의 ?next= 를 지우고 돌아오므로, 이 탭에 표시를 남겨 두고
      로그인이 끝나면 달력(#talis)으로 바로 돌려보낸다. */
   var NEXT_TALIS_KEY = 'yoonise.member.next.talis.v1';
+  /* 달력의 초대 화면에서 '카카오로 연결'로 넘어온 손님 — 연결이 끝나면 달력의 #invite 로 되돌린다
+     (카카오 OAuth 는 주소의 ?next= 를 지우고 돌아오므로 이 탭에 표시를 남긴다 · 2026-11-26 #23095) */
+  var NEXT_INVITE_KEY = 'yoonise.member.next.invite.v1';
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var SAMHAP_EL = ['수', '목', '화', '금'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
@@ -248,6 +251,7 @@
   /* 달력의 '카톡 3초 연결 → 수호 부적' 카드로 들어왔으면 이 탭에 표시해 둔다
      (카카오는 주소의 ?next= 를 지우고 돌아오니까 — 2026-11-23 2차) */
   try { if (queryParam('next') === 'talis') sessionStorage.setItem(NEXT_TALIS_KEY, '1'); } catch (e) {}
+  try { if (queryParam('next') === 'invite') sessionStorage.setItem(NEXT_INVITE_KEY, '1'); } catch (e) {}
   /** 연결이 끝났으면 달력으로 돌아가 내 수호 부적을 바로 연다 */
   function returnToTalis() {
     var want = false;
@@ -255,6 +259,15 @@
     if (!want || !state.user) return false;
     try { sessionStorage.removeItem(NEXT_TALIS_KEY); } catch (e) {}
     location.replace('../#talis');
+    return true;
+  }
+  /** 연결이 끝났으면 달력의 초대 화면(#invite)으로 돌아간다 — 초대 코드를 만들러 온 손님 */
+  function returnToInvite() {
+    var want = false;
+    try { want = sessionStorage.getItem(NEXT_INVITE_KEY) === '1'; } catch (e) { want = false; }
+    if (!want || !state.user) return false;
+    try { sessionStorage.removeItem(NEXT_INVITE_KEY); } catch (e) {}
+    location.replace('../#invite');
     return true;
   }
   /** 초대 링크의 원터치 연결로 넘어온 흐름인가 — 카톡/카카오를 다녀와도 같은 탭이면 남는다 */
@@ -427,6 +440,7 @@
       return;
     }
     if (returnToTalis()) return;          // 카톡 연결 → 달력 #talis (수호 부적)
+    if (returnToInvite()) return;         // 초대 화면 연결 → 달력 #invite (내 초대 링크)
     renderAuth(); renderLadder(); renderInvite();
     loadProfile();
     /* 카카오로 돌아왔는데 붙일 초대 코드가 없을 때(코드가 이미 비워졌거나 기억이 지워졌을 때)도
@@ -2149,10 +2163,11 @@
       + '<button type="button" class="btn btn--gold btn--wide" id="growShareBtn">내 링크 바로 보내기</button>'
       + '</div>'
       + '<div class="grow__card grow__card--insta">'
-      + '<p class="grow__lb">📸 인스타 올리기 · +1개월</p>'
-      + '<p class="grow__t">인스타 <b>피드·릴스</b>에 결과 화면을 올리면 <b>내 사주 타이밍 달력 +1개월</b>이 열려요</p>'
-      + '<button type="button" class="btn btn--gold btn--wide" id="instaGoBtn">📸 태그 복사하고 인스타 올리기</button>'
-      + '<p class="grow__d">올린 화면을 카톡 <b>윤이세사주</b>로 보내 주시면 <b>+1개월 코드</b>를 보내 드려요 · 계정당 1회</p>'
+      + '<p class="grow__lb">📸 인스타그램 후기 · 혜택</p>'
+      + '<p class="grow__t">인스타 <b>피드·릴스</b>에 후기를 올리면 <b>내 사주 타이밍 달력 30일 무료 이용</b>이 열려요</p>'
+      /* 2026-11-26 #23131 — 앱 전체가 같은 4단계 참여 화면 하나를 쓴다(달력 앱의 #insta). */
+      + '<a class="btn btn--gold btn--wide" href="../#insta">📸 인스타그램 후기 올리고 혜택 받기</a>'
+      + '<p class="grow__d">공식 사진 4장 + 내 화면 캡처 1장에 소감 한 줄 · 계정당 1회 · 인증 확인 후 자동 지급</p>'
       + '</div>'
       + '</section>';
 
@@ -2214,14 +2229,8 @@
     });
     updateGrow();
 
-    /* 📸 태그 복사 + 인스타 열기 — 한 버튼 (2026-11-23 6차) */
-    var ig = $('#instaGoBtn');
-    if (ig) ig.addEventListener('click', function () {
-      copyText(CAPTION).then(function (ok) {
-        toast(ok ? '복사됐어요! 인스타 열리면 붙여넣고 올려 주세요' : '복사가 안 됐어요. 문구를 길게 눌러 복사해 주세요');
-        setTimeout(openInstagram, ok ? 520 : 0);
-      });
-    });
+    /* 📸 인스타그램 후기 — 2026-11-26 #23131: 달력 앱의 공통 4단계 화면(../#insta)으로 보낸다.
+       (예전의 '태그 복사 + 인스타 열기' 한 버튼은 그 화면이 대신한다) */
 
     var ag = $('#againLink');
     if (ag) ag.addEventListener('click', function () {

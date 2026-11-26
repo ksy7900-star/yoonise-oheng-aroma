@@ -2262,21 +2262,22 @@
     return '<p class="modal__eyebrow">FREE · 무료 이용법</p>' +
       '<h2 class="fhow__title" id="freeTitle">🎁 내 사주 타이밍 달력<br>무료로 쓰는 두 가지</h2>' +
       '<p class="fhow__sub">이미 앱에 들어 있는 혜택 그대로예요.</p>' +
+      mbRefsLine(mb.status, 'benefit') +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">①</span><span class="fhow__t">친구 초대</span></p>' +
       '<p class="fhow__d">내 초대 링크로 친구가 들어오면 <b>자동으로</b> 기간이 늘어나요.</p>' +
       '<ul class="fhow__ladder">' + ladder.map(function (x) {
         return '<li><b>' + x.n + '</b><strong>' + x.v + '</strong></li>';
       }).join('') + '</ul>' +
-      '<p class="fhow__note">초대받은 친구도 액운 태우기 <b>+1회</b></p>' +
+      '<p class="fhow__note">초대받은 친구도 7일 무료 + 액운 태우기 <b>+1회</b></p>' +
       '<p class="fhow__note">5명부터는 1:1 상담 할인도 함께 드려요</p>' +
-      '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
+      '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
       '</section>' +
       '<section class="fhow__card">' +
-      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">②</span><span class="fhow__t">인스타그램 인증</span></p>' +
-      '<p class="fhow__d">인스타에 사용 후기를 올리고 <b>카카오톡 채널</b>로 보내 주시면 <b>1개월 이용권</b>을 드려요.</p>' +
-      '<p class="fhow__note">계정당 1회 · 올린 화면을 보내 주세요</p>' +
-      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener">카카오톡 채널로 보내기 <span aria-hidden="true">→</span></a>' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">②</span><span class="fhow__t">인스타그램 후기</span></p>' +
+      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 사진은 윤이세가 준비했어요 — 나만의 사용 소감 한 줄을 더하면 돼요.</p>' +
+      '<p class="fhow__note">무료 회원 <b>' + esc(INSTA_CFG.prize.free) + '</b> · 계정당 1회 · 인증 확인 후 자동 지급</p>' +
+      '<button type="button" class="fhow__go fhow__go--insta" data-open-insta>인스타그램 후기 올리고 혜택 받기 <span aria-hidden="true">→</span></button>' +
       '</section>' +
       '<p class="fhow__foot">두 혜택은 함께 받을 수 있어요.</p>';
   }
@@ -2288,6 +2289,7 @@
       if (grid) grid.innerHTML = mbCardsHTML(mb.status, mbRulesNow());
       var box = freeBody.querySelector('[data-mben-status]');
       if (box) box.innerHTML = mbMineHTML(mb.status, mbRulesNow());
+      freePaintRefs();
     }
     mbRulesCb(function () {
       paint();
@@ -2295,24 +2297,24 @@
     });
   }
 
+  /** 무료 이용법 모달의 '현재까지 초대한 친구 N명' 한 줄만 새 값으로 */
+  function freePaintRefs() {
+    if (!freeBody) return;
+    var el = freeBody.querySelector('[data-mben-refs]');
+    if (el) el.innerHTML = mbRefsInner(mb.status);
+  }
+
   function openFreeHow() {
     if (!freeEl || !freeBody) return;
     freeLastFocus = document.activeElement;
     var member = isMemberNow();
     freeBody.innerHTML = member ? memberBenefitsHTML(mb.status, mbRulesNow()) : freeHowHTML();
-    /* 이 기기에 대기 중인 초대 코드(?ref=)가 있으면 초대 화면으로 그대로 이어 준다 */
-    var go = freeBody.querySelector('[data-free-invite]');
-    if (go) { try { go.setAttribute('href', memberHref()); } catch (e) {} }
+    /* 초대 인원·남은 인원은 무료·정식 회원 모두 서버 값으로 새로 채운다 (2026-11-26 #23095).
+       초대·인스타 버튼은 위임(data-open-invite · data-open-insta)이 받으므로 여기서 잇지 않는다. */
     if (member) {
-      /* 인스타 인증 — 카톡으로 보내면서 관리자 확인 목록에도 남긴다(보내는 길은 그대로) */
-      var ig = freeBody.querySelector('[data-mben-insta]');
-      if (ig) ig.addEventListener('click', function () {
-        var uid = clientUid();
-        var body = {};
-        if (uid) body.p_client_uid = uid;
-        mbPost('member_insta_submit', body, function () { mb.status = null; });
-      });
       mbFillMemberBody();
+    } else {
+      mbStatusCb(function (st) { freePaintRefs(); mbNotice(st); }, true);
     }
     freeEl.hidden = false;
     if (window.BackNav) window.BackNav.open('free', closeFreeHow);      // 휴대폰 뒤로가기 → 이 팝업부터 닫기
@@ -2350,14 +2352,14 @@
   var MB_RULES_KEY = 'yoonise.member.rules.v1';
   var MB_RULES_MS = 30 * 60 * 1000;
   var MB_FALLBACK = {
-    products: { onepoint: { name: '원포인트 리딩', price: 49000 }, signature: { name: '시그니처 리딩', price: 100000 } },
+    products: { onepoint: { name: '원포인트 리딩', price: 49000 }, signature: { name: '시그니처 리딩', price: 100000 }, naming: { name: '개명·작명', price: 200000 } },
     stages: [
       { stage: 1, benefit: 'burn', title: '액운 태우기 +3회', subtitle: '기본 하루 1회 외 · 필요한 날 3회 더', burn_count: 3, applies_to: [], coupon_kind: null, coupon_value: 0, active: true },
-      { stage: 3, benefit: 'coupon', title: '전 상담 상품 1만원 할인권 1매', subtitle: '원포인트 · 시그니처 모두 사용', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['onepoint', 'signature'], burn_count: 0, active: true },
+      { stage: 3, benefit: 'coupon', title: '전 상품 10,000원 할인권 1매', subtitle: '원포인트 · 시그니처 · 개명·작명 모두 사용', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['all'], burn_count: 0, active: true },
       { stage: 5, benefit: 'coupon', title: '원포인트 50% 할인권 1매', subtitle: '', coupon_kind: 'percent', coupon_value: 50, applies_to: ['onepoint'], burn_count: 0, active: true },
       { stage: 7, benefit: 'coupon', title: '시그니처 50% 할인권 1매', subtitle: '', coupon_kind: 'percent', coupon_value: 50, applies_to: ['signature'], burn_count: 0, active: true }
     ],
-    insta: { title: '전 상담 상품 1만원 할인권 1매', subtitle: '인스타그램 인증 · 계정당 1회', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['onepoint', 'signature'], valid_months: 6, active: true }
+    insta: { title: '전 상품 10,000원 할인권 1매', subtitle: '인스타그램 인증 · 계정당 1회', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['all'], valid_months: 6, active: true }
   };
   var mb = { rules: null, rulesAt: 0, status: null, statusAt: 0, busy: false, noticeShown: false, burnLeft: -1, burnAsked: 0 };
 
@@ -2475,6 +2477,7 @@
     var tone = ['ivory', 'ivory', 'gold', 'navy'];
     return list.slice(0, 4).map(function (r, i) {
       var price = mbPrice(r, products);
+      var granted = mbStageGranted(r, st);
       /* 금액 줄이 이미 있으면 같은 금액을 한 번 더 쓰지 않는다(작은 글씨는 설명만) */
       var sub = String(r.subtitle || '');
       if (price && (sub.indexOf('→') >= 0 || sub.replace(/[^0-9]/g, '') === String(r.coupon_value || ''))) sub = '';
@@ -2486,9 +2489,12 @@
       }
       var stt = mbStageState(st, r.stage);
       var state = '';
-      if (st && st.member && st.linked) {
-        if (stt && stt.achieved) state = '<span class="mben__state">혜택 받았어요</span>';
-        else if (stt) state = '<span class="mben__state mben__state--wait">' + esc(String(stt.remaining)) + '명 더 초대하면 받아요</span>';
+      /* 2026-11-26 #23095 — '혜택 받았어요'는 서버가 실제로 발급한 기록이 있을 때만.
+         인원은 넘었는데 발급 전이면 '지급 확인 중'으로 구분한다(지급 대기·오류와 완료를 섞지 않는다). */
+      if (st && st.member && st.linked && stt) {
+        if (stt.achieved && granted) state = '<span class="mben__state">혜택 받았어요</span>';
+        else if (stt.achieved) state = '<span class="mben__state mben__state--wait">지급 확인 중이에요</span>';
+        else state = '<span class="mben__state mben__state--wait">' + esc(String(stt.remaining)) + '명 더 초대하면 받아요</span>';
       }
       return '<div class="mben__card mben__card--' + tone[i % 4] + '">' +
         '<span class="mben__n">친구 ' + esc(String(r.stage)) + '명</span>' +
@@ -2574,15 +2580,16 @@
     return '<p class="modal__eyebrow">YOONISE · MEMBER BENEFITS</p>' +
       '<h2 class="fhow__title" id="freeTitle">좋은 인연, 더 큰 선물</h2>' +
       '<p class="fhow__sub">타이밍 달력 정식 회원님만을 위한 특별 혜택</p>' +
+      mbRefsLine(st, 'benefit') +
       '<div class="mben__grid" data-mben-grid>' + mbCardsHTML(st, rules) + '</div>' +
       '<p class="mben__lead">소중한 인연을 이어주신 감사의 마음을 담아, 타이밍 달력 정식 회원님께 <b>특별한 혜택</b>을 드립니다.</p>' +
-      '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
+      '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
       '<section class="fhow__card">' +
-      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기 인증</span></p>' +
-      '<p class="fhow__d">인스타에 사용 후기를 올린 뒤, <b>카카오톡 채널</b>을 친구 추가하고 <b>인증 캡처</b>를 보내 주세요. 확인 후 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b> 혜택이 지급됩니다.</p>' +
-      '<p class="fhow__note">계정당 1회 · 나영 님이 캡처를 확인하고 승인하면 자동으로 들어와요</p>' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기</span></p>' +
+      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 사진은 윤이세가 준비했어요 — 나만의 사용 소감 한 줄을 더하면 돼요.</p>' +
+      '<p class="fhow__note"><b>' + esc(INSTA_CFG.prize.member) + '</b> · 계정당 1회 · 인증 확인 후 자동 지급</p>' +
       (mbInstaState(st) ? '<p class="fhow__note">' + mbInstaState(st) + '</p>' : '') +
-      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener" data-mben-insta>인스타그램 후기 인증하기 <span aria-hidden="true">→</span></a>' +
+      '<button type="button" class="fhow__go fhow__go--insta" data-open-insta>인스타그램 후기 올리고 혜택 받기 <span aria-hidden="true">→</span></button>' +
       '</section>' +
       '<div data-mben-status>' + mbMineHTML(st, rules) + '</div>' +
       '<p class="mben__foot">상담 할인권은 혜택별 1회 지급되며, 발급일로부터 ' + esc(String(months)) + '개월 이내 사용 가능합니다. 중복 할인은 적용되지 않습니다.</p>';
@@ -2597,7 +2604,7 @@
     var d = bar.querySelector('.freebar__d');
     bar.classList.toggle('is-member', mem);
     if (t) t.textContent = mem ? '타이밍 달력 정식 회원 특별 혜택' : '내 사주 타이밍 달력 무료 이용법';
-    if (d) d.textContent = mem ? '친구 초대 · 상담 할인 혜택' : '친구 초대 · 인스타그램 인증 혜택';
+    if (d) d.textContent = mem ? '친구 초대 · 상담 할인 혜택' : '친구 초대 · 인스타그램 후기 혜택';
   }
 
   /** 서버 회원 상태 연결 — 코드로 연 기기를 원장(entry_code_ledger)에 묶고 현황을 읽는다 */
@@ -2661,6 +2668,573 @@
   function burnExtraUsedToday() { return !!burn.extraDay && burn.extraDay === burnTodayKey(); }
   /** 오늘 한 번 더 태울 수 있는가 (기본 1회를 마친 뒤, 추가 이용권이 남아 있고 오늘 아직 안 썼을 때) */
   function burnExtraToday() { return burnExtraLeft() > 0 && !burnExtraUsedToday(); }
+
+  /* ══ 💌 친구 초대 화면 · 📸 인스타그램 후기 참여 화면 (2026-11-26 #23095) ═════════
+     · 앱 안의 **모든** 초대 진입점(무료 이용법 모달 · 정식 회원 혜택 모달 · 잠금 팝업 초대 카드)이
+       openInvite() 하나로 온다 — 케미테스트 화면으로 보내지 않는다.
+     · 인스타 진입점(무료 이용법 · 정식 회원 혜택)은 openInsta() 하나로 온다.
+       카카오톡은 참여 4단계에서만 열고, '인스타그램 열기'는 고객 자신의 인스타그램 앱으로 보낸다.
+     · 초대 인원·남은 인원은 서버(member_status.referrals·stages)가 준 값만 쓴다. 지어내지 않는다.
+       지급 완료 표시도 서버가 실제로 발급한 기록(할인권 source=referral · 액운 이용권 합계)이 있을 때만.
+     · 사진 4장은 assets/insta/ 에 미리 만든 파일 그대로 — 자동 생성·합성은 하지 않는다. */
+  var INVITE_BASE = 'https://ksy7900-star.github.io/yoonise-oheng-aroma/calendar/';
+  var INVITE_CACHE_KEY = 'yoonise.member.invite.code.v1';
+  var INVITE_TEXT = '2027 사주타이밍, 내가 봤는데 잘 맞더라 너도 해봐!';
+  var INVITE_GOALS_FREE = [
+    { n: 1, t: '무료 이용 2주 추가', s: '타이밍 달력 14일' },
+    { n: 3, t: '무료 이용 1개월 추가', s: '타이밍 달력 30일' },
+    { n: 5, t: '무료 이용 3개월 추가', s: '+ 1:1 상담 1만원 할인' },
+    { n: 7, t: '무료 이용 6개월 추가', s: '+ 원포인트 상담 반값' }
+  ];
+  var inv = { code: '', nick: '', at: 0, loading: false };
+  var invEl = null, invBody = null, invDialog = null, invLastFocus = null, invClosing = false;
+  var instaEl = null, instaBody = null, instaDialog = null, instaLastFocus = null, instaClosing = false;
+  var instaZoomEl = null, instaZoomImg = null, instaZoomIdx = -1;
+
+  /* ── 초대 코드 ───────────────────────────────────────
+     코드는 로그인 계정(profiles.invite_code)에 있다. 달력 화면은 카카오 SDK 를 싣지 않으므로
+     localStorage 의 Supabase 세션 토큰으로 같은 주소에 물어보고, 마지막으로 받은 코드는
+     이 기기에 남겨 두어(새로고침·재접속) 네트워크가 잠깐 비어도 링크가 사라지지 않게 한다. */
+  function invCacheRead() {
+    try {
+      var o = JSON.parse(localStorage.getItem(INVITE_CACHE_KEY) || 'null');
+      return (o && o.code) ? o : null;
+    } catch (e) { return null; }
+  }
+  function invCacheWrite(code, nick) {
+    try {
+      localStorage.setItem(INVITE_CACHE_KEY, JSON.stringify({ code: String(code || ''), nick: String(nick || ''), at: Date.now() }));
+    } catch (e) { }
+  }
+  /** 로그인 토큰(JWT)의 sub — 로그인 계정 id */
+  function invJwtSub(tok) {
+    try {
+      var part = String(tok || '').split('.')[1];
+      if (!part) return '';
+      part = part.replace(/-/g, '+').replace(/_/g, '/');
+      while (part.length % 4) part += '=';
+      var o = JSON.parse(decodeURIComponent(escape(atob(part))));
+      return (o && o.sub) ? String(o.sub) : '';
+    } catch (e) { return ''; }
+  }
+  function invLink() { return INVITE_BASE + '?ref=' + encodeURIComponent(inv.code || ''); }
+  /** 로그인(카카오 연결)하러 가는 주소 — 돌아오면 #invite 로 이 화면이 다시 열린다 */
+  function invLoginHref() {
+    return './member/?autologin=1&next=invite' + (inviteRef ? '&ref=' + encodeURIComponent(inviteRef) : '');
+  }
+  /** 서버에서 내 초대 코드를 읽는다 — 실패해도 화면은 지난번 코드로 버틴다 */
+  function invLoadCode(cb) {
+    var tok = sbAuthToken();
+    var uid = tok ? invJwtSub(tok) : '';
+    if (!tok || !uid) {
+      var c0 = invCacheRead();
+      if (c0) { inv.code = c0.code; inv.nick = c0.nick || ''; }
+      cb();
+      return;
+    }
+    if (inv.code && (Date.now() - inv.at) < 60000) { cb(); return; }
+    if (inv.loading) { cb(); return; }
+    inv.loading = true;
+    var url = SB_URL + '/rest/v1/profiles?select=invite_code,nickname&id=eq.' + encodeURIComponent(uid) + '&limit=1';
+    var opt = { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + tok } };
+    try {
+      fetch(url, opt).then(function (res) {
+        return res.json();
+      }).then(function (rows) {
+        inv.loading = false;
+        var row = rows && rows[0];
+        if (row && row.invite_code) {
+          inv.code = String(row.invite_code).toUpperCase();
+          inv.nick = row.nickname || '';
+          inv.at = Date.now();
+          invCacheWrite(inv.code, inv.nick);
+        } else {
+          var c = invCacheRead();
+          if (c) { inv.code = c.code; inv.nick = c.nick || ''; }
+        }
+        cb();
+      }, function () {
+        inv.loading = false;
+        var c = invCacheRead();
+        if (c) { inv.code = c.code; inv.nick = c.nick || ''; }
+        cb();
+      });
+    } catch (e) { inv.loading = false; cb(); }
+  }
+
+  /** 현재까지 초대한 친구 N명 — 혜택 카드·초대 화면이 같이 쓰는 한 줄.
+      서버가 답하기 전에는 숫자를 지어내지 않고 '–' 로 둔다. */
+  function mbRefsInner(st) {
+    var linked = !!(st && st.linked);
+    var know = !!st;
+    var n = linked ? Number(st.referrals || 0) : 0;
+    var next = (st && st.next) ? st.next : null;
+    var tail = !know ? '인원을 확인하는 중이에요'
+      : (linked
+        ? (next ? '다음 혜택까지 <b>' + esc(String(next.remaining)) + '명</b>' : '모든 단계를 받았어요')
+        : '카카오로 연결하면 자동으로 채워져요');
+    return '<b>현재까지 초대한 친구 <em>' + (know ? (linked ? esc(String(n)) : '0') : '–') + '</em>명</b>' +
+      '<span>' + tail + '</span>';
+  }
+  function mbRefsLine(st, kind) {
+    return '<div class="mrefs' + (kind ? ' mrefs--' + kind : '') + '" data-mben-refs>' + mbRefsInner(st) + '</div>';
+  }
+
+  /** 이 칸의 혜택이 실제로 발급됐는가 — 할인권은 원장 기록, 액운은 총 제공 수로 확인 */
+  function mbStageGranted(r, st) {
+    if (!st || !r) return false;
+    if (r.benefit === 'burn') return Number((st.burn || {}).total || 0) >= Number(r.burn_count || 3);
+    var list = st.coupons || [];
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (c.source === 'referral' && Number(c.stage) === Number(r.stage) && c.status !== 'revoked') return true;
+    }
+    return false;
+  }
+
+  /* ── 💌 친구 초대 화면 ─────────────────────────────── */
+  function inviteLadderHTML(st, rules) {
+    if (isMemberNow()) {
+      var list = ((rules && rules.stages) || MB_FALLBACK.stages).filter(function (r) { return r.active !== false; });
+      list.sort(function (a, b) { return (a.stage || 0) - (b.stage || 0); });
+      return list.map(function (r) {
+        var stt = mbStageState(st, r.stage);
+        var done = !!stt && stt.achieved && mbStageGranted(r, st);
+        var cls = done ? ' is-done' : '';
+        var tail;
+        if (!stt) tail = '<span class="invt__st">확인 중</span>';
+        else if (done) tail = '<span class="invt__st">혜택 받았어요</span>';
+        else if (stt.achieved) tail = '<span class="invt__st">지급 확인 중</span>';
+        else tail = '<span class="invt__st">' + esc(String(stt.remaining)) + '명 더</span>';
+        var note = r.benefit === 'burn' ? '하루 1회 추가 사용 · 총 ' + (r.burn_count || 3) + '회' : (r.subtitle || '');
+        return '<li class="invt__row' + cls + '">' +
+          '<span class="invt__b"><b class="invt__n">친구 ' + esc(String(r.stage)) + '명</b>' +
+          '<span class="invt__t">' + esc(r.title || '') + '</span>' +
+          (note ? '<span class="invt__s">' + esc(note) + '</span>' : '') + '</span>' +
+          tail + '</li>';
+      }).join('');
+    }
+    return INVITE_GOALS_FREE.map(function (g) {
+      var left = Math.max(g.n - (st && st.linked ? Number(st.referrals || 0) : 0), 0);
+      var done = !!st && st.linked && left === 0;
+      return '<li class="invt__row' + (done ? ' is-done' : '') + '">' +
+        '<span class="invt__b"><b class="invt__n">친구 ' + g.n + '명</b>' +
+        '<span class="invt__t">' + esc(g.t) + '</span>' +
+        '<span class="invt__s">' + esc(g.s) + '</span></span>' +
+        (done ? '<span class="invt__st">달성</span>' : '<span class="invt__st">' + left + '명 더</span>') +
+        '</li>';
+    }).join('');
+  }
+
+  function inviteBodyHTML() {
+    var st = mb.status;
+    var rules = mbRulesNow();
+    var has = !!inv.code;
+    var box;
+    if (has) {
+      box = '<div class="invt__box">' +
+        '<p class="invt__label">내 초대 링크</p>' +
+        '<p class="invt__url" id="inviteUrl">' + esc(invLink()) + '</p>' +
+        '<div class="invt__acts">' +
+        '<button type="button" class="invt__btn invt__btn--gold" data-inv-copy>링크 복사</button>' +
+        '<button type="button" class="invt__btn" data-inv-share>카카오톡으로 보내기</button>' +
+        '</div>' +
+        '<button type="button" class="invt__more" data-inv-text>공유 문구 복사</button>' +
+        '</div>';
+    } else {
+      box = '<div class="invt__box invt__box--login">' +
+        '<p class="invt__label">내 초대 링크</p>' +
+        '<p class="invt__login-q">카카오로 한 번 연결하면<br>내 초대 링크가 만들어져요.</p>' +
+        '<a class="invt__kakao" href="' + esc(invLoginHref()) + '">카카오로 3초 연결하고 내 링크 받기</a>' +
+        '<p class="invt__note">연결은 초대 코드·인원 확인에만 쓰여요. 사주와 기록은 서버로 보내지 않습니다.</p>' +
+        '</div>';
+    }
+    return '<p class="modal__eyebrow">INVITE · 친구 초대</p>' +
+      '<h2 class="fhow__title" id="inviteTitle">초대 한 번이면,<br>두 사람 달력이 넓어져요</h2>' +
+      '<p class="fhow__sub">친구가 내 링크로 들어와 <b>카카오로 연결</b>하면 초대 1명으로 쌓여요.</p>' +
+      mbRefsLine(st, 'inv') +
+      box +
+      '<ul class="invt__ladder" data-inv-ladder>' + inviteLadderHTML(st, rules) + '</ul>' +
+      '<p class="fhow__note">초대받은 친구도 <b>7일 무료 + 액운 태우기 1회</b>로 시작해요.</p>' +
+      '<p class="fhow__note">친구가 링크로 들어온 뒤 <b>카카오로 연결</b>을 마쳐야 1명으로 인정됩니다.</p>' +
+      '<p class="fhow__foot">링크에는 내 초대 코드만 담겨요 — 사주 정보는 담기지 않습니다.</p>';
+  }
+
+  function invPaint() {
+    if (!invBody || !invEl || invEl.hidden) return;
+    var top = invBody.scrollTop;
+    invBody.innerHTML = inviteBodyHTML();
+    invBody.scrollTop = top;
+  }
+  function openInvite(quiet) {
+    if (!invEl || !invBody) return;
+    invLastFocus = document.activeElement;
+    invBody.innerHTML = inviteBodyHTML();
+    invEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('invite', closeInvite);
+    document.body.classList.add('is-modal-open');
+    invBody.scrollTop = 0;
+    if (!quiet) sfxOpen();
+    try { invDialog.focus({ preventScroll: true }); } catch (e) { invDialog.focus(); }
+    invLoadCode(function () {
+      invPaint();
+      mbStatusCb(function () { invPaint(); }, true);
+    });
+  }
+  function closeInvite() {
+    if (!invEl || invEl.hidden || invClosing) return;
+    if (window.BackNav) window.BackNav.close('invite');
+    invClosing = true;
+    invEl.classList.add('is-closing');
+    setTimeout(function () {
+      invEl.classList.remove('is-closing');
+      invEl.hidden = true;
+      invBody.innerHTML = '';
+      invClosing = false;
+      if (!anyModalOpen()) document.body.classList.remove('is-modal-open');
+      var t = invLastFocus;
+      if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) { } }
+      invLastFocus = null;
+    }, 180);
+  }
+  function invCopyLink() {
+    if (!inv.code) { toast('카카오로 연결하면 내 초대 링크가 만들어져요'); return; }
+    copyText(invLink(), function (ok) {
+      toast(ok ? '초대 링크를 복사했어요 — 친구에게 붙여넣기만 하세요' : '복사가 안 됐어요. 링크를 길게 눌러 복사해 주세요');
+    });
+  }
+  function invCopyText() {
+    if (!inv.code) { toast('카카오로 연결하면 내 초대 링크가 만들어져요'); return; }
+    copyText(INVITE_TEXT + '\n' + invLink(), function (ok) {
+      toast(ok ? '공유 문구를 복사했어요' : '복사가 안 됐어요. 화면에서 길게 눌러 복사해 주세요');
+    });
+  }
+  function invShare() {
+    if (!inv.code) { toast('카카오로 연결하면 내 초대 링크가 만들어져요'); return; }
+    var url = invLink();
+    if (navigator.share) {
+      try {
+        navigator.share({ title: '내 사주 타이밍 달력', text: INVITE_TEXT, url: url }).then(function () { }, function (err) {
+          if (err && err.name === 'AbortError') return;
+          invCopyText();
+        });
+        return;
+      } catch (e) { }
+    }
+    invCopyText();
+  }
+
+  /* ── 📸 인스타그램 후기 참여 화면 (한 화면 4단계) ───────── */
+  /* 📸 인스타그램 후기 — **한 곳 설정** (2026-11-26 #23131)
+     앱 전체의 인스타 참여 화면(무료 이용법·정식 회원 혜택·앞으로 생길 진입점)이 이 객체 하나를 같이 본다.
+     이미지·해시태그·공식 계정·안내 문구·지급 혜택을 바꾸려면 여기만 고치면 전체에 그대로 반영된다. */
+  var INSTA_CFG = {
+    images: [
+      { src: 'assets/insta/insta-01-timing.jpg', label: '내 사주 타이밍 달력' },
+      { src: 'assets/insta/insta-02-chemi.jpg', label: '케미테스트' },
+      { src: 'assets/insta/insta-03-burn.jpg', label: '액운 태우기' },
+      { src: 'assets/insta/insta-04-brief.jpg', label: '오늘의 브리핑' }
+    ],
+    imgVer: '?v=20261126ap',
+    tags: '#윤이세 #내사주타이밍달력 #사주달력 #오늘의운세 #사주케미',
+    account: '@life.saju_yoonise',                 // 윤이세 공식 인스타그램(실제 운영 계정)
+    disclose: '후기 작성 혜택을 제공받는 이벤트에 참여하여 작성한 게시물입니다.',
+    web: 'https://www.instagram.com/',
+    /* 지급 혜택만 회원 상태별 분기 — 미결제·무료 회원 / 정식 회원 */
+    prize: {
+      free: '타이밍 달력 30일 무료 이용',
+      member: '전 상품 10,000원 할인권 1매'
+    }
+  };
+
+  function instaPrizeText() {
+    return isMemberNow() ? INSTA_CFG.prize.member : INSTA_CFG.prize.free;
+  }
+  function instaStatusHTML(st) {
+    if (!st || !st.insta) return '';
+    if (st.insta.status === 'approved') return '<p class="iflow__state iflow__state--done">인증 혜택을 받으셨어요 · ' + esc(st.insta.at || '') + '</p>';
+    if (st.insta.status === 'pending') return '<p class="iflow__state">인증을 확인하고 있어요 · ' + esc(st.insta.at || '') + ' 접수</p>';
+    return '';
+  }
+  function instaGridHTML() {
+    return INSTA_CFG.images.map(function (im, i) {
+      return '<figure class="iflow__ph">' +
+        '<button type="button" class="iflow__zoom" data-insta-zoom="' + i + '" aria-label="' + esc(im.label) + ' 크게 보기">' +
+        '<img src="' + im.src + INSTA_CFG.imgVer + '" alt="' + esc(im.label) + ' 공식 이미지" loading="lazy">' +
+        '</button>' +
+        '<button type="button" class="iflow__save" data-insta-save="' + i + '" aria-label="' + esc(im.label) + ' 저장">' + esc(im.label) + ' 저장</button>' +
+        '</figure>';
+    }).join('');
+  }
+  function instaBodyHTML() {
+    var st = mb.status;
+    var approved = !!(st && st.insta && st.insta.status === 'approved');
+    return '<p class="modal__eyebrow">REVIEW · 인스타그램 후기</p>' +
+      '<h2 class="fhow__title" id="instaTitle">나의 타이밍을 공유하고<br>특별한 혜택을 받아보세요</h2>' +
+      '<p class="fhow__sub">사진은 윤이세가 준비했어요. 나만의 사용 소감 한 줄을 더하고 특별한 혜택을 받아보세요.</p>' +
+      '<div class="iflow__prize"><b data-insta-prize>' + esc(instaPrizeText()) + '</b><span>계정당 1회</span></div>' +
+
+      /* ① 사진 저장하기 */
+      '<section class="iflow__step">' +
+      '<div class="iflow__h"><span class="iflow__num">1</span><span class="iflow__t">사진 저장하기</span></div>' +
+      '<p class="iflow__d">윤이세가 준비한 감성 사진을 저장해 주세요.</p>' +
+      '<p class="iflow__pick">공식 사진 4장 중 <b>골라 저장</b>하고, <b>내 달력 화면 직접 캡처 1장</b>도 함께 올려 주세요.</p>' +
+      '<div class="iflow__grid">' + instaGridHTML() + '</div>' +
+      '<div class="iflow__acts">' +
+      '<button type="button" class="iflow__btn iflow__btn--gold" data-insta-save-all>사진 4장 한 번에 저장</button>' +
+      '</div>' +
+      '<p class="iflow__note">사진을 누르면 크게 볼 수 있어요. 지원하는 기기에서는 공유 창이 열리니 <b>이미지 저장</b>을 골라 주세요.</p>' +
+      '<p class="iflow__note">내 달력 캡처는 <b>선택</b>이에요 — 1장 더하면 후기가 훨씬 진짜 같아 보여요. 캡처할 때는 이름·번호 같은 <b>개인정보가 보이지 않게 가려</b> 주세요.</p>' +
+      '</section>' +
+
+      /* ② 해시태그 복사하기 */
+      '<section class="iflow__step">' +
+      '<div class="iflow__h"><span class="iflow__num">2</span><span class="iflow__t">해시태그 복사하기</span></div>' +
+      '<p class="iflow__d">아래 내용을 그대로 복사해 게시물에 붙여넣어 주세요.</p>' +
+      '<p class="iflow__tags">' + INSTA_CFG.tags.split(' ').map(function (t) { return '<span class="iftag">' + esc(t) + '</span>'; }).join('') +
+      '<span class="iftag iftag--acct">' + esc(INSTA_CFG.account) + '</span></p>' +
+      '<p class="iflow__disc">' + esc(INSTA_CFG.disclose) + '</p>' +
+      '<div class="iflow__acts">' +
+      '<button type="button" class="iflow__btn iflow__btn--gold" data-insta-copy>해시태그 · 계정 · 안내 문구 한 번에 복사</button>' +
+      '</div>' +
+      '<p class="iflow__note">혜택 제공 사실은 게시물 본문 <b>첫 부분</b>에 적어 주세요. 후기 본문은 드리지 않아요 — 직접 쓴 한 줄 이상의 소감만 인정됩니다.</p>' +
+      '</section>' +
+
+      /* ③ 인스타그램에 올리기 */
+      '<section class="iflow__step">' +
+      '<div class="iflow__h"><span class="iflow__num">3</span><span class="iflow__t">인스타그램에 올리기</span></div>' +
+      '<p class="iflow__d">저장한 사진에 나만의 사용 소감 한 줄을 더해 주세요.</p>' +
+      '<p class="iflow__note">공식 사진 4장 중 고른 것 + 직접 캡처한 <b>내 달력 1장</b>을 함께 올리면 좋아요.</p>' +
+      '<div class="iflow__acts">' +
+      '<button type="button" class="iflow__btn iflow__btn--navy" data-insta-open>인스타그램 열기</button>' +
+      '</div>' +
+      '<details class="iflow__guide">' +
+      '<summary>인스타그램에 올리는 방법</summary>' +
+      '<ol class="iflow__how">' +
+      '<li><span aria-hidden="true">➕</span>인스타그램에서 <b>+</b> 버튼을 눌러요</li>' +
+      '<li><span aria-hidden="true">🖼️</span><b>게시물</b>을 골라요</li>' +
+      '<li><span aria-hidden="true">🗂️</span><b>여러 사진 선택</b>을 눌러요</li>' +
+      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진과 <b>직접 캡처한 1장</b>을 합쳐 <b>3장 이상</b> 골라요</li>' +
+      '<li><span aria-hidden="true">✍️</span>실제 사용 소감을 <b>한 줄 이상</b> 써요</li>' +
+      '<li><span aria-hidden="true">#️⃣</span>복사한 해시태그를 붙여넣고 <b>' + esc(INSTA_CFG.account) + '</b>를 태그해요</li>' +
+      '<li><span aria-hidden="true">📣</span>혜택 제공 사실을 <b>본문 첫 부분</b>에 적고 공유해요</li>' +
+      '</ol>' +
+      '</details>' +
+      '<p class="iflow__cond">공개 피드 사진 <b>3장 이상</b> 또는 <b>릴스</b>만 인정돼요(공식 사진 + 내 달력 캡처). 스토리만 올린 것은 인정되지 않아요.</p>' +
+      '</section>' +
+
+      /* ④ 인증하고 혜택 받기 */
+      '<section class="iflow__step iflow__step--last">' +
+      '<div class="iflow__h"><span class="iflow__num">4</span><span class="iflow__t">인증하고 혜택 받기</span></div>' +
+      '<p class="iflow__d">인스타그램에 올리셨나요? 인증하고 특별한 혜택을 받아보세요.</p>' +
+      (approved
+        ? '<p class="iflow__state iflow__state--done">이미 인증 혜택을 받으셨어요 — 계정당 1회예요.</p>'
+        : '<a class="iflow__btn iflow__btn--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener noreferrer" data-insta-kakao>카카오톡으로 후기 인증하기</a>') +
+      '<div data-insta-status>' + instaStatusHTML(st) + '</div>' +
+      '<p class="iflow__note">카카오톡 채널을 친구 추가하고 <b>게시물 링크나 인증 캡처</b>를 보내 주세요. 확인 뒤 자동으로 지급돼요.</p>' +
+      '</section>' +
+
+      '<p class="fhow__foot">계정당 1회 · 인증 확인 후 자동 지급</p>';
+  }
+
+  function instaPaint() {
+    if (!instaBody || !instaEl || instaEl.hidden) return;
+    var top = instaBody.scrollTop;
+    instaBody.innerHTML = instaBodyHTML();
+    instaBody.scrollTop = top;
+  }
+  function openInsta(quiet) {
+    if (!instaEl || !instaBody) return;
+    instaLastFocus = document.activeElement;
+    instaBody.innerHTML = instaBodyHTML();
+    instaEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('insta', closeInsta);
+    document.body.classList.add('is-modal-open');
+    instaBody.scrollTop = 0;
+    if (!quiet) sfxOpen();
+    try { instaDialog.focus({ preventScroll: true }); } catch (e) { instaDialog.focus(); }
+    mbStatusCb(function () { instaPaint(); }, true);
+  }
+  function closeInsta() {
+    if (!instaEl || instaEl.hidden || instaClosing) return;
+    closeInstaZoom(true);
+    if (window.BackNav) window.BackNav.close('insta');
+    instaClosing = true;
+    instaEl.classList.add('is-closing');
+    setTimeout(function () {
+      instaEl.classList.remove('is-closing');
+      instaEl.hidden = true;
+      instaBody.innerHTML = '';
+      instaClosing = false;
+      if (!anyModalOpen()) document.body.classList.remove('is-modal-open');
+      var t = instaLastFocus;
+      if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) { } }
+      instaLastFocus = null;
+    }, 180);
+  }
+
+  /* 이미지 확대 보기 */
+  function openInstaZoom(i) {
+    if (!instaZoomEl || !INSTA_CFG.images[i]) return;
+    instaZoomIdx = i;
+    instaZoomImg.src = INSTA_CFG.images[i].src + INSTA_CFG.imgVer;
+    instaZoomImg.alt = INSTA_CFG.images[i].label + ' 공식 이미지 크게 보기';
+    instaZoomEl.hidden = false;
+    if (window.BackNav) window.BackNav.open('insta-zoom', function () { closeInstaZoom(); });
+  }
+  function closeInstaZoom(silent) {
+    if (!instaZoomEl || instaZoomEl.hidden) return;
+    instaZoomEl.hidden = true;
+    instaZoomImg.removeAttribute('src');
+    instaZoomIdx = -1;
+    if (!silent && window.BackNav) window.BackNav.close('insta-zoom');
+  }
+
+  /* 사진 저장 — 같은 출처의 파일이라 그대로 내려받는다. 실패는 숨기지 않고 알린다. */
+  function instaSaveOne(i, done) {
+    var im = INSTA_CFG.images[i];
+    if (!im) { if (done) done(false); return; }
+    var name = 'yoonise-insta-' + (i + 1) + '.jpg';
+    function fallback() {
+      var a = document.createElement('a');
+      a.href = im.src + INSTA_CFG.imgVer;
+      a.download = name;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      try { a.click(); } catch (e) { }
+      a.parentNode && a.parentNode.removeChild(a);
+    }
+    if (!window.fetch || !window.URL || !URL.createObjectURL) { fallback(); if (done) done(true); return; }
+    fetch(im.src + INSTA_CFG.imgVer, { cache: 'force-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('http');
+      return r.blob();
+    }).then(function (b) {
+      var url = URL.createObjectURL(b);
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a);
+      try { a.click(); } catch (e) { }
+      a.parentNode && a.parentNode.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) { } }, 5000);
+      if (done) done(true);
+    }, function () {
+      fallback();
+      if (done) done(window.navigator && /iPhone|iPad|iPod/i.test(navigator.userAgent) === false);
+    });
+  }
+  function instaSaveAll() {
+    var ua = navigator.userAgent || '';
+    toast('사진 4장을 준비하고 있어요…');
+    var jobs = INSTA_CFG.images.map(function (im, i) {
+      return fetch(im.src + INSTA_CFG.imgVer, { cache: 'force-cache' }).then(function (r) {
+        if (!r.ok) throw new Error('http');
+        return r.blob();
+      }).then(function (b) {
+        return new File([b], 'yoonise-insta-' + (i + 1) + '.jpg', { type: b.type || 'image/jpeg' });
+      });
+    });
+    if (!window.fetch || !window.File || !navigator.canShare || !navigator.share) {
+      /* 공유(한 번에 저장)를 지원하지 않는 기기 — 한 장씩 차례로 내려받는다 */
+      INSTA_CFG.images.forEach(function (im, i) { setTimeout(function () { instaSaveOne(i); }, i * 400); });
+      setTimeout(function () { toast('사진 4장을 저장했어요 — 사진 앱(Downloads)을 확인해 주세요'); }, 1900);
+      return;
+    }
+    Promise.all(jobs).then(function (files) {
+      if (!navigator.canShare({ files: files })) throw new Error('no-share');
+      return navigator.share({ files: files, text: '윤이세 내 사주 타이밍 달력' });
+    }).then(function () {
+      toast('공유 창에서 이미지 저장을 골라 주세요');
+    }, function (err) {
+      if (err && err.name === 'AbortError') return;
+      INSTA_CFG.images.forEach(function (im, i) { setTimeout(function () { instaSaveOne(i); }, i * 400); });
+      setTimeout(function () { toast('사진 4장을 저장했어요 — 사진 앱(Downloads)을 확인해 주세요'); }, 1900);
+    });
+  }
+  function instaCopyTags() {
+    copyText(INSTA_CFG.disclose + '\n\n' + INSTA_CFG.tags + '\n' + INSTA_CFG.account, function (ok) {
+      toast(ok ? '해시태그·계정·안내 문구를 한 번에 복사했어요' : '복사가 안 됐어요 — 화면에서 길게 눌러 복사해 주세요');
+    });
+  }
+  /** 인스타그램 열기 — 고객 자신의 인스타그램 앱(없으면 새 탭의 인스타그램 웹).
+      윤이세 계정·카카오톡으로 보내지 않는다.
+      · 앱 스킴은 **보이지 않는 iframe** 으로만 시도한다 — 앱이 없는 기기에서 지금 화면이
+        오류 페이지로 넘어가 참여 화면을 잃지 않게(2026-11-26 #23131).
+      · 1.2초 안에 앱으로 넘어가지 않으면 인스타그램 웹을 새 탭으로 열어 준다(이 화면은 그대로). */
+  function instaOpenApp() {
+    var mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    function openWeb(tip) {
+      var a = document.createElement('a');
+      a.href = INSTA_CFG.web; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      try { a.click(); } catch (e) { }
+      a.parentNode && a.parentNode.removeChild(a);
+      if (tip) toast('인스타그램 앱이 없으면 웹으로 열려요 — 저장해 둔 사진을 골라 주세요');
+    }
+    if (!mobile) { openWeb(false); return; }
+    var left = false;
+    function onLeave() { left = true; }
+    document.addEventListener('visibilitychange', onLeave);
+    window.addEventListener('pagehide', onLeave);
+    try {
+      var f = document.createElement('iframe');
+      f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;border:0';
+      f.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(f);
+      f.src = 'instagram://app';
+      setTimeout(function () { try { f.parentNode && f.parentNode.removeChild(f); } catch (e) { } }, 1600);
+    } catch (e) { }
+    setTimeout(function () {
+      document.removeEventListener('visibilitychange', onLeave);
+      window.removeEventListener('pagehide', onLeave);
+      if (!left && document.visibilityState === 'visible') openWeb(true);
+    }, 1200);
+  }
+  /** ④ 카톡 인증 — 보내는 길은 그대로 두고, 관리자 확인 목록에 한 번 접수한다 */
+  function instaSubmit() {
+    if (instaSubmit.busy) return;          // 두 번 눌러도 대기 건은 하나(같은 계정 중복 방지)
+    instaSubmit.busy = true;
+    var uid = clientUid();
+    var body = {};
+    if (uid) body.p_client_uid = uid;
+    mbPost('member_insta_submit', body, function (d) {
+      instaSubmit.busy = false;
+      if (d && d.ok) {
+        mb.status = null;
+        mbStatusCb(function () { instaPaint(); }, true);
+      }
+    });
+  }
+
+  function anyInvOrInstaAction(e) {
+    var t = e.target;
+    if (!t || !t.closest) return false;
+    var openInv = t.closest('[data-open-invite]');
+    if (openInv) { e.preventDefault(); openInvite(); return true; }
+    var openIg = t.closest('[data-open-insta]');
+    if (openIg) { e.preventDefault(); openInsta(); return true; }
+    if (t.closest('[data-inv-close]')) { e.preventDefault(); closeInvite(); return true; }
+    if (t.closest('[data-inv-copy]')) { e.preventDefault(); invCopyLink(); return true; }
+    if (t.closest('[data-inv-share]')) { e.preventDefault(); invShare(); return true; }
+    if (t.closest('[data-inv-text]')) { e.preventDefault(); invCopyText(); return true; }
+    if (t.closest('[data-insta-close]')) { e.preventDefault(); closeInsta(); return true; }
+    var z = t.closest('[data-insta-zoom]');
+    if (z) { e.preventDefault(); openInstaZoom(Number(z.getAttribute('data-insta-zoom'))); return true; }
+    var s = t.closest('[data-insta-save]');
+    if (s) {
+      e.preventDefault();
+      var i = Number(s.getAttribute('data-insta-save'));
+      instaSaveOne(i, function (ok) {
+        toast(ok ? '사진을 저장했어요 — 사진 앱(Downloads)을 확인해 주세요' : '저장이 안 됐어요 — 사진을 길게 눌러 저장해 주세요');
+      });
+      return true;
+    }
+    if (t.closest('[data-insta-save-all]')) { e.preventDefault(); instaSaveAll(); return true; }
+    if (t.closest('[data-insta-copy]')) { e.preventDefault(); instaCopyTags(); return true; }
+    if (t.closest('[data-insta-open]')) { e.preventDefault(); instaOpenApp(); return true; }
+    if (t.closest('[data-insta-kakao]')) { instaSubmit(); return false; }   // 링크 이동은 그대로
+    return false;
+  }
 
   /* ── 1차 · 첫 접속 웰컴 팝업 (2026-11-21j) ─────────────────────
      사주를 넣기 전, 이 기기에서 **처음** 사이트를 열었을 때만 뜨는 콤팩트 소개.
@@ -2735,7 +3309,7 @@
   function guideAtEntry() { return !state.res; }
   /** 열려 있는 팝업이 하나라도 있으면 body 스크롤 잠금을 유지한다 */
   function anyModalOpen() {
-    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl, welcomeEl, freeEl];
+    var els = [modalEl, shopEl, dbookEl, talisEl, burnEl, welcomeEl, freeEl, invEl, instaEl];
     for (var i = 0; i < els.length; i++) if (els[i] && !els[i].hidden) return true;
     return false;
   }
@@ -5609,7 +6183,8 @@
     return '<div class="invitecard' + (cls ? ' ' + cls : '') + '">' +
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
       '<p class="invitecard__d"><b>1명</b> +2주 · <b>3명</b> +1개월 · <b>5명</b> +3개월+상담 1만원 · <b>7명</b> +6개월+반값</p>' +
-      '<a class="invitecard__go" href="' + memberHref() + '">친구 초대하고 케미테스트 하러 가기 →</a>' +
+      /* 2026-11-26 #23095 — 이 버튼도 케미 화면이 아니라 초대 화면(내 링크 만들기)으로 */
+      '<button type="button" class="invitecard__go" data-open-invite>내 초대 링크 만들기 →</button>' +
       '</div>';
   }
   /** 잠금 팝업 하단 — 결제 버튼 아래, 부담 없는 친구 초대 링크 (2026-11-21) */
@@ -9961,6 +10536,14 @@
     freeEl = $('#freeModal');
     freeBody = $('#freeBody');
     freeDialog = $('#freeDialog');
+    invEl = $('#inviteModal');
+    invBody = $('#inviteBody');
+    invDialog = $('#inviteDialog');
+    instaEl = $('#instaModal');
+    instaBody = $('#instaBody');
+    instaDialog = $('#instaDialog');
+    instaZoomEl = $('#instaZoom');
+    instaZoomImg = $('#instaZoomImg');
     dbookBody = $('#diaryBookBody');
     dbookDialog = $('#diaryBookDialog');
     guideEl = $('#guideModal');
@@ -10047,6 +10630,36 @@
     // 🎁 무료 이용법 띠 — `첫 3일 특별 선물 보기` 바로 아래 (2026-11-25 #3581)
     var freeBar = $('#freeBar');
     if (freeBar) freeBar.addEventListener('click', function (e) { e.preventDefault(); openFreeHow(); });
+    /* 💌 친구 초대 · 📸 인스타 참여 — 화면 어디서든 같은 위임 하나로 (버튼이 다시 그려져도 그대로 산다) */
+    document.addEventListener('click', function (e) { anyInvOrInstaAction(e); }, false);
+    var izx = $('#instaZoomX');
+    if (izx) izx.addEventListener('click', function (e) { e.preventDefault(); closeInstaZoom(); });
+    var izs = $('#instaZoomSave');
+    if (izs) izs.addEventListener('click', function (e) {
+      e.preventDefault();
+      var i = instaZoomIdx;
+      if (i < 0) return;
+      instaSaveOne(i, function (ok) {
+        toast(ok ? '사진을 저장했어요 — 사진 앱(Downloads)을 확인해 주세요' : '저장이 안 됐어요 — 사진을 길게 눌러 저장해 주세요');
+      });
+    });
+    if (instaZoomEl) instaZoomEl.addEventListener('click', function (e) {
+      if (e.target === instaZoomEl) closeInstaZoom();
+    });
+    /* 카카오 연결을 마치고 '#invite' 로 돌아온 손님 — 초대 화면을 바로 연다 */
+    if (location.hash === '#invite') {
+      setTimeout(function () {
+        openInvite(true);
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+      }, 90);
+    }
+    /* 케미 화면의 '인스타그램 후기' 버튼 → 같은 4단계 참여 화면 (#insta, 2026-11-26 #23131) */
+    if (location.hash === '#insta') {
+      setTimeout(function () {
+        openInsta(true);
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+      }, 90);
+    }
     if (freeEl) {
       freeEl.addEventListener('click', function (e) {
         if (!e.target.closest) return;
