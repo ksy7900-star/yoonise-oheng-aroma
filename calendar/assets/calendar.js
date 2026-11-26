@@ -8474,7 +8474,7 @@
     var done = burnBurnedToday();
     var extra = burnExtraLeft();
     var tail = extra > 0 ? ' · 추가 이용권 ' + extra + '회 남음' : '';
-    if (done && burnExtraUsedToday() && extra > 0) tail = ' · 오늘 추가 1회까지 마침';
+    if (done && burnExtraUsedToday() && extra > 0) tail = ' · 추가 1회 사용';
     if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnPlanName()) + (done ? ' · 오늘 마침' : ' · 매일 1회') + tail;
     var l = burnLeft();
     if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
