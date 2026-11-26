@@ -2478,10 +2478,12 @@
     return list.slice(0, 4).map(function (r, i) {
       var price = mbPrice(r, products);
       var granted = mbStageGranted(r, st);
+      var title = String(r.title || '');
       /* 금액 줄이 이미 있으면 같은 금액을 한 번 더 쓰지 않는다(작은 글씨는 설명만) */
       var sub = String(r.subtitle || '');
       if (price && (sub.indexOf('→') >= 0 || sub.replace(/[^0-9]/g, '') === String(r.coupon_value || ''))) sub = '';
-      var note = sub;
+      title = mbTenTitle(r.title, r.coupon_kind, r.coupon_value);
+      var note = mbTenSub(sub, r.coupon_kind, r.coupon_value);
       if (r.benefit === 'burn') {
         /* 2026-11-26 #23004 — 확정 문구: 제목 / '마음이 답답한 날, 한 번 더' / '하루 1회 추가 사용 · 총 N회 제공' */
         price = '마음이 답답한 날, 한 번 더';
@@ -2498,7 +2500,7 @@
       }
       return '<div class="mben__card mben__card--' + tone[i % 4] + '">' +
         '<span class="mben__n">친구 ' + esc(String(r.stage)) + '명</span>' +
-        '<span class="mben__t">' + esc(r.title || '') + '</span>' +
+        '<span class="mben__t">' + esc(title) + '</span>' +
         (price ? '<span class="mben__price">' + esc(price) + '</span>' : '') +
         (note ? '<span class="mben__note">' + esc(note) + '</span>' : '') +
         state +
@@ -2534,7 +2536,7 @@
 
     var usableHTML = usable.length
       ? '<ul class="mben__list">' + usable.map(function (c) {
-          return '<li><span>' + esc(c.title) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.expires_at || '').replace(/-/g, '.')) + '까지</span></li>';
+          return '<li><span>' + esc(mbTenTitle(c.title, c.kind, c.value)) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.expires_at || '').replace(/-/g, '.')) + '까지</span></li>';
         }).join('') + '</ul>'
       : '<p class="mben__empty">아직 보유한 상담 할인권이 없어요.</p>';
     rows += '<div class="mben__row" style="display:block"><span>보유 상담 할인권</span>' + usableHTML + '</div>';
@@ -2542,7 +2544,7 @@
     if (used.length) {
       rows += '<div class="mben__row" style="display:block"><span>사용 완료된 혜택</span><ul class="mben__list">' +
         used.map(function (c) {
-          return '<li><span>' + esc(c.title) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.used_at || '').replace(/-/g, '.')) + ' 사용</span></li>';
+          return '<li><span>' + esc(mbTenTitle(c.title, c.kind, c.value)) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.used_at || '').replace(/-/g, '.')) + ' 사용</span></li>';
         }).join('') + '</ul></div>';
     }
     var hint = st.linked
@@ -2780,6 +2782,23 @@
     return '<div class="mrefs' + (kind ? ' mrefs--' + kind : '') + '" data-mben-refs>' + mbRefsInner(st) + '</div>';
   }
 
+  /** 10,000원 할인권 문구 — 서버 규칙이 아직 옛 이름('전 상담 상품 1만원 할인권')일 때만
+      고객 화면을 '전 상품 10,000원 할인권'으로 맞춘다. SQL(member-benefits-naming-db.sql)이
+      적용되면 서버 문구가 이미 새 이름이라 이 보정은 아무 일도 하지 않는다.
+      관리자가 다른 이름으로 바꾼 경우(‘상담’이 없는 이름)도 그대로 존중한다. */
+  function mbTenTitle(t, kind, value) {
+    var v = String(t || '');
+    if (kind === 'amount' && Number(value) === 10000 && v.indexOf('상담') >= 0) return '전 상품 10,000원 할인권 1매';
+    return v;
+  }
+  function mbTenSub(t, kind, value) {
+    var v = String(t || '');
+    if (kind === 'amount' && Number(value) === 10000 && v.indexOf('원포인트') >= 0 && v.indexOf('개명') < 0) {
+      return '원포인트 · 시그니처 · 개명·작명 모두 사용';
+    }
+    return v;
+  }
+
   /** 이 칸의 혜택이 실제로 발급됐는가 — 할인권은 원장 기록, 액운은 총 제공 수로 확인 */
   function mbStageGranted(r, st) {
     if (!st || !r) return false;
@@ -2809,7 +2828,7 @@
         var note = r.benefit === 'burn' ? '하루 1회 추가 사용 · 총 ' + (r.burn_count || 3) + '회' : (r.subtitle || '');
         return '<li class="invt__row' + cls + '">' +
           '<span class="invt__b"><b class="invt__n">친구 ' + esc(String(r.stage)) + '명</b>' +
-          '<span class="invt__t">' + esc(r.title || '') + '</span>' +
+          '<span class="invt__t">' + esc(mbTenTitle(r.title, r.coupon_kind, r.coupon_value)) + '</span>' +
           (note ? '<span class="invt__s">' + esc(note) + '</span>' : '') + '</span>' +
           tail + '</li>';
       }).join('');
