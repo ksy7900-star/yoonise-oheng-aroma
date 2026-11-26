@@ -178,7 +178,10 @@
         if (!d || !d.ok) { msgOf(iso, '저장하지 못했어요 (' + ((d && d.error) || '') + ')', true); return; }
         st.over[iso] = String(d.text || text);
         render();
+        /* 다시 그린 목록에서 그 줄을 펼쳐 둔다 — 저장 성공을 눈으로 확인할 수 있게 */
+        reopenRow(iso);
         msgOf(iso, '저장했어요 — ' + mdOf(iso) + ' 손님 화면에 바로 적용됩니다.', false);
+        stateMsg('저장했어요 — ' + mdOf(iso) + ' 손님 화면에 바로 적용됩니다.');
       }, function (err) {
         if (btn) { btn.disabled = false; btn.textContent = '저장'; }
         var m = (err && err.message) || '';
@@ -197,7 +200,9 @@
       if (!d || !d.ok) { msgOf(iso, '되돌리지 못했어요 (' + ((d && d.error) || '') + ')', true); return; }
       delete st.over[iso];
       render();
+      reopenRow(iso);
       msgOf(iso, '기본 문구로 돌아갔어요.', false);
+      stateMsg('기본 문구로 돌아갔어요 — ' + mdOf(iso) + ' 손님 화면도 원래 질문으로 돌아갑니다.');
     }, function (err) {
       if (btn) { btn.disabled = false; btn.textContent = '기본 문구로'; }
       msgOf(iso, '되돌리지 못했어요 · ' + ((err && err.message) || '연결을 확인해 주세요'), true);
@@ -211,6 +216,15 @@
     m.textContent = t;
     m.hidden = !t;
     m.style.color = bad ? '#BE123C' : '#047857';
+  }
+  /* 목록을 다시 그린 뒤 그 줄만 조용히 펼치기(포커스·스크롤 없이) */
+  function reopenRow(iso) {
+    var li = document.querySelector('.mqr[data-day="' + iso + '"]');
+    if (!li) return;
+    var box = li.querySelector('.mqr__edit');
+    var head = li.querySelector('.mqr__head');
+    if (box) box.hidden = false;
+    if (head) head.setAttribute('aria-expanded', 'true');
   }
   function openRow(iso) {
     document.querySelectorAll('.mqr').forEach(function (li) {
