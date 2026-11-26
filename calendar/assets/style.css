@@ -6860,28 +6860,204 @@ body.is-result .hero__share { margin-top: 8px; }
    ══════════════════════════════════════════════════════════════════════ */
 .hero__sub--tail { margin-top: 12px; }
 
-/* 2026-11-24aa #19144 — 제목·✕ 를 없애고 두 문단만 남긴 상시 카드. 여백은 좌우 같게 */
+/* 2026-11-26 #22327 — 하루 루틴 안내 박스(교체본)
+   · 아이보리 바탕 + 은은한 골드 테두리, 골드 단색 라인 아이콘 4개(일출·전구·달력·초승달)
+   · '윤이세와 함께하는 하루' 같은 큰 제목 없음 — 라벨 → 헤드 → 4줄 → 한 줄
+   · 390px 화면에서 180~220px — 오늘의 운세를 밀어내지 않게 여백을 최소로 */
 .tguide {
   position: relative;
-  margin-top: 14px; padding: 13px 15px 12px;
-  border: 1px solid rgba(199, 154, 78, .26);
+  margin-top: 14px; padding: 11px 13px 10px;
+  border: 1px solid rgba(199, 154, 78, .34);
   border-radius: 16px;
-  background: linear-gradient(160deg, #FFFDF8, #FDFAF3 78%);
-  box-shadow: 0 1px 2px rgba(43, 33, 20, .03);
+  background: linear-gradient(160deg, #FFFDF6, #FBF5E8 82%);
+  box-shadow: 0 1px 2px rgba(43, 33, 20, .04);
+  color: #3B342A;
 }
 .tguide[hidden] { display: none !important; }
-.tguide__lead {
-  font-size: 12.5px; font-weight: 600; line-height: 1.58;
-  letter-spacing: -.012em; color: #8F5B12; word-break: keep-all;
+.tguide__label {
+  margin: 0; font-family: var(--sans);
+  font-size: 9px; font-weight: 700; letter-spacing: .16em;
+  line-height: 1.4; color: #B08A45;
 }
-.tguide__b {
-  margin-top: 7px; font-size: 11.5px; line-height: 1.64;
-  letter-spacing: -.012em; color: #6E6557; word-break: keep-all;
+.tguide__lead {
+  margin: 4px 0 0; font-family: var(--serif);
+  font-size: 15.2px; font-weight: 700; line-height: 1.28;
+  letter-spacing: -.03em; color: #7A4E12; word-break: keep-all;
+}
+.tguide__list {
+  margin: 7px 0 0; padding: 7px 0 0;
+  list-style: none;
+  border-top: 1px solid rgba(199, 154, 78, .22);
+  display: grid; gap: 5px;
+}
+.tguide__row {
+  display: grid; grid-template-columns: 16px auto 1fr;
+  align-items: center; column-gap: 7px; min-height: 16px;
+}
+.tguide__ic { display: block; width: 16px; height: 16px; color: #B08A45; }
+.tguide__ic svg { display: block; width: 16px; height: 16px; }
+.tguide__k {
+  font-family: var(--sans); font-size: 12.5px; font-weight: 800;
+  line-height: 1; letter-spacing: -.02em; color: #8A6B37; white-space: nowrap;
+}
+.tguide__d {
+  min-width: 0; font-family: var(--sans);
+  font-size: 11.8px; line-height: 1.45; letter-spacing: -.02em;
+  color: #6E6557; word-break: keep-all;
+}
+.tguide__foot {
+  margin: 7px 0 0; padding-top: 6px;
+  border-top: 1px solid rgba(199, 154, 78, .22);
+  text-align: center; font-family: var(--sans);
+  font-size: 10.5px; font-weight: 600; letter-spacing: .01em; color: #9A7B3E;
 }
 @media (max-width: 380px) {
-  .tguide { padding: 12px 13px 11px; }
-  .tguide__b { font-size: 11px; }
+  .tguide { padding: 11px 12px 10px; }
+  .tguide__lead { font-size: 15px; }
+  .tguide__list { gap: 5px; }
+  .tguide__d { font-size: 11.2px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   2026-11-26 #22311 · #22327 — ☀️ MORNING QUESTION · 아침의 질문
+   ① 오늘의 카드(.mq) — TODAY 전문과 `오늘 상세 운세 보기` 바로 아래
+   ② 날짜 팝업·기록 보기의 한 칸(.mqday) — 저녁 기록과 칸을 나눠 보여 준다
+   · 오늘의 운세보다 크거나 강하게 보이지 않게: 아이보리 바탕·가는 골드 선·작은 글씨
+   · 새 색을 만들지 않고 이미 쓰는 아이보리(#FFFDF8)·골드(#B08A45)·네이비(#1B2940)만 쓴다
+   ══════════════════════════════════════════════════════════════════════ */
+.mq {
+  margin: 0; padding: 14px 15px 12px;
+  background: linear-gradient(165deg, #FFFDF8, #FCF7EE 88%);
+  border: 1px solid rgba(199, 154, 78, .26);
+  border-radius: 16px;
+  color: #2E2A24;
+}
+.mq__label {
+  margin: 0; font-family: var(--sans); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .17em; line-height: 1.5; color: #B08A45;
+}
+.mq__lead {
+  margin: 5px 0 0; font-family: var(--sans); font-size: 11.5px; line-height: 1.6;
+  letter-spacing: -.012em; color: #8A8072; word-break: keep-all;
+}
+.mq__q {
+  margin: 10px 0 0; font-family: var(--serif); font-size: 15px; font-weight: 700;
+  line-height: 1.62; letter-spacing: -.03em; color: #22304A; word-break: keep-all;
+}
+.mq__mine {
+  margin: 10px 0 0; padding: 9px 11px 10px;
+  background: #FFFFFF; border: 1px solid rgba(199, 154, 78, .22); border-radius: 11px;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.68; color: #3B342A;
+  white-space: pre-wrap; word-break: break-word;
+}
+.mq__mine b {
+  display: block; margin: 0 0 3px; font-size: 9.5px; font-weight: 800;
+  letter-spacing: .04em; color: #9A7B3E;
+}
+.mq__note {
+  margin: 9px 0 0; font-family: var(--sans); font-size: 10.8px; line-height: 1.6;
+  letter-spacing: -.01em; color: #8A8072; word-break: keep-all;
+}
+.mq__foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.mq__btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  appearance: none; padding: 8px 13px 9px;
+  border: 1px solid rgba(27, 41, 64, .20); border-radius: 999px;
+  background: #FFFDF8; color: #1B2940;
+  font-family: var(--sans); font-size: 11.5px; font-weight: 800; letter-spacing: -.02em;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background .16s ease, border-color .16s ease;
+}
+.mq__btn span { font-size: 11px; color: #B08A45; }
+.mq__btn:active { background: #F8F1E2; }
+.mq__saved {
+  margin: 0; font-family: var(--sans); font-size: 10.5px; line-height: 1.5;
+  color: #8A8072;
+}
+.mq__write { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(199, 154, 78, .32); }
+.mq__cap {
+  display: block; font-family: var(--sans); font-size: 10.5px; font-weight: 800;
+  letter-spacing: -.01em; color: #9A7B3E;
+}
+.mq__cap span { font-weight: 600; color: #A79C8C; }
+.mq__input {
+  display: block; width: 100%; margin-top: 6px; padding: 10px 11px;
+  border: 1px solid rgba(31, 27, 22, .14); border-radius: 11px;
+  background: #FFFFFF; color: #2E2A24;
+  font-family: var(--sans); font-size: 13px; line-height: 1.7; letter-spacing: -.012em;
+  resize: vertical; min-height: 76px;
+}
+.mq__input:focus { outline: 1px solid rgba(199, 154, 78, .55); outline-offset: 0; border-color: rgba(199, 154, 78, .5); }
+.mq__acts { display: flex; align-items: center; gap: 7px; margin-top: 7px; }
+.mq__save, .mq__close {
+  appearance: none; border-radius: 999px; cursor: pointer;
+  font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: -.02em;
+}
+.mq__save { padding: 7px 13px 8px; border: 1px solid rgba(27, 41, 64, .92); background: var(--navy); color: #FFF8EA; }
+.mq__save:disabled { opacity: .42; cursor: default; }
+.mq__close { padding: 7px 11px 8px; border: 1px solid rgba(31, 27, 22, .14); background: #FFFDF8; color: #6E6557; }
+.mq__count { margin-left: auto; font-size: 9.5px; color: #A79C8C; font-variant-numeric: tabular-nums; }
+
+/* ② 날짜 팝업·기록 보기 한 칸 — 저녁 1초 체크(.nightcheck)와 구분되는 ☀️ 칸 */
+.mqday {
+  margin: 14px 0 0; padding: 12px 13px 11px;
+  background: #FFFDF8; border: 1px solid rgba(199, 154, 78, .26); border-radius: 14px;
+}
+.mqday__t {
+  margin: 0; font-family: var(--sans); font-size: 11px; font-weight: 800;
+  letter-spacing: .01em; color: #8A6B37; white-space: nowrap;
+}
+.mqday__q {
+  margin: 7px 0 0; font-family: var(--serif); font-size: 13.5px; font-weight: 700;
+  line-height: 1.6; letter-spacing: -.03em; color: #22304A; word-break: keep-all;
+}
+.mqday__a {
+  margin: 9px 0 0; padding: 8px 10px 9px; background: #FFFFFF;
+  border: 1px solid rgba(199, 154, 78, .2); border-radius: 10px;
+  font-family: var(--sans); font-size: 12px; line-height: 1.66; color: #3B342A;
+  white-space: pre-wrap; word-break: break-word;
+}
+.mqday__a b { display: block; margin: 0 0 2px; font-size: 9px; letter-spacing: .04em; color: #9A7B3E; }
+.mqday__none { margin: 9px 0 0; font-family: var(--sans); font-size: 10.5px; line-height: 1.6; color: #A79C8C; }
+.mqday__btn {
+  appearance: none; margin-top: 9px; padding: 7px 12px 8px;
+  border: 1px solid rgba(27, 41, 64, .18); border-radius: 999px;
+  background: #FFFDF8; color: #1B2940;
+  font-family: var(--sans); font-size: 11px; font-weight: 800; letter-spacing: -.02em; cursor: pointer;
+}
+.mqday__write { margin-top: 9px; }
+.mqday__cap { display: block; font-family: var(--sans); font-size: 10px; font-weight: 800; color: #9A7B3E; }
+.mqday__cap span { font-weight: 600; color: #A79C8C; }
+.mqday__input {
+  display: block; width: 100%; margin-top: 6px; padding: 9px 10px;
+  border: 1px solid rgba(31, 27, 22, .14); border-radius: 10px; background: #FFFFFF;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.7; color: #2E2A24; resize: vertical;
+}
+.mqday__acts { display: flex; gap: 6px; margin-top: 7px; }
+.mqday__save { appearance: none; padding: 7px 12px 8px; border: 1px solid rgba(27, 41, 64, .9); border-radius: 999px; background: var(--navy); color: #FFF8EA; font-family: var(--sans); font-size: 11px; font-weight: 800; cursor: pointer; }
+.mqday__cancel { appearance: none; padding: 7px 10px 8px; border: 1px solid rgba(31, 27, 22, .14); border-radius: 999px; background: #FFFDF8; color: #6E6557; font-family: var(--sans); font-size: 11px; font-weight: 700; cursor: pointer; }
+
+/* 📖 기록 보기 — 아침의 질문은 ☀️ 칩으로 저녁 기록·성찰과 구분한다 */
+.dbook__chip--mq { background: #FBF3E2; color: #8A6B37; }
+.dbook__mq {
+  grid-column: 1 / -1; font-size: 10px; line-height: 1.55; color: #9A9084;
+  letter-spacing: -.01em; word-break: break-word;
+}
+.dbook__mqa {
+  grid-column: 1 / -1; font-size: 12.5px; line-height: 1.65; color: var(--ink);
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* 팝업 안에서 저장했을 때 잠깐 보이는 한 줄 */
+.mqtoast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  z-index: 9999; margin: 0; padding: 9px 15px 10px;
+  background: rgba(27, 41, 64, .94); color: #FFF8EA; border-radius: 999px;
+  font-family: var(--sans); font-size: 11.5px; font-weight: 700; letter-spacing: -.02em;
+  box-shadow: 0 6px 18px rgba(20, 15, 8, .22); pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) { .mq__btn { transition: none; } }
+
 
 /* ══════════════════════════════════════════════════════════════════════
    2026-11-24 #19801 · #19841 — 첫 화면 3단 카드 분리

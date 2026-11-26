@@ -1993,6 +1993,14 @@
       if (!diaryHas(j) || seen[j]) continue;
       seen[j] = 1; keys.push(j);
     }
+    /* ☀️ 아침의 질문에 답만 남긴 날도 기록으로 본다 (2026-11-26 #22311) */
+    var mqKeys = (window.MorningQ && window.MorningQ.answeredKeys) ? window.MorningQ.answeredKeys() : [];
+    for (var q = 0; q < mqKeys.length; q++) {
+      var qk = mqKeys[q];
+      if (!qk || seen[qk]) continue;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(qk)) continue;
+      seen[qk] = 1; keys.push(qk);
+    }
     keys.sort();
     keys.reverse();
     return keys;
@@ -2023,6 +2031,10 @@
         out.push('✍️ 1줄 성찰 · ' + (r.plain ? '무난한 날' : (r.cat || '')));
         out.push('Q. ' + (r.q || ''));
         out.push('A. ' + (r.text || ''));
+      }
+      if (window.MorningQ && window.MorningQ.textLines) {
+        var ml = window.MorningQ.textLines(k);
+        for (var mi = 0; mi < ml.length; mi++) out.push(ml[mi]);
       }
       out.push('');
     });
@@ -2059,7 +2071,10 @@
        담지 않는 것 : 입장 코드(UNLOCK_KEY) — 카톡으로 받은 코드를 새 기기에서 다시 넣으면 그대로 열린다.
      복원은 저장된 값만 바꾸고 화면을 새로 고쳐, 평소 기기로 열 때와 똑같은 길로 다시 읽게 한다. */
   var BACKUP_APP = 'yoonise-timing-backup';
-  var BACKUP_KEYS = [STORE_KEY, NIGHT_KEY, STAMP_KEY, DIARY_KEY];
+  /* ☀️ 아침의 질문 답변도 함께 담는다 (2026-11-26) — 기기를 바꿔도 내가 남긴 생각이 살아나게.
+     옛 백업 파일에는 이 키가 없어도 그대로 복원된다(있는 키만 되살린다). */
+  var BACKUP_KEYS = [STORE_KEY, NIGHT_KEY, STAMP_KEY, DIARY_KEY,
+    (window.MorningQ && window.MorningQ.KEY) || 'yoonise.morningq.v1'];
   function backupPayload() {
     var keys = {};
     BACKUP_KEYS.forEach(function (k) {
@@ -2151,6 +2166,9 @@
     var r = hasD ? diary.entries[k] : null;
     var chips = '';
     if (nl) chips += '<span class="dbook__chip">🌙 ' + esc(nl.replace(/^\S+\s*/, '')) + '</span>';
+    /* ☀️ 아침의 질문에 답을 남긴 날 — 저녁 기록과 다른 이름표로 구분한다 (2026-11-26) */
+    var mqA = (window.MorningQ && window.MorningQ.answerOf) ? window.MorningQ.answerOf(k) : '';
+    if (mqA) chips += (window.MorningQ.chipHTML ? window.MorningQ.chipHTML() : '');
     if (r) chips += '<span class="badge badge--' + (r.plain ? 'gray' : (DIARY_CAT_CLASS[r.cat] || 'gray')) + '">' + esc(r.plain ? '무난한 날' : (r.cat || '성찰')) + '</span>';
     return '<button type="button" class="dbook__item' + (nl ? ' dbook__item--night' : '') + '" data-dbook-day="' + k + '" aria-label="' +
       p.m + '월 ' + p.d + '일 기록 — 그날 열기">' +
@@ -2160,6 +2178,7 @@
       (nr && nr.memo ? '<span class="dbook__memo">' + esc(nr.memo) + '</span>' : '') +
       (r ? '<span class="dbook__q">' + esc(r.q || '') + '</span>' : '') +
       (r ? '<span class="dbook__a">' + esc(r.text || '') + '</span>' : '') +
+      (mqA ? (window.MorningQ.bookLinesHTML ? window.MorningQ.bookLinesHTML(k) : '') : '') +
       '</button>';
   }
 
@@ -2169,7 +2188,7 @@
       ? '<div class="dbook__list">' + keys.map(diaryBookItemHTML).join('') + '</div>'
       : '<div class="dbook__empty">' +
         '<p class="dbook__empty-title">아직 남긴 기록이 없어요</p>' +
-        '<p class="dbook__empty-sub">날짜를 눌러 🌙 저녁 1초 체크나 ✍️ 1줄 성찰을 남기면 여기에 쌓여요.<br>백업 파일로 기기를 옮길 수도 있어요.</p>' +
+        '<p class="dbook__empty-sub">날짜를 눌러 🌙 저녁 1초 체크나 ✍️ 1줄 성찰을 남기면 여기에 쌓여요.<br>☀️ 아침의 질문에 남긴 생각도 함께 모입니다.<br>백업 파일로 기기를 옮길 수도 있어요.</p>' +
         '</div>';
 
     return '<p class="modal__eyebrow">MY REFLECTIONS · 성찰 기록</p>' +
@@ -2192,7 +2211,7 @@
       '<button type="button" class="dbook__act" data-backup-up>↩️ 백업 파일로 복원</button>' +
       '</div>' +
       body +
-      '<p class="dbook__note">백업 파일(.json)에는 <b>사주 정보 · 저녁 1초 체크 · 성찰 기록</b>이 함께 담겨요. 입장 코드는 담기지 않으니 새 기기에서 카톡 코드를 다시 넣어 주세요. 기록은 <b>이 브라우저에만</b> 저장되니 기기를 바꾸기 전에 한 번 저장해 두세요.</p>'; 
+      '<p class="dbook__note">백업 파일(.json)에는 <b>사주 정보 · 저녁 1초 체크 · 성찰 기록 · 아침의 질문 답변</b>이 함께 담겨요. 입장 코드는 담기지 않으니 새 기기에서 카톡 코드를 다시 넣어 주세요. 기록은 <b>이 브라우저에만</b> 저장되니 기기를 바꾸기 전에 한 번 저장해 두세요.</p>'; 
   }
   function openDiaryBook() {
     if (!dbookEl) return;
@@ -4394,6 +4413,19 @@
         if (peekEl) peekEl.textContent = '한 해의 흐름과 고비' + (ms ? ' · 조심할 달 ' + ms : '');
       }
     }
+
+    /* ☀️ 아침의 질문 (2026-11-26 #22311) — TODAY 전문 바로 아래 카드.
+       질문·답 그리기는 assets/morning.js 가 맡는다(날짜 고르기·저장 모두 그쪽).
+       여기서는 사주가 들어와 카드가 보이는 순간에 한 번 채워 주기만 한다. */
+    if (window.MorningQ && window.MorningQ.paintCard) window.MorningQ.paintCard();
+  }
+
+  /* ── ☀️ 아침의 질문 — 날짜 팝업·기록 보기가 함께 쓰는 한 조각 ─────────
+     저녁 1초 체크와 **다른 칸**으로 그린다. 모듈이 없으면 아무것도 그리지 않는다. */
+  function morningBlockHTML(iso) {
+    try {
+      return (window.MorningQ && window.MorningQ.blockHTML) ? window.MorningQ.blockHTML(iso) : '';
+    } catch (e) { return ''; }
   }
 
   /* ── 🌙 첫 화면의 오늘 밤 1초 체크 상태 (2026-11-24 #18271) ─────────
@@ -5040,6 +5072,7 @@
           '<p class="litemodal__actp"><b>' + dayWord(info) + ' 챙길 것</b><span>' + esc(tx.keep) + '</span></p>' +
         '</div>' +
       '</div>' +
+      morningBlockHTML(info.iso) +
       nightCheckHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>' +
       '</div>';
@@ -5166,6 +5199,7 @@
       '<p class="modal__stamp-note"' + (stampOf(info.iso) ? '' : ' hidden') + '>' +
       '<span class="sticker-mini" aria-hidden="true">' + stickerSVG(stampElement(info)) + '</span>' +
       '금빛 인장이 찍혀 있어요 — 달력에 ' + (today ? '오늘의' : '이 날의') + ' 부적 스티커가 새겨져 있어요.</p>' +
+      morningBlockHTML(info.iso) +
       diarySectionHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }
@@ -5175,6 +5209,7 @@
     return modalHead(info) +
       '<p class="modal__headline">' + esc(info.headline) + '</p>' +
       '<p class="modal__calm">이 날은 부적이 나오는 날은 아니에요. 무난한 날일수록 한 줄 적어 두기 좋아요.</p>' +
+      morningBlockHTML(info.iso) +
       diarySectionHTML(info) +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-modal-close>닫고 달력 보기</button>';
   }

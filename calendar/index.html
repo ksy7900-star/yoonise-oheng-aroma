@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261126v">
+<link rel="stylesheet" href="assets/style.css?v=20261126w">
 </head>
 <body>
 
@@ -309,14 +309,39 @@
       </div>
     </div>
 
-    <!-- 📖 사용 안내 카드 (2026-11-24 #18768 → 2026-11-24aa #19144)
-         · 보이는 조건: 사주를 넣은 뒤에는 **무료 체험 중·체험 종료·결제 완료 어느 상태에서도** 늘 한 장.
+    <!-- ☀️ 하루 루틴 안내 박스 (2026-11-26 #22327 — 기존 '좋은 날은 놓치지 않고…' 안내 카드를 **교체**)
+         · 자리: TODAY 위 그대로. 같은 안내를 두 번 두지 않는다(중복 박스 없음).
+         · 보이는 조건: 사주를 넣은 뒤 무료 체험 중·체험 종료·결제 완료 어느 상태에서도 늘 한 장.
            사주 입력 전(첫 화면)에는 없다 — calendar.js syncTrialState → .tguide.
-         · 전체 화면 팝업이 아니라 TODAY 위의 작은 카드 한 장이고, 닫기 버튼은 없다(닫힘 기억 키도 없앴다).
-         · 새 카드·팝업·고정 배너를 더하지 않고 이 카드만 상시로 둔다. 72시간 특별 선물 카드와는 별개다. -->
-    <section class="tguide" id="trialGuide" aria-label="사주 타이밍 달력 사용 안내" hidden>
+         · 문구는 아래 고정값 그대로. '윤이세와 함께하는 하루' 같은 큰 제목은 넣지 않는다.
+         · 아이콘은 일출·전구·달력·초승달 모양의 골드 단색 라인 SVG (그림 파일 없이 이 자리에서 그린다).
+         · 목표 높이 390px 화면에서 180~220px — 오늘의 운세를 아래로 밀어내지 않게 여백을 최소로. -->
+    <section class="tguide" id="trialGuide" aria-label="YOONISE · DAILY ROUTINE — 윤이세와 함께하는 하루" hidden>
+      <p class="tguide__label">YOONISE · DAILY ROUTINE</p>
       <p class="tguide__lead">좋은 날은 놓치지 않고,<br>조심할 날은 미리 알고.</p>
-      <p class="tguide__b">아침엔 운세를 확인하고,<br>저녁엔 하루를 한 줄로 기록하세요.</p>
+      <ul class="tguide__list">
+        <li class="tguide__row">
+          <span class="tguide__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M1.4 11.7h13.2"/><path d="M8 9.3a2.9 2.9 0 0 1 2.9 2.9H5.1A2.9 2.9 0 0 1 8 9.3z"/><path d="M8 2.1v1.9M3.5 4.1l1.3 1.3M12.5 4.1l-1.3 1.3M3.7 14.1h8.6"/></svg></span>
+          <span class="tguide__k">아침</span>
+          <span class="tguide__d">오늘의 운세로 하루의 방향을 잡고</span>
+        </li>
+        <li class="tguide__row">
+          <span class="tguide__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M8 2.1a3.8 3.8 0 0 1 3.8 3.8c0 1.5-.9 2.4-1.6 3.1-.4.4-.6.8-.6 1.3H6.4c0-.5-.2-.9-.6-1.3-.7-.7-1.6-1.6-1.6-3.1A3.8 3.8 0 0 1 8 2.1z"/><path d="M6.5 12.4h3M7 13.9h2"/></svg></span>
+          <span class="tguide__k">생각</span>
+          <span class="tguide__d">하나의 질문으로 나를 알아가고</span>
+        </li>
+        <li class="tguide__row">
+          <span class="tguide__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="2" y="3.6" width="12" height="10.2" rx="1.5"/><path d="M2 6.7h12M5.4 2.1v2.4M10.6 2.1v2.4"/><path d="M5.2 9.2h1.4M9.4 9.2h1.4M5.2 11.4h1.4M9.4 11.4h1.4"/></svg></span>
+          <span class="tguide__k">낮</span>
+          <span class="tguide__d">좋은 타이밍을 챙기며 살아가고</span>
+        </li>
+        <li class="tguide__row">
+          <span class="tguide__ic" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M9.9 2.3a5.8 5.8 0 1 0 3.9 9.9 6.3 6.3 0 0 1-3.9-9.9z"/></svg></span>
+          <span class="tguide__k">저녁</span>
+          <span class="tguide__d">한 줄의 기록으로 하루를 마무리합니다.</span>
+        </li>
+      </ul>
+      <p class="tguide__foot">하루하루, 나를 알아가는 시간.</p>
     </section>
 
     <!-- ──────── ✨ TODAY · 오늘의 운세 브리핑 (2026-11-24 #18370) ────────
@@ -342,6 +367,35 @@
         <div class="hk__brief" id="hookToday"></div>
         <div class="hk__foot">
           <button type="button" class="hk__more hk__more--wide" id="hookTodayGo" data-today-open>오늘 상세 운세 보기 <span aria-hidden="true">→</span></button>
+        </div>
+      </article>
+
+      <!-- ☀️ MORNING QUESTION · 아침의 질문 (2026-11-26 #22311 · #22327)
+           자리: TODAY 전문 + `오늘 상세 운세 보기` **바로 아래**, 2027 카드 위.
+           · 질문 전문은 접속 즉시 보인다(클릭·접기·팝업 없음). 답은 선택이다.
+           · 질문 365개는 assets/morning-questions.js, 날짜 고르기·답 저장·카드 채우기는
+             assets/morning.js — 한국 시간 자정에 다음 질문으로 넘어가고, 같은 날은 그대로.
+           · 답은 이 기기에만 저장하고(외부 비공개), AI 가 평가·해설하지 않는다.
+           · 새로 생긴 칸만 이 카드가 맡는다 — TODAY·운세 생성·결제·감정서는 그대로다. -->
+      <article class="mq" id="morningCard" aria-labelledby="mqLabel">
+        <p class="mq__label" id="mqLabel">MORNING QUESTION · 아침의 질문</p>
+        <p class="mq__lead">답을 얻는 시대, 스스로 생각하는 시간.</p>
+        <p class="mq__q" id="mqText"></p>
+        <p class="mq__mine" id="mqMine" hidden><b>내가 남긴 생각</b><span id="mqMineText"></span></p>
+        <p class="mq__note">정답은 없어요. 오늘은 당신의 생각이 궁금합니다.</p>
+        <div class="mq__write" id="mqWrite" hidden>
+          <label class="mq__cap" for="mqInput">오늘의 생각 <span>(선택 · 이 기기에만 저장돼요)</span></label>
+          <textarea class="mq__input" id="mqInput" rows="3" maxlength="600"
+                    placeholder="떠오른 대로 적어 보세요. 안 적어도 괜찮아요." aria-describedby="mqCount"></textarea>
+          <div class="mq__acts">
+            <button type="button" class="mq__save" id="mqSave">저장하기</button>
+            <button type="button" class="mq__close" id="mqClose">닫기</button>
+            <span class="mq__count" id="mqCount">0 / 600</span>
+          </div>
+        </div>
+        <div class="mq__foot">
+          <button type="button" class="mq__btn" id="mqBtn">나의 생각 남기기 <span aria-hidden="true">→</span></button>
+          <p class="mq__saved" id="mqSaved" hidden>이 기기에만 저장돼요</p>
         </div>
       </article>
 
@@ -1093,14 +1147,16 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261126v"></script>
-<script src="assets/manse.js?v=20261126v"></script>
-<script src="assets/timing.js?v=20261126v"></script>
-<script src="assets/chars.js?v=20261126v"></script>
-<script src="assets/brief.js?v=20261126v"></script>
-<script src="assets/calendar.js?v=20261126v"></script>
-<script src="assets/guide-paper.js?v=20261126v"></script>
-<script src="assets/special-guide.js?v=20261126v"></script>
-<script src="assets/pwa.js?v=20261126v"></script>
+<script src="vendor/lunar.js?v=20261126w"></script>
+<script src="assets/manse.js?v=20261126w"></script>
+<script src="assets/timing.js?v=20261126w"></script>
+<script src="assets/chars.js?v=20261126w"></script>
+<script src="assets/brief.js?v=20261126w"></script>
+<script src="assets/morning-questions.js?v=20261126w"></script>
+<script src="assets/morning.js?v=20261126w"></script>
+<script src="assets/calendar.js?v=20261126w"></script>
+<script src="assets/guide-paper.js?v=20261126w"></script>
+<script src="assets/special-guide.js?v=20261126w"></script>
+<script src="assets/pwa.js?v=20261126w"></script>
 </body>
 </html>

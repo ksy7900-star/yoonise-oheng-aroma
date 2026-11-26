@@ -15,7 +15,7 @@
    · APP_VERSION = VERSION — 화면(pwa.js)이 지금 서버의 sw.js VERSION 과
      자기 화면 ?v= 를 견줘 한 단계 더 최신으로 넘어갈 때 쓴다.
    ========================================================== */
-var VERSION = '20261126v';
+var VERSION = '20261126w';
 var APP_VERSION = VERSION;
 var CACHE = 'yoonise-cal-' + VERSION;
 var CACHE_PREFIX = 'yoonise-cal-';
