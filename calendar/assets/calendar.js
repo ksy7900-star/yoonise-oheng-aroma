@@ -10437,7 +10437,9 @@
     /* 2) 진짜 확인은 서버가 — 응답을 기다리는 동안 버튼을 잠근다 */
     unlockBusy = true;
     if (msg) { msg.textContent = '코드 확인 중…'; msg.classList.remove('is-ok'); }
-    verifyCodeRemote(shape.code, { phone: phone, ymd: id && id.ymd, gender: id && id.gender }, function (p) {
+    /* 2026-11-26 #23361 — 생년월일·성별은 **예전 사주 기반 18자리 코드일 때만** 보낸다.
+       지금 쓰는 6자리(휴대폰 번호 기반) 코드 확인에는 보내지 않는다 — 하단 개인정보 안내와 맞춘다. */
+    verifyCodeRemote(shape.code, { phone: phone, ymd: shape.legacy ? (id && id.ymd) : null, gender: shape.legacy ? (id && id.gender) : null }, function (p) {
       unlockBusy = false;
       if (!p || p.status !== 'ok') {
         if (msg) { msg.textContent = codeErrorText(p || { status: 'offline' }); msg.classList.remove('is-ok'); }
