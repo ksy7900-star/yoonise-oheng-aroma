@@ -510,7 +510,7 @@
     $('#clearBtn').addEventListener('click', function () {
       var ok = true;
       try {
-        ok = window.confirm('저장된 정보를 모두 지울까요?\n사주·1초 체크 기록·액운 태우기 횟수·열린 입장 코드까지 이 기기에서 지워지고, 되돌릴 수 없어요.');
+        ok = window.confirm('이 기기에 저장된 정보를 지울까요?\n\n지워지는 것 — 사주 정보, 1초 체크·성찰·저녁 기록, 액운 태우기 횟수, 열린 입장 코드, 결제 대기 기록이 이 브라우저에서 삭제됩니다. 되돌릴 수 없어요.\n\n남는 것 — 서버에 있는 이용권·할인권·친구 초대 실적·인스타 인증 기록은 그대로예요. 다만 이 기기에서 열어 둔 입장 코드가 지워지므로, 다시 이용하려면 입장 코드를 한 번 더 넣어 주세요.');
       } catch (e) { ok = true; }
       if (!ok) return;
       clearAllAppData();
@@ -2275,7 +2275,7 @@
       '</section>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">②</span><span class="fhow__t">인스타그램 후기</span></p>' +
-      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 사진은 윤이세가 준비했어요 — 나만의 사용 소감 한 줄을 더하면 돼요.</p>' +
+      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 마음에 드는 사진과 나만의 사용 소감을 함께 올려 주세요.</p>' +
       '<p class="fhow__note">무료 회원 <b>' + esc(INSTA_CFG.prize.free) + '</b> · 계정당 1회 · 인증 확인 후 자동 지급</p>' +
       '<button type="button" class="fhow__go fhow__go--insta" data-open-insta>인스타그램 후기 올리고 혜택 받기 <span aria-hidden="true">→</span></button>' +
       '</section>' +
@@ -2588,7 +2588,7 @@
       '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기</span></p>' +
-      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 사진은 윤이세가 준비했어요 — 나만의 사용 소감 한 줄을 더하면 돼요.</p>' +
+      '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 마음에 드는 사진과 나만의 사용 소감을 함께 올려 주세요.</p>' +
       '<p class="fhow__note"><b>' + esc(INSTA_CFG.prize.member) + '</b> · 계정당 1회 · 인증 확인 후 자동 지급</p>' +
       (mbInstaState(st) ? '<p class="fhow__note">' + mbInstaState(st) + '</p>' : '') +
       '<button type="button" class="fhow__go fhow__go--insta" data-open-insta>인스타그램 후기 올리고 혜택 받기 <span aria-hidden="true">→</span></button>' +
@@ -2869,13 +2869,12 @@
         '</div>';
     }
     return '<p class="modal__eyebrow">INVITE · 친구 초대</p>' +
-      '<h2 class="fhow__title" id="inviteTitle">초대 한 번이면,<br>두 사람 달력이 넓어져요</h2>' +
-      '<p class="fhow__sub">친구가 내 링크로 들어와 <b>카카오로 연결</b>하면 초대 1명으로 쌓여요.</p>' +
+      '<h2 class="fhow__title" id="inviteTitle">좋은 인연을 나누고,<br>특별한 혜택을 받아요.</h2>' +
+      '<p class="fhow__sub">친구가 내 초대 링크로 들어와 카카오 연결을 완료하면 초대 1명으로 인정돼요.</p>' +
       mbRefsLine(st, 'inv') +
       box +
       '<ul class="invt__ladder" data-inv-ladder>' + inviteLadderHTML(st, rules) + '</ul>' +
       '<p class="fhow__note">초대받은 친구도 <b>7일 무료 + 액운 태우기 1회</b>로 시작해요.</p>' +
-      '<p class="fhow__note">친구가 링크로 들어온 뒤 <b>카카오로 연결</b>을 마쳐야 1명으로 인정됩니다.</p>' +
       '<p class="fhow__foot">링크에는 내 초대 코드만 담겨요 — 사주 정보는 담기지 않습니다.</p>';
   }
 
@@ -2989,8 +2988,8 @@
     var st = mb.status;
     var approved = !!(st && st.insta && st.insta.status === 'approved');
     return '<p class="modal__eyebrow">REVIEW · 인스타그램 후기</p>' +
-      '<h2 class="fhow__title" id="instaTitle">나의 타이밍을 공유하고<br>특별한 혜택을 받아보세요</h2>' +
-      '<p class="fhow__sub">사진은 윤이세가 준비했어요. 나만의 사용 소감 한 줄을 더하고 특별한 혜택을 받아보세요.</p>' +
+      '<h2 class="fhow__title" id="instaTitle">나의 타이밍을 공유하고<br><em>특별한 혜택</em>을 받아보세요</h2>' +
+      '<p class="fhow__sub">마음에 드는 사진과 나만의 사용 소감을 함께 올려 주세요.</p>' +
       '<div class="iflow__prize"><b data-insta-prize>' + esc(instaPrizeText()) + '</b><span>계정당 1회</span></div>' +
 
       /* ① 사진 저장하기 */
@@ -3003,7 +3002,7 @@
       '</div>' +
       '<p class="iflow__note">사진을 누르면 크게 볼 수 있어요. 지원하는 기기에서는 공유 창이 열리니 <b>이미지 저장</b>을 골라 주세요.</p>' +
       '<p class="iflow__note">달력, 부적, 케미테스트, 액운 태우기, 오늘의 브리핑 등 어떤 화면이든 좋아요.</p>' +
-      '<p class="iflow__note">※ 캡처 시 개인정보가 보이지 않도록 주의해 주세요.</p>' +
+      '<p class="iflow__note">※ 캡처 시 이름, 생년월일, 전화번호 등 개인정보가 보이지 않도록 주의해 주세요.</p>' +
       '</section>' +
 
       /* ② 해시태그 복사하기 */
@@ -3016,30 +3015,29 @@
       '<div class="iflow__acts">' +
       '<button type="button" class="iflow__btn iflow__btn--gold" data-insta-copy>해시태그 · 계정 · 안내 문구 한 번에 복사</button>' +
       '</div>' +
-      '<p class="iflow__note">혜택 제공 사실은 게시물 본문 <b>첫 부분</b>에 적어 주세요. 후기 본문은 드리지 않아요 — 직접 쓴 한 줄 이상의 소감만 인정됩니다.</p>' +
+      '<p class="iflow__note">혜택 제공 안내 문구는 게시물 첫 부분에 적어 주세요. 직접 느낀 사용 소감도 한 줄 이상 함께 남겨 주세요.</p>' +
       '</section>' +
 
       /* ③ 인스타그램에 올리기 */
       '<section class="iflow__step">' +
       '<div class="iflow__h"><span class="iflow__num">3</span><span class="iflow__t">인스타그램에 올리기</span></div>' +
       '<p class="iflow__d">저장한 공식 사진 2장과 직접 캡처한 화면 1장, 총 3장에 나만의 사용 소감 한 줄을 더해 주세요.</p>' +
-      '<p class="iflow__note">공식 사진은 2장, 직접 캡처는 1장 — 합쳐 <b>3장</b>이 기본이에요.</p>' +
       '<div class="iflow__acts">' +
       '<button type="button" class="iflow__btn iflow__btn--navy" data-insta-open>인스타그램 열기</button>' +
       '</div>' +
       '<details class="iflow__guide">' +
       '<summary>인스타그램에 올리는 방법</summary>' +
       '<ol class="iflow__how">' +
-      '<li><span aria-hidden="true">➕</span>인스타그램에서 <b>+</b> 버튼을 눌러요</li>' +
-      '<li><span aria-hidden="true">🖼️</span><b>게시물</b>을 골라요</li>' +
-      '<li><span aria-hidden="true">🗂️</span><b>여러 사진 선택</b>을 눌러요</li>' +
-      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진 2장과 직접 캡처한 화면 1장, 총 3장을 골라요</li>' +
-      '<li><span aria-hidden="true">✍️</span>실제 사용 소감을 <b>한 줄 이상</b> 써요</li>' +
-      '<li><span aria-hidden="true">#️⃣</span>복사한 해시태그를 붙여넣고 <b>' + esc(INSTA_CFG.account) + '</b>를 태그해요</li>' +
-      '<li><span aria-hidden="true">📣</span>혜택 제공 사실을 <b>본문 첫 부분</b>에 적고 공유해요</li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">➕</span><span class="iflow__tx">인스타그램에서 <b>+</b> 버튼을 눌러요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">🖼️</span><span class="iflow__tx">게시물을 선택해요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">🗂️</span><span class="iflow__tx">여러 사진 선택을 눌러요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">3️⃣</span><span class="iflow__tx">마음에 드는 사진 2장과 직접 캡처한 화면 1장을 골라요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">✍️</span><span class="iflow__tx">실제 사용 소감을 한 줄 이상 적어요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">#️⃣</span><span class="iflow__tx">복사한 안내 문구와 해시태그를 붙여넣고 <b>' + esc(INSTA_CFG.account) + '</b>를 태그해요.</span></li>' +
+      '<li><span class="iflow__ic" aria-hidden="true">📣</span><span class="iflow__tx">혜택 제공 안내가 본문 첫 부분에 있는지 확인하고 공유해요.</span></li>' +
       '</ol>' +
       '</details>' +
-      '<p class="iflow__cond">공개 피드 사진 <b>3장 이상</b>(공식 2장 + 직접 캡처 1장) 또는 <b>릴스</b>만 인정돼요. 스토리만 올린 것은 인정되지 않아요.</p>' +
+      '<p class="iflow__cond"><b>인정 조건</b> — 공개 피드 게시물 · 공식 사진 2장 + 직접 캡처 1장 · 직접 쓴 소감 한 줄 이상 · 공식 계정 태그 · 지정 해시태그 · 혜택 제공 사실 표시. <b>릴스</b>도 같은 조건이면 인정돼요. <b>스토리만</b> 올린 것은 인정되지 않아요.</p>' +
       '</section>' +
 
       /* ④ 인증하고 혜택 받기 */

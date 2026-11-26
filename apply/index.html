@@ -1656,7 +1656,14 @@ a { color: inherit; }
         return;
       }
       if (couponId) {
-        toast('할인권 연결이 지금 안 돼요 — 잠시 뒤 다시 눌러 주세요');
+        /* 2026-11-26 #23429 — 같은 할인권으로 다른 결제가 진행 중이면 그 사실을 그대로 알린다 */
+        if (o && o.error === 'coupon_busy') {
+          toast('이 할인권은 다른 결제가 진행 중이에요 — 그 결제를 마치거나 취소한 뒤 다시 써 주세요');
+        } else if (o && o.error === 'coupon_not_for_product') {
+          toast('이 상품에는 쓸 수 없는 할인권이에요 — 다른 할인권을 골라 주세요');
+        } else {
+          toast('할인권 연결이 지금 안 돼요 — 잠시 뒤 다시 눌러 주세요');
+        }
         return;
       }
       var went = false;
