@@ -3906,6 +3906,61 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 .fhow__foot { margin: 16px 0 0; font-size: 10.5px; text-align: center; color: var(--mute); }
 
 /* ==========================================================
+   👑 윤이세 정식 회원 특별 혜택 (2026-11-26)
+   · 무료 이용법 띠와 **같은 자리**에서 결제 회원에게만 글이 바뀐다(띠 추가 아님).
+   · 2×2 카드: 아이보리 · 샴페인 골드 · 딥 네이비+은은한 골드. 촌스러운 노랑·빨강·깜박임 없음.
+   · 할인 금액이 가장 먼저 눈에 들어오게 — 금액 줄만 굵고 진하게.
+   ========================================================== */
+.freebar.is-member { border-color: rgba(201, 138, 34, .85); }
+.freebar.is-member .freebar__d { color: #F3DFBA; }
+
+.mben__lead { margin: 14px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--ink-2); word-break: keep-all; }
+.mben__lead b { color: #8A4E0B; font-weight: 800; }
+
+.mben__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.mben__card {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 11px 11px 10px; border-radius: 16px; min-height: 104px;
+  border: 1px solid rgba(28, 24, 19, .08); background: #FBF8F1;
+  box-shadow: 0 10px 22px -22px rgba(28, 24, 19, .8);
+}
+.mben__card--ivory { background: linear-gradient(160deg, #FDFBF5 0%, #F4EEE2 100%); }
+.mben__card--gold { background: linear-gradient(160deg, #F8EEDA 0%, #EBD9B4 100%); border-color: rgba(165, 101, 15, .24); }
+.mben__card--navy { background: linear-gradient(160deg, #1B2940 0%, #24334C 100%); border-color: rgba(201, 138, 34, .45); }
+.mben__n { font-size: 9.5px; font-weight: 800; letter-spacing: .03em; color: #8A4E0B; }
+.mben__t { font-family: var(--serif); font-size: 12.5px; line-height: 1.36; font-weight: 700; color: var(--ink); letter-spacing: -.02em; word-break: keep-all; }
+.mben__price { font-size: 11px; font-weight: 800; color: #A5650F; letter-spacing: -.02em; }
+.mben__note { margin-top: auto; font-size: 9.3px; line-height: 1.45; color: var(--mute); word-break: keep-all; }
+.mben__state { font-size: 9px; font-weight: 800; color: #067F5B; letter-spacing: -.01em; }
+.mben__state--wait { color: #8A4E0B; }
+.mben__card--navy .mben__n { color: #E8CE9B; }
+.mben__card--navy .mben__t { color: #F6EBD6; }
+.mben__card--navy .mben__price { color: #EBCE97; }
+.mben__card--navy .mben__note { color: rgba(246, 235, 214, .7); }
+.mben__card--navy .mben__state { color: #CFE3D6; }
+.mben__card--navy .mben__state--wait { color: #E8CE9B; }
+
+.mben__mine { margin-top: 16px; padding: 14px 14px 12px; border-radius: 16px; background: #FCFAF4; border: 1px solid rgba(165, 101, 15, .18); }
+.mben__mine h3 { margin: 0; font-family: var(--serif); font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+.mben__mine p.hint { margin: 8px 0 0; font-size: 10px; line-height: 1.6; color: var(--mute); }
+.mben__row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px dashed rgba(28, 24, 19, .09); font-size: 11px; color: var(--ink-2); }
+.mben__row:last-child { border-bottom: 0; padding-bottom: 2px; }
+.mben__row b { flex: none; font-weight: 800; color: var(--ink); }
+.mben__list { margin: 6px 0 0; padding: 0; list-style: none; }
+.mben__list li { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; font-size: 10.5px; color: var(--ink-2); }
+.mben__list li span:last-child { flex: none; font-size: 9.5px; color: var(--mute); }
+.mben__empty { margin: 6px 0 0; font-size: 10px; color: var(--mute); }
+.mben__foot {
+  position: sticky; bottom: 0; margin: 16px -4px 0; padding: 10px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 38%);
+  font-size: 9.6px; line-height: 1.6; text-align: center; color: var(--mute); word-break: keep-all;
+}
+
+/* 액운 태우기 — 추가 이용권 안내(작은 글씨) */
+.burn__extra { margin: 10px 0 0; font-size: 11px; line-height: 1.65; color: var(--ink-2); text-align: center; word-break: keep-all; }
+.burn__extra b { color: #8A4E0B; font-weight: 800; }
+
+/* ==========================================================
    2026-11-20 · 달력 '시원한 여백' 개편 (피드백 #8759 #8764)
    "달력이 포인트인데 너무 갑갑한 느낌" → 달력이 화면의 주인공이 되게
    ① 모바일 풀폭 + 칸 높이·여백 확대

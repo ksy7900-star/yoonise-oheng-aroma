@@ -281,6 +281,45 @@ body.locked{overflow:hidden}
 .stats--4 .stat{padding:11px 4px 10px; border-radius:14px}
 .stats--4 .stat__k{font-size:9px}
 .stats--4 .stat__v{font-size:19px}
+
+/* ── 👑 회원 혜택 관리 (2026-11-26) ───────────────────── */
+.bnr-list{margin:0; padding:0; list-style:none}
+.bnr{border:1px solid var(--hair-soft); border-radius:14px; padding:11px 12px; margin-bottom:9px; background:#fff}
+.bnr__top{display:flex; align-items:center; gap:6px; margin-bottom:8px}
+.bnr__who{font-size:10px; font-weight:800; color:#8A4E0B; background:#FBF3E2; border-radius:999px; padding:3px 8px}
+.bnr__kind{font-size:9.5px; font-weight:700; color:var(--mute)}
+.bnr__on{margin-left:auto; display:flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:var(--ink-2)}
+.bnr__lb{display:block; font-size:9.5px; font-weight:700; color:var(--mute); margin:6px 0 0}
+.bnr__lb input[type=text], .bnr__lb input[type=number], .bnr__lb select{
+  width:100%; margin-top:4px; padding:8px 9px; border-radius:9px; border:1px solid var(--hair);
+  font-family:inherit; font-size:12px; font-weight:600; color:var(--ink); background:#fff;
+}
+.bnr__grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px}
+.bnr__chk{display:flex; gap:10px; margin-top:5px; font-size:10.5px; font-weight:600; color:var(--ink-2)}
+.bnr__chk label{display:flex; align-items:center; gap:4px}
+.bnr__sub{margin:7px 0 0; font-size:9.5px; color:var(--mute); line-height:1.5}
+.bnr__meta{margin:4px 0 0; font-size:9px; color:#B09A78}
+
+.bnl li{flex-wrap:wrap}
+.bnl__code{font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; color:#8A4E0B; font-size:11px}
+.bnl__t{font-size:11px; font-weight:700; color:var(--ink)}
+.bnl__d2{font-weight:500; color:var(--mute); font-size:10px}
+.bnl__d{width:100%; font-size:9.5px; color:var(--mute); line-height:1.5}
+.bnl__b{margin-left:auto; display:flex; gap:5px}
+.bnl__ok{color:#047857; font-weight:800; font-size:9.5px}
+.bnl__free{color:#B45309; font-weight:800; font-size:9.5px}
+.bn-tabs{display:flex; gap:6px; margin:10px 0}
+.bn-tabs button{
+  flex:1; border:1px solid var(--hair); background:#fff; border-radius:10px; padding:9px 0;
+  font-family:inherit; font-size:11px; font-weight:700; color:var(--mute);
+}
+.bn-tabs button.is-on{background:#1E293B; border-color:#1E293B; color:#fff}
+.bn-hist{width:100%; margin-top:8px; padding:9px 10px; border-radius:10px; background:#FBF9F4; border:1px solid var(--hair-soft)}
+.bn-hist__t{margin:0 0 4px; font-size:9.5px; font-weight:800; color:#8A4E0B}
+.bn-hist ul{margin:0 0 6px; padding:0; list-style:none}
+.bn-hist li{font-size:10px; color:var(--ink-2); padding:2px 0}
+#bnSearch{margin-top:2px}
+
 .sglist{margin:0; padding:0; list-style:none}
 .sglist li{border:1px solid var(--hair-soft); border-radius:14px; padding:11px 12px; margin-bottom:9px; background:#fff}
 .sglist button.sgitem{display:block; width:100%; text-align:left; border:0; background:none; padding:0; font-family:inherit}
@@ -519,6 +558,7 @@ body.locked{overflow:hidden}
     <button type="button" id="tabBtnMembers" role="tab" aria-selected="false" aria-controls="tabMembers">👥 가입자</button>
     <button type="button" id="tabBtnSpecial" role="tab" aria-selected="false" aria-controls="tabSpecial">🎁 특별 가이드</button>
     <button type="button" id="tabBtnMorning" role="tab" aria-selected="false" aria-controls="tabMorning">☀️ 아침의 질문</button>
+    <button type="button" id="tabBtnBenefits" role="tab" aria-selected="false" aria-controls="tabBenefits">👑 회원 혜택</button>
   </div>
 
   <div id="tabIssue" role="tabpanel" aria-labelledby="tabBtnIssue">
@@ -807,6 +847,58 @@ body.locked{overflow:hidden}
     <p class="note">첫 사주 입력 시각은 서버가 기기별로 한 번만 남깁니다. 결제 확인 시각은 코드 발급 원장과 대조하고, 72시간이 지난 경우·옛 코드는 여기서 직접 확인해 부여합니다. 카톡 링크를 눌렀다는 사실만으로는 <b>접수</b>가 되지 않습니다 — 고객이 보낸 신청번호를 확인한 뒤 <b>접수 확인</b>을 눌러 주세요.<br>
       <b>개인정보</b> — 결제로 자동 접수된 건은 고객이 화면에서 <b>동의</b>를 누른 뒤에만 이름·사주 자료가 서버에 저장되고(<b>동의 X</b>인 건은 저장되지 않음), 동의 없이는 <b>전달 완료</b>를 누를 수 없어요. 접수 정보는 접수일부터 1년 뒤 위 <b>1년 지난 개인정보 정리</b>로 지우고, 고객이 삭제를 요청하면 상세의 <b>고객 요청 · 개인정보 지우기</b>로 바로 지웁니다. 결제·거래 기록(주문·입장 코드 원장)은 전자상거래법에 따라 5년간 남기고 지우지 않아요.</p>
   </div><!-- /tabSpecial -->
+
+  <!-- 👑 회원 혜택 관리 — 정식 회원 혜택 규칙·자동 지급·인스타 승인·이력 (2026-11-26) -->
+  <div id="tabBenefits" role="tabpanel" aria-labelledby="tabBtnBenefits" hidden>
+
+    <div class="stats stats--4">
+      <div class="stat"><span class="stat__k">발급</span><span class="stat__v" id="bnIssued">–</span></div>
+      <div class="stat"><span class="stat__k">사용 가능</span><span class="stat__v" id="bnUsable">–</span></div>
+      <div class="stat"><span class="stat__k">사용 완료</span><span class="stat__v" id="bnUsed">–</span></div>
+      <div class="stat"><span class="stat__k">인증 대기</span><span class="stat__v" id="bnInsta">–</span></div>
+    </div>
+
+    <section class="card">
+      <div class="card__bar">
+        <h2 class="card__title">정식 회원 혜택 규칙<span class="card__n" id="bnCount"></span></h2>
+        <button type="button" class="refresh" id="bnReload">새로고침</button>
+      </div>
+      <p class="state" id="bnState">불러오는 중…</p>
+      <ul class="bnr-list" id="bnRules" hidden></ul>
+      <p class="note">여기서 고치고 저장하면 <b>고객 화면과 이후 지급</b>에 바로 반영돼요. 이미 받은 할인권은 발급 당시 조건 그대로 남습니다.</p>
+      <button type="button" class="go" id="bnSave">혜택 규칙 저장</button>
+      <p class="msg" id="bnMsg"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">인스타그램 인증 확인</h2>
+      <p class="state" id="bnInstaState">불러오는 중…</p>
+      <ul class="list bnl" id="bnInstaList" hidden></ul>
+      <p class="note">승인만 누르면 됩니다 — <b>정식 회원은 상담 1만원 할인권</b>, <b>무료 회원은 30일 이용권(M 코드)</b>이 자동으로 발급돼요.</p>
+    </section>
+
+    <section class="card">
+      <div class="card__bar">
+        <h2 class="card__title">회원 혜택 현황</h2>
+        <button type="button" class="refresh" id="bnDirReload">새로고침</button>
+      </div>
+      <div class="bn-tabs" role="tablist" aria-label="회원 보기">
+        <button type="button" class="is-on" data-bndir="ledger">코드·번호 명부</button>
+        <button type="button" data-bndir="account">가입 계정</button>
+      </div>
+      <input class="phone" id="bnSearch" type="text" placeholder="이메일 · 닉네임 · 초대코드로 찾기" autocomplete="off">
+      <p class="state" id="bnDirState">불러오는 중…</p>
+      <ul class="list bnl" id="bnDir" hidden></ul>
+    </section>
+
+    <section class="card">
+      <h2 class="card__title">최근 발급 · 사용</h2>
+      <ul class="list bnl" id="bnRecent" hidden></ul>
+    </section>
+
+    <p class="note">코드 발급기 · 가입자 · 타이밍 달력과 <b>같은 서버 원장</b>을 봅니다. P(1년) 코드는 정식 회원, M(1개월)은 무료 회원이에요.</p>
+  </div><!-- /tabBenefits -->
+
 
   <p class="foot">윤이세사주 · 나만 보는 발급기 · v20261126ab<br>비밀번호로 잠겨 있고, 검색에도 나오지 않아요.</p>
 
@@ -1371,9 +1463,9 @@ body.locked{overflow:hidden}
 
   /* ── 탭 전환 ───────────────────────────────────── */
   function showTab(which) {
-    var w = (which === 'members' || which === 'consults' || which === 'special' || which === 'morning') ? which : 'issue';
-    var btn = { issue: $('#tabBtnIssue'), consults: $('#tabBtnConsults'), members: $('#tabBtnMembers'), special: $('#tabBtnSpecial'), morning: $('#tabBtnMorning') };
-    var panel = { issue: $('#tabIssue'), consults: $('#tabConsults'), members: $('#tabMembers'), special: $('#tabSpecial'), morning: $('#tabMorning') };
+    var w = (which === 'members' || which === 'consults' || which === 'special' || which === 'morning' || which === 'benefits') ? which : 'issue';
+    var btn = { issue: $('#tabBtnIssue'), consults: $('#tabBtnConsults'), members: $('#tabBtnMembers'), special: $('#tabBtnSpecial'), morning: $('#tabBtnMorning'), benefits: $('#tabBtnBenefits') };
+    var panel = { issue: $('#tabIssue'), consults: $('#tabConsults'), members: $('#tabMembers'), special: $('#tabSpecial'), morning: $('#tabMorning'), benefits: $('#tabBenefits') };
     Object.keys(panel).forEach(function (k) {
       if (!panel[k] || !btn[k]) return;
       panel[k].hidden = (k !== w);
@@ -1384,6 +1476,7 @@ body.locked{overflow:hidden}
     if (w === 'consults') loadConsults();
     if (w === 'special' && window.YoonSpecialAdmin) window.YoonSpecialAdmin.load();
     if (w === 'morning' && window.YoonMorningAdmin) window.YoonMorningAdmin.load();
+    if (w === 'benefits' && window.YoonBenefitsAdmin) window.YoonBenefitsAdmin.load();
   }
 
   /* ── 서버 호출 — 함수 하나만 ─────────────────────── */
@@ -1668,6 +1761,7 @@ body.locked{overflow:hidden}
   $('#tabBtnMembers').addEventListener('click', function () { showTab('members'); });
   $('#tabBtnSpecial').addEventListener('click', function () { showTab('special'); });
   $('#tabBtnMorning').addEventListener('click', function () { showTab('morning'); });
+  $('#tabBtnBenefits').addEventListener('click', function () { showTab('benefits'); });
   $('#mReload').addEventListener('click', load);
   $('#cReload').addEventListener('click', loadConsults);
   $('#cList').addEventListener('click', function (e) {
@@ -1690,19 +1784,19 @@ body.locked{overflow:hidden}
   });
   $('.tabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    var order = ['issue', 'consults', 'members', 'special', 'morning'];
-    var now = $('#tabIssue').hidden
-      ? ($('#tabConsults').hidden
-        ? ($('#tabMembers').hidden
-          ? ($('#tabSpecial').hidden ? 'morning' : 'special')
-          : 'members')
-        : 'consults')
-      : 'issue';
+    var order = ['issue', 'consults', 'members', 'special', 'morning', 'benefits'];
+    var now = 'issue';
+    var panelsNow = ['issue', 'consults', 'members', 'special', 'morning', 'benefits'];
+    var panelOf = { issue: '#tabIssue', consults: '#tabConsults', members: '#tabMembers', special: '#tabSpecial', morning: '#tabMorning', benefits: '#tabBenefits' };
+    for (var k = 0; k < panelsNow.length; k++) {
+      var el = $(panelOf[panelsNow[k]]);
+      if (el && !el.hidden) { now = panelsNow[k]; break; }
+    }
     var i = order.indexOf(now);
     var next = order[(i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
     e.preventDefault();
     showTab(next);
-    var b = { issue: '#tabBtnIssue', consults: '#tabBtnConsults', members: '#tabBtnMembers', special: '#tabBtnSpecial', morning: '#tabBtnMorning' }[next];
+    var b = { issue: '#tabBtnIssue', consults: '#tabBtnConsults', members: '#tabBtnMembers', special: '#tabBtnSpecial', morning: '#tabBtnMorning', benefits: '#tabBtnBenefits' }[next];
     try { $(b).focus(); } catch (err) { }
   });
 
@@ -1712,8 +1806,9 @@ body.locked{overflow:hidden}
 </script>
 
 <!-- 🎁 특별 가이드 탭 — 신청 목록·5가지 초안 생성·검토·승인·전달 완료 (2026-11-24) -->
-<script src="../assets/morning-questions.js?v=20261126ad"></script>
-<script src="../assets/morning-admin.js?v=20261126ad"></script>
+<script src="../assets/morning-questions.js?v=20261126ae"></script>
+<script src="../assets/morning-admin.js?v=20261126ae"></script>
+<script src="../assets/member-admin.js?v=20261126ae"></script>
 <script src="../assets/special-guide-draft.js?v=20261126v"></script>
 <script src="../assets/guide-paper.js?v=20261126v"></script>
 <script>

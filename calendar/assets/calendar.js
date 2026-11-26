@@ -2280,13 +2280,40 @@
       '</section>' +
       '<p class="fhow__foot">두 혜택은 함께 받을 수 있어요.</p>';
   }
+  /** 회원 팝업 — 카드와 '나의 혜택 확인'만 새 값으로 다시 그린다(내용이 늦게 와도 화면이 튀지 않게) */
+  function mbFillMemberBody() {
+    function paint() {
+      if (!freeBody) return;
+      var grid = freeBody.querySelector('[data-mben-grid]');
+      if (grid) grid.innerHTML = mbCardsHTML(mb.status, mbRulesNow());
+      var box = freeBody.querySelector('[data-mben-status]');
+      if (box) box.innerHTML = mbMineHTML(mb.status, mbRulesNow());
+    }
+    mbRulesCb(function () {
+      paint();
+      mbStatusCb(function (st) { paint(); mbNotice(st); }, true);
+    });
+  }
+
   function openFreeHow() {
     if (!freeEl || !freeBody) return;
     freeLastFocus = document.activeElement;
-    freeBody.innerHTML = freeHowHTML();
+    var member = isMemberNow();
+    freeBody.innerHTML = member ? memberBenefitsHTML(mb.status, mbRulesNow()) : freeHowHTML();
     /* 이 기기에 대기 중인 초대 코드(?ref=)가 있으면 초대 화면으로 그대로 이어 준다 */
     var go = freeBody.querySelector('[data-free-invite]');
     if (go) { try { go.setAttribute('href', memberHref()); } catch (e) {} }
+    if (member) {
+      /* 인스타 인증 — 카톡으로 보내면서 관리자 확인 목록에도 남긴다(보내는 길은 그대로) */
+      var ig = freeBody.querySelector('[data-mben-insta]');
+      if (ig) ig.addEventListener('click', function () {
+        var uid = clientUid();
+        var body = {};
+        if (uid) body.p_client_uid = uid;
+        mbPost('member_insta_submit', body, function () { mb.status = null; });
+      });
+      mbFillMemberBody();
+    }
     freeEl.hidden = false;
     if (window.BackNav) window.BackNav.open('free', closeFreeHow);      // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
@@ -2310,6 +2337,307 @@
       freeLastFocus = null;
     }, 180);
   }
+
+  /* ══ 👑 윤이세 정식 회원 특별 혜택 (2026-11-26) ═══════════════════════
+     · 결제로 연 기기(1년 이용권 = pass·allinone·diary)에서만, **같은 자리**의 띠 글이
+       '내 사주 타이밍 달력 무료 이용법' → '윤이세 정식 회원 특별 혜택'으로 바뀐다(띠 추가 아님).
+       1개월 이용권(M)은 무료 회원이라 기존 무료 이용법 그대로.
+     · 혜택 내용·금액은 서버 규칙(member_benefit_rules)이 정한다 — 관리자가 바꾸면 재배포 없이
+       이 화면이 그대로 따라간다. 서버에 닿지 않을 때만 아래 기본값으로 보여 준다.
+     · 상담 할인권 지급·사용·만료와 액운 태우기 추가 이용권 차감은 전부 서버가 한다.
+     · 여기서는 화면만 그린다. 결제·적립 로직은 건드리지 않는다. */
+  var MB_PAID_TIERS = { pass: 1, allinone: 1, diary: 1 };
+  var MB_RULES_KEY = 'yoonise.member.rules.v1';
+  var MB_RULES_MS = 30 * 60 * 1000;
+  var MB_FALLBACK = {
+    products: { onepoint: { name: '원포인트 리딩', price: 49000 }, signature: { name: '시그니처 리딩', price: 100000 } },
+    stages: [
+      { stage: 1, benefit: 'burn', title: '액운 태우기 +3회', subtitle: '기본 하루 1회 외 · 필요한 날 3회 더', burn_count: 3, applies_to: [], coupon_kind: null, coupon_value: 0, active: true },
+      { stage: 3, benefit: 'coupon', title: '전 상담 상품 1만원 할인권 1매', subtitle: '원포인트 · 시그니처 모두 사용', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['onepoint', 'signature'], burn_count: 0, active: true },
+      { stage: 5, benefit: 'coupon', title: '원포인트 50% 할인권 1매', subtitle: '', coupon_kind: 'percent', coupon_value: 50, applies_to: ['onepoint'], burn_count: 0, active: true },
+      { stage: 7, benefit: 'coupon', title: '시그니처 50% 할인권 1매', subtitle: '', coupon_kind: 'percent', coupon_value: 50, applies_to: ['signature'], burn_count: 0, active: true }
+    ],
+    insta: { title: '전 상담 상품 1만원 할인권 1매', subtitle: '인스타그램 인증 · 계정당 1회', coupon_kind: 'amount', coupon_value: 10000, applies_to: ['onepoint', 'signature'], valid_months: 6, active: true }
+  };
+  var mb = { rules: null, rulesAt: 0, status: null, statusAt: 0, busy: false, noticeShown: false, burnLeft: -1, burnAsked: 0 };
+
+  /** 이 기기가 정식 결제 회원인가 — 결제로 연 1년 이용권만(1개월권은 무료) */
+  function isMemberNow() { return !!state.unlocked && !!MB_PAID_TIERS[state.tier]; }
+
+  /** 로그인 세션 토큰 — 있으면 그 주인으로 서버가 답한다(초대 인원·할인권) */
+  function sbAuthToken() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/^sb-.*-auth-token$/.test(k)) continue;
+        var raw = localStorage.getItem(k) || '';
+        if (!raw) continue;
+        var s = raw;
+        if (s.indexOf('base64-') === 0) { try { s = decodeURIComponent(escape(atob(s.slice(7)))); } catch (e) { } }
+        var o = null;
+        try { o = JSON.parse(s); } catch (e) { o = null; }
+        var t = (o && o.access_token) || (typeof o === 'string' ? o : '');
+        if (t) return t;
+      }
+    } catch (e) { }
+    return '';
+  }
+
+  function mbPost(name, body, cb) {
+    var done = false;
+    function fin(d) { if (done) return; done = true; cb(d || null); }
+    if (!window.fetch) { fin(null); return; }
+    var tok = sbAuthToken();
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + (tok || SB_KEY) },
+      body: JSON.stringify(body || {})
+    };
+    var ctrl = null;
+    try { if (window.AbortController) { ctrl = new AbortController(); opt.signal = ctrl.signal; } } catch (e) { }
+    if (ctrl) setTimeout(function () { fin(null); }, 9000);
+    try {
+      fetch(SB_URL + '/rest/v1/rpc/' + name, opt).then(function (res) {
+        return res.text().then(function (t) {
+          var d = null;
+          try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+          fin(res.ok ? d : null);
+        });
+      }, function () { fin(null); });
+    } catch (e) { fin(null); }
+  }
+
+  /** 혜택 규칙 — 관리자 설정. 30분 캐시(그 사이에도 서버가 바뀌면 다음에 따라온다) */
+  function mbRulesCb(cb) {
+    if (mb.rules) { cb(mb.rules); return; }
+    try {
+      var o = JSON.parse(localStorage.getItem(MB_RULES_KEY) || 'null');
+      if (o && o.at && (Date.now() - o.at) < MB_RULES_MS && o.data && o.data.stages) {
+        mb.rules = o.data; mb.rulesAt = o.at; cb(mb.rules); return;
+      }
+    } catch (e) { }
+    mbPost('member_benefits_public', {}, function (d) {
+      if (d && d.ok && d.stages) {
+        mb.rules = d; mb.rulesAt = Date.now();
+        try { localStorage.setItem(MB_RULES_KEY, JSON.stringify({ at: mb.rulesAt, data: d })); } catch (e) { }
+      }
+      cb(mb.rules || MB_FALLBACK);
+    });
+  }
+  function mbRulesNow() { return mb.rules || MB_FALLBACK; }
+
+  /** 나의 혜택 현황 — 60초 캐시 */
+  function mbStatusCb(cb, force) {
+    if (!force && mb.status && (Date.now() - mb.statusAt) < 60000) { cb(mb.status); return; }
+    if (mb.busy) { cb(mb.status); return; }
+    mb.busy = true;
+    var uid = clientUid();
+    var body = {};
+    if (uid) body.p_client_uid = uid;
+    mbPost('member_status', body, function (d) {
+      mb.busy = false;
+      if (d && d.ok) {
+        mb.status = d; mb.statusAt = Date.now();
+        if (d.burn && typeof d.burn.remaining === 'number') mb.burnLeft = d.burn.remaining;
+      }
+      cb(mb.status);
+    });
+  }
+
+  function mbWon(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
+  function mbPrice(rule, products) {
+    if (!rule || (rule.coupon_kind !== 'amount' && rule.coupon_kind !== 'percent')) return '';
+    var keys = rule.applies_to || [];
+    if (rule.coupon_kind === 'amount' && keys.length > 1) return '';   // 1만원권은 제목에 금액이 있다
+    var out = [];
+    for (var i = 0; i < keys.length; i++) {
+      var p = (products || {})[keys[i]];
+      if (!p || !p.price) continue;
+      var after = rule.coupon_kind === 'amount'
+        ? Math.max(p.price - rule.coupon_value, 1000)
+        : Math.max(Math.round(p.price * (100 - rule.coupon_value) / 100), 1000);
+      out.push(mbWon(p.price) + ' → ' + mbWon(after));
+    }
+    return out.join(' · ');
+  }
+  function mbStageState(st, stage) {
+    if (!st) return null;
+    var arr = st.stages || [];
+    for (var i = 0; i < arr.length; i++) if (arr[i].stage === stage) return arr[i];
+    return null;
+  }
+
+  /** 2×2 카드 — 좌상·우상 아이보리, 좌하 샴페인 골드, 우하 딥 네이비 */
+  function mbCardsHTML(st, rules) {
+    var products = (rules && rules.products) || MB_FALLBACK.products;
+    var list = ((rules && rules.stages) || []).filter(function (r) { return r.active !== false; });
+    list.sort(function (a, b) { return (a.stage || 0) - (b.stage || 0); });
+    var tone = ['ivory', 'ivory', 'gold', 'navy'];
+    return list.slice(0, 4).map(function (r, i) {
+      var price = mbPrice(r, products);
+      /* 금액 줄이 이미 있으면 같은 금액을 한 번 더 쓰지 않는다(작은 글씨는 설명만) */
+      var sub = String(r.subtitle || '');
+      if (price && (sub.indexOf('→') >= 0 || sub.replace(/[^0-9]/g, '') === String(r.coupon_value || ''))) sub = '';
+      var note = r.benefit === 'burn'
+        ? ('기본 하루 1회 외 · 필요한 날 ' + (r.burn_count || 0) + '회 더')
+        : sub;
+      var stt = mbStageState(st, r.stage);
+      var state = '';
+      if (st && st.member && st.linked) {
+        if (stt && stt.achieved) state = '<span class="mben__state">혜택 받았어요</span>';
+        else if (stt) state = '<span class="mben__state mben__state--wait">' + esc(String(stt.remaining)) + '명 더 초대하면 받아요</span>';
+      }
+      return '<div class="mben__card mben__card--' + tone[i % 4] + '">' +
+        '<span class="mben__n">친구 ' + esc(String(r.stage)) + '명</span>' +
+        '<span class="mben__t">' + esc(r.title || '') + '</span>' +
+        (price ? '<span class="mben__price">' + esc(price) + '</span>' : '') +
+        (note ? '<span class="mben__note">' + esc(note) + '</span>' : '') +
+        state +
+        '</div>';
+    }).join('');
+  }
+
+  /** 나의 혜택 확인 — 초대 인원·남은 인원·보유 할인권·액운 추가 횟수·사용 완료 */
+  function mbMineHTML(st, rules) {
+    var months = 6;
+    var all = ((rules && rules.stages) || []).concat([(rules && rules.insta) || {}]);
+    all.forEach(function (r) { if (r && r.valid_months) months = Math.max(months, r.valid_months); });
+
+    if (!st) {
+      return '<div class="mben__mine" data-mben-mine><h3>나의 혜택 확인</h3>' +
+        '<p class="hint">불러오는 중이에요…</p></div>';
+    }
+    var refs = Number(st.referrals || 0);
+    var next = st.next;
+    var coupons = st.coupons || [];
+    var usable = coupons.filter(function (c) { return c.status === 'usable'; });
+    var used = coupons.filter(function (c) { return c.status === 'used'; });
+    var burn = st.burn || {};
+    var rows = '';
+    rows += '<div class="mben__row"><span>현재 인정된 친구 초대</span><b>' + (st.linked ? esc(String(refs)) + '명' : '–') + '</b></div>';
+    rows += '<div class="mben__row"><span>다음 혜택까지</span><b>' +
+      (next ? esc(String(next.remaining)) + '명 (친구 ' + esc(String(next.stage)) + '명)' : '모든 단계를 받았어요') + '</b></div>';
+    var bTot = Number(burn.total || 0), bLeft = Number(burn.remaining || 0), bUsed = Number(burn.used || 0);
+    rows += '<div class="mben__row"><span>액운 태우기 추가 이용권</span><b>' +
+      (bLeft > 0
+        ? esc(String(bLeft)) + '회 남음' + (bUsed > 0 ? ' <span style="font-weight:600;color:var(--mute)">(총 ' + esc(String(bTot)) + '회 중 ' + esc(String(bUsed)) + '회 사용)</span>' : '')
+        : (bTot > 0 ? '모두 사용 <span style="font-weight:600;color:var(--mute)">(총 ' + esc(String(bTot)) + '회)</span>' : '없음')) + '</b></div>';
+
+    var usableHTML = usable.length
+      ? '<ul class="mben__list">' + usable.map(function (c) {
+          return '<li><span>' + esc(c.title) + '</span><span>' + esc(String(c.expires_at || '').replace(/-/g, '.')) + '까지</span></li>';
+        }).join('') + '</ul>'
+      : '<p class="mben__empty">아직 보유한 상담 할인권이 없어요.</p>';
+    rows += '<div class="mben__row" style="display:block"><span>보유 상담 할인권</span>' + usableHTML + '</div>';
+
+    if (used.length) {
+      rows += '<div class="mben__row" style="display:block"><span>사용 완료된 혜택</span><ul class="mben__list">' +
+        used.map(function (c) {
+          return '<li><span>' + esc(c.title) + '</span><span>' + esc(String(c.used_at || '').replace(/-/g, '.')) + ' 사용</span></li>';
+        }).join('') + '</ul></div>';
+    }
+    var hint = st.linked
+      ? '<p class="hint">상담 1건에 할인권 1매만 쓸 수 있어요. 중복·합산은 적용되지 않습니다.</p>'
+      : '<p class="hint">카카오로 한 번 연결하면 초대 인원과 받은 혜택이 여기에 함께 쌓여요.</p>';
+
+    return '<div class="mben__mine" data-mben-mine><h3>나의 혜택 확인</h3>' + rows + hint + '</div>';
+  }
+
+  function mbInstaState(st) {
+    if (!st || !st.insta) return '';
+    if (st.insta.status === 'approved') return '<span class="mben__state">인증 혜택 받았어요</span>';
+    if (st.insta.status === 'pending') return '<span class="mben__state mben__state--wait">확인 중이에요</span>';
+    return '';
+  }
+
+  /** 정식 회원 혜택 팝업 본문 */
+  function memberBenefitsHTML(st, rules) {
+    var insta = (rules && rules.insta) || MB_FALLBACK.insta;
+    var months = 6;
+    if (insta && insta.valid_months) months = insta.valid_months;
+    var iprice = '';
+    if (insta && insta.coupon_kind === 'amount') iprice = mbWon(insta.coupon_value) + ' 할인';
+    else if (insta && insta.coupon_kind === 'percent') iprice = esc(String(insta.coupon_value)) + '% 할인';
+
+    return '<p class="modal__eyebrow">YOONISE · MEMBER BENEFITS</p>' +
+      '<h2 class="fhow__title" id="freeTitle">좋은 인연, 더 큰 선물</h2>' +
+      '<p class="fhow__sub">윤이세 정식 회원님만을 위한 특별 혜택</p>' +
+      '<div class="mben__grid" data-mben-grid>' + mbCardsHTML(st, rules) + '</div>' +
+      '<p class="mben__lead">달력은 이미 1년이 다 열려 있으니, <b>초대해 주신 인연</b>과 <b>상담</b>으로 보답합니다.</p>' +
+      '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
+      '<section class="fhow__card">' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 인증</span></p>' +
+      '<p class="fhow__d">인스타에 사용 후기를 올리고 <b>카카오톡 채널</b>로 보내 주시면 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b>을 드려요.</p>' +
+      '<p class="fhow__note">계정당 1회 · 확인 후 자동으로 들어와요</p>' +
+      (mbInstaState(st) ? '<p class="fhow__note">' + mbInstaState(st) + '</p>' : '') +
+      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener" data-mben-insta>카카오톡 채널로 보내기 <span aria-hidden="true">→</span></a>' +
+      '</section>' +
+      '<div data-mben-status>' + mbMineHTML(st, rules) + '</div>' +
+      '<p class="mben__foot">상담 할인권은 혜택별 1회 지급되며, 발급일로부터 ' + esc(String(months)) + '개월 이내 사용 가능합니다. 중복 할인은 적용되지 않습니다.</p>';
+  }
+
+  /** 띠 글 — 같은 자리에서 무료 이용법 ↔ 정식 회원 혜택으로 바뀐다 */
+  function syncMemberBar() {
+    var bar = $('#freeBar');
+    if (!bar) return;
+    var mem = isMemberNow();
+    var t = bar.querySelector('.freebar__t');
+    var d = bar.querySelector('.freebar__d');
+    bar.classList.toggle('is-member', mem);
+    if (t) t.textContent = mem ? '윤이세 정식 회원 특별 혜택' : '내 사주 타이밍 달력 무료 이용법';
+    if (d) d.textContent = mem ? '친구 초대 · 상담 할인 혜택' : '친구 초대 · 인스타그램 인증 혜택';
+  }
+
+  /** 서버 회원 상태 연결 — 코드로 연 기기를 원장(entry_code_ledger)에 묶고 현황을 읽는다 */
+  function syncMemberServer() {
+    if (!state.unlocked || !state.code) return;
+    var uid = clientUid();
+    if (!uid) return;
+    var code = String(state.code.code || '').replace(/[\s\-_]/g, '').toUpperCase();
+    var phone = String(state.code.phone || '').replace(/[^0-9]/g, '');
+    if (/^[PADM][0-9]{5}$/.test(code)) {
+      mbPost('member_bind', { p_client_uid: uid, p_code: code, p_phone: phone || null }, function (d) {
+        if (d && d.ok) { mb.status = null; syncMemberBar(); renderBurnCard(); }
+      });
+    }
+    if (!isMemberNow()) return;
+    mbStatusCb(function (st) { mbNotice(st); renderBurnCard(); }, true);
+  }
+
+  /** 혜택이 도착했다는 앱 내 알림 — 다음 접속에 1회만 */
+  function mbNotice(st) {
+    if (!st || !st.ok || mb.noticeShown) return;
+    var news = st.news || [];
+    if (!news.length) return;
+    mb.noticeShown = true;
+    var t = news.length === 1 ? news[0].title : (news[0].title + ' 외 ' + (news.length - 1) + '개');
+    toast('🎁 정식 회원 혜택이 도착했어요 — ' + t);
+    var cids = [], bids = [];
+    news.forEach(function (n) {
+      if (n.kind === 'coupon' && n.id) cids.push(n.id);
+      if (n.kind === 'burn' && n.id) bids.push(n.id);
+    });
+    mbPost('member_seen', {
+      p_coupon_ids: cids.length ? cids : null,
+      p_burn_ids: bids.length ? bids : null
+    }, function () { });
+  }
+
+  /** 액운 태우기 추가 이용권 — 1회 차감(서버). 결과로 남은 횟수를 맞춘다 */
+  function mbBurnConsume() {
+    var uid = clientUid();
+    var body = {};
+    if (uid) body.p_client_uid = uid;
+    mbPost('member_burn_use', body, function (d) {
+      if (d && typeof d.remaining === 'number') {
+        mb.burnLeft = d.remaining;
+        if (mb.status && mb.status.burn) mb.status.burn.remaining = d.remaining;
+      }
+      renderBurnCard();
+    });
+  }
+  /** 추가 이용권이 남아 있는가 — 모르면(서버 미응답) 0으로 본다 */
+  function burnExtraLeft() { return isMemberNow() && mb.burnLeft > 0 ? mb.burnLeft : 0; }
 
   /* ── 1차 · 첫 접속 웰컴 팝업 (2026-11-21j) ─────────────────────
      사주를 넣기 전, 이 기기에서 **처음** 사이트를 열었을 때만 뜨는 콤팩트 소개.
@@ -6103,6 +6431,7 @@
     state.mismatch = null;
     syncPaidTier(d.tier);
     syncLockUI();
+    syncMemberServer();
     syncTrialState();
     render();
     closeShop();
@@ -8119,7 +8448,9 @@
   function burnPlanName() { return '내 사주 타이밍 달력'; }
   function burnLeftText() {
     var done = burnBurnedToday();
-    if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnPlanName()) + (done ? ' · 오늘 마침' : ' · 매일 1회');
+    var extra = burnExtraLeft();
+    var tail = extra > 0 ? ' · 추가 ' + extra + '회 남음' : '';
+    if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnPlanName()) + (done ? ' · 오늘 마침' : ' · 매일 1회') + tail;
     var l = burnLeft();
     if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
     return l > 0 ? '남은 무료 ' + l + '회' : '무료 ' + BURN_FREE + '회를 다 썼어요';
@@ -8139,9 +8470,12 @@
       card.classList.toggle('is-done', done);
     }
     var sub = $('#burnCtaSub'), main = $('#burnCtaMain');
-    if (sub) sub.textContent = done ? '하루에 단 한 번, 진심을 담아 비워내는 의식입니다'
-      : (un ? '매일 한 번, 적고 · 구기고 · 태우면 끝' : '한 장에 적고 · 구기고 · 태우면 끝');
-    if (main) main.textContent = done ? '오늘의 의식을 마쳤습니다 · 내일 다시' : '🔥 지금 한 장 태우기';
+    var extra = burnExtraLeft();
+    if (sub) sub.textContent = (done && extra > 0) ? '추가 이용권 ' + extra + '회 남음 · 필요한 날 한 번 더'
+      : (done ? '하루에 단 한 번, 진심을 담아 비워내는 의식입니다'
+        : (un ? '매일 한 번, 적고 · 구기고 · 태우면 끝' : '한 장에 적고 · 구기고 · 태우면 끝'));
+    if (main) main.textContent = (done && extra > 0) ? '추가 이용권으로 한 번 더 태우기'
+      : (done ? '오늘의 의식을 마쳤습니다 · 내일 다시' : '🔥 지금 한 장 태우기');
   }
   function burnElement() {
     try { return (state.res && repElement().el) || '수'; } catch (e) { return '수'; }
@@ -8204,11 +8538,23 @@
 
   /* 오늘 이미 한 번 태웠을 때 — 꺼진 촛불과 함께 내일 다시 오라는 안내 */
   function burnTodayDoneHTML() {
-    var un = burnUnlimited(), l = burnLeft();
+    var un = burnUnlimited(), l = burnLeft(), extra = burnExtraLeft();
     var leftLine = un
       ? burnPlanName() + '은 매일 한 번씩 — 내일 다시 마음을 비우러 오세요.'
       : (l > 0 ? '무료 ' + BURN_FREE + '회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
                : '무료 ' + BURN_FREE + '회를 모두 썼어요. 내일도 이어 가시려면 1년 전체 패스를 살펴보세요.');
+    /* 2026-11-26 — 정식 회원 추가 이용권이 남았으면 오늘 한 번 더 태울 수 있다.
+       (기본 하루 1회는 마쳤고, 지금 쓰면 추가 이용권에서 1회 차감된다는 걸 작은 글씨로 알린다) */
+    if (extra > 0) {
+      return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
+        '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다.</h2>' +
+        '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
+        '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
+        '<p class="burn__extra">정식 회원 <b>추가 이용권 ' + extra + '회</b>가 남아 있어요 — 오늘 한 번 더 태울 수 있습니다.<br>' +
+        '<span style="font-size:10px;color:var(--mute)">지금 한 번 더 태우면 추가 이용권에서 1회 차감돼요.</span></p>' +
+        '<button type="button" class="burn__go burn__go--start" data-burn="again">추가 이용권으로 한 번 더 태우기</button>' +
+        '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
+    }
     return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
       '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
       '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
@@ -8342,8 +8688,8 @@
     clearPrepTimers();
     burn.text = '';
     burnLastFocus = document.activeElement;
-    // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 소각 금지)
-    if (burnBurnedToday()) {
+    // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 이용권이 있으면 한 번 더)
+    if (burnBurnedToday() && burnExtraLeft() <= 0) {
       burnEl.hidden = false;
       if (window.BackNav) window.BackNav.open('burn', closeBurnModal);  // 휴대폰 뒤로가기 → 이 팝업부터 닫기
       burn.stage = 'done';
@@ -8353,6 +8699,15 @@
       burnBody.scrollTop = 0;
       sfxBurnOpen();
       try { burnDialog.focus({ preventScroll: true }); } catch (e) { try { burnDialog.focus(); } catch (e2) {} }
+      /* 추가 이용권 남은 횟수를 아직 모르면 서버에 한 번 물어보고, 있으면 이 화면을 다시 그린다 */
+      if (isMemberNow() && mb.burnLeft < 0) {
+        mbStatusCb(function () {
+          if (burnExtraLeft() > 0 && burn.stage === 'done' && burnBody) {
+            burnBody.innerHTML = burnTodayDoneHTML();
+            burnBody.scrollTop = 0;
+          }
+        }, true);
+      }
       return;
     }
     // 무료 5회를 다 썼으면 리추얼 대신 단일 패스 안내 팝업으로 자연스럽게 넘긴다
@@ -8372,7 +8727,7 @@
   /** 0단계 → 1단계 : 촛불 앞에서 종이로 */
   function burnBeginWrite() {
     if (burn.stage !== 'prep') return;
-    if (burnBurnedToday()) { showBurnTodayDone(); return; }
+    if (burnBurnedToday() && burnExtraLeft() <= 0) { showBurnTodayDone(); return; }
     clearPrepTimers();
     burn.stage = 'write';
     if (burnDialog) burnDialog.classList.remove('is-dark');
@@ -8731,9 +9086,11 @@
     if (btn) btn.hidden = true;          // 타오르는 동안에는 글자 대신 불만 보이게
     sfxIgnite();
     /* 하루 1회 — 등급과 무관하게 마지막으로 태운 날짜를 남긴다 */
+    var wasBurned = burnBurnedToday();          // 오늘 두 번째 이후 = 정식 회원 추가 이용권 사용
     if (!burnUnlimited()) burn.used = Math.min(BURN_FREE, burn.used + 1);
     burn.day = burnTodayKey();
     saveBurn();
+    if (wasBurned) mbBurnConsume();              // 서버에서 1회 차감(남은 횟수도 함께 맞춘다)
     renderBurnCard();
     /* 중반·후반 — 굵은 재와 금빛 불티가 2·3차 물결로 화면 가득 올라간다 */
     clearTimeout(burn.sparkTimer);
@@ -8775,6 +9132,16 @@
 
   /* 예전 '한 장 더 태우기' 자리 — 이제는 하루 1회라 오늘은 더 태울 수 없다 */
   function burnAgain() {
+    var extra = burnExtraLeft();
+    if (extra > 0) {
+      burn.text = '';
+      burn.stage = 'prep';
+      burnBody.innerHTML = burnPrepHTML();
+      burnDialog.classList.add('is-dark');
+      burnBody.scrollTop = 0;
+      runBurnPrep();
+      return;
+    }
     if (burnBurnedToday()) { showBurnTodayDone(); return; }
     if (!burnUnlimited() && burnLeft() <= 0) {
       closeBurnModal();
@@ -9224,6 +9591,7 @@
   /* ── 입장 코드 UI (달력 카드의 🔑 입장 코드 입력) ─────────────────
      코드가 맞으면 localStorage 에 저장 — 새로고침해도 그 기기에서는 계속 열린다. */
   function syncLockUI() {
+    syncMemberBar();          // 👑 결제 회원이면 같은 띠의 글이 바로 바뀐다
     var btn = $('#lockBtn'), msg = $('#lockMsg'), reset = $('#lockReset');
     if (btn) {
       /* 큰 버튼(2026-11-21) — 열려 있으면 금빛에서 차분한 초록으로, 문구는 두 줄(제목·설명)로 나뉜다 */
@@ -9450,6 +9818,7 @@
       }
       saveUnlock({ code: p.code, tier: p.tier, phone: p.phone || '', ymd: p.ymd || '', gender: p.gender || '' });
       syncPaidTier(p.tier);          // 로그인한 회원이면 DB 등급도 같이 (실패는 조용히 무시)
+      syncMemberServer();            // 👑 정식 회원이면 서버에 기기를 묶고 혜택 현황을 읽는다
       if (p.phone) rememberPhone(p.phone);
       state.mismatch = null;
       var who = unlockTargetLabel(p);
@@ -9519,6 +9888,8 @@
     loadDiary();
     loadNight();
     syncLockUI();
+    syncMemberBar();      // 👑 결제 회원이면 같은 띠가 '정식 회원 혜택'으로 바뀐 모습으로 시작
+    syncMemberServer();   // 서버 회원 상태·추가 이용권·도착한 혜택 알림
     syncTrialState();      // 코드로 이미 열린 기기면 위 '1년 전체 열기' 버튼이 잠깐 보였다 사라지지 않게 한 번 더 맞춘다
     if (state.unlocked) syncPaidTier(state.tier);   // 이미 열린 기기 — 로그인한 회원이면 등급만 맞춰 둔다 (조용히)
     state.view = clampView(now.getFullYear(), now.getMonth() + 1);

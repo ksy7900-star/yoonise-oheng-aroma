@@ -264,6 +264,28 @@ a { color: inherit; }
 .pay__amt { display: flex; align-items: baseline; justify-content: space-between; }
 .pay__amt span { font-size: 10.5px; font-weight: 700; color: var(--mute); letter-spacing: .02em; }
 .pay__amt b { font-family: var(--serif); font-size: 21px; font-weight: 600; letter-spacing: -.02em; }
+.pay__amt b.is-cut { color: #8A4E0B; }
+.pay__cut { margin: 6px 0 0; text-align: right; font-size: 10.5px; font-weight: 700; color: #A5650F; letter-spacing: -.01em; }
+
+/* 👑 상담 할인권 선택 (2026-11-26) */
+.cpn { margin-top: 14px; padding: 13px 13px 11px; border-radius: 16px; background: #FCFAF4; border: 1px solid rgba(165, 101, 15, .22); }
+.cpn__head { margin: 0; font-size: 11.5px; font-weight: 800; color: #8A4E0B; letter-spacing: -.02em; }
+.cpn__list { display: flex; flex-direction: column; gap: 7px; margin-top: 9px; }
+.cpn__btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; padding: 10px 12px; border-radius: 12px; cursor: pointer; text-align: left;
+  background: #FFFFFF; border: 1px solid rgba(28, 24, 19, .12); font-family: inherit;
+  font-size: 11.5px; font-weight: 700; color: var(--ink); letter-spacing: -.02em;
+}
+.cpn__btn span.cpn__p { flex: none; font-size: 11px; font-weight: 800; color: #A5650F; }
+.cpn__btn.is-on { border-color: rgba(165, 101, 15, .6); background: #FBF3E2; box-shadow: inset 0 0 0 1px rgba(165, 101, 15, .18); }
+.cpn__btn small { display: block; margin-top: 2px; font-size: 9.5px; font-weight: 600; color: var(--mute); }
+.cpn__note { margin: 8px 0 0; font-size: 9.5px; line-height: 1.55; color: var(--mute); }
+
+/* ✅ 결제 확인 완료 */
+.paidok { margin-top: 14px; padding: 13px 14px; border-radius: 16px; background: #F1F8F4; border: 1px solid rgba(6, 127, 91, .28); }
+.paidok__t { margin: 0; font-size: 12px; font-weight: 800; color: #067F5B; letter-spacing: -.02em; }
+.paidok__d { margin: 5px 0 0; font-size: 11px; line-height: 1.7; color: var(--ink-2); }
 .pay__me { margin-top: 9px; }
 .pay__me__lb {
   display: block; font-size: 10.5px; font-weight: 700; color: var(--ink-2);
@@ -454,8 +476,22 @@ a { color: inherit; }
     <p class="prod__desc" id="prodDesc"></p>
   </section>
 
+  <!-- 👑 정식 회원 상담 할인권 (2026-11-26) — 로그인/이 기기에 쓸 수 있는 권이 있을 때만 보인다 -->
+  <section class="cpn" id="cpnBox" aria-live="polite" hidden>
+    <p class="cpn__head">👑 보유하신 상담 할인권</p>
+    <div class="cpn__list" id="cpnList" role="group" aria-label="상담 할인권 선택"></div>
+    <p class="cpn__note">상담 1건에 1장만 쓸 수 있어요 · 중복 할인은 적용되지 않습니다.</p>
+  </section>
+
+  <!-- ✅ 결제 확인 완료 — 서버가 확인한 금액만 보여 준다(결제하고 돌아왔을 때) -->
+  <section class="paidok" id="paidOk" hidden>
+    <p class="paidok__t">✅ 결제 확인 완료</p>
+    <p class="paidok__d" id="paidOkD"></p>
+  </section>
+
   <section class="pay" aria-label="결제">
     <p class="pay__amt"><span>결제 금액</span><b id="payAmount">49,000원</b></p>
+    <p class="pay__cut" id="payCut" hidden></p>
     <div class="pay__me">
       <label class="pay__me__lb" for="fPhone">결제 확인용 휴대폰 번호 <i>선택</i></label>
       <input type="tel" class="pay__me__in" id="fPhone" placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel" maxlength="20">
@@ -924,7 +960,9 @@ a { color: inherit; }
     $('prodEyebrow').textContent = p.eyebrow;
     $('prodTitle').textContent = p.emoji + ' ' + p.name;
     $('prodDesc').textContent = p.desc;
-    $('payAmount').textContent = p.price;
+    cpn.picked = null;          /* 상품을 바꾸면 할인권 선택도 처음으로 */
+    cpnPrice();                 /* 결제 금액 줄(할인권이 있으면 즉시 할인가) */
+    cpnLoad(true);              /* 이 상품에 쓸 수 있는 권만 새로 읽는다 */
 
     $('qLabel').textContent = p.qLabel || '';
     $('qHint').textContent = p.qHint || '';
@@ -951,6 +989,19 @@ a { color: inherit; }
       resetForm();
       $('prodEyebrow').scrollIntoView({ block: 'nearest' });
     });
+  });
+
+  /* 👑 상담 할인권 — 누르면 바로 결제 금액에 반영, 다시 누르면 해제 */
+  var cpnListEl = $('cpnList');
+  if (cpnListEl) cpnListEl.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('[data-cpn]') : null;
+    if (!b) return;
+    e.preventDefault();
+    var id = Number(b.getAttribute('data-cpn'));
+    var c = cpn.list.filter(function (x) { return x.id === id; })[0] || null;
+    cpn.picked = (cpn.picked && cpn.picked.id === id) ? null : c;
+    cpnPaint();
+    if (cpn.picked) toast('할인권을 적용했어요 — 결제 금액 ' + won(cpn.picked.pay_price));
   });
 
   /* ── [개명] / [신생아 작명] ─────────────── */
@@ -1255,7 +1306,8 @@ a { color: inherit; }
     var p = prod();
     var naming = state.type === 'naming';
     var baby = naming && state.nameMode === 'baby';
-    var out = [{ k: '상품', v: p.name + ' (' + p.price + ')' }];
+    var pay = cpn.paid;
+    var out = [{ k: '상품', v: p.name + ' (' + (pay && pay.discount > 0 ? won(pay.list_price) : p.price) + ')' }];
     if (naming) out.push({ k: '신청 종류', v: baby ? '신생아 작명' : '개명' });
 
     if (baby) {
@@ -1280,6 +1332,15 @@ a { color: inherit; }
     out.push({ k: '연락처 또는 입금자명', v: $('fWho').value.trim() });
     var ph = mobileOf($('fPhone').value);
     if (ph) out.push({ k: '결제 휴대폰', v: $('fPhone').value.trim() });
+    /* 👑 할인권을 썼으면 정가·할인·실결제를 신청서에 그대로 남긴다 (2026-11-26) */
+    if (pay && pay.discount > 0) {
+      out.push({ k: '적용 할인권', v: (pay.coupon_title || cpn.picked && cpn.picked.title || '상담 할인권') + ' (-' + won(pay.discount) + ')' });
+      out.push({ k: '실결제 금액', v: won(pay.price) + (pay.order_no ? ' · 주문 ' + pay.order_no : '') });
+    } else if (pay) {
+      out.push({ k: '실결제 금액', v: won(pay.price) + ' · 결제 확인 완료' });
+    } else if (cpn.picked) {
+      out.push({ k: '적용 예정 할인권', v: cpn.picked.title + ' (-' + won(cpn.picked.discount) + ') · 결제 미확인' });
+    }
     return out;
   }
 
@@ -1356,7 +1417,15 @@ a { color: inherit; }
       name_mode: state.type === 'naming' ? state.nameMode : null,
       product: prod().name + ' ' + prod().price,
       body: text,
-      payload: { lines: fieldLines() },
+      payload: {
+        lines: fieldLines(),
+        order_no: cpn.paid ? cpn.paid.order_no : null,
+        list_price: cpn.paid ? cpn.paid.list_price : null,
+        discount: cpn.paid ? cpn.paid.discount : null,
+        paid_price: cpn.paid ? cpn.paid.price : null,
+        coupon_id: cpn.paid ? cpn.paid.coupon_id : null,
+        coupon_title: cpn.paid ? cpn.paid.coupon_title : null
+      },
       contact: ($('fWho').value.trim() || $('fPhone').value.trim() || ''),
       page: location.href
     };
@@ -1375,12 +1444,249 @@ a { color: inherit; }
     });
   });
 
+  /* ══ 👑 정식 회원 상담 할인권 — 1회용 · 6개월 · 상담 1건당 1장 (2026-11-26) ══
+     · 이 기기(달력과 같은 client_uid) 또는 로그인 계정에 발급된 권만 보인다.
+     · 고르면 아래 '결제 금액'이 즉시 바뀌고, 결제는 **서버가 만든 주문 금액**으로만 한다.
+     · 결제 완료는 페이앱 통보(feedbackurl)를 서버가 받아 할인권을 자동 사용 완료 처리한다.
+     · 결제가 취소되면 서버가 그 할인권을 다시 살려 둔다(여기서는 아무것도 지우지 않는다). */
+  var UID_KEY = 'yoonise.clientUid.v1';
+  var ORDER_KEY = 'yoonise.apply.order.v1';
+  var FEEDBACK_URL = SB_URL + '/functions/v1/payapp-feedback';
+  var cpn = { list: [], picked: null, paid: null, busy: false, loadedFor: '' };
+
+  function clientUid() {
+    var v = '';
+    try { v = localStorage.getItem(UID_KEY) || ''; } catch (e) { v = ''; }
+    if (!/^[A-Za-z0-9-]{8,80}$/.test(v)) {
+      v = 'g-' + (Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+      try { localStorage.setItem(UID_KEY, v); } catch (e) { }
+    }
+    return v;
+  }
+  function sbToken() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/^sb-.*-auth-token$/.test(k)) continue;
+        var raw = localStorage.getItem(k) || '';
+        if (!raw) continue;
+        var s = raw;
+        if (s.indexOf('base64-') === 0) { try { s = decodeURIComponent(escape(atob(s.slice(7)))); } catch (e) { } }
+        var o = null;
+        try { o = JSON.parse(s); } catch (e) { o = null; }
+        var t = (o && o.access_token) || (typeof o === 'string' ? o : '');
+        if (t) return t;
+      }
+    } catch (e) { }
+    return '';
+  }
+  function sbRpc(name, body, cb) {
+    var done = false;
+    function fin(d) { if (done) return; done = true; cb(d || null); }
+    var opt = {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + (sbToken() || SB_KEY) },
+      body: JSON.stringify(body || {})
+    };
+    try {
+      fetch(SB_URL + '/rest/v1/rpc/' + name, opt).then(function (r) {
+        return r.text().then(function (t) {
+          var d = null;
+          try { d = t ? JSON.parse(t) : null; } catch (e) { d = null; }
+          fin(r.ok ? d : null);
+        });
+      }, function () { fin(null); });
+    } catch (e) { fin(null); }
+  }
+  function won(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원'; }
+
+  /** 이 상품이 서버 주문(할인권·결제 확인)을 쓰는 상품인가 — 원포인트·시그니처 둘만 */
+  function consultProductKey() {
+    if (state.type === 'onepoint') return 'consult-onepoint';
+    if (state.type === 'saju') return 'consult-signature';
+    return '';
+  }
+
+  function cpnPaint() {
+    var box = $('cpnBox'), list = $('cpnList');
+    if (!box || !list) return;
+    if (!cpn.list.length) { box.hidden = true; list.innerHTML = ''; }
+    else {
+      box.hidden = false;
+      list.innerHTML = cpn.list.map(function (c) {
+        var on = cpn.picked && cpn.picked.id === c.id;
+        var exp = String(c.expires_at || '').replace(/-/g, '.');
+        return '<button type="button" class="cpn__btn' + (on ? ' is-on' : '') + '" data-cpn="' + c.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+          '<span>' + c.title + '<small>' + exp + '까지 · 1회용</small></span>' +
+          '<span class="cpn__p">-' + won(c.discount) + '</span></button>';
+      }).join('');
+    }
+    var note = document.querySelector('.pay__me__note');
+    if (note) note.textContent = cpn.list.length
+      ? '할인권을 쓰려면 이 번호가 꼭 필요해요. 결제창의 연락처 입력은 건너뛰고, 아래 신청서에도 채워 둬요.'
+      : '적으면 결제창에서 연락처 입력을 건너뛰고, 아래 신청서에도 그대로 채워 둬요.';
+    cpnPrice();
+  }
+  /** 결제 금액 줄 — 할인권을 고르면 정가·할인·실결제를 함께 */
+  function cpnPrice() {
+    var p = prod();
+    var amt = $('payAmount'), cut = $('payCut');
+    if (!amt) return;
+    var base = Number(p.priceNum || 0);
+    if (cpn.picked && !cpn.paid) {
+      amt.textContent = won(cpn.picked.pay_price);
+      amt.classList.add('is-cut');
+      if (cut) { cut.hidden = false; cut.textContent = '정가 ' + won(base) + ' · 할인권 -' + won(cpn.picked.discount); }
+      return;
+    }
+    if (cpn.paid) {
+      amt.textContent = won(cpn.paid.price);
+      amt.classList.toggle('is-cut', cpn.paid.discount > 0);
+      if (cut) {
+        cut.hidden = false;
+        cut.textContent = cpn.paid.discount > 0
+          ? ('정가 ' + won(cpn.paid.list_price) + ' · ' + (cpn.paid.coupon_title || '할인권') + ' -' + won(cpn.paid.discount) + ' · 결제 완료')
+          : ('결제 완료 · ' + (cpn.paid.order_no || ''));
+      }
+      return;
+    }
+    amt.textContent = p.price;
+    amt.classList.remove('is-cut');
+    if (cut) cut.hidden = true;
+  }
+
+  /** 보유 할인권 불러오기 — 상품을 바꿀 때마다 그 상품에 쓸 수 있는 것만 */
+  function cpnLoad(force) {
+    var key = state.type;
+    if (!force && cpn.loadedFor === key) { cpnPaint(); return; }
+    cpn.loadedFor = key;
+    if (!consultProductKey()) { cpn.list = []; cpn.picked = null; cpnPaint(); return; }
+    var body = { p_product: state.type };
+    body.p_client_uid = clientUid();
+    sbRpc('member_coupons_for', body, function (d) {
+      if (cpn.loadedFor !== key) return;      // 그새 다른 상품으로 옮겼다
+      cpn.list = (d && d.ok && d.coupons) ? d.coupons : [];
+      if (cpn.picked && !cpn.list.some(function (c) { return c.id === cpn.picked.id; })) cpn.picked = null;
+      cpnPaint();
+    });
+  }
+
+  function orderSave(o) { try { sessionStorage.setItem(ORDER_KEY, JSON.stringify(o)); } catch (e) { } }
+  function orderRead() {
+    var o = null;
+    try { o = JSON.parse(sessionStorage.getItem(ORDER_KEY) || 'null'); } catch (e) { o = null; }
+    if (!o || !o.order_no) return null;
+    if (o.t && (Date.now() - Number(o.t)) > 6 * 60 * 60 * 1000) return null;
+    return o;
+  }
+  function orderClear() { try { sessionStorage.removeItem(ORDER_KEY); } catch (e) { } }
+  function returnUrl() {
+    var base = '';
+    try { base = location.origin + location.pathname; } catch (e) { base = ''; }
+    return base + '?type=' + encodeURIComponent(state.type) + '&paid=1';
+  }
+
+  /** 결제하고 돌아왔을 때 — 서버가 확인한 금액만 보여 준다 */
+  function paidBack() {
+    var o = orderRead();
+    if (!o) return;
+    sbRpc('consult_order_status', { p_order_no: o.order_no, p_phone: o.phone }, function (d) {
+      if (!d || !d.ok) return;
+      if (d.canceled) { orderClear(); cpn.paid = null; cpnPrice(); toast('결제가 취소됐어요 — 할인권은 그대로 남아 있어요'); cpnLoad(true); return; }
+      if (!d.paid) { toast('결제 확인을 기다리고 있어요 — 잠시 뒤 새로고침해 보세요'); return; }
+      cpn.paid = d;
+      var box = $('paidOk'), txt = $('paidOkD');
+      if (box && txt) {
+        box.hidden = false;
+        txt.innerHTML = (d.goodname || prod().name) + ' · ' + (d.discount > 0
+          ? ('정가 ' + won(d.list_price) + ' → <b>' + won(d.price) + '</b> 결제 · ' + (d.coupon_title || '할인권') + ' 사용 완료')
+          : ('<b>' + won(d.price) + '</b> 결제 완료')) + '<br>아래 신청서를 적고 접수 버튼만 눌러 주세요.';
+      }
+      cpnPrice();
+      cpnLoad(true);
+      toast('✅ 결제가 확인됐어요 — 신청서만 남았습니다');
+    });
+  }
+
   /* ── 카드결제 ─────────────────────────────
-     ① '결제 확인용 휴대폰 번호'(STEP 1)에 번호가 적혀 있으면 — 카드결제 JS 연동.
-        shopname·goodname·price·recvphone 을 실어 이 창을 결제창으로 넘기므로
-        카드결제의 '연락처 입력' 화면을 건너뛰고 결제수단 선택부터 시작한다.
-     ② 번호가 없거나 JS 연동을 못 쓰면 — 지금까지의 결제 링크 그대로.
-        새 탭이 안 열리는 인앱 브라우저에서는 0.9초 뒤 이 창을 결제창으로 넘긴다. */
+     2026-11-26 — 원포인트·시그니처는 **서버 주문**을 먼저 만들고 그 금액으로 결제한다.
+       · 할인권을 골랐으면 서버가 계산한 할인가(39,000 / 90,000 / 24,500 / 50,000)
+       · 주문 토큰(var2)과 feedbackurl 을 실어, 페이앱 결제 완료 통보를 서버가 받는다
+       · 번호가 없거나 주문을 못 만들면 지금까지대로 결제 링크(정가) — 개명·작명은 그대로.
+     '결제 확인용 휴대폰 번호'에 번호가 있으면 결제창의 연락처 입력을 건너뛴다. */
+  function payappGoServer(o, product) {
+    if (typeof PayApp === 'undefined' || !PayApp || typeof PayApp.payrequest !== 'function') return false;
+    PayApp.setTarget('_self');
+    PayApp.setDefault({ userid: PAYAPP.userid, shopname: PAYAPP.shopname });
+    PayApp.setParam({
+      goodname: prod().payName,
+      price: String(o.price),
+      recvphone: payPhone(),
+      redirectpay: '1',
+      smsuse: 'n',
+      charset: 'utf-8',
+      returnurl: returnUrl(),
+      var1: product,
+      var2: o.order_no,
+      feedbackurl: FEEDBACK_URL
+    });
+    PayApp.payrequest();
+    return true;
+  }
+
+  /** 서버 주문 → 결제창. 주문을 못 만들면 예전 길로(할인권을 골랐을 때는 정가로 받지 않는다) */
+  function payWithServer(phone, product, couponId) {
+    var body = { p_phone: phone, p_product: product, p_client_uid: clientUid() };
+    if (couponId) body.p_coupon = couponId;
+    if (couponId) toast('할인권을 적용해 결제 금액을 확인하고 있어요…');
+    sbRpc('payapp_prepare_order', body, function (o) {
+      if (o && o.ok && o.order_no) {
+        orderSave({
+          order_no: o.order_no, phone: phone, product: product, price: o.price,
+          list: o.list_price, discount: o.discount, coupon: o.coupon_id,
+          title: o.coupon_title, t: Date.now()
+        });
+        cpn.paid = null;
+        cpnPrice();
+        if (payappGoServer(o, product)) return;
+        payappLink(prod().pay);
+        return;
+      }
+      if (couponId) {
+        toast('할인권 연결이 지금 안 돼요 — 잠시 뒤 다시 눌러 주세요');
+        return;
+      }
+      var went = false;
+      try { went = payappGo(phone); } catch (err) { went = false; }
+      if (!went) payappLink($('payCard').href);
+    });
+  }
+
+  var card = $('payCard');
+  card.addEventListener('click', function (e) {
+    e.preventDefault();
+    storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
+    payWaitSave();       /* 돌아오면 페이지 맨 위에 '신청서 적고 접수하기' 한 줄 */
+
+    var phone = payPhone();
+    var picked = cpn.picked;
+    var sp = consultProductKey();
+
+    if (picked && !phone) {
+      toast('할인권을 쓰려면 결제 확인용 휴대폰 번호를 적어 주세요');
+      try { $('fPhone').focus(); } catch (err) { }
+      return;
+    }
+    if (phone && sp) { payWithServer(phone, sp, picked ? picked.id : null); return; }
+
+    if (phone) {
+      var went = false;
+      try { went = payappGo(phone); } catch (err) { went = false; }
+      if (went) return;
+    }
+    if (!phone) toast('휴대폰 번호를 적으면 결제 화면이 한 단계 줄어요');
+    payappLink(card.href);
+  });
   var PAYAPP = { userid: 'yoonise', shopname: '윤이세사주' };
 
   /* '010-1234-5678' · '01012345678' · '김나영 010 1234 5678' → '01012345678' */
@@ -1429,22 +1735,6 @@ a { color: inherit; }
     }, 900);
   }
 
-  var card = $('payCard');
-  card.addEventListener('click', function (e) {
-    storeSave();         /* 결제창에 다녀와도 적던 내용이 남아 있도록 — 이 순간에만 */
-    payWaitSave();       /* 돌아오면 페이지 맨 위에 '신청서 적고 접수하기' 한 줄 */
-
-    var phone = payPhone();
-    if (phone) {
-      var went = false;
-      try { went = payappGo(phone); } catch (err) { went = false; }
-      if (went) { e.preventDefault(); return; }   /* 이 창이 결제창으로 넘어간다 */
-    }
-
-    e.preventDefault();
-    if (!phone) toast('휴대폰 번호를 적으면 결제 화면이 한 단계 줄어요');
-    payappLink(card.href);
-  });
 
   /* 결제창이 안 보여 '여기 누르기'로 나가는 경우도 같은 복귀용 저장 */
   $('payFallback').addEventListener('click', function () { storeSave(); payWaitSave(); });
@@ -1490,6 +1780,8 @@ a { color: inherit; }
     }
   }
   applyBabyLink();
+  cpnLoad(true);                                  /* 👑 이 기기·계정의 상담 할인권 */
+  if (String(qs.paid || '') === '1') paidBack();  /* 결제하고 돌아왔으면 서버 확인 금액 */
 
   /* 💳 결제하러 다녀온 손님 — 맨 위 복귀 줄 (2026-11-21) */
   $('payBack').addEventListener('click', function (e) {
