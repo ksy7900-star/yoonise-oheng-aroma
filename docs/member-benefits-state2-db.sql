@@ -57,6 +57,10 @@ begin
       update public.member_coupons set owner_phone = coalesce(owner_phone, v_phone) where owner_client = v_client;
       update public.member_burn_credits set owner_phone = coalesce(owner_phone, v_phone) where owner_client = v_client;
     end if;
+    if p_user is not null then
+      update public.member_coupons set owner_user = coalesce(owner_user, p_user) where owner_phone = v_phone;
+      update public.member_burn_credits set owner_user = coalesce(owner_user, p_user) where owner_phone = v_phone;
+    end if;
   end if;
 
   -- 발급 때 알게 된 나머지 열쇠(계정·기기)를 비어 있는 발급권에 채운다
@@ -83,6 +87,13 @@ begin
     v_exp := v_today + make_interval(months => greatest(coalesce(r.valid_months, 6), 1));
 
     if r.benefit_kind = 'coupon' and r.coupon_kind in ('amount', 'percent') and coalesce(r.coupon_value, 0) > 0 then
+      /* 같은 사람이 다른 열쇠(계정/번호)로 이미 이 칸을 받았으면 또 만들지 않는다 */
+      if exists (select 1 from public.member_coupons mc
+                  where mc.source = 'referral' and mc.stage = r.stage
+                    and ((p_user is not null and mc.owner_user = p_user)
+                      or (v_phone is not null and mc.owner_phone = v_phone))) then
+        continue;
+      end if;
       insert into public.member_coupons
         (grant_key, owner_user, owner_client, owner_phone, source, stage, kind, value,
          applies_to, title, list_price, valid_months, expires_at)
@@ -102,6 +113,12 @@ begin
     end if;
 
     if r.benefit_kind = 'burn' and coalesce(r.burn_count, 0) > 0 then
+      if exists (select 1 from public.member_burn_credits mb
+                  where mb.source = 'referral' and mb.grant_key like '%|referral|' || r.stage::text || '|burn'
+                    and ((p_user is not null and mb.owner_user = p_user)
+                      or (v_phone is not null and mb.owner_phone = v_phone))) then
+        continue;
+      end if;
       insert into public.member_burn_credits
         (grant_key, owner_user, owner_client, owner_phone, source, total, used, expires_at, note)
       values
