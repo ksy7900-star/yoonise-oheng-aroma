@@ -119,6 +119,7 @@ declare
   v_disc int := 0;
   v_prod text := lower(btrim(coalesce(p_product, '')));
   v_key  text;
+  v_consult boolean := false;
   v_today date := (now() at time zone 'Asia/Seoul')::date;
 begin
   if info is null then
@@ -137,6 +138,10 @@ begin
   /* 서버 상품 키 → 할인권 적용 상품 키 (consult-onepoint → onepoint · naming → naming) */
   v_key := case when v_prod like 'consult-%' then substring(v_prod from 9) else v_prod end;
 
+  /* '모든 상품' 할인권이라도 **상담 상품에만** 쓴다 — 이용권(pass·allinone·diary)에는 쓰이지 않는다.
+     상담 상품 목록 = member_list_prices() (원포인트·시그니처·개명·작명, 앞으로 추가되는 상담 상품 포함) */
+  v_consult := ((public.member_list_prices() -> v_key) is not null);
+
   if p_coupon is not null then
     who := public.member_who(uid);
     v_me := nullif(who ->> 'user', '')::uuid;
@@ -151,8 +156,8 @@ begin
     if c.id is null then
       return jsonb_build_object('ok', false, 'error', 'bad_coupon');
     end if;
-    /* 'all' = 모든 상품 공통(2026-11-26) */
-    if v_key = '' or (not (v_key = any(c.applies_to)) and not ('all' = any(c.applies_to))) then
+    /* 'all' = 상담 상품 공통(2026-11-26) — 이용권에는 적용되지 않는다 */
+    if v_key = '' or (not (v_key = any(c.applies_to)) and not ('all' = any(c.applies_to) and v_consult)) then
       return jsonb_build_object('ok', false, 'error', 'coupon_not_for_product');
     end if;
 

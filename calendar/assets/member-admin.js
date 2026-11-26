@@ -46,7 +46,7 @@
   }
   function state(el, t) { var e = $(el); if (e) { e.textContent = t; e.hidden = !t; } }
 
-  var AREA = { onepoint: '원포인트', signature: '시그니처', naming: '개명·작명', all: '모든 상품' };
+  var AREA = { onepoint: '원포인트', signature: '시그니처', naming: '개명·작명', all: '모든 상담 상품' };
 
   /* ── 규칙 목록 ───────────────────────────────────── */
   function rulesHTML() {
@@ -74,7 +74,7 @@
         (isBurn ? '' :
           '<label class="bnr__lb">적용 상품' +
           '<span class="bnr__chk">' +
-          '<label><input type="checkbox" data-f="apply_all"' + (((r.applies_to || []).indexOf('all') >= 0) ? ' checked' : '') + '> 모든 상품</label>' +
+          '<label><input type="checkbox" data-f="apply_all"' + (((r.applies_to || []).indexOf('all') >= 0) ? ' checked' : '') + '> 모든 상담 상품</label>' +
           '<label><input type="checkbox" data-f="apply_onepoint"' + ((r.applies_to || []).indexOf('onepoint') >= 0 ? ' checked' : '') + '> 원포인트</label>' +
           '<label><input type="checkbox" data-f="apply_signature"' + ((r.applies_to || []).indexOf('signature') >= 0 ? ' checked' : '') + '> 시그니처</label>' +
           '<label><input type="checkbox" data-f="apply_naming"' + ((r.applies_to || []).indexOf('naming') >= 0 ? ' checked' : '') + '> 개명·작명</label>' +
