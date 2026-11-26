@@ -3033,7 +3033,7 @@
       '<li><span aria-hidden="true">➕</span>인스타그램에서 <b>+</b> 버튼을 눌러요</li>' +
       '<li><span aria-hidden="true">🖼️</span><b>게시물</b>을 골라요</li>' +
       '<li><span aria-hidden="true">🗂️</span><b>여러 사진 선택</b>을 눌러요</li>' +
-      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진 <b>2장</b>과 직접 캡처한 화면 <b>1장</b>, 총 <b>3장</b>을 골라요</li>' +
+      '<li><span aria-hidden="true">3️⃣</span>저장한 공식 사진 2장과 직접 캡처한 화면 1장, 총 3장을 골라요</li>' +
       '<li><span aria-hidden="true">✍️</span>실제 사용 소감을 <b>한 줄 이상</b> 써요</li>' +
       '<li><span aria-hidden="true">#️⃣</span>복사한 해시태그를 붙여넣고 <b>' + esc(INSTA_CFG.account) + '</b>를 태그해요</li>' +
       '<li><span aria-hidden="true">📣</span>혜택 제공 사실을 <b>본문 첫 부분</b>에 적고 공유해요</li>' +
