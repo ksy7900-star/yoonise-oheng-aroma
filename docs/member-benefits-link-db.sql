@@ -61,8 +61,9 @@ begin
   v_phone := who ->> 'phone';
   v_users := public.member_users(v_me, v_phone);
 
-  if v_me is not null then
-    select count(*) into v_refs from public.referrals where referrer_id = v_me;
+  /* 번호로 이어진 계정까지 함께 센다 — 로그인 세션이 없어도 초대 인원이 0으로 보이지 않게 */
+  if coalesce(array_length(v_users, 1), 0) >= 1 then
+    select count(*) into v_refs from public.referrals where referrer_id = any(v_users);
     perform public.grant_member_benefits(v_me, v_client);
     who := public.member_who(v_client);
   elsif v_phone is not null then

@@ -2629,7 +2629,7 @@
     if (!news.length) return;
     mb.noticeShown = true;
     var t = news.length === 1 ? news[0].title : (news[0].title + ' 외 ' + (news.length - 1) + '개');
-    toast('🎁 정식 회원 혜택이 도착했어요 — ' + t);
+    toast('🎁 타이밍 달력 정식 회원 혜택이 도착했어요 — ' + t);
     var cids = [], bids = [];
     news.forEach(function (n) {
       if (n.kind === 'coupon' && n.id) cids.push(n.id);
