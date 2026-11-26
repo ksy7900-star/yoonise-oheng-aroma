@@ -3915,7 +3915,7 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 .freebar.is-member .freebar__d { color: #F3DFBA; }
 
 .mben__lead { margin: 14px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--ink-2); word-break: keep-all; }
-.mben__lead b { color: #8A4E0B; font-weight: 800; }
+.mben__lead b { color: #8A4E0B; font-weight: 800; }   /* '특별한 혜택' — 기존 골드 강조 그대로 */
 
 .mben__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
 .mben__card {
@@ -3950,9 +3950,15 @@ a.pay__btn { text-decoration: none; box-sizing: border-box; }
 .mben__list li { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; font-size: 10.5px; color: var(--ink-2); }
 .mben__list li span:last-child { flex: none; font-size: 9.5px; color: var(--mute); }
 .mben__empty { margin: 6px 0 0; font-size: 10px; color: var(--mute); }
+.mben__src { display: block; margin-top: 2px; font-style: normal; font-size: 9px; font-weight: 700; color: #8A4E0B; letter-spacing: -.01em; }
+.mben__list li span:first-child { flex: 1 1 auto; min-width: 0; }
+
+/* 2026-11-26 #23004 — 하단 안내는 고정하지 않고 **스크롤 영역의 맨 마지막**에 둔다.
+   (고정하면 카카오톡 버튼·나의 혜택 확인을 가린다) */
 .mben__foot {
-  position: sticky; bottom: 0; margin: 16px -4px 0; padding: 10px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 38%);
+  margin: 18px -2px 2px; padding: 12px 8px 4px;
+  border-top: 1px solid rgba(28, 24, 19, .07);
+  background: none;
   font-size: 9.6px; line-height: 1.6; text-align: center; color: var(--mute); word-break: keep-all;
 }
 

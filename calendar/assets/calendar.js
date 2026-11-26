@@ -2338,9 +2338,9 @@
     }, 180);
   }
 
-  /* ══ 👑 윤이세 정식 회원 특별 혜택 (2026-11-26) ═══════════════════════
+  /* ══ 👑 타이밍 달력 정식 회원 특별 혜택 (2026-11-26) ═══════════════════════
      · 결제로 연 기기(1년 이용권 = pass·allinone·diary)에서만, **같은 자리**의 띠 글이
-       '내 사주 타이밍 달력 무료 이용법' → '윤이세 정식 회원 특별 혜택'으로 바뀐다(띠 추가 아님).
+       '내 사주 타이밍 달력 무료 이용법' → '타이밍 달력 정식 회원 특별 혜택'으로 바뀐다(띠 추가 아님).
        1개월 이용권(M)은 무료 회원이라 기존 무료 이용법 그대로.
      · 혜택 내용·금액은 서버 규칙(member_benefit_rules)이 정한다 — 관리자가 바꾸면 재배포 없이
        이 화면이 그대로 따라간다. 서버에 닿지 않을 때만 아래 기본값으로 보여 준다.
@@ -2478,9 +2478,12 @@
       /* 금액 줄이 이미 있으면 같은 금액을 한 번 더 쓰지 않는다(작은 글씨는 설명만) */
       var sub = String(r.subtitle || '');
       if (price && (sub.indexOf('→') >= 0 || sub.replace(/[^0-9]/g, '') === String(r.coupon_value || ''))) sub = '';
-      var note = r.benefit === 'burn'
-        ? ('기본 하루 1회 외 · 필요한 날 ' + (r.burn_count || 0) + '회 더')
-        : sub;
+      var note = sub;
+      if (r.benefit === 'burn') {
+        /* 2026-11-26 #23004 — 확정 문구: 제목 / '마음이 답답한 날, 한 번 더' / '하루 1회 추가 사용 · 총 N회 제공' */
+        price = '마음이 답답한 날, 한 번 더';
+        note = '하루 1회 추가 사용 · 총 ' + (r.burn_count || 3) + '회 제공';
+      }
       var stt = mbStageState(st, r.stage);
       var state = '';
       if (st && st.member && st.linked) {
@@ -2525,7 +2528,7 @@
 
     var usableHTML = usable.length
       ? '<ul class="mben__list">' + usable.map(function (c) {
-          return '<li><span>' + esc(c.title) + '</span><span>' + esc(String(c.expires_at || '').replace(/-/g, '.')) + '까지</span></li>';
+          return '<li><span>' + esc(c.title) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.expires_at || '').replace(/-/g, '.')) + '까지</span></li>';
         }).join('') + '</ul>'
       : '<p class="mben__empty">아직 보유한 상담 할인권이 없어요.</p>';
     rows += '<div class="mben__row" style="display:block"><span>보유 상담 할인권</span>' + usableHTML + '</div>';
@@ -2533,7 +2536,7 @@
     if (used.length) {
       rows += '<div class="mben__row" style="display:block"><span>사용 완료된 혜택</span><ul class="mben__list">' +
         used.map(function (c) {
-          return '<li><span>' + esc(c.title) + '</span><span>' + esc(String(c.used_at || '').replace(/-/g, '.')) + ' 사용</span></li>';
+          return '<li><span>' + esc(c.title) + '<em class="mben__src">' + esc(mbSourceLabel(c)) + '</em></span><span>' + esc(String(c.used_at || '').replace(/-/g, '.')) + ' 사용</span></li>';
         }).join('') + '</ul></div>';
     }
     var hint = st.linked
@@ -2541,6 +2544,15 @@
       : '<p class="hint">카카오로 한 번 연결하면 초대 인원과 받은 혜택이 여기에 함께 쌓여요.</p>';
 
     return '<div class="mben__mine" data-mben-mine><h3>나의 혜택 확인</h3>' + rows + hint + '</div>';
+  }
+
+  /** 이 할인권이 어디서 나왔는가 — 친구 N명 초대 / 인스타그램 후기 인증 / 관리자 지급 */
+  function mbSourceLabel(c) {
+    if (!c) return '';
+    if (c.source === 'insta') return '인스타그램 후기 인증';
+    if (c.source === 'manual') return '관리자 지급';
+    if (c.source === 'referral' && c.stage) return '친구 ' + c.stage + '명 초대';
+    return '정식 회원 혜택';
   }
 
   function mbInstaState(st) {
@@ -2561,16 +2573,16 @@
 
     return '<p class="modal__eyebrow">YOONISE · MEMBER BENEFITS</p>' +
       '<h2 class="fhow__title" id="freeTitle">좋은 인연, 더 큰 선물</h2>' +
-      '<p class="fhow__sub">윤이세 정식 회원님만을 위한 특별 혜택</p>' +
+      '<p class="fhow__sub">타이밍 달력 정식 회원님만을 위한 특별 혜택</p>' +
       '<div class="mben__grid" data-mben-grid>' + mbCardsHTML(st, rules) + '</div>' +
-      '<p class="mben__lead">달력은 이미 1년이 다 열려 있으니, <b>초대해 주신 인연</b>과 <b>상담</b>으로 보답합니다.</p>' +
+      '<p class="mben__lead">소중한 인연을 이어주신 감사의 마음을 담아, 타이밍 달력 정식 회원님께 <b>특별한 혜택</b>을 드립니다.</p>' +
       '<a class="fhow__go" href="./member/" data-free-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></a>' +
       '<section class="fhow__card">' +
-      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 인증</span></p>' +
-      '<p class="fhow__d">인스타에 사용 후기를 올리고 <b>카카오톡 채널</b>로 보내 주시면 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b>을 드려요.</p>' +
-      '<p class="fhow__note">계정당 1회 · 확인 후 자동으로 들어와요</p>' +
+      '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기 인증</span></p>' +
+      '<p class="fhow__d">인스타에 사용 후기를 올린 뒤, <b>카카오톡 채널</b>을 친구 추가하고 <b>인증 캡처</b>를 보내 주세요. 확인 후 <b>' + esc(insta.title || '전 상담 상품 1만원 할인권 1매') + '</b>을 드려요.</p>' +
+      '<p class="fhow__note">계정당 1회 · 나영 님이 캡처를 확인하고 승인하면 자동으로 들어와요</p>' +
       (mbInstaState(st) ? '<p class="fhow__note">' + mbInstaState(st) + '</p>' : '') +
-      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener" data-mben-insta>카카오톡 채널로 보내기 <span aria-hidden="true">→</span></a>' +
+      '<a class="fhow__go fhow__go--kakao" href="' + FREEHOW_KAKAO + '" target="_blank" rel="noopener" data-mben-insta>인스타그램 후기 인증하기 <span aria-hidden="true">→</span></a>' +
       '</section>' +
       '<div data-mben-status>' + mbMineHTML(st, rules) + '</div>' +
       '<p class="mben__foot">상담 할인권은 혜택별 1회 지급되며, 발급일로부터 ' + esc(String(months)) + '개월 이내 사용 가능합니다. 중복 할인은 적용되지 않습니다.</p>';
@@ -2584,7 +2596,7 @@
     var t = bar.querySelector('.freebar__t');
     var d = bar.querySelector('.freebar__d');
     bar.classList.toggle('is-member', mem);
-    if (t) t.textContent = mem ? '윤이세 정식 회원 특별 혜택' : '내 사주 타이밍 달력 무료 이용법';
+    if (t) t.textContent = mem ? '타이밍 달력 정식 회원 특별 혜택' : '내 사주 타이밍 달력 무료 이용법';
     if (d) d.textContent = mem ? '친구 초대 · 상담 할인 혜택' : '친구 초대 · 인스타그램 인증 혜택';
   }
 
@@ -2644,6 +2656,10 @@
   }
   /** 추가 이용권이 남아 있는가 — 모르면(서버 미응답) 0으로 본다 */
   function burnExtraLeft() { return isMemberNow() && mb.burnLeft > 0 ? mb.burnLeft : 0; }
+  /** 오늘 이미 추가 이용권을 썼는가 — 하루에 '한 번 더'는 1회까지 */
+  function burnExtraUsedToday() { return !!burn.extraDay && burn.extraDay === burnTodayKey(); }
+  /** 오늘 한 번 더 태울 수 있는가 (기본 1회를 마친 뒤, 추가 이용권이 남아 있고 오늘 아직 안 썼을 때) */
+  function burnExtraToday() { return burnExtraLeft() > 0 && !burnExtraUsedToday(); }
 
   /* ── 1차 · 첫 접속 웰컴 팝업 (2026-11-21j) ─────────────────────
      사주를 넣기 전, 이 기기에서 **처음** 사이트를 열었을 때만 뜨는 콤팩트 소개.
@@ -8419,7 +8435,7 @@
   };
 
   var burnEl = null, burnBody = null, burnDialog = null, burnLastFocus = null, burnClosing = false;
-  var burn = { used: 0, day: '', text: '', stage: 'prep', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0, prepTimers: [] };
+  var burn = { used: 0, day: '', extraDay: '', text: '', stage: 'prep', timer: 0, holdTimer: 0, sparkTimer: 0, sparkTimer2: 0, prepTimers: [] };
   var BURN_BURN_MS = 7800;        // 불이 붙은 뒤 재가 될 때까지 — 7.8초, 느리고 묵직하게
   var BURN_HOLD_MS = 1000;        // 구겨진 덩어리를 보는 한 박자
   var BURN_PRESS_MS = 800;        // 성냥을 종이 아래에 꾹 눌러 불을 붙이는 시간(0.8초)
@@ -8434,6 +8450,8 @@
     var n = o && typeof o.used === 'number' && isFinite(o.used) ? Math.floor(o.used) : 0;
     burn.used = Math.max(0, Math.min(BURN_FREE, n));
     burn.day = o && typeof o.day === 'string' ? o.day : '';
+    /* 2026-11-26 — 추가 이용권으로 '오늘 한 번 더'를 쓴 날. 하루에 추가 1회까지만 */
+    burn.extraDay = o && typeof o.extraDay === 'string' ? o.extraDay : '';
     /* 2026-11-21h 이전 저장값 — day 없이 at(마지막으로 태운 시각)만 있다. 그 날을 마지막 날로 본다 */
     if (!burn.day && o && o.at) {
       var at = new Date(o.at);
@@ -8441,7 +8459,7 @@
     }
   }
   function saveBurn() {
-    try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, day: burn.day, at: new Date().toISOString() })); } catch (e) {}
+    try { localStorage.setItem(BURN_KEY, JSON.stringify({ used: burn.used, day: burn.day, extraDay: burn.extraDay, at: new Date().toISOString() })); } catch (e) {}
   }
   /** 오늘 이미 1회 태웠는가 — 등급과 무관하게 하루 1회 */
   function burnBurnedToday() { return !!burn.day && burn.day === burnTodayKey(); }
@@ -8456,6 +8474,7 @@
     var done = burnBurnedToday();
     var extra = burnExtraLeft();
     var tail = extra > 0 ? ' · 추가 이용권 ' + extra + '회 남음' : '';
+    if (done && burnExtraUsedToday() && extra > 0) tail = ' · 오늘 추가 1회까지 마침';
     if (burnUnlimited()) return (TEST_OPEN_ALL && !state.tier ? '체험 기간' : burnPlanName()) + (done ? ' · 오늘 마침' : ' · 매일 1회') + tail;
     var l = burnLeft();
     if (done) return l > 0 ? '오늘 마침 · 무료 ' + l + '회 남음' : '오늘 마침 · 무료 ' + BURN_FREE + '회 모두 사용';
@@ -8477,10 +8496,10 @@
     }
     var sub = $('#burnCtaSub'), main = $('#burnCtaMain');
     var extra = burnExtraLeft();
-    if (sub) sub.textContent = (done && extra > 0) ? '추가 이용권 ' + extra + '회 남음 · 필요한 날 한 번 더'
+    if (sub) sub.textContent = (done && burnExtraToday()) ? '추가 이용권 ' + extra + '회 남음 · 필요한 날 한 번 더'
       : (done ? '하루에 단 한 번, 진심을 담아 비워내는 의식입니다'
         : (un ? '매일 한 번, 적고 · 구기고 · 태우면 끝' : '한 장에 적고 · 구기고 · 태우면 끝'));
-    if (main) main.textContent = (done && extra > 0) ? '추가 이용권으로 한 번 더 태우기'
+    if (main) main.textContent = (done && burnExtraToday()) ? '추가 이용권으로 한 번 더 태우기'
       : (done ? '오늘의 의식을 마쳤습니다 · 내일 다시' : '🔥 지금 한 장 태우기');
   }
   function burnElement() {
@@ -8535,8 +8554,11 @@
   /** 정식 회원 추가 이용권 안내 — 남아 있을 때만 작은 글씨로 (2026-11-26 #22956) */
   function burnExtraNoteHTML() {
     var extra = burnExtraLeft();
-    if (extra <= 0) return '';
-    return '<p class="burn__extra">정식 회원 <b>추가 이용권 ' + extra + '회</b> 남음 — 오늘 한 번 더 태우면 1회 차감돼요.</p>';
+    if (extra <= 0 || !burnBurnedToday()) return '';
+    if (burnExtraUsedToday()) {
+      return '<p class="burn__extra">오늘은 기본 1회와 추가 이용권 1회를 모두 썼어요 — 내일 다시 마음을 비우러 오세요.</p>';
+    }
+    return '<p class="burn__extra">타이밍 달력 정식 회원 <b>추가 이용권 ' + extra + '회</b> 남음 — 오늘 한 번 더 태우면 1회 차감돼요.</p>';
   }
 
   function burnPrepHTML() {
@@ -8557,14 +8579,14 @@
       ? burnPlanName() + '은 매일 한 번씩 — 내일 다시 마음을 비우러 오세요.'
       : (l > 0 ? '무료 ' + BURN_FREE + '회 중 ' + l + '회 남았어요. 내일 다시 마음을 비우러 오세요.'
                : '무료 ' + BURN_FREE + '회를 모두 썼어요. 내일도 이어 가시려면 1년 전체 패스를 살펴보세요.');
-    /* 2026-11-26 — 정식 회원 추가 이용권이 남았으면 오늘 한 번 더 태울 수 있다.
+    /* 2026-11-26 — 타이밍 달력 정식 회원 추가 이용권이 남았으면 오늘 한 번 더 태울 수 있다(하루 1회까지).
        (기본 하루 1회는 마쳤고, 지금 쓰면 추가 이용권에서 1회 차감된다는 걸 작은 글씨로 알린다) */
-    if (extra > 0) {
+    if (burnExtraToday()) {
       return '<p class="modal__eyebrow">RITUAL DONE · 오늘의 의식</p>' +
         '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다.</h2>' +
         '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
         '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
-        '<p class="burn__extra">정식 회원 <b>추가 이용권 ' + extra + '회</b>가 남아 있어요 — 오늘 한 번 더 태울 수 있습니다.<br>' +
+        '<p class="burn__extra">타이밍 달력 정식 회원 <b>추가 이용권 ' + extra + '회</b>가 남아 있어요 — 오늘 한 번 더 태울 수 있습니다.<br>' +
         '<span style="font-size:10px;color:var(--mute)">지금 한 번 더 태우면 추가 이용권에서 1회 차감돼요.</span></p>' +
         '<button type="button" class="burn__go burn__go--start" data-burn="again">추가 이용권으로 한 번 더 태우기</button>' +
         '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
@@ -8573,6 +8595,9 @@
       '<h2 class="burn__prep-title" id="burnModalTitle">오늘의 의식을 마쳤습니다. 내일 다시 마음을 비우러 오세요.</h2>' +
       '<div class="burn__altar is-out" data-burn-altar>' + CANDLE_HTML + '</div>' +
       '<p class="burn__prep-sub">' + esc(leftLine) + '</p>' +
+      (extra > 0 && burnExtraUsedToday()
+        ? '<p class="burn__extra">오늘은 기본 1회에 추가 이용권 1회까지 마쳤어요. 추가 이용권 <b>' + extra + '회</b>는 내일부터 쓸 수 있어요.</p>'
+        : '') +
       '<p class="burn__foot">하루에 단 한 번, 진심을 담아 비워내는 의식입니다. 적은 글은 어디에도 남지 않았어요.</p>' +
       (!un && l <= 0 ? '<button type="button" class="burn__go burn__go--start" data-burn="upgrade">1년 전체 패스 살펴보기</button>' : '') +
       '<button type="button" class="btn btn--ghost modal__done-btn" data-burn-close>닫기</button>';
@@ -8702,8 +8727,8 @@
     clearPrepTimers();
     burn.text = '';
     burnLastFocus = document.activeElement;
-    // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 이용권이 있으면 한 번 더)
-    if (burnBurnedToday() && burnExtraLeft() <= 0) {
+    // 오늘 이미 한 번 태웠으면 — 꺼진 촛불과 함께 내일 다시 오라는 안내만 (추가 이용권이 남았고 오늘 아직 안 썼으면 한 번 더)
+    if (burnBurnedToday() && !burnExtraToday()) {
       burnEl.hidden = false;
       if (window.BackNav) window.BackNav.open('burn', closeBurnModal);  // 휴대폰 뒤로가기 → 이 팝업부터 닫기
       burn.stage = 'done';
@@ -8716,7 +8741,7 @@
       /* 추가 이용권 남은 횟수를 아직 모르면 서버에 한 번 물어보고, 있으면 이 화면을 다시 그린다 */
       if (isMemberNow() && mb.burnLeft < 0) {
         mbStatusCb(function () {
-          if (burnExtraLeft() > 0 && burn.stage === 'done' && burnBody) {
+          if (burnExtraToday() && burn.stage === 'done' && burnBody) {
             burnBody.innerHTML = burnTodayDoneHTML();
             burnBody.scrollTop = 0;
           }
@@ -8741,7 +8766,7 @@
   /** 0단계 → 1단계 : 촛불 앞에서 종이로 */
   function burnBeginWrite() {
     if (burn.stage !== 'prep') return;
-    if (burnBurnedToday() && burnExtraLeft() <= 0) { showBurnTodayDone(); return; }
+    if (burnBurnedToday() && !burnExtraToday()) { showBurnTodayDone(); return; }
     clearPrepTimers();
     burn.stage = 'write';
     if (burnDialog) burnDialog.classList.remove('is-dark');
@@ -9100,11 +9125,14 @@
     if (btn) btn.hidden = true;          // 타오르는 동안에는 글자 대신 불만 보이게
     sfxIgnite();
     /* 하루 1회 — 등급과 무관하게 마지막으로 태운 날짜를 남긴다 */
-    var wasBurned = burnBurnedToday();          // 오늘 두 번째 이후 = 정식 회원 추가 이용권 사용
+    var wasBurned = burnBurnedToday();          // 오늘 두 번째 = 타이밍 달력 정식 회원 추가 이용권 사용
     if (!burnUnlimited()) burn.used = Math.min(BURN_FREE, burn.used + 1);
     burn.day = burnTodayKey();
+    if (wasBurned) {
+      burn.extraDay = burn.day;                 // 하루에 '한 번 더'는 1회까지
+      mbBurnConsume();                          // 서버에서 1회 차감(남은 횟수도 함께 맞춘다)
+    }
     saveBurn();
-    if (wasBurned) mbBurnConsume();              // 서버에서 1회 차감(남은 횟수도 함께 맞춘다)
     renderBurnCard();
     /* 중반·후반 — 굵은 재와 금빛 불티가 2·3차 물결로 화면 가득 올라간다 */
     clearTimeout(burn.sparkTimer);
@@ -9146,8 +9174,7 @@
 
   /* 예전 '한 장 더 태우기' 자리 — 이제는 하루 1회라 오늘은 더 태울 수 없다 */
   function burnAgain() {
-    var extra = burnExtraLeft();
-    if (extra > 0) {
+    if (burnExtraToday()) {
       burn.text = '';
       burn.stage = 'prep';
       burnBody.innerHTML = burnPrepHTML();

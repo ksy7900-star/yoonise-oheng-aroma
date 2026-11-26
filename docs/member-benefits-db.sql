@@ -49,7 +49,7 @@ grant select, insert, update, delete on public.member_benefit_rules to service_r
 insert into public.member_benefit_rules
   (trigger_kind, stage, sort, benefit_kind, title, subtitle, coupon_kind, coupon_value, applies_to, burn_count, valid_months, active)
 values
-  ('referral', 1, 1, 'burn',   '액운 태우기 +3회',              '필요한 날 한 번 더 쓰는 추가 이용권 3회', null,    0,     array['onepoint','signature']::text[], 3, 6, true),
+  ('referral', 1, 1, 'burn',   '액운 태우기 추가 이용권 3회',   '하루 1회 추가 사용 · 총 3회 제공',        null,    0,     array['onepoint','signature']::text[], 3, 6, true),
   ('referral', 3, 2, 'coupon', '전 상담 상품 1만원 할인권 1매', '원포인트 · 시그니처 모두 사용',           'amount', 10000, array['onepoint','signature']::text[], 0, 6, true),
   ('referral', 5, 3, 'coupon', '원포인트 50% 할인권 1매',       '49,000원 → 24,500원',                    'percent', 50,   array['onepoint']::text[],              0, 6, true),
   ('referral', 7, 4, 'coupon', '시그니처 50% 할인권 1매',       '100,000원 → 50,000원',                   'percent', 50,   array['signature']::text[],             0, 6, true),
