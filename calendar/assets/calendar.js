@@ -5533,16 +5533,20 @@
       if (was && state.res) setTimeout(function () { if (!loginGateOn()) render(); }, 0);
       return;
     }
-    /* 1줄 맛보기 — 2027년에 유독 조심할 달 (달력·2027 한눈에와 같은 계산을 그대로 쓴 숫자) */
+    /* 1줄 맛보기 — 2027년에 유독 조심할 달 (달력·2027 한눈에와 같은 계산을 그대로 쓴 숫자)
+       사주를 고쳐 다시 넣으면 여덟 글자가 달라지므로, 그 지문(sig)이 바뀔 때만 다시 쓴다 */
     var line = $('#lgtLine');
-    if (line && !line.getAttribute('data-filled') && state.res) {
-      var d = null;
-      try { d = hookYearData(); } catch (e) { d = null; }
-      var ms = (d && d.months && d.months.length) ? d.months.join('·') + '월' : '';
-      line.innerHTML = ms
-        ? '사주 여덟 글자를 세웠어요.<br>2027년에 유독 조심할 달은 <b>' + esc(ms) + '</b>이에요.'
-        : '사주 여덟 글자를 세웠어요.';
-      line.setAttribute('data-filled', '1');
+    if (line && state.res) {
+      var sig = brNatalSig() + '|' + state.todayISO;
+      if (line.getAttribute('data-sig') !== sig) {
+        var d = null;
+        try { d = hookYearData(); } catch (e) { d = null; }
+        var ms = (d && d.months && d.months.length) ? d.months.join('·') + '월' : '';
+        line.innerHTML = ms
+          ? '사주 여덟 글자를 세웠어요.<br>2027년에 유독 조심할 달은 <b>' + esc(ms) + '</b>이에요.'
+          : '사주 여덟 글자를 세웠어요.';
+        line.setAttribute('data-sig', sig);
+      }
     }
     var go = $('#lgtGo');
     if (go) go.setAttribute('href', LOGIN_GATE_HREF);

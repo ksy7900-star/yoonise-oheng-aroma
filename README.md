@@ -4378,7 +4378,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 ### 5. 남은 한 조각 — SQL 1회 실행
 `repo/docs/member-benefits-naming-db.sql` 을 Supabase SQL Editor 에 붙여넣고 Run 해야 **개명·작명 할인**이 실제 결제에 적용된다(그 전에는 클라이언트가 정가 흐름으로 안전하게 되돌아간다). 이 파일이 `payapp_product`(naming 200,000) · `member_list_prices` · `member_coupons_for`·`payapp_prepare_order`('all' 공통) · `payapp_feedback`(개명·작명 = 코드 없는 상담형) · 규칙/기존 발급권 `applies_to=['all']` 갱신을 한 번에 한다.
 
-## §149. 🔐 생년월일 입력 후 카카오 3초 로그인 관문 — 사주 맛보기까지만 · 7일 무료 달력은 연결 뒤에 (?v=20261127b, 2026-11-27 · **배포·검증 완료**)
+## §149. 🔐 생년월일 입력 후 카카오 3초 로그인 관문 — 사주 맛보기까지만 · 7일 무료 달력은 연결 뒤에 (?v=20261127c, 2026-11-27 · **배포·검증 완료**)
 
 **왜** — 사주만 넣고 달력도 열지 않은 채 나가는 방문자가 회원 DB(`profiles`)에 남지 않았다. 이제 생년월일을 넣은 직후 한 번 멈춰 **카카오 3초 연결**로 회원이 되게 하고, 7일 무료 달력은 연결한 뒤에 연다.
 
@@ -4403,11 +4403,11 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 ### 3. 변경 파일
 | 파일 | 내용 |
 | --- | --- |
-| `calendar/index.html` | `#loginGate` 카드(주석 포함 35줄 추가) · 자산 `?v=` 13곳 → `20261127b` |
+| `calendar/index.html` | `#loginGate` 카드(주석 포함 35줄 추가) · 자산 `?v=` 13곳 → `20261127c` |
 | `calendar/assets/calendar.js` | +107줄 — `GATE_FROM`·`loginGateOn`·`gateGrandfathered`·`applyLoginGate`·`parkLockPanel`, `trialStartISO`/`isLockedDay`/`arrangeCareJump`/`openLockPanel` 4곳 관문 분기, `?login=1` 복귀 토스트 + focus 감시 |
 | `calendar/assets/style.css` | +82줄 — `body.is-login-gated` 감춤 목록 · `.lgt*` 카드 스타일 |
 | `calendar/member/member.js` | +16줄 — `NEXT_CAL_KEY`·`returnToCalendar()` · `applySession` 연결 |
-| `calendar/member/index.html` | `member.js?v=20261127b` |
+| `calendar/member/index.html` | `member.js?v=20261127c` |
 | `calendar/sw.js` | `VERSION = '20261127b'` |
 
 - **그대로 둔 것**: `manse.js`·사주 계산, 디자인·색감, PayApp 결제, `special-guide.js`(72시간), `/apply/`·`/yoon-key/`, 약관 3종, 기존 DB·RPC. 관문 중에도 `special-guide`의 72시간 기록은 종전과 같이 첫 사주 입력 시점을 쓴다.
@@ -4416,7 +4416,7 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 구분 | 결과 |
 | --- | --- |
 | 로컬 (127.0.0.1) | **72/72** — 관문 24(노출·감춤·1줄·CTA·넘침·체험일 미기록·코드 칸 이동·콘솔 0) · 로그인 링크/리다이렉트 6 · 연결된 기기 7 · 코드 기기 2 · 기존 체험 기기 2 · 오늘 시작 기기 2 · 회귀 13 · 해상도 16 |
-| 라이브 (`?v=20261127b`) | **43/43 + 29/29** — 같은 항목 전부 통과, 가로 넘침 0(360·390·412·iPhone), 콘솔 에러 0 |
+| 라이브 (`?v=20261127c`) | **43/43 + 29/29** — 같은 항목 전부 통과, 가로 넘침 0(360·390·412·iPhone), 콘솔 에러 0 |
 | 복귀 왕복 (라이브) | 입력 → 관문 → `member/?next=calendar&autologin=1` → (카카오 인증 주소 `redirect_uri=…/calendar/member/`, `provider=kakao` 확인) → 세션을 심고 `?login=1` 복귀 → **관문 사라지고 `김나영 님 · 1979.10.25 · 시간 모름 · 여성` 그대로**, 체험 시작일 기록, 토스트 표시 |
 | 실제 카카오 계정 | 로그인은 하지 않았다(지시대로 링크·리다이렉트 파라미터까지만). DB 쓰기·텔레그램 없음 |
 | 스크린샷 | `attachments/2026-11-27/live-01~07-*.png`(관문·코드 칸·member 자동로그인·복귀 후 달력·코드 보유 달력·해상도) |
