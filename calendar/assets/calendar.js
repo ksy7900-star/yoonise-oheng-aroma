@@ -6989,11 +6989,11 @@
       smsuse: 'n',                        /* 결제요청 문자는 보내지 않는다 */
       charset: 'utf-8',
       returnurl: payReturnUrl(item),      /* 결제 완료 후 이 달력으로 스스로 돌아온다 (뒤로가기 불필요) */
-      var1: String(item)                  /* 결제내역에서 상품 구분용 */
+      var1: String(item),                 /* 결제내역에서 상품 구분용 */
+      feedbackurl: PAYAPP_FEEDBACK_URL    /* 결제 완료를 서버가 먼저 받는다 — 토큰이 없어도 서버가 알도록 항상 싣는다 (2026-11-27) */
     };
     if (order && order.order_no) {
       p.var2 = order.order_no;            /* 우리가 만든 일회성 주문 토큰 */
-      p.feedbackurl = PAYAPP_FEEDBACK_URL; /* 결제 완료를 서버가 먼저 받는다 */
     }
     /* skip_cstpage 는 넣지 않는다 — GitHub Pages 가 POST 를 405 로 막아 흰 화면이 된다 */
     PayApp.setParam(p);
@@ -7240,6 +7240,15 @@
   function payPhoneVal() {
     var inp = shopBody ? shopBody.querySelector('[data-pay-phone]') : null;
     return inp ? inp.value : payPhone;
+  }
+  /* 2026-11-27 — 번호 없이 결제창으로 넘어가려 할 때: 링크 이동을 막고, 왜 막았는지 번호 칸 아래에
+     크게 보여 준다(안내 줄이 결제 버튼 아래에 있어 화면 밖으로 잘리므로 안내 줄까지 스크롤한다). */
+  function payPhoneNeed() {
+    var n = payNote('결제 확인과 1년 열림에 쓸 <b>휴대폰 번호</b>를 먼저 적어 주세요. 결제가 확인되면 코드 없이 바로 열려요.');
+    var hint = shopBody ? shopBody.querySelector('.payphone__hint') : null;
+    if (hint) hint.textContent = '번호를 적어야 1년이 코드 없이 열려요';
+    payPhoneFocus();
+    if (n && n.scrollIntoView) { try { n.scrollIntoView({ block: 'nearest' }); } catch (e) { } }
   }
   function payPhoneFocus() {
     var inp = shopBody ? shopBody.querySelector('[data-pay-phone]') : null;
@@ -7733,6 +7742,14 @@
     if (kind === 'card') {
       var url = cardUrlOf(item);
       var phone = mobileOf(payPhoneVal());
+      /* 2026-11-27 — 번호 없이 상품 링크로 넘어가면 페이앱이 결제를 우리 서버에 알려 줄 곳이 없다
+         (주문 토큰과 feedbackurl 은 JS 결제창에만 실린다). 돈은 나가고 달력은 안 열려서
+         주문이 prepared 로 남은 실제 사고가 있었다. 자동 열림 상품은 번호를 먼저 받는다
+         — 페이앱 결제 페이지도 어차피 연락처를 받으므로 손님 절차가 늘지 않는다. */
+      if (!phone && payPrepareSupported(item)) {
+        payPhoneNeed();
+        return;
+      }
       if (phone) {
         var went = false;
         try { went = payappGo(item, phone); } catch (err) { went = false; }
@@ -11048,6 +11065,15 @@
             payChoice[String(pitem)] = 'card';
             /* 번호를 적었으면 링크 이동을 가로채 페이앱 JS 로 직행 — 연락처 화면을 건너뛴다 */
             var phone = mobileOf(payPhoneVal());
+            /* 2026-11-27 — 번호 없이 이 링크로 넘어가면 페이앱이 결제를 우리 서버에 알려 줄 곳이 없다
+               (주문 토큰·feedbackurl 은 JS 결제창에만 실린다). 돈은 나가고 달력은 안 열려 주문이
+               prepared 로 남은 실제 사고가 있어, 자동 열림 상품은 번호를 먼저 받는다
+               — 페이앱 결제 페이지도 어차피 연락처를 받으므로 손님 절차가 늘지 않는다. */
+            if (!phone && payPrepareSupported(pitem)) {
+              e.preventDefault();
+              payPhoneNeed();
+              return;
+            }
             if (phone) {
               var went = false;
               try { went = payappGo(pitem, phone); } catch (err) { went = false; }
@@ -11078,7 +11104,12 @@
       /* 신청 양식 입력 — 팝업을 다시 그려도 값이 남게 메모리에 담고, 안내 문구를 지진다 */
       shopEl.addEventListener('input', function (e) {
         var ph = e.target.closest ? e.target.closest('[data-pay-phone]') : null;
-        if (ph) { payPhone = ph.value; mirrorPayPhone(); return; }   // 결제용 번호 — 화면 메모리에만 둔다
+        if (ph) {
+          payPhone = ph.value; mirrorPayPhone();                   // 결제용 번호 — 화면 메모리에만 둔다
+          var h = ph.parentNode ? ph.parentNode.querySelector('.payphone__hint') : null;
+          if (h) h.textContent = '결제 확인에만 써요 · 이 기기에 기억해요';   // 번호를 적으면 원래 안내로
+          return;
+        }
         var inp = e.target.closest ? e.target.closest('[data-cf]') : null;
         if (!inp) return;
         var k = inp.getAttribute('data-cf');
