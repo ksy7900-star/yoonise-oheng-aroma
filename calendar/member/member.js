@@ -72,6 +72,10 @@
   /* 달력의 초대 화면에서 '카카오로 연결'로 넘어온 손님 — 연결이 끝나면 달력의 #invite 로 되돌린다
      (카카오 OAuth 는 주소의 ?next= 를 지우고 돌아오므로 이 탭에 표시를 남긴다 · 2026-11-26 #23095) */
   var NEXT_INVITE_KEY = 'yoonise.member.next.invite.v1';
+  /* 🔐 달력의 '카카오로 3초 만에 무료 달력 열기' 관문으로 들어온 손님 (2026-11-27)
+     카카오 OAuth 는 주소의 ?next= 를 지우고 돌아오므로 이 탭에 표시를 남겨 두고,
+     연결이 끝나면 달력(넣어 둔 사주 그대로)으로 되돌린다. */
+  var NEXT_CAL_KEY = 'yoonise.member.next.calendar.v1';
   var EL_ORDER = ['목', '화', '토', '금', '수'];
   var SAMHAP_EL = ['수', '목', '화', '금'];
   var EL_OVER = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };    // 내가 극하는 오행
@@ -252,6 +256,7 @@
      (카카오는 주소의 ?next= 를 지우고 돌아오니까 — 2026-11-23 2차) */
   try { if (queryParam('next') === 'talis') sessionStorage.setItem(NEXT_TALIS_KEY, '1'); } catch (e) {}
   try { if (queryParam('next') === 'invite') sessionStorage.setItem(NEXT_INVITE_KEY, '1'); } catch (e) {}
+  try { if (queryParam('next') === 'calendar') sessionStorage.setItem(NEXT_CAL_KEY, '1'); } catch (e) {}
   /** 연결이 끝났으면 달력으로 돌아가 내 수호 부적을 바로 연다 */
   function returnToTalis() {
     var want = false;
@@ -259,6 +264,16 @@
     if (!want || !state.user) return false;
     try { sessionStorage.removeItem(NEXT_TALIS_KEY); } catch (e) {}
     location.replace('../#talis');
+    return true;
+  }
+  /** 연결이 끝났으면 달력으로 돌아간다 — 사주 맛보기 관문에서 온 손님 (?next=calendar)
+     돌아간 달력은 localStorage 에 넣어 둔 사주로 바로 열리고, ?login=1 로 연결 완료를 알린다. */
+  function returnToCalendar() {
+    var want = false;
+    try { want = sessionStorage.getItem(NEXT_CAL_KEY) === '1'; } catch (e) { want = false; }
+    if (!want || !state.user) return false;
+    try { sessionStorage.removeItem(NEXT_CAL_KEY); } catch (e) {}
+    location.replace('../?login=1');
     return true;
   }
   /** 연결이 끝났으면 달력의 초대 화면(#invite)으로 돌아간다 — 초대 코드를 만들러 온 손님 */
@@ -441,6 +456,7 @@
     }
     if (returnToTalis()) return;          // 카톡 연결 → 달력 #talis (수호 부적)
     if (returnToInvite()) return;         // 초대 화면 연결 → 달력 #invite (내 초대 링크)
+    if (returnToCalendar()) return;       // 🔐 사주 맛보기 관문 → 달력 (넣어 둔 사주 그대로, 2026-11-27)
     renderAuth(); renderLadder(); renderInvite();
     loadProfile();
     /* 카카오로 돌아왔는데 붙일 초대 코드가 없을 때(코드가 이미 비워졌거나 기억이 지워졌을 때)도

@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="사주타이밍">
 <meta name="application-name" content="사주타이밍">
 
-<link rel="stylesheet" href="assets/style.css?v=20261127a">
+<link rel="stylesheet" href="assets/style.css?v=20261127b">
 </head>
 <body>
 
@@ -330,6 +330,28 @@
         </div>
       </div>
     </div>
+
+    <!-- 🔐 카카오 3초 로그인 관문 (2026-11-27)
+         사주를 넣고도 카카오로 연결하지 않은 기기는 여기서 한 번 멈춘다.
+         · 위 카드(내 사주 여덟 글자)와 이 카드의 1줄 맛보기까지만 보이고,
+           아래 달력·오늘 브리핑·날짜별 상세 운세·액운 태우기 등은 body.is-login-gated 로 감춘다.
+         · 카카오로 연결하고 돌아오면(같은 주소 · localStorage) 넣어 둔 사주 그대로 달력이 열린다.
+         · 이미 결제해 코드를 받은 손님은 아래 '코드로 열기' — 기존 입장 코드 칸(#lockPanel)이
+           이 카드 안으로 잠깐 옮겨 온다(코드 로직은 새로 만들지 않는다).
+         · 보이기/감추기 판단은 calendar.js `applyLoginGate` 한 곳에서만 한다. -->
+    <section class="lgt" id="loginGate" hidden aria-labelledby="lgtTitle">
+      <p class="lgt__eyebrow">YOONISE · MY SAJU</p>
+      <h2 class="lgt__t" id="lgtTitle">사주는 세웠어요</h2>
+      <p class="lgt__line" id="lgtLine">사주 여덟 글자를 세웠어요.</p>
+      <a class="lgt__go" id="lgtGo" href="./member/?next=calendar&amp;autologin=1">
+        <span class="lgt__go-ic" aria-hidden="true">💬</span>
+        <span>카카오로 3초 만에 무료 달력 열기</span>
+      </a>
+      <p class="lgt__note">7일 무료 · 지금 넣은 사주 그대로 이어져요</p>
+      <div class="lgt__code" id="lgtCodeSlot"></div>
+      <button type="button" class="lgt__codeopen" id="lgtCodeOpen">이미 결제하고 코드를 받으셨나요? <b>코드로 열기</b></button>
+      <p class="lgt__tiny">카카오로 연결만 하면 돼요 · 사주는 이 기기에 저장돼요</p>
+    </section>
 
     <!-- ☀️ 하루 루틴 안내 박스 (2026-11-26 #22327 — 기존 '좋은 날은 놓치지 않고…' 안내 카드를 **교체**)
          · 자리: TODAY 위 그대로. 같은 안내를 두 번 두지 않는다(중복 박스 없음).
@@ -1215,17 +1237,17 @@
      (못 불러와도 페이지는 그대로 뜨고, 결제 버튼은 기존 카드결제 링크로 엽니다) -->
 <script src="https://lite.payapp.kr/public/api/v2/payapp-lite.js" defer></script>
 
-<script src="vendor/lunar.js?v=20261127a"></script>
-<script src="assets/manse.js?v=20261127a"></script>
-<script src="assets/timing.js?v=20261127a"></script>
-<script src="assets/chars.js?v=20261127a"></script>
-<script src="assets/brief.js?v=20261127a"></script>
-<script src="assets/morning-questions.js?v=20261127a"></script>
-<script src="assets/morning.js?v=20261127a"></script>
-<script src="assets/backnav.js?v=20261127a"></script>
-<script src="assets/calendar.js?v=20261127a"></script>
-<script src="assets/guide-paper.js?v=20261127a"></script>
-<script src="assets/special-guide.js?v=20261127a"></script>
-<script src="assets/pwa.js?v=20261127a"></script>
+<script src="vendor/lunar.js?v=20261127b"></script>
+<script src="assets/manse.js?v=20261127b"></script>
+<script src="assets/timing.js?v=20261127b"></script>
+<script src="assets/chars.js?v=20261127b"></script>
+<script src="assets/brief.js?v=20261127b"></script>
+<script src="assets/morning-questions.js?v=20261127b"></script>
+<script src="assets/morning.js?v=20261127b"></script>
+<script src="assets/backnav.js?v=20261127b"></script>
+<script src="assets/calendar.js?v=20261127b"></script>
+<script src="assets/guide-paper.js?v=20261127b"></script>
+<script src="assets/special-guide.js?v=20261127b"></script>
+<script src="assets/pwa.js?v=20261127b"></script>
 </body>
 </html>

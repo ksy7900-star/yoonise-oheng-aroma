@@ -703,8 +703,31 @@
   /* ── 무료 체험 기간 — '오늘~모레'로 굴러가지 않고 첫 사주 입력일에 못 박는다 ──────────
      사주를 넣어 달력이 처음 열린 날을 localStorage 에 남기고, 그 날부터 FREE_DAYS일만 무료.
      8일째부터는 오늘 날짜까지 전부 잠겨서, 눌러도 부적 대신 결제 안내가 나온다. */
+  /* ── 🔐 카카오 3초 로그인 관문 (2026-11-27) ────────────────────────────
+     사주를 넣고도 카카오로 연결하지 않은 기기는 '내 사주 맛보기'까지만 보여 주고,
+     7일 무료 달력·오늘 브리핑·날짜별 상세 운세는 관문 카드 하나로 세운다.
+     · 막지 않는 기기: ① 카카오 로그인 세션 있음 ② 입장 코드로 열린 기기(state.unlocked)
+       ③ 관문이 생기기 전(2026-11-27 이전)에 이미 무료 체험을 시작한 기존 손님
+     · 무료 7일은 이제 카카오로 연결한 뒤에 시작한다 — 연결 전에는 체험 시작일을 적지 않는다.
+     · 화면은 그대로 다 그려 두고 body.is-login-gated 하나로 감춘다(연결하면 그대로 펼쳐진다). */
+  var GATE_FROM = '2026-11-27';
+  var LOGIN_GATE_HREF = './member/?next=calendar&autologin=1';
+  /** 이 기기의 체험 시작일이 관문 날짜보다 앞선 것인가 — 기존 손님 판단에만 쓴다 */
+  function gateGrandfathered() {
+    var v = '';
+    try { v = localStorage.getItem(TRIAL_KEY) || ''; } catch (e) { return false; }
+    return /^\d{4}-\d{2}-\d{2}$/.test(v) && v < GATE_FROM;
+  }
+  function loginGateOn() {
+    if (TEST_OPEN_ALL) return false;
+    if (state.unlocked) return false;
+    if (hasSbSession()) return false;         // 카카오로 연결한 기기 — 그대로 연다
+    if (gateGrandfathered()) return false;    // 관문 전부터 체험 중이던 기존 손님 — 그대로 연다
+    return true;
+  }
   function trialStartISO() {
     if (!FREE_TRIAL_ENABLED || state.unlocked || !state.todayISO || !state.res) return '';
+    if (loginGateOn()) return '';              // 연결 전에는 무료 체험을 시작하지 않는다 (2026-11-27)
     if (trialStartMemo) return trialStartMemo;
     var v = '';
     try { v = localStorage.getItem(TRIAL_KEY) || ''; } catch (e) { v = ''; }
@@ -1046,6 +1069,7 @@
   function isLockedDay(iso) {
     if (TEST_OPEN_ALL) return false;          // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
     if (state.unlocked) return false;
+    if (loginGateOn()) return true;           // 🔐 연결 전에는 날짜를 열지 않는다 (2026-11-27)
     if (!FREE_TRIAL_ENABLED) return false;
     var w = trialWindow();
     if (!w) return false;
@@ -5478,9 +5502,56 @@
     }
   }
 
+  /* ── 🔐 카카오 3초 로그인 관문 — 화면 한 곳에서 켜고 끈다 (2026-11-27) ─────────
+     · 켜짐: body.is-login-gated (CSS 가 달력·오늘 브리핑·액운 태우기 등을 감춘다) + 관문 카드
+     · 꺼짐: 감춘 클래스만 지우면 그대로 펼쳐진다 — 이미 다 그려져 있다.
+     · 관문 카드의 '코드로 열기'는 기존 입장 코드 칸(#lockPanel)을 이 카드 안으로 잠깐 옮긴다.
+       (코드 확인·저장 로직은 새로 만들지 않는다 — 원래 칸과 버튼을 그대로 쓴다) */
+  var lockPanelHome = null;
+  function parkLockPanel(inGate) {
+    var p = $('#lockPanel');
+    if (!p) return;
+    if (inGate) {
+      var slot = $('#lgtCodeSlot');
+      if (!slot || slot.contains(p)) return;
+      if (!lockPanelHome) lockPanelHome = { parent: p.parentNode, next: p.nextSibling };
+      slot.appendChild(p);
+    } else if (lockPanelHome) {
+      var home = lockPanelHome; lockPanelHome = null;
+      try { home.parent.insertBefore(p, home.next || null); } catch (e) { }
+    }
+  }
+  function applyLoginGate() {
+    var on = loginGateOn();
+    var was = document.body.classList.contains('is-login-gated');
+    document.body.classList.toggle('is-login-gated', on);
+    var card = $('#loginGate');
+    if (card) card.hidden = !on;
+    if (!on) {
+      parkLockPanel(false);
+      /* 방금 연결을 마치고 돌아온 화면 — 체험 시작일·날짜 잠금 클래스를 한 번 다시 맞춘다 */
+      if (was && state.res) setTimeout(function () { if (!loginGateOn()) render(); }, 0);
+      return;
+    }
+    /* 1줄 맛보기 — 2027년에 유독 조심할 달 (달력·2027 한눈에와 같은 계산을 그대로 쓴 숫자) */
+    var line = $('#lgtLine');
+    if (line && !line.getAttribute('data-filled') && state.res) {
+      var d = null;
+      try { d = hookYearData(); } catch (e) { d = null; }
+      var ms = (d && d.months && d.months.length) ? d.months.join('·') + '월' : '';
+      line.innerHTML = ms
+        ? '사주 여덟 글자를 세웠어요.<br>2027년에 유독 조심할 달은 <b>' + esc(ms) + '</b>이에요.'
+        : '사주 여덟 글자를 세웠어요.';
+      line.setAttribute('data-filled', '1');
+    }
+    var go = $('#lgtGo');
+    if (go) go.setAttribute('href', LOGIN_GATE_HREF);
+  }
+
   /* ── 렌더 ──────────────────────────────────────────── */
   function render() {
     syncLockUI();          // 🔒 전용 배지·입력 잠금은 사주가 정해진 뒤에야 맞춰진다
+    applyLoginGate();      // 🔐 연결 전이면 사주 맛보기만 — 관문 카드 한 장 (2026-11-27)
     renderSavedBar();
     renderNatal();
     renderNatalMini();     // 2.0 — 맨 위 카드 안 미니 원국 1줄 (2026-11-23)
@@ -10165,6 +10236,9 @@
   function arrangeCareJump() {
     var care = $('#careJump'), lockBtn = $('#lockBtn');
     if (!care || !lockBtn) return;
+    /* 🔐 카카오 연결 전(관문 화면)에는 코드 칸을 달력 카드 안으로 되돌리지 않는다 —
+       관문 카드의 '코드로 열기'로 옮겨 둔 칸이 이 함수 때문에 제자리로 끌려가면 보이지 않는다 (2026-11-27) */
+    if (loginGateOn()) return;
     var parent = care.parentNode;                 // 달력 카드 안의 제자리
     if (!parent) return;
     var panel = $('#lockPanel'), tie = $('#codeBindNote'), ask = $('#lockAsk');
@@ -10356,6 +10430,9 @@
   function openLockPanel() {
     var p = $('#lockPanel'), btn = $('#lockBtn');
     if (!p) return;
+    /* 🔐 카카오 연결 전(관문 화면)이면 코드 칸을 달력이 아니라 관문 카드 안으로 옮겨 연다
+       — 달력 카드는 감춰져 있어 그 안의 칸은 보이지 않는다 (2026-11-27) */
+    if (loginGateOn()) parkLockPanel(true);
     /* 2026-11-25 — 코드 칸(#lockPanel)은 접히는 달력(#calBody) 안에 있다.
        달력이 접힌 채면 hidden 만 풀어도 화면에 나타나지 않으므로 먼저 달력을 펼친다.
        이 자동 펼침은 사용자가 고른 접힘 상태를 덮어쓰지 않는다(저장 안 함). */
@@ -11241,6 +11318,36 @@
       inviteArrival = planInviteNotice(false);
       showInviteNotice(1400);
     }
+
+    /* 💬 카카오 3초 연결하고 돌아온 손님 (member/?next=calendar → ../?login=1)
+       넣어 둔 사주는 그대로라 결과 화면이 바로 열리고, 관문 카드만 사라진다.
+       연결이 중간에 끊겨 세션이 없으면 그대로 관문 카드가 남는다 — 성공 문구를 먼저 띄우지 않는다. */
+    if (/(?:^|[?&])login=1(?:&|$)/.test(location.search)) {
+      try {
+        var lu = new URL(location.href);
+        lu.searchParams.delete('login');
+        history.replaceState(null, '', lu.pathname + (lu.search || '') + (lu.hash || ''));
+      } catch (e) { }
+      if (state.res) {
+        setTimeout(function () {
+          if (loginGateOn()) {
+            toast('카카오 연결이 끝나지 않았어요 — 한 번 더 눌러 주세요');
+          } else {
+            toast('💬 카카오 연결 완료 — 7일 무료 달력이 열렸어요');
+            var rEl = $('#result');
+            if (rEl) try { rEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { }
+          }
+        }, 700);
+      }
+    }
+    /* 다른 탭에서 카카오 연결을 마치고 이 화면으로 돌아온 경우 — 관문을 다시 판단한다 */
+    window.addEventListener('focus', function () { if (state.res) applyLoginGate(); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && state.res) applyLoginGate();
+    });
+    /* 🔐 관문 카드의 '코드로 열기' — 기존 입장 코드 칸을 이 카드 안으로 옮겨 연다 */
+    var lgtCode = $('#lgtCodeOpen');
+    if (lgtCode) lgtCode.addEventListener('click', function () { openLockPanel(); });
 
     /* 💎 카톡 3초 연결하고 돌아온 손님 — member 화면이 ../#talis 로 보낸다.
        돌아오는 즉시 내 2027 수호 부적 팝업을 크게 열어 준다 (2026-11-23 2차). */
