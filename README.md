@@ -4377,3 +4377,50 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 
 ### 5. 남은 한 조각 — SQL 1회 실행
 `repo/docs/member-benefits-naming-db.sql` 을 Supabase SQL Editor 에 붙여넣고 Run 해야 **개명·작명 할인**이 실제 결제에 적용된다(그 전에는 클라이언트가 정가 흐름으로 안전하게 되돌아간다). 이 파일이 `payapp_product`(naming 200,000) · `member_list_prices` · `member_coupons_for`·`payapp_prepare_order`('all' 공통) · `payapp_feedback`(개명·작명 = 코드 없는 상담형) · 규칙/기존 발급권 `applies_to=['all']` 갱신을 한 번에 한다.
+
+## §149. 🔐 생년월일 입력 후 카카오 3초 로그인 관문 — 사주 맛보기까지만 · 7일 무료 달력은 연결 뒤에 (?v=20261127b, 2026-11-27 · **배포·검증 완료**)
+
+**왜** — 사주만 넣고 달력도 열지 않은 채 나가는 방문자가 회원 DB(`profiles`)에 남지 않았다. 이제 생년월일을 넣은 직후 한 번 멈춰 **카카오 3초 연결**로 회원이 되게 하고, 7일 무료 달력은 연결한 뒤에 연다.
+
+### 1. 화면 — `#loginGate` (관문 카드 한 장)
+| 자리 | 내용 |
+| --- | --- |
+| 보이는 곳 | `#result` 맨 위, `내 사주` 카드(`#savedBar` · 여덟 글자 · `원국표 보기`) **바로 아래** |
+| 카드 | `YOONISE · MY SAJU` · **사주는 세웠어요** · 1줄 맛보기(`2027년에 유독 조심할 달은 1·7월이에요` — 2027 한눈에와 같은 계산) · 카카오 옐로 버튼 `💬 카카오로 3초 만에 무료 달력 열기` · `7일 무료 · 지금 넣은 사주 그대로 이어져요` |
+| 보조 길 | `이미 결제하고 코드를 받으셨나요? 코드로 열기` → **기존 입장 코드 칸(#lockPanel)을 이 카드 안으로 잠깐 옮겨** 연다(코드 확인·저장 로직은 그대로) |
+| 감추는 것 | 달력 카드 · TODAY 브리핑 · 아침의 질문 · 2027 핵심 해석 · 저녁 기록 · 하루 루틴 · 무료 이용법 · 첫 3일 특별 선물 · 더 해 볼 것 4칸 · 액운 태우기 · 케미/부적/개운템 · 설치·앱 배너 · 하단 이동 메뉴 · 히어로 바로가기/재미 4칸 · 구매 한 줄(`#passFoot` 등) |
+| 남기는 것 | `내 사주` 카드(원국·수정) · 1:1 상담 카드 · 사업자 정보·약관 3링크 |
+
+- 구현은 **화면을 그대로 다 그려 두고 `body.is-login-gated` 하나로 감춘다**(CSS). 연결이 끝나면 클래스만 지워 그대로 펼쳐진다 — 다시 그리지 않는다.
+- 판단은 `calendar.js` `loginGateOn()` **한 곳**: ① 카카오 로그인 세션 있음(`hasSbSession`) ② 입장 코드로 열린 기기(`state.unlocked`) ③ **2026-11-27 이전에 이미 무료 체험을 시작한 기존 손님**(`trialStart < GATE_FROM`) → 이 셋은 막지 않는다.
+- 연결 전에는 **무료 체험 시작일을 적지 않는다**(`trialStartISO()`가 관문 중 `''` 반환) → 7일은 카카오로 연결한 날부터. 날짜도 `isLockedDay()`가 관문 중 전부 잠금.
+
+### 2. 돌아오는 길 — `member/?next=calendar&autologin=1` → `../?login=1`
+- `member.js`: 기존 `#talis`·`#invite`와 **같은 방식**으로 `NEXT_CAL_KEY`(sessionStorage) + `returnToCalendar()` 추가. 카카오 OAuth 가 주소의 `?next=`를 지우므로 탭 표시로 기억한다.
+- 달력은 같은 오리진 `localStorage`의 사주로 바로 열리고, `?login=1`은 주소에서 지운 뒤 `💬 카카오 연결 완료 — 7일 무료 달력이 열렸어요` 토스트만 띄운다. 연결이 끊겨 세션이 없으면 관문이 그대로 남고 성공 문구를 띄우지 않는다.
+- 다른 탭에서 연결을 마치고 돌아온 경우도 `focus`·`visibilitychange`에서 관문을 다시 판단한다.
+
+### 3. 변경 파일
+| 파일 | 내용 |
+| --- | --- |
+| `calendar/index.html` | `#loginGate` 카드(주석 포함 35줄 추가) · 자산 `?v=` 13곳 → `20261127b` |
+| `calendar/assets/calendar.js` | +107줄 — `GATE_FROM`·`loginGateOn`·`gateGrandfathered`·`applyLoginGate`·`parkLockPanel`, `trialStartISO`/`isLockedDay`/`arrangeCareJump`/`openLockPanel` 4곳 관문 분기, `?login=1` 복귀 토스트 + focus 감시 |
+| `calendar/assets/style.css` | +82줄 — `body.is-login-gated` 감춤 목록 · `.lgt*` 카드 스타일 |
+| `calendar/member/member.js` | +16줄 — `NEXT_CAL_KEY`·`returnToCalendar()` · `applySession` 연결 |
+| `calendar/member/index.html` | `member.js?v=20261127b` |
+| `calendar/sw.js` | `VERSION = '20261127b'` |
+
+- **그대로 둔 것**: `manse.js`·사주 계산, 디자인·색감, PayApp 결제, `special-guide.js`(72시간), `/apply/`·`/yoon-key/`, 약관 3종, 기존 DB·RPC. 관문 중에도 `special-guide`의 72시간 기록은 종전과 같이 첫 사주 입력 시점을 쓴다.
+
+### 4. 검증 (Playwright · Chromium · 모바일 390×844 / 360·412 / iPhone UA)
+| 구분 | 결과 |
+| --- | --- |
+| 로컬 (127.0.0.1) | **72/72** — 관문 24(노출·감춤·1줄·CTA·넘침·체험일 미기록·코드 칸 이동·콘솔 0) · 로그인 링크/리다이렉트 6 · 연결된 기기 7 · 코드 기기 2 · 기존 체험 기기 2 · 오늘 시작 기기 2 · 회귀 13 · 해상도 16 |
+| 라이브 (`?v=20261127b`) | **43/43 + 29/29** — 같은 항목 전부 통과, 가로 넘침 0(360·390·412·iPhone), 콘솔 에러 0 |
+| 복귀 왕복 (라이브) | 입력 → 관문 → `member/?next=calendar&autologin=1` → (카카오 인증 주소 `redirect_uri=…/calendar/member/`, `provider=kakao` 확인) → 세션을 심고 `?login=1` 복귀 → **관문 사라지고 `김나영 님 · 1979.10.25 · 시간 모름 · 여성` 그대로**, 체험 시작일 기록, 토스트 표시 |
+| 실제 카카오 계정 | 로그인은 하지 않았다(지시대로 링크·리다이렉트 파라미터까지만). DB 쓰기·텔레그램 없음 |
+| 스크린샷 | `attachments/2026-11-27/live-01~07-*.png`(관문·코드 칸·member 자동로그인·복귀 후 달력·코드 보유 달력·해상도) |
+
+### 5. 남은 판단
+- 관문 화면에서 **구매 한 줄·CTA 섹션을 감췄다**(행동을 카카오 하나로 모으기 위해). 결제로 바로 가는 길을 함께 두려면 `body.is-login-gated #passFoot` 등 4줄만 빼면 된다.
+- 로그인이 만드는 것은 `profiles` 회원 행이고, **사주(생년월일·시간)는 지금처럼 이 기기(localStorage)** 에만 있다. 사주를 DB에 남겨 마케팅에 쓰려면 별도 컬럼·동의 문구가 필요하다(이번 작업 범위 밖).
