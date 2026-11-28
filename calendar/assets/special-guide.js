@@ -253,7 +253,10 @@
     if (h > 0) return h + '시간 ' + p(m) + '분';
     return m + '분';
   }
-  var PAYCMP_T = '윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드 <b>무료 증정</b>';
+  /* 2026-11-28 윤희 님 — "전이면 감정서 준다는것을 강조해야겠지".
+     · 이름은 앱의 다른 화면(전달·보관 버튼)이 이미 쓰는 '감정서'로 맞췄다.
+     · 남은 시간 위에 '종료까지', 그 아래에 감정서 이름을 두 줄로 크게 — 칸에서 제일 먼저 눈에 들어오게. */
+  var PAYCMP_T = '🎁 윤이세 2027 맞춤 감정서 <b>무료 증정</b>';
   var PAYCMP_OVER_T = '지난 혜택이에요 — 지금 결제해도 1년 전체는 그대로 열려요';
   function payCmpHTML() {
     var st = payCmpState(), over = st === 'over';
@@ -265,6 +268,7 @@
       (st === 'live' && f ? fmtCmp(f.deadline_ms - Date.now()) : (over ? '종료' : '—')) + '</p>' +
       '<span class="paycmp__gift-rule" aria-hidden="true"></span>' +
       '<p class="paycmp__gift-t" id="payCmpT">' + (over ? PAYCMP_OVER_T : PAYCMP_T) + '</p>' +
+      (over ? '' : '<p class="paycmp__gift-d">결제 후 신청 한 번이면 카카오톡으로 보내드려요</p>') +
       '</div>';
   }
   /** 이 칸 하나만 다시 칠한다 — 20초마다, 그리고 72시간 기록이 새로 들어올 때(saveFirst) */

@@ -6028,7 +6028,10 @@ a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px;
   padding:11px 9px 10px; border-radius:15px;
   background:#FBF7EF; border:1px solid rgba(28,24,19,.10);
 }
-.paycmp__col--now{ background:#FFFCF4; border-color:rgba(165,101,15,.30); }
+.paycmp__col--now{
+  background:#FFFCF4; border:1.5px solid rgba(165,101,15,.34);
+  box-shadow:0 10px 20px -18px rgba(140,90,10,.9);
+}
 /* 두 칸의 제목·이름 높이를 같게 잡아 아래 네이비 배지가 나란히 서게 한다
    (한 칸만 두 줄로 접히면 배지 높이가 어긋나 보인다) */
 .paycmp__when{
@@ -6064,15 +6067,19 @@ a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px;
   line-height:1.4; color:#8A5A16;
 }
 .paycmp__gift-clock{
-  margin:3px 0 0; font-size:15px; font-weight:800; line-height:1.25;
+  margin:3px 0 0; font-size:17px; font-weight:800; line-height:1.25;
   letter-spacing:-.04em; color:#8A4E0B; word-break:keep-all;
 }
 .paycmp__gift-rule{ display:block; height:1px; margin:8px 2px; background:rgba(165,101,15,.26); }
 .paycmp__gift-t{
-  margin:0; font-size:9.5px; font-weight:600; line-height:1.55;
+  margin:0; font-size:11.5px; font-weight:800; line-height:1.4;
   letter-spacing:-.03em; color:#7A4A08; word-break:keep-all;
 }
 .paycmp__gift-t b{ font-weight:800; color:#8A4E0B; white-space:nowrap; }
+.paycmp__gift-d{
+  margin:5px 0 0; font-size:8.5px; font-weight:600; line-height:1.45;
+  letter-spacing:-.02em; color:#8A5A16; word-break:keep-all;
+}
 /* 72시간이 지난 기기 — 칸은 남기고 담담하게 회색으로 (빨간 경고·깜박임 없이) */
 .paycmp__col--now.is-over{ background:#FBF7EF; border-color:rgba(28,24,19,.10); }
 .paycmp__col--now.is-over .paycmp__when{ color:var(--mute); font-weight:700; }
@@ -6081,6 +6088,16 @@ a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px;
 .paycmp__gift.is-over .paycmp__gift-clock{ font-size:13px; color:#9A9184; }
 .paycmp__gift.is-over .paycmp__gift-rule{ background:rgba(28,24,19,.12); }
 .paycmp__gift.is-over .paycmp__gift-t{ font-weight:500; color:#8C8477; }
+/* 오른쪽 = 혜택이 끝난 뒤의 길 — 같은 14,900원이지만 배지를 담담하게 해
+   눈이 왼쪽(혜택 기간)으로 먼저 가게 한다. 눈에 띄는 '증정 없음' 한 줄로 차이를 못 박는다. */
+.paycmp__col--later .paycmp__badge{ background:#EDE7DA; box-shadow:none; }
+.paycmp__col--later .paycmp__badge b{ color:#3A3428; font-size:16px; }
+.paycmp__none{
+  margin:8px 0 0; padding:8px 4px; border-radius:11px;
+  background:rgba(28,24,19,.045); text-align:center;
+  font-size:9px; line-height:1.4; letter-spacing:-.03em;
+  color:var(--mute); word-break:keep-all;
+}
 /* 오른쪽 — 체크 네 줄 */
 .paycmp__list{
   list-style:none; margin:9px 0 0; padding:0;
@@ -6101,6 +6118,23 @@ a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px;
   font-size:9px; line-height:1.4; letter-spacing:-.03em;
   color:var(--mute); word-break:keep-all;
 }
+/* ── 72시간이 지난 뒤 — 비교 없이 달력 카드 한 장 (2026-11-28 윤희 님) ────────
+   같은 값·같은 혜택 목록이지만 한 장이라 '무엇을 사는지'만 남는다.
+   넓어진 만큼 목록은 두 줄로 나눠 카드가 헐렁해 보이지 않게 한다. */
+.paycmp--single{ grid-template-columns:1fr; margin-top:12px; }
+.paycmp--single .paycmp__col--solo{
+  padding:15px 15px 13px; border-radius:17px;
+  background:#FFFCF4; border:1px solid rgba(165,101,15,.18);
+}
+.paycmp--single .paycmp__when{
+  min-height:0; font-size:9.5px; font-weight:700; color:var(--mute); letter-spacing:.01em;
+}
+.paycmp--single .paycmp__name{ min-height:0; margin-top:4px; font-size:14.5px; }
+.paycmp--single .paycmp__badge{ margin-top:10px; }
+.paycmp--single .paycmp__list{
+  display:grid; grid-template-columns:1fr 1fr; gap:7px 10px; margin-top:12px;
+}
+.paycmp--single .paycmp__until{ padding-top:12px; }
 /* 아주 좁은 폰(360px 이하) — 두 칸을 유지하되 글자를 한 단계 줄인다 */
 @media (max-width:360px){
   .paycmp{ gap:6px; }
@@ -6109,7 +6143,9 @@ a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px;
   .paycmp__badge{ padding:10px 2px; }
   .paycmp__badge b{ font-size:15.5px; }
   .paycmp__gift{ padding:8px 6px 9px; }
-  .paycmp__gift-clock{ font-size:13.5px; }
+  .paycmp__gift-clock{ font-size:15px; }
+  .paycmp__gift-t{ font-size:11px; }
+  .paycmp--single .paycmp__name{ font-size:13.5px; }
   .paycmp__list li{ font-size:9.5px; padding-left:12px; }
   .paycmp__list li::before{ font-size:9.5px; }
 }

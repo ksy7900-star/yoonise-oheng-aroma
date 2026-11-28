@@ -7863,17 +7863,38 @@
       '<button type="button" class="shop__mini" data-pay="bank" data-item="pass">🏦 계좌이체 안내</button>' +
       '<p class="pay__note" data-pay-note role="status" aria-live="polite" hidden></p>';
   }
-  /** 결제 창의 2단 비교 (2026-11-26 윤희 님 — "세번째사진 샘플")
+  /** 결제 창의 금액 칸 (2026-11-26 윤희 님 — "세번째사진 샘플" / 2026-11-28 다듬음)
       같은 14,900원인데, 무엇이 다른지 한눈에: 첫 3일(72시간) 안에 결제하면
-      윤이세가 직접 전하는 맞춤 운세 활용 가이드가 함께 간다.
-      · 예전의 긴 가격 배너 · 혜택 카드 · 4줄 특징 목록은 이 한 칸으로 합쳤다.
+      윤이세 2027 맞춤 감정서가 함께 간다.
+      2026-11-28 윤희 님 — "이내와 이후가 차이도 모르겠고 두개 떠있는것같다는 느낌":
+      ① 72시간이 지난 기기에는 비교할 것이 없다 → 왼쪽 '이내' 칸을 빼고 달력 카드 한 장만.
+      ② 아직 72시간 안이면 두 칸을 그대로 두되, 왼쪽은 남은 시간과 감정서 증정을 크게,
+         오른쪽은 '감정서 증정 없음'을 담담하게 적어 두 길이 확실히 갈라 보이게 한다.
       · 왼쪽 금빛 칸의 남은 시간은 special-guide.js 가 그린다 — 72시간 기록을 아는 곳이 거기다.
       · 360px 폭에서도 두 칸이 나란히 서도록 접히지 않는 그리드로 잡았다(style.css .paycmp). */
+  var PASS_PERKS_HTML =
+    '<li>전체 사주 타이밍 달력</li>' +
+    '<li>날짜별 운세 안내</li>' +
+    '<li>매일 1회 액운 태우기</li>' +
+    '<li>결제 즉시 이용</li>';
   function passCompareHTML() {
     var gift = (window.SpecialGuide && window.SpecialGuide.payCmpHTML) ? window.SpecialGuide.payCmpHTML() : '';
     var over = !!(window.SpecialGuide && window.SpecialGuide.payCmpOver && window.SpecialGuide.payCmpOver());
+    /* 72시간 경과 후 — 나란히 놓을 두 길이 없으니 달력 카드 한 장만 남긴다
+       (지난 혜택을 회색 칸으로 붙여 두면 '무엇을 사는지'가 다시 흐려진다) */
+    if (over) {
+      return '<div class="paycmp paycmp--single">' +
+        '<div class="paycmp__col paycmp__col--solo">' +
+        '<p class="paycmp__when">1년 전체 패스 · 앱 전용</p>' +
+        '<p class="paycmp__name">2027 사주 타이밍 달력</p>' +
+        '<p class="paycmp__badge"><b>14,900원</b></p>' +
+        '<ul class="paycmp__list">' + PASS_PERKS_HTML + '</ul>' +
+        '<p class="paycmp__until">2027년 12월 31일까지 이용</p>' +
+        '</div>' +
+        '</div>';
+    }
     return '<div class="paycmp">' +
-      '<div class="paycmp__col paycmp__col--now' + (over ? ' is-over' : '') + '">' +
+      '<div class="paycmp__col paycmp__col--now">' +
       '<p class="paycmp__when">첫 3일(72시간) 이내</p>' +
       '<p class="paycmp__name">2027 사주 타이밍 달력</p>' +
       '<p class="paycmp__badge"><b>14,900원</b></p>' +
@@ -7884,12 +7905,8 @@
       '<p class="paycmp__when">첫 3일(72시간) 경과 후</p>' +
       '<p class="paycmp__name">2027 사주 타이밍 달력</p>' +
       '<p class="paycmp__badge"><b>14,900원</b></p>' +
-      '<ul class="paycmp__list">' +
-      '<li>전체 사주 타이밍 달력</li>' +
-      '<li>날짜별 운세 안내</li>' +
-      '<li>매일 1회 액운 태우기</li>' +
-      '<li>결제 즉시 이용</li>' +
-      '</ul>' +
+      '<p class="paycmp__none">감정서 증정 없음</p>' +
+      '<ul class="paycmp__list">' + PASS_PERKS_HTML + '</ul>' +
       '<p class="paycmp__until">2027년 12월 31일까지 이용</p>' +
       '</div>' +
       '</div>';
