@@ -118,10 +118,10 @@
         },
         {
           "@type": "Question",
-          "name": "사주 강의와 명리학 특강은 무엇이 다른가요?",
+          "name": "운세 강의는 점을 보는 건가요? 웰니스 강의·오행 테라피·마음챙김과는 어떻게 다른가요?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "같은 뿌리를 다루지만 목적이 다릅니다. 사주 강의·운세 강의는 내 사주를 읽는 법과 오늘의 기운을 일상에 적용하는 쪽에, 명리학 특강은 오행과 십성의 원리를 조직·관계의 언어로 풀어 설명하는 쪽에 무게를 둡니다. 기업·기관 요청에 따라 한쪽으로 모으거나 두 가지를 한 자리에 담아 구성합니다."
+            "text": "미래를 단정하는 점이 아니라, 타고난 오행의 비율로 기질과 스트레스 반응을 설명하는 자기이해의 강의입니다. 오행 웰니스·오행 테라피는 그 설명을 향·색·호흡·습관 같은 회복 루틴으로 옮기는 실습이고, 마음챙김은 그 루틴을 매일 이어가는 방법으로 연결됩니다. 사주는 미래를 정하지 않고 선택을 돕는 참고로만 사용합니다."
           }
         },
         {
@@ -139,30 +139,6 @@
             "@type": "Answer",
             "text": "네. 부산 사주 강의와 부산 명리학 강사 요청이 가장 많지만, 경남 특강을 비롯해 전국 출강이 가능합니다. 이동 일정과 강연 시간을 함께 조율해 안내드립니다."
           }
-        },
-        {
-          "@type": "Question",
-          "name": "운세 강의는 점을 보는 건가요? 웰니스 강의·오행 테라피·마음챙김과는 어떻게 다른가요?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "미래를 단정하는 점이 아니라, 타고난 오행의 비율로 기질과 스트레스 반응을 설명하는 자기이해의 강의입니다. 오행 웰니스·오행 테라피는 그 설명을 향·색·호흡·습관 같은 회복 루틴으로 옮기는 실습이고, 마음챙김은 그 루틴을 매일 이어가는 방법으로 연결됩니다. 사주는 미래를 정하지 않고 선택을 돕는 참고로만 사용합니다."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "기업 워크숍·임직원 힐링 특강도 섭외할 수 있나요?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "네. 기업 워크숍은 반나절·하루 단위로, 임직원 힐링 특강과 조직문화 소통 특강은 60~90분 강연형으로 구성합니다. 감정노동이 큰 조직은 감정노동 스트레스 관리·민원 응대 힐링을, 복지·기업 문화 행사는 오행 웰니스 프로그램과 마음챙김 세션을 추천드립니다."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "실제로 어디에서 특강을 하셨나요?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "울산교육청, 영덕군청 민원처리과를 비롯한 공공기관·기업·기관 특강에서 사주 강의와 명리학 특강을 진행했습니다. 창암명리학회 수석 학술이사로 활동하고 있으며, 경북신문 『윤이세의 생활 사주명리』를 연재 중입니다."
-          }
         }
       ]
     }
@@ -172,18 +148,17 @@
 
 <style>
 /* ==========================================================
-   윤이세 — 강의·특강 안내 (/lecture/)
+   윤이세 — 강의·특강 안내 (/lecture/) · 짧고 굵게
    아이보리 · 골드 에디토리얼 톤 (index.html / story와 같은 결)
    ========================================================== */
 :root{
   --ink:#1E1D1A; --ink-soft:#4A4741; --ink-mute:#857F74;
-  --cream:#F7F1E4; --cream-deep:#EFE6D4; --paper:#FFFDF8;
+  --cream:#F7F1E4; --paper:#FFFDF8;
   --line:rgba(30,29,26,.10); --line-soft:rgba(30,29,26,.06);
   --gold:#B9975B; --gold-deep:#8C6B33;
-  --sage:#A9B8A2; --lilac:#C9B8DE;
   --serif:"Nanum Myeongjo","NanumMyeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","SamsungMyeongjo","Batang",serif;
   --sans:"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,-apple-system,sans-serif;
-  --radius:24px; --radius-sm:14px;
+  --radius:22px; --radius-sm:14px;
   --shadow:0 14px 34px rgba(40,34,24,.07);
   --shadow-soft:0 6px 18px rgba(40,34,24,.05);
 }
@@ -201,8 +176,6 @@ p{margin:0}
 ul,ol{margin:0;padding:0;list-style:none}
 a{color:inherit}
 img{display:block;max-width:100%}
-button{font-family:inherit;cursor:pointer}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* ── 배경 ───────────────────────────────── */
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
@@ -214,55 +187,42 @@ button{font-family:inherit;cursor:pointer}
   radial-gradient(rgba(30,29,26,.045) 1px,transparent 1px);background-size:3px 3px}
 
 /* ── 상단 바 ─────────────────────────────── */
-.topbar{max-width:760px;margin:0 auto;padding:18px 24px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topbar{max-width:760px;margin:0 auto;padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .topbar__brand{font-family:var(--serif);font-size:14px;letter-spacing:.02em;text-decoration:none;color:var(--ink-soft)}
 .topbar__brand b{font-weight:700;color:var(--ink)}
 .topbar__cta{
   display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;
-  background:var(--ink);color:var(--cream);font-size:11.5px;font-weight:700;letter-spacing:-.01em;
+  background:var(--ink);color:var(--cream);font-size:11.5px;font-weight:700;
   text-decoration:none;box-shadow:0 8px 18px -12px rgba(30,29,26,.9);white-space:nowrap;
 }
 
 /* ── 히어로 ─────────────────────────────── */
 .hero{
-  position:relative;max-width:760px;margin:14px auto 0;padding:44px 26px 40px;
+  position:relative;max-width:760px;margin:12px auto 0;padding:38px 26px 30px;
   color:var(--cream);background:linear-gradient(165deg,#262420 0%,#1B1A17 62%,#211F1B 100%);
-  border-radius:28px;overflow:hidden;box-shadow:0 24px 50px -34px rgba(30,29,26,.9);
+  border-radius:26px;overflow:hidden;box-shadow:0 24px 50px -34px rgba(30,29,26,.9);
 }
 .hero::after{
   content:"講";position:absolute;right:-10px;bottom:-34px;
-  font-family:var(--serif);font-size:170px;line-height:1;color:rgba(247,241,228,.05);
-  pointer-events:none;
+  font-family:var(--serif);font-size:170px;line-height:1;color:rgba(247,241,228,.05);pointer-events:none;
 }
-.hero__eyebrow{
-  position:relative;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(247,241,228,.55);margin-bottom:16px;font-weight:600;
-}
-.hero__title{
-  position:relative;font-family:var(--serif);font-size:clamp(28px,6.4vw,40px);
-  line-height:1.32;font-weight:500;letter-spacing:-.03em;
-}
+.hero__eyebrow{position:relative;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(247,241,228,.55);margin-bottom:14px;font-weight:600}
+.hero__title{position:relative;font-family:var(--serif);font-size:clamp(27px,6.3vw,38px);line-height:1.34;font-weight:500;letter-spacing:-.03em}
 .hero__title em{font-style:normal;color:#E7D3A8;position:relative}
-.hero__title em::after{
-  content:"";position:absolute;left:0;right:0;bottom:3px;height:8px;
-  background:rgba(231,211,168,.16);border-radius:4px;z-index:-1;
+.hero__title em::after{content:"";position:absolute;left:0;right:0;bottom:3px;height:8px;background:rgba(231,211,168,.16);border-radius:4px;z-index:-1}
+.hero__lead{position:relative;margin-top:14px;font-size:13.5px;line-height:1.8;color:rgba(247,241,228,.78)}
+.hero__lead b{color:#fff;font-weight:700}
+.hero__badges{position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+.hero__badges li{
+  padding:6px 10px;border-radius:999px;border:1px solid rgba(247,241,228,.18);
+  background:rgba(247,241,228,.05);font-size:10.5px;font-weight:600;color:rgba(247,241,228,.8);
+  letter-spacing:-.01em;line-height:1.4;
 }
-.hero__def{
-  position:relative;margin-top:14px;padding-left:13px;border-left:2px solid rgba(185,151,91,.7);
-  font-size:13.5px;line-height:1.8;color:rgba(247,241,228,.82);
-}
-.hero__def b{color:#fff;font-weight:700}
-.hero__sub{position:relative;margin-top:16px;font-size:13.5px;line-height:1.82;color:rgba(247,241,228,.72)}
-.hero__facts{position:relative;display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
-.hero__facts li{
-  padding:6px 11px;border-radius:999px;border:1px solid rgba(247,241,228,.18);
-  background:rgba(247,241,228,.05);font-size:11px;font-weight:600;color:rgba(247,241,228,.86);
-  white-space:nowrap;
-}
-.hero__btns{position:relative;display:flex;flex-direction:column;gap:8px;margin-top:24px}
+.hero__badges b{color:#F3E4C4;font-weight:800}
+.hero__btns{position:relative;display:flex;flex-direction:column;gap:8px;margin-top:22px}
 .btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:15px 18px;border-radius:16px;text-decoration:none;
+  padding:15px 18px;border-radius:15px;text-decoration:none;
   font-size:14px;font-weight:800;letter-spacing:-.02em;
   transition:transform .16s ease,filter .2s ease;
 }
@@ -275,255 +235,161 @@ button{font-family:inherit;cursor:pointer}
   .hero__btns .btn{flex:1}
 }
 
-/* ── 본문 공통 ───────────────────────────── */
-.wrap{max-width:760px;margin:0 auto;padding:0 24px 56px}
-.sec{margin-top:46px}
-.sec__eyebrow{
-  display:flex;align-items:center;gap:9px;font-size:10px;font-weight:700;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--gold-deep);
+/* ── 강연 현장 사진 ─────────────────────── */
+.onsite{max-width:760px;margin:12px auto 0;padding:0 20px}
+.onsite figure{
+  margin:0;border-radius:18px;overflow:hidden;background:var(--paper);
+  border:1px solid rgba(185,151,91,.26);box-shadow:var(--shadow);
 }
+.onsite img{width:100%;height:auto;display:block;aspect-ratio:4/3;object-fit:cover}
+.onsite figcaption{padding:11px 15px 13px;background:linear-gradient(180deg,#FFFDF8 0%,#FBF4E7 100%)}
+.onsite figcaption b{display:block;font-family:var(--serif);font-size:13px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.5}
+.onsite figcaption span{display:block;margin-top:2px;font-size:11px;line-height:1.6;color:var(--ink-soft)}
+
+/* ── 본문 공통 ───────────────────────────── */
+.wrap{max-width:760px;margin:0 auto;padding:0 24px 8px}
+.sec{margin-top:40px}
+.sec__eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-deep)}
 .sec__eyebrow::after{content:"";flex:1 1 auto;height:1px;background:var(--line)}
-.sec__title{margin-top:12px;font-family:var(--serif);font-size:clamp(21px,4.6vw,26px);font-weight:600;letter-spacing:-.035em}
-.sec__lead{margin-top:10px;font-size:14px;line-height:1.85;color:var(--ink-soft)}
+.sec__title{margin-top:10px;font-family:var(--serif);font-size:clamp(20px,4.5vw,25px);font-weight:600;letter-spacing:-.035em}
+.sec__lead{margin-top:8px;font-size:13px;line-height:1.8;color:var(--ink-soft)}
 .sec__lead b{color:var(--ink);font-weight:700}
 
-/* ── 왜 ──────────────────────────────────── */
-.why{display:grid;gap:10px;margin-top:18px}
-@media (min-width:640px){.why{grid-template-columns:1fr 1fr 1fr}}
-.why__card{
-  padding:18px 18px 17px;border-radius:var(--radius-sm);background:var(--paper);
-  border:1px solid var(--line-soft);box-shadow:var(--shadow-soft);
-}
-.why__no{
-  font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--gold);
-}
-.why__t{margin-top:8px;font-family:var(--serif);font-size:16px;line-height:1.45;font-weight:600;letter-spacing:-.03em}
-.why__d{margin-top:7px;font-size:12.5px;line-height:1.8;color:var(--ink-soft)}
-.quote{
-  margin-top:16px;padding:18px 20px;border-radius:var(--radius-sm);
-  background:linear-gradient(135deg,#FBF5E8 0%,#FFFDF8 70%);
-  border:1px solid rgba(185,151,91,.28);
-}
-.quote p{font-family:var(--serif);font-size:14.5px;line-height:1.8;color:var(--ink);letter-spacing:-.02em}
-.quote span{display:block;margin-top:9px;font-size:11.5px;line-height:1.7;color:var(--ink-mute)}
-
-/* ── 강의 주제 ───────────────────────────── */
-.topics{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+/* ── 강의 주제 카드 ─────────────────────── */
+.topics{display:grid;gap:10px;margin-top:18px}
+@media (min-width:640px){.topics{grid-template-columns:1fr 1fr}}
 .topic{
-  position:relative;padding:22px 20px 20px;border-radius:var(--radius);
-  background:var(--paper);border:1px solid var(--line-soft);box-shadow:var(--shadow);
-  overflow:hidden;
-}
-.topic__no{
-  position:absolute;right:14px;top:6px;font-family:var(--serif);font-size:56px;line-height:1;
-  font-weight:600;color:rgba(30,29,26,.05);letter-spacing:-.04em;pointer-events:none;
+  position:relative;padding:18px 18px 17px;border-radius:var(--radius-sm);
+  background:var(--paper);border:1px solid var(--line-soft);box-shadow:var(--shadow-soft);
 }
 .topic__tag{
-  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;
-  background:rgba(169,184,162,.22);color:#4E6347;font-size:10.5px;font-weight:800;letter-spacing:-.01em;
+  display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;
+  background:rgba(169,184,162,.22);color:#4E6347;font-size:10px;font-weight:800;
 }
 .topic--2 .topic__tag{background:rgba(201,184,222,.26);color:#5C4A78}
 .topic--3 .topic__tag{background:rgba(185,151,91,.20);color:var(--gold-deep)}
 .topic--4 .topic__tag{background:rgba(193,112,92,.18);color:#8E4A3A}
 .topic__title{
-  position:relative;margin-top:10px;padding-right:38px;
-  font-family:var(--serif);font-size:clamp(17px,3.9vw,20px);line-height:1.48;font-weight:600;letter-spacing:-.03em;
+  margin-top:9px;font-family:var(--serif);font-size:clamp(16px,3.6vw,18px);
+  line-height:1.45;font-weight:600;letter-spacing:-.03em;
 }
-.topic__sum{margin-top:8px;font-size:13px;line-height:1.82;color:var(--ink-soft)}
-.topic__list{margin-top:13px;border-top:1px solid var(--line-soft)}
-.topic__list li{
-  display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start;
-  padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.7;color:var(--ink-soft);
-}
-.topic__list li:last-child{border-bottom:0;padding-bottom:0}
-.topic__list dt,.topic__list .k{
-  font-size:10.5px;font-weight:800;letter-spacing:.02em;color:var(--gold-deep);padding-top:2px;
-}
-.topic__list li b{color:var(--ink);font-weight:700}
-.topic__note{
-  margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(30,29,26,.035);
-  font-size:11.5px;line-height:1.72;color:var(--ink-mute);
-}
+.topic__sum{margin-top:6px;font-size:12.5px;line-height:1.75;color:var(--ink-soft)}
+.topic__sum b{color:var(--ink);font-weight:700}
 
-/* ── 강사 소개 ───────────────────────────── */
-.profile{
-  margin-top:20px;padding:24px 22px;border-radius:var(--radius);
-  background:linear-gradient(168deg,#FFFDF8 0%,#FBF4E7 100%);
-  border:1px solid rgba(185,151,91,.24);box-shadow:var(--shadow);
-}
-.profile__head{display:flex;align-items:center;gap:14px}
-.profile__mark{
-  flex:0 0 auto;width:54px;height:54px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--serif);font-size:20px;font-weight:600;color:#F7F1E4;
-  background:linear-gradient(150deg,#3A3730,#1E1D1A);letter-spacing:.02em;
-}
-.profile__name{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.02em}
-.profile__role{margin-top:2px;font-size:11.5px;font-weight:700;color:var(--gold-deep);letter-spacing:-.01em}
-.profile__body{margin-top:15px;font-size:13px;line-height:1.9;color:var(--ink-soft)}
-.profile__body + .profile__body{margin-top:10px}
-.profile__body b{color:var(--ink);font-weight:700}
-.facts{margin-top:16px;display:flex;flex-direction:column;gap:0;border-top:1px solid rgba(185,151,91,.28)}
-.facts li{
-  display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:start;
-  padding:11px 0;border-bottom:1px solid rgba(30,29,26,.07);font-size:12.5px;line-height:1.72;color:var(--ink-soft);
-}
-.facts .k{font-size:10.5px;font-weight:800;color:var(--ink-mute);padding-top:3px;letter-spacing:.02em}
-.facts a{color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
-.col-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
-.col-links a{
-  padding:9px 13px;border-radius:999px;background:#fff;border:1px solid var(--line);
-  font-size:11.5px;font-weight:700;text-decoration:none;color:var(--ink-soft);
-  box-shadow:var(--shadow-soft);
-}
-.col-links a i{font-style:normal;color:var(--gold);margin-left:3px}
+/* ── 작은 안내 글씨 ─────────────────────── */
+.fee{margin-top:14px;display:flex;align-items:flex-start;gap:7px;font-size:11px;line-height:1.75;color:var(--ink-mute);letter-spacing:-.01em}
+.fee i{font-style:normal;opacity:.8}
+.fee b{font-weight:700;color:var(--ink-soft)}
+.region{margin-top:4px;padding-left:14px;font-size:11px;line-height:1.75;color:var(--ink-mute)}
+.region b{color:var(--ink-soft);font-weight:700}
 
 /* ── 문의 ───────────────────────────────── */
 .contact{
-  margin-top:46px;padding:28px 22px 22px;border-radius:26px;
+  margin:36px auto 0;max-width:760px;padding:28px 22px 24px;border-radius:24px;
   background:linear-gradient(165deg,#262420 0%,#1B1A17 70%,#211F1B 100%);
   color:var(--cream);box-shadow:0 26px 50px -36px rgba(30,29,26,1);
 }
 .contact__eyebrow{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:rgba(231,211,168,.8);font-weight:700}
-.contact__title{margin-top:10px;font-family:var(--serif);font-size:clamp(21px,4.6vw,25px);line-height:1.45;font-weight:500;letter-spacing:-.03em;color:#fff}
-.contact__sub{margin-top:9px;font-size:12.5px;line-height:1.8;color:rgba(247,241,228,.7)}
-.contact__list{margin-top:18px;border-top:1px solid rgba(247,241,228,.14)}
-.contact__list li{border-bottom:1px solid rgba(247,241,228,.14)}
-.contact__list a,.contact__list span{
-  display:flex;align-items:center;gap:10px;padding:13px 2px;
-  font-size:13.5px;font-weight:700;text-decoration:none;color:#F7F1E4;letter-spacing:-.01em;
+.contact__title{margin-top:9px;font-family:var(--serif);font-size:clamp(21px,4.6vw,25px);line-height:1.42;font-weight:500;letter-spacing:-.03em;color:#fff}
+.contact__sub{margin-top:8px;font-size:12.5px;line-height:1.8;color:rgba(247,241,228,.7)}
+.contact__sub b{color:#F7F1E4}
+.contact .hero__btns{margin-top:18px}
+.contact__mail{margin-top:14px;font-size:11px;line-height:1.8;color:rgba(247,241,228,.55)}
+.contact__mail a{color:rgba(247,241,228,.8);text-underline-offset:2px}
+.contact .fee--dark{color:rgba(247,241,228,.5);margin-top:12px}
+.contact .fee--dark b{color:rgba(247,241,228,.72)}
+
+/* ── 접힘 박스 ───────────────────────────── */
+.folds{max-width:760px;margin:26px auto 0;padding:0 24px;display:grid;gap:10px}
+.fold{
+  border-radius:16px;background:rgba(255,253,248,.75);
+  border:1px solid var(--line);box-shadow:var(--shadow-soft);overflow:hidden;
 }
-.contact__list i{font-style:normal;font-size:15px;width:20px;text-align:center;opacity:.9}
-.contact__list em{font-style:normal;margin-left:auto;font-size:10.5px;font-weight:600;opacity:.5}
-.contact__need{margin-top:16px;padding:14px 15px;border-radius:12px;background:rgba(247,241,228,.06);border:1px solid rgba(247,241,228,.12)}
-.contact__need p{font-size:11px;font-weight:800;letter-spacing:.04em;color:rgba(231,211,168,.9)}
-.contact__need ul{margin-top:7px;display:grid;grid-template-columns:1fr 1fr;gap:5px 12px}
-.contact__need li{font-size:11.5px;line-height:1.7;color:rgba(247,241,228,.8)}
-.contact__need li::before{content:"·";color:var(--gold);margin-right:5px;font-weight:800}
+.fold > summary{
+  position:relative;list-style:none;cursor:pointer;padding:15px 44px 15px 17px;
+  font-size:13px;font-weight:800;letter-spacing:-.02em;color:var(--ink);
+}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary::after{
+  content:"+";position:absolute;right:17px;top:12px;
+  font-family:var(--serif);font-size:19px;font-weight:500;color:var(--gold);transition:transform .2s ease;
+}
+.fold[open] > summary::after{content:"−"}
+.fold > summary em{font-style:normal;font-weight:600;color:var(--ink-mute);font-size:11px;margin-left:5px;letter-spacing:0}
+.fold__body{padding:0 17px 18px;border-top:1px solid var(--line-soft)}
+.fold__body > *:first-child{margin-top:16px}
+.fold h3{
+  margin-top:20px;font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:-.03em;
+  color:var(--ink);
+}
+.fold h3:first-child{margin-top:0}
+.fold h4{
+  margin-top:18px;font-size:13px;font-weight:800;letter-spacing:-.02em;color:var(--ink-soft);
+  display:flex;align-items:center;gap:6px;
+}
+.fold h4 span{
+  flex:0 0 auto;padding:2px 6px;border-radius:5px;background:rgba(185,151,91,.16);
+  color:var(--gold-deep);font-size:9.5px;font-weight:800;letter-spacing:.02em;
+}
+.fold p{font-size:12.5px;line-height:1.85;color:var(--ink-soft)}
+.fold p b{color:var(--ink);font-weight:700}
+.fold p + p{margin-top:8px}
+.fold a{color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px}
+.fold__list{margin-top:10px}
+.fold__list li{
+  display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;
+  padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12px;line-height:1.75;color:var(--ink-soft);
+}
+.fold__list li:last-child{border-bottom:0}
+.fold__list .k{font-size:10px;font-weight:800;color:var(--gold-deep);letter-spacing:.02em;padding-top:3px}
+.fold__list b{color:var(--ink);font-weight:700}
+.fold__note{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(30,29,26,.035);font-size:11px;line-height:1.7;color:var(--ink-mute)}
+
+/* 절차 3단계 */
+.steps{margin-top:12px;display:grid;gap:8px}
+.step{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;padding:11px 12px;border-radius:11px;background:#fff;border:1px solid var(--line-soft)}
+.step__no{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--gold);line-height:1.5}
+.step__t{font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.step__d{font-size:11.5px;line-height:1.7;color:var(--ink-soft);margin-top:1px}
+
+/* FAQ */
+.faq{margin-top:12px;border-top:1px solid var(--line-soft)}
+.faq__q{padding:13px 0 3px;font-size:12.5px;font-weight:800;line-height:1.65;color:var(--ink);letter-spacing:-.02em}
+.faq__q::before{content:"Q";font-family:var(--serif);color:var(--gold);font-weight:700;margin-right:6px}
+.faq__a{padding:0 0 13px;border-bottom:1px solid var(--line-soft);font-size:12px;line-height:1.85;color:var(--ink-soft)}
+.faq__a b{color:var(--ink);font-weight:700}
+
+/* ── 프로필 요약(접힘 안) ─────────────────── */
+.who{display:flex;align-items:center;gap:12px}
+.who__mark{
+  flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:17px;font-weight:600;color:#F7F1E4;
+  background:linear-gradient(150deg,#3A3730,#1E1D1A);
+}
+.who__name{font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:-.02em}
+.who__role{margin-top:1px;font-size:10.5px;font-weight:700;color:var(--gold-deep)}
+.career{margin-top:14px;display:grid;gap:6px}
+.career li{
+  position:relative;padding-left:13px;font-size:12.5px;line-height:1.7;color:var(--ink-soft);font-weight:600;
+}
+.career li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.career b{color:var(--ink);font-weight:800}
+.col-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.col-links a{
+  padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);
+  font-size:11px;font-weight:700;text-decoration:none;color:var(--ink-soft);box-shadow:var(--shadow-soft);
+}
+.col-links a i{font-style:normal;color:var(--gold);margin-left:3px}
 
 /* ── 푸터 ───────────────────────────────── */
 .foot{
-  max-width:760px;margin:0 auto;padding:26px 24px 44px;
+  max-width:760px;margin:0 auto;padding:26px 24px 40px;
   font-size:10.5px;line-height:1.85;color:var(--ink-mute);text-align:center;
 }
 .foot b{font-weight:700;color:var(--ink-soft)}
-.foot a{color:var(--ink-soft)}
 .foot__line{display:block;margin-top:8px}
 .foot__nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:14px}
 .foot__nav a{text-decoration:none;font-size:11px;font-weight:700;color:var(--ink-soft)}
-
-/* ── 레퍼런스 ─────────────────────────────── */
-.proof{
-  max-width:760px;margin:12px auto 0;padding:18px 20px 16px;border-radius:20px;
-  background:linear-gradient(150deg,#FFFDF8 0%,#FBF3E3 100%);
-  border:1px solid rgba(185,151,91,.30);box-shadow:var(--shadow);
-}
-.proof__k{
-  text-align:center;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--gold-deep);
-}
-.proof__list{display:grid;grid-template-columns:1fr;gap:7px;margin-top:12px}
-@media (min-width:560px){.proof__list{grid-template-columns:1fr 1fr 1fr}}
-.proof__list li{
-  padding:11px 12px;border-radius:11px;background:#fff;border:1px solid rgba(30,29,26,.07);
-  text-align:center;
-}
-.proof__list b{display:block;font-size:12.5px;font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.45}
-.proof__list span{display:block;margin-top:3px;font-size:10px;font-weight:600;color:var(--ink-mute)}
-.proof__note{margin-top:11px;text-align:center;font-size:11px;line-height:1.7;color:var(--ink-mute)}
-
-/* ── 카테고리·권위 ───────────────────────── */
-.hero__cat{
-  position:relative;margin-top:14px;display:inline-flex;align-items:center;gap:7px;
-  padding:6px 12px;border-radius:999px;background:rgba(231,211,168,.14);
-  border:1px solid rgba(231,211,168,.30);font-size:11.5px;font-weight:800;
-  color:#E7D3A8;letter-spacing:-.01em;line-height:1.5;
-}
-.hero__auth{
-  position:relative;margin-top:16px;padding:12px 14px;border-radius:12px;
-  background:rgba(247,241,228,.06);border:1px solid rgba(247,241,228,.15);
-  font-size:11.5px;line-height:1.78;color:rgba(247,241,228,.76);letter-spacing:-.01em;
-}
-.hero__auth b{color:#F7F1E4;font-weight:700}
-.hero__auth span{display:block;margin-top:3px;color:rgba(247,241,228,.62);font-size:11px}
-
-/* ── 숫자로 보는 이력 ─────────────────────── */
-.nums{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
-@media (min-width:560px){.nums{grid-template-columns:repeat(4,1fr)}}
-.nums li{
-  padding:14px 10px 13px;border-radius:13px;background:var(--paper);
-  border:1px solid var(--line-soft);box-shadow:var(--shadow-soft);text-align:center;
-}
-.nums b{
-  display:block;font-family:var(--serif);font-size:18px;font-weight:600;
-  color:var(--ink);letter-spacing:-.03em;line-height:1.25;
-}
-.nums span{display:block;margin-top:4px;font-size:10.5px;font-weight:600;color:var(--ink-mute);line-height:1.5}
-
-/* ── 강의비 안내(작은 글씨) ───────────────── */
-.fee{
-  margin-top:16px;display:flex;align-items:flex-start;gap:8px;
-  font-size:11px;line-height:1.75;color:var(--ink-mute);letter-spacing:-.01em;
-}
-.fee i{font-style:normal;opacity:.8}
-.fee b{font-weight:700;color:var(--ink-soft)}
-.fee--dark{color:rgba(247,241,228,.58);margin-top:14px}
-.fee--dark b{color:rgba(247,241,228,.82)}
-
-/* ── 강연 현장 사진 ─────────────────────── */
-.onsite{max-width:760px;margin:14px auto 0;padding:0 20px}
-.onsite figure{
-  margin:0;border-radius:20px;overflow:hidden;background:var(--paper);
-  border:1px solid rgba(185,151,91,.26);box-shadow:var(--shadow);
-}
-.onsite img{width:100%;height:auto;display:block;aspect-ratio:4/3;object-fit:cover}
-.onsite figcaption{padding:13px 16px 15px;background:linear-gradient(180deg,#FFFDF8 0%,#FBF4E7 100%)}
-.onsite figcaption b{
-  display:block;font-family:var(--serif);font-size:13.5px;font-weight:600;
-  color:var(--ink);letter-spacing:-.02em;line-height:1.5;
-}
-.onsite figcaption span{display:block;margin-top:3px;font-size:11.5px;line-height:1.65;color:var(--ink-soft)}
-.onsite figcaption em{display:block;margin-top:7px;font-style:normal;font-size:10px;line-height:1.6;color:var(--ink-mute)}
-
-/* ── 이런 자리에 ─────────────────────────── */
-.places{display:grid;gap:10px;margin-top:18px}
-@media (min-width:620px){.places{grid-template-columns:1fr 1fr}}
-.place{
-  padding:16px 17px;border-radius:var(--radius-sm);background:var(--paper);
-  border:1px solid var(--line-soft);box-shadow:var(--shadow-soft);
-}
-.place__t{font-size:13px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
-.place__t span{margin-right:6px}
-.place__d{margin-top:6px;font-size:12px;line-height:1.78;color:var(--ink-soft)}
-.place__tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
-.place__tags li{
-  padding:4px 8px;border-radius:7px;background:rgba(30,29,26,.045);
-  font-size:10.5px;font-weight:700;color:var(--ink-mute);letter-spacing:-.01em;
-}
-.regions{
-  margin-top:12px;padding:14px 16px;border-radius:12px;
-  background:rgba(185,151,91,.10);border:1px solid rgba(185,151,91,.22);
-  font-size:12px;line-height:1.8;color:var(--ink-soft);
-}
-.regions b{color:var(--ink);font-weight:700}
-
-/* ── FAQ ────────────────────────────────── */
-.faq{margin-top:18px;border-top:1px solid var(--line)}
-.faq details{border-bottom:1px solid var(--line)}
-.faq summary{
-  position:relative;padding:16px 30px 16px 0;cursor:pointer;list-style:none;
-  font-size:14px;font-weight:700;line-height:1.6;letter-spacing:-.025em;color:var(--ink);
-}
-.faq summary::-webkit-details-marker{display:none}
-.faq summary::after{
-  content:"+";position:absolute;right:2px;top:14px;
-  font-family:var(--serif);font-size:19px;font-weight:500;color:var(--gold);
-  transition:transform .2s ease;
-}
-.faq details[open] summary::after{content:"−"}
-.faq__a{padding:0 8px 18px 0;font-size:13px;line-height:1.9;color:var(--ink-soft)}
-.faq__a b{color:var(--ink);font-weight:700}
-.faq__a a{color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -543,278 +409,182 @@ button{font-family:inherit;cursor:pointer}
 
 <header class="hero">
   <p class="hero__eyebrow">YOONISE · LECTURE &amp; WORKSHOP</p>
-  <h1 class="hero__title">동양철학으로<br><em>사람과 조직의 기운</em>을 읽습니다</h1>
-  <p class="hero__cat">동양철학 기반 · 공공기관 · 지자체 · 기업 맞춤 강의</p>
-  <p class="hero__def"><b>동양철학 기반 강의</b> — 음양오행과 명리라는 오랜 문법으로 기질과 관계를 읽고, 스트레스 회복, 조직 소통, 힐링워크숍의 언어로 옮깁니다. 사주·명리·운세 강의는 그 넓은 뿌리에서 뻗은 한 갈래입니다.</p>
-  <p class="hero__sub">기업 특강·임직원 웰니스, 지자체·공공기관·도서관·문화센터 인문학 강의, 오행 아로마 힐링워크숍, 소그룹·임원 맞춤 특강까지 — 같은 뿌리에서 그 자리에 맞는 언어로 꺼내 드립니다.</p>
-  <p class="hero__auth"><b>경북신문 『윤이세의 생활 사주명리』 연재</b> · <b>창암명리학회 수석 학술이사</b><span>공공기관·지자체 특강 출강 — 울산광역시교육청 · 영덕군청 민원처리과 등</span></p>
-  <ul class="hero__facts">
-    <li>경북신문 연재 40편+</li>
-    <li>창암명리학회 수석 학술이사</li>
-    <li>유튜브 구독 2.7천 · 누적 조회 55만+</li>
-    <li>부산 · 울산 · 경남(부울경) · 전국 출강</li>
+  <h1 class="hero__title">동양철학으로<br><em>사람과 조직</em>의 기운을 읽습니다</h1>
+  <p class="hero__lead">음양오행과 명리로 기질·관계·스트레스를 읽고, <b>강연과 힐링워크숍</b>으로 풀어 드립니다.</p>
+  <ul class="hero__badges">
+    <li><b>경북신문</b> 연재 40편+</li>
+    <li><b>창암명리학회</b> 수석 학술이사</li>
+    <li><b>울산교육청 · 영덕군청</b> 특강</li>
+    <li><b>유튜브</b> 2.7천 · 55만+</li>
   </ul>
   <div class="hero__btns">
-    <a class="btn btn--kakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카카오채널로 강연 문의 <small>일정·주제 상담</small></a>
-    <a class="btn btn--call" href="tel:+821048487373">📞 010-4848-7373 <small>전화 문의</small></a>
+    <a class="btn btn--kakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카카오채널 강연 문의 <small>일정·주제 상담</small></a>
+    <a class="btn btn--call" href="tel:+821048487373">📞 010-4848-7373 <small>전화</small></a>
   </div>
 </header>
 
-<section class="proof" aria-label="강연 레퍼런스">
-  <p class="proof__k">신문 연재 · 학회 직함 · 공공기관 출강</p>
-  <ul class="proof__list">
-    <li><b>경북신문 연재 40편+</b><span>『윤이세의 생활 사주명리』 매주 한 편</span></li>
-    <li><b>창암명리학회</b><span>수석 학술이사</span></li>
-    <li><b>울산광역시교육청 · 영덕군청</b><span>민원처리과 등 공공기관 특강 — 대표 사례</span></li>
-  </ul>
-  <p class="proof__note">교육 현장과 민원 창구에서 실제로 진행한 강연을, 우리 조직의 언어로 다시 만들어 드립니다.</p>
-</section>
-
-<div class="onsite" id="onSite" role="group" aria-label="강연 현장 사진">
+<div class="onsite" role="group" aria-label="강연 현장 사진">
   <figure>
-    <img src="./img/lecture-2026-yeongdeok-workshop.jpg" width="1240" height="930" loading="lazy" decoding="async"
+    <img src="./img/lecture-2026-yeongdeok-workshop.jpg" width="1240" height="930" decoding="async"
          alt="2026년 영덕군 민원담당 공무원 힐링워크숍에서 오행 아로마 큐레이션 특강을 진행하는 윤이세">
     <figcaption>
       <b>2026 영덕군 민원담당 공무원 힐링워크숍</b>
-      <span>오행 아로마 큐레이션 특강 · 경북 영덕 한옥 강연장</span>
-      <em>사진 속 청중의 얼굴은 초상권 보호를 위해 흐리게 처리했습니다.</em>
+      <span>오행 아로마 큐레이션 특강 · 청중 얼굴은 초상권 보호를 위해 흐리게 처리했습니다.</span>
     </figcaption>
   </figure>
 </div>
 
 <main class="wrap">
 
-  <!-- ───────── 01 · 왜 동양철학 기반 강의인가 ───────── -->
-  <section class="sec" aria-labelledby="whyTitle">
-    <p class="sec__eyebrow">01 · WHY</p>
-    <h2 class="sec__title" id="whyTitle">왜 동양철학 기반 강의인가</h2>
-    <p class="sec__lead">사람은 기운의 균형이 흔들릴 때 <b>늘 같은 자리에서 넘어집니다.</b> 음양오행(목·화·토·금·수)은 그 자리를 짚어 주는 다섯 개의 눈입니다. 명리와 생활 사주명리, 오행 아로마까지 — 동양철학의 오래된 문법을 교양과 웰니스의 언어로 다시 썼습니다.</p>
-
-    <div class="why">
-      <article class="why__card">
-        <p class="why__no">01</p>
-        <h3 class="why__t">진단이 아니라 설명</h3>
-        <p class="why__d">“나는 왜 이럴까”를 탓이나 숙명이 아닌 <b>기질의 비율</b>로 설명합니다. 이해가 되면 바꿀 수 있는 것과 받아들일 것이 갈립니다.</p>
-      </article>
-      <article class="why__card">
-        <p class="why__no">02</p>
-        <h3 class="why__t">스트레스의 패턴</h3>
-        <p class="why__d">과로·회피·과잉 걱정. 사람마다 무너지는 방식이 다릅니다. 내 오행이 부족할 때 튀어나오는 반응을 미리 알고 대비합니다.</p>
-      </article>
-      <article class="why__card">
-        <p class="why__no">03</p>
-        <h3 class="why__t">팀의 공통 언어</h3>
-        <p class="why__d">같은 말도 다르게 들리는 이유를 오행의 온도 차이로 풀어 냅니다. 갈등을 사람 탓에서 <b>결</b>의 차이로 옮겨 놓습니다.</p>
-      </article>
-    </div>
-
-    <div class="quote">
-      <p>“사주는 점이 아니라 내 삶의 지도입니다.”</p>
-      <span>미래를 단정하지 않습니다. 선택의 순간에 손에 쥘 수 있는 지도로만 읽습니다.<br>그래서 강의는 위로에서 멈추지 않고, 오늘의 습관 하나까지 내려옵니다.</span>
-    </div>
-  </section>
-
-  <!-- ───────── 02 · 추천 강의 주제 ───────── -->
+  <!-- ───────── 강의 주제 ───────── -->
   <section class="sec" aria-labelledby="topicTitle">
-    <p class="sec__eyebrow">02 · PROGRAMS</p>
-    <h2 class="sec__title" id="topicTitle">추천 강의 주제 네 가지</h2>
-    <p class="sec__lead">대상과 시간에 맞춰 <b>한 가지 주제를 깊게</b> 또는 <b>두 주제를 이어서</b> 구성합니다. 아래는 가장 많이 요청받는 기본형이며, 동양철학 강의·사주명리 강연 섭외 시 이 중에서 고르셔도 되고 새로 맞춰도 됩니다.</p>
+    <p class="sec__eyebrow">PROGRAMS</p>
+    <h2 class="sec__title" id="topicTitle">이런 강의를 합니다</h2>
+    <p class="sec__lead">한 가지를 깊게, 또는 두 가지를 이어서 — <b>그 자리에 맞게</b> 구성합니다.</p>
 
     <div class="topics">
-
       <article class="topic topic--1">
-        <span class="topic__no" aria-hidden="true">01</span>
         <span class="topic__tag">🏢 기업</span>
-        <h3 class="topic__title">임직원 소통·스트레스 관리<br>오행 웰니스 특강</h3>
-        <p class="topic__sum">조직 안의 ‘말이 통하는 사람’과 ‘늘 부딪히는 사람’을 오행의 온도 차이로 풀어 봅니다. 개인별 스트레스 반응을 알고 회복 루틴을 하나씩 정해 가는 실습형 특강입니다.</p>
-        <ul class="topic__list">
-          <li><span class="k">대상</span><span>HR·복지 담당자, 전 직원, 신입·관리자 교육 과정</span></li>
-          <li><span class="k">구성</span><span>오행으로 보는 나와 동료의 반응 코드 → 갈등이 생기는 지점 → 향·색·습관으로 짜는 회복 루틴</span></li>
-          <li><span class="k">기대</span><span>“저 사람은 원래 저렇다”가 “저 사람은 그런 결이다”로 바뀌는 자리</span></li>
-        </ul>
+        <h3 class="topic__title">조직 소통 · 스트레스 관리</h3>
+        <p class="topic__sum">오행의 온도 차이로 동료를 이해하고, <b>회복 루틴</b>을 함께 짭니다.</p>
       </article>
 
       <article class="topic topic--2">
-        <span class="topic__no" aria-hidden="true">02</span>
         <span class="topic__tag">🏛 지자체·공공</span>
-        <h3 class="topic__title">지자체·공공기관·도서관<br>생활 사주명리 교양 특강</h3>
-        <p class="topic__sum">경북신문에 연재 중인 『윤이세의 생활 사주명리』의 흐름을 그대로 따라가는 교양 강연입니다. 어렵게 느껴지던 명리 용어를 일상의 언어로 바꿔, 처음 듣는 분도 끝까지 앉아 있게 만듭니다.</p>
-        <ul class="topic__list">
-          <li><span class="k">대상</span><span>주민 평생학습·문화 강좌, 도서관 인문학 프로그램, 공공기관 교양 교육</span></li>
-          <li><span class="k">구성</span><span>사주는 점이 아니다 → 내 인생의 일기예보 → 비어 있는 오행을 읽는 법 → 오늘부터의 개운 습관</span></li>
-          <li><span class="k">기대</span><span>연재 칼럼을 읽던 독자가 얼굴을 마주하고 이해하는 시간</span></li>
-        </ul>
+        <h3 class="topic__title">동양철학 · 생활 사주명리</h3>
+        <p class="topic__sum">어려운 명리 용어를 일상의 언어로 — <b>처음 듣는 분도 끝까지</b> 앉아 있는 교양 강연.</p>
       </article>
 
       <article class="topic topic--3">
-        <span class="topic__no" aria-hidden="true">03</span>
-        <span class="topic__tag">👥 소그룹·임원</span>
-        <h3 class="topic__title">소그룹·임원 맞춤<br>오행 큐레이션</h3>
-        <p class="topic__sum">참석자의 생년월일을 미리 받아 <b>한 사람 한 사람의 오행 프로파일</b>을 준비해 갑니다. 개인의 결을 짚고, 그 사람들이 한 팀이 될 때 어디가 맞물리고 어디가 부딪히는지까지 이야기합니다.</p>
-        <ul class="topic__list">
-          <li><span class="k">대상</span><span>임원 워크숍, 소규모 리더 그룹, 가족·친목 모임, 1일 클래스</span></li>
-          <li><span class="k">구성</span><span>개인 오행 프로파일 해설 → 팀 조합 진단 → 각자의 회복 루틴과 역할 조정</span></li>
-          <li><span class="k">기대</span><span>“우리 팀에 왜 이 사람이 필요한지”가 보이는 자리</span></li>
-        </ul>
-        <p class="topic__note">🔒 맞춤형은 참석자 생년월일을 강연 준비 목적으로만 받고, 강연이 끝나면 폐기합니다. 사전에 동의 절차와 수집 범위를 함께 정합니다.</p>
+        <span class="topic__tag">🌿 웰니스·힐링</span>
+        <h3 class="topic__title">오행 아로마 힐링워크숍</h3>
+        <p class="topic__sum">향·색·호흡으로 <b>감정노동의 피로</b>를 풀어내는 실습형 세션.</p>
       </article>
 
       <article class="topic topic--4">
-        <span class="topic__no" aria-hidden="true">04</span>
-        <span class="topic__tag">🛎 감정노동·민원</span>
-        <h3 class="topic__title">민원 창구 감정노동<br>스트레스 관리·힐링 특강</h3>
-        <p class="topic__sum">하루에도 수십 명의 감정을 받아내는 민원 응대 담당자를 위한 힐링 특강입니다. <b>영덕군청 민원처리과 특강</b>에서 다듬은 내용으로, 감정노동으로 타는 기운을 오행의 언어로 설명하고 응대 후 스스로를 회복하는 루틴을 함께 만듭니다.</p>
-        <ul class="topic__list">
-          <li><span class="k">대상</span><span>지자체 민원처리과·민원실, 콜센터·고객센터, 공공기관 대민 창구</span></li>
-          <li><span class="k">구성</span><span>감정노동은 어떤 기운을 태우는가 → 민원 응대 후 3분 회복 루틴 → 팀 단위 힐링 습관</span></li>
-          <li><span class="k">기대</span><span>“오늘도 버텼다”가 “오늘은 이렇게 풀었다”로 바뀌는 자리</span></li>
-        </ul>
-      </article>
-
-    </div>
-
-    <p class="fee"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다. 예산 범위를 알려 주시면 그 안에서 구성을 맞춰 드립니다.</span></p>
-  </section>
-
-  <!-- ───────── 03 · 강사 소개 ───────── -->
-  <section class="sec" aria-labelledby="whoTitle">
-    <p class="sec__eyebrow">03 · LECTURER</p>
-    <h2 class="sec__title" id="whoTitle">강사 소개</h2>
-
-    <article class="profile">
-      <div class="profile__head">
-        <div class="profile__mark" aria-hidden="true">尹</div>
-        <div>
-          <p class="profile__name">윤이세</p>
-          <p class="profile__role">사주명리학자 · 동양철학 강연자 · 오행 웰니스 큐레이터 · 윤이세사주 대표</p>
-        </div>
-      </div>
-
-      <p class="profile__body">경북신문에 <b>『윤이세의 생활 사주명리』</b>를 연재하는 사주명리학자이자 <b>창암명리학회 수석 학술이사</b>입니다. 점(占)으로 소비되던 사주를 일상의 언어로 옮겨, 오행을 <b>기질·관계·회복의 언어</b>로 다시 쓰는 일을 하고 있습니다. 사주명리를 동양철학의 한 갈래로 다루며, 음양오행의 원리를 강연·힐링워크숍·오행 아로마 큐레이션으로 풀어냅니다.</p>
-      <p class="profile__body">부산 전포동에서 상담실을 운영하며, 같은 이야기를 강연장에서 더 크게 나눕니다. <b>울산광역시교육청, 영덕군청 민원처리과</b>를 비롯한 공공기관·기업 특강에서 쌓은 자리 경험으로, 어려운 술어 대신 듣는 사람의 자리에서 출발하는 설명을 합니다 — 그것이 윤이세의 강의 방식입니다.</p>
-
-      <ul class="nums" aria-label="이력 요약">
-        <li><b>40편+</b><span>경북신문 연재</span></li>
-        <li><b>수석</b><span>창암명리학회 학술이사</span></li>
-        <li><b>2.7천</b><span>유튜브 구독</span></li>
-        <li><b>55만+</b><span>누적 조회</span></li>
-      </ul>
-
-      <ul class="facts">
-        <li><span class="k">이름</span><span>필명 윤이세 · 대표 김나영 — 경북신문 칼럼니스트</span></li>
-        <li><span class="k">학회</span><span>창암명리학회 수석 학술이사</span></li>
-        <li><span class="k">출강</span><span>울산광역시교육청 특강 · 영덕군청 민원처리과 특강 등 공공기관·기업·기관 강연</span></li>
-        <li><span class="k">연재</span><span>경북신문 『윤이세의 생활 사주명리』 — 2026년 1월부터 매주 한 편, 40편 넘게 연재<br><a href="https://www.kbsm.net/news/search.php?mode=&amp;search_order=%EC%9C%A4%EC%9D%B4%EC%84%B8" target="_blank" rel="noopener noreferrer">경북신문에서 윤이세 칼럼 전체 보기 ↗</a></span></li>
-      <li><span class="k">분야</span><span>동양철학·음양오행, 생활 사주명리, 오행 웰니스, 기질과 스트레스, 관계와 소통, 오행 아로마 힐링워크숍</span></li>
-      <li><span class="k">채널</span><span>유튜브 ‘윤이세의 사주특별수사대’ 운영 · 인스타그램 · 네이버 블로그</span></li>
-      <li><span class="k">사업자</span><span>엔와이트레이드(N.Y.TRADE) · 대표 김나영 · 부산광역시 부산진구 전포대로 250, 1904호</span></li>
-    </ul>
-
-    <div class="col-links" aria-label="글과 영상으로 먼저 만나기">
-      <a href="https://ksy7900-star.github.io/yoonise-oheng-aroma/story/">연재 칼럼 모아 보기 <i>→</i></a>
-      <a href="https://www.youtube.com/@yoonise_saju" target="_blank" rel="noopener noreferrer">유튜브 @yoonise_saju <i>→</i></a>
-      <a href="https://blog.naver.com/ksy7900so" target="_blank" rel="noopener noreferrer">네이버 블로그 <i>→</i></a>
-      <a href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타그램 <i>→</i></a>
-    </div>
-    </article>
-  </section>
-
-  <!-- ───────── 04 · 이런 자리에 ───────── -->
-  <section class="sec" aria-labelledby="placeTitle">
-    <p class="sec__eyebrow">04 · FOR WHOM</p>
-    <h2 class="sec__title" id="placeTitle">이런 자리에 부릅니다</h2>
-    <p class="sec__lead">동양철학 기반 강의는 사주 강의·명리학 특강·힐링워크숍·오행 웰니스까지 한 뿌리에서 나옵니다. 같은 시간에 섞지 않고, 그 자리에 필요한 것만 골라 담습니다. <b>기업 HR·교육 담당자</b>, <b>지자체·공공기관 교육 담당자</b>(민원처리과 포함), <b>문화센터·웰니스 기획자</b>가 바로 판단하실 수 있도록 나눠 두었습니다.</p>
-
-    <div class="places">
-      <article class="place">
-        <h3 class="place__t"><span aria-hidden="true">🏢</span>기업 · 조직</h3>
-        <p class="place__d">임직원 웰니스, 조직 소통 강의, 스트레스 관리 교육. 신입·관리자·전 직원 어느 층에도 맞춰 말할 수 있습니다.</p>
-        <ul class="place__tags"><li>기업 강의</li><li>기업 특강</li><li>기업 워크숍</li><li>임직원 웰니스</li><li>임직원 힐링 특강</li><li>조직 소통 강의</li><li>조직문화 소통 특강</li><li>스트레스 관리</li></ul>
-      </article>
-      <article class="place">
-        <h3 class="place__t"><span aria-hidden="true">🏛</span>공공 · 지역</h3>
-        <p class="place__d">지자체 강의, 공공기관 특강, 도서관 특강, 문화센터 강의. 주민 평생학습과 인문학 프로그램에 맞는 교양 강좌로 구성합니다.</p>
-        <ul class="place__tags"><li>지자체 강의</li><li>지자체 특강</li><li>공공기관 특강</li><li>공공기관 강의</li><li>공공기관 인문학 특강</li><li>민원 응대 힐링</li><li>도서관 특강</li><li>문화센터 강의</li><li>평생학습</li></ul>
-      </article>
-      <article class="place">
-        <h3 class="place__t"><span aria-hidden="true">🌿</span>웰니스 · 힐링</h3>
-        <p class="place__d">오행 웰니스 강의, 오행 테라피, 마음챙김 프로그램. 향·색·호흡·습관으로 옮기는 실습형 세션입니다.</p>
-        <ul class="place__tags"><li>웰니스 강의</li><li>오행 웰니스</li><li>오행 웰니스 프로그램</li><li>오행 테라피</li><li>마음챙김</li><li>감정노동 스트레스 관리</li></ul>
-      </article>
-      <article class="place">
-        <h3 class="place__t"><span aria-hidden="true">👥</span>소그룹 · 모임</h3>
-        <p class="place__d">임원 워크숍, 리더 그룹, 가족·친목 모임, 1일 클래스. 참석자별 오행 프로파일을 준비해 가는 맞춤 명리학 특강입니다.</p>
-        <ul class="place__tags"><li>명리학 특강</li><li>명리 강의</li><li>소그룹 큐레이션</li><li>임원 워크숍</li><li>1일 클래스</li></ul>
+        <span class="topic__tag">👥 소그룹·임원</span>
+        <h3 class="topic__title">임원 · 소그룹 맞춤 특강</h3>
+        <p class="topic__sum">참석자별 오행 프로파일을 준비해, <b>팀의 맞물림과 부딪힘</b>을 짚어 드립니다.</p>
       </article>
     </div>
 
-    <p class="regions">📍 <b>부산 사주 강의</b>·<b>부산 명리학 강사</b>와 <b>부산·울산·경남(부울경) 기업 강의</b> 요청이 가장 많고, <b>경남 특강</b>은 물론 <b>전국 출강</b>도 가능합니다. 온라인(화상) 강의도 진행하며, <b>동양철학·사주명리 강연 섭외</b>는 일정이 확인되면 바로 확정됩니다.</p>
-  </section>
-
-  <!-- ───────── 05 · FAQ ───────── -->
-  <section class="sec" aria-labelledby="faqTitle">
-    <p class="sec__eyebrow">05 · FAQ</p>
-    <h2 class="sec__title" id="faqTitle">자주 묻는 질문</h2>
-
-    <div class="faq">
-      <details open>
-        <summary>동양철학 강의는 어떤 것들을 포함하나요?</summary>
-        <div class="faq__a"><b>동양철학 기반 강의</b>는 음양오행과 명리, 기질과 관계의 원리를 바탕으로 한 강의 전체를 말합니다. 기업의 <b>조직 소통·스트레스 관리·임직원 웰니스 특강</b>, 지자체·공공기관·도서관의 <b>생활 사주명리 인문학 강좌</b>, <b>오행 아로마 힐링워크숍</b>, 임원·소그룹 맞춤 특강까지 같은 뿌리에서 주제만 달리해 구성합니다. <b>사주·명리·운세 강의</b>는 그중 한 갈래입니다.</div>
-      </details>
-      <details>
-        <summary>사주 강의와 명리학 특강은 무엇이 다른가요?</summary>
-        <div class="faq__a">같은 뿌리를 다루지만 목적이 다릅니다. <b>사주 강의·운세 강의</b>는 내 사주를 읽는 법과 오늘의 기운을 일상에 적용하는 쪽에, <b>명리학 특강</b>은 오행과 십성의 원리를 조직·관계의 언어로 풀어 설명하는 쪽에 무게를 둡니다. 기업·기관 요청에 따라 한쪽으로 모으거나, 두 가지를 한 자리에 담아 구성합니다.</div>
-      </details>
-      <details>
-        <summary>기업 강의·지자체 강의는 어떤 형식으로 진행되나요?</summary>
-        <div class="faq__a"><b>기업 특강</b>은 임직원 웰니스·조직 소통·스트레스 관리 주제의 강연형 또는 워크숍형으로, <b>지자체·공공기관·도서관·문화센터 강의</b>는 생활 사주명리 교양 강좌로 진행합니다. 대면과 온라인 모두 가능하고, 강연 시간과 인원에 맞춰 구성을 조정합니다. 일시·장소·인원·주제를 알려 주시면 제안과 견적을 함께 드립니다.</div>
-      </details>
-      <details>
-        <summary>부산·경남 외 지역도 출강하나요?</summary>
-        <div class="faq__a">네. 부산 사주 강의와 부산 명리학 강사 요청이 가장 많지만, 경남 특강을 비롯해 전국 출강이 가능합니다. 이동 일정과 강연 시간을 함께 조율해 안내드립니다.</div>
-      </details>
-      <details>
-        <summary>운세 강의는 점을 보는 건가요? 웰니스 강의·오행 테라피·마음챙김과는 어떻게 다른가요?</summary>
-        <div class="faq__a">미래를 단정하는 점이 아니라, 타고난 오행의 비율로 기질과 스트레스 반응을 설명하는 <b>자기이해의 강의</b>입니다. <b>오행 웰니스·오행 테라피</b>는 그 설명을 향·색·호흡·습관 같은 회복 루틴으로 옮기는 실습이고, <b>마음챙김</b>은 그 루틴을 매일 이어가는 방법으로 연결됩니다. 사주는 미래를 정하지 않고 선택을 돕는 참고로만 사용합니다.</div>
-      </details>
-      <details>
-        <summary>기업 워크숍·임직원 힐링 특강도 섭외할 수 있나요?</summary>
-        <div class="faq__a">네. <b>기업 워크숍</b>은 반나절·하루 단위로, <b>임직원 힐링 특강</b>과 <b>조직문화 소통 특강</b>은 60~90분 강연형으로 구성합니다. 감정노동이 큰 조직은 <b>감정노동 스트레스 관리·민원 응대 힐링</b>을, 복지·기업 문화 행사는 <b>오행 웰니스 프로그램</b>과 마음챙김 세션을 추천드립니다.</div>
-      </details>
-      <details>
-        <summary>실제로 어디에서 특강을 하셨나요?</summary>
-        <div class="faq__a"><b>울산광역시교육청</b>, <b>영덕군청 민원처리과</b>를 비롯한 공공기관·기업·기관 특강에서 사주 강의와 명리학 특강을 진행했습니다. <b>창암명리학회 수석 학술이사</b>로 활동하고 있으며, 경북신문 『윤이세의 생활 사주명리』를 연재 중입니다. 기업·기관별 사례는 문의하실 때 함께 안내드립니다.</div>
-      </details>
-    </div>
-  </section>
-
-  <!-- ───────── 06 · 문의 ───────── -->
-  <section class="contact" aria-labelledby="contactTitle">
-    <p class="contact__eyebrow">06 · CONTACT</p>
-    <h2 class="contact__title" id="contactTitle">강연 문의는<br>이렇게 보내 주세요</h2>
-    <p class="contact__sub">동양철학 기반 강의·사주명리 강연 섭외는 일정과 형식만 알려 주시면 됩니다. 그 자리에 맞는 구성과 견적을 함께 제안해 드립니다.</p>
-    <p class="fee fee--dark"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다.</span></p>
-
-    <ul class="contact__list">
-      <li><a href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer"><i aria-hidden="true">💬</i>카카오채널 ‘윤이세사주’ <em>1:1 문의</em></a></li>
-      <li><a href="tel:+821048487373"><i aria-hidden="true">📞</i>010-4848-7373 <em>전화</em></a></li>
-      <li><a href="mailto:ksy7900so@naver.com?subject=%5B%EA%B0%95%EC%97%B0%20%EB%AC%B8%EC%9D%98%5D"><i aria-hidden="true">✉️</i>ksy7900so@naver.com <em>메일</em></a></li>
-    </ul>
-
-    <div class="contact__need">
-      <p>함께 알려 주시면 좋아요</p>
-      <ul>
-        <li>희망 일시</li>
-        <li>장소·형식(대면/온라인)</li>
-        <li>대상과 인원</li>
-        <li>원하는 주제</li>
-        <li>강연 시간</li>
-        <li>예산 범위(선택)</li>
-      </ul>
-    </div>
+    <p class="fee"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다.</span></p>
+    <p class="region">📍 <b>부산·울산·경남(부울경)</b> 요청이 가장 많고, <b>전국 출강</b>·온라인 강의도 가능합니다.</p>
   </section>
 
 </main>
+
+<!-- ───────── 문의 ───────── -->
+<section class="contact" aria-labelledby="contactTitle">
+  <p class="contact__eyebrow">CONTACT</p>
+  <h2 class="contact__title" id="contactTitle">지금 문의하시면 됩니다</h2>
+  <p class="contact__sub"><b>일시·장소·인원·주제</b>만 알려 주시면, 그 자리에 맞는 구성과 견적을 보내 드립니다.</p>
+  <div class="hero__btns">
+    <a class="btn btn--kakao" href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer">💬 카카오채널 강연 문의 <small>바로 상담</small></a>
+    <a class="btn btn--call" href="tel:+821048487373">📞 010-4848-7373 <small>전화</small></a>
+  </div>
+  <p class="contact__mail">메일 <a href="mailto:ksy7900so@naver.com?subject=%5B%EA%B0%95%EC%97%B0%20%EB%AC%B8%EC%9D%98%5D">ksy7900so@naver.com</a></p>
+  <p class="fee fee--dark"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다.</span></p>
+</section>
+
+<!-- ───────── 접힘: 상세 안내 ───────── -->
+<div class="folds">
+
+  <details class="fold" id="guide">
+    <summary>출강 안내 자세히 보기 <em>커리큘럼 · 절차 · 강사 이력</em></summary>
+    <div class="fold__body">
+
+      <h3>강의 주제 네 가지 — 세부 구성</h3>
+
+      <h4><span>01</span> 기업 · 임직원 소통·스트레스 관리</h4>
+      <p>조직 안의 ‘말이 통하는 사람’과 ‘늘 부딪히는 사람’을 오행의 온도 차이로 풀어 보고, 개인별 스트레스 반응에 맞춘 회복 루틴을 하나씩 정하는 실습형 특강입니다.</p>
+      <ul class="fold__list">
+        <li><span class="k">대상</span><span>HR·복지 담당자, 전 직원, 신입·관리자 교육 과정</span></li>
+        <li><span class="k">구성</span><span>오행으로 보는 나와 동료의 반응 코드 → 갈등이 생기는 지점 → 향·색·습관으로 짜는 회복 루틴</span></li>
+        <li><span class="k">기대</span><span>“저 사람은 원래 저렇다”가 “저 사람은 그런 결이다”로 바뀌는 자리</span></li>
+      </ul>
+
+      <h4><span>02</span> 지자체·공공기관·도서관 · 생활 사주명리 교양</h4>
+      <p>경북신문에 연재 중인 『윤이세의 생활 사주명리』의 흐름을 그대로 따라가는 교양 강연입니다. 어렵게 느껴지던 명리 용어를 일상의 언어로 바꿔, 처음 듣는 분도 끝까지 앉아 있게 만듭니다.</p>
+      <ul class="fold__list">
+        <li><span class="k">대상</span><span>주민 평생학습·문화 강좌, 도서관 인문학 프로그램, 공공기관 교양 교육</span></li>
+        <li><span class="k">구성</span><span>사주는 점이 아니다 → 내 인생의 일기예보 → 비어 있는 오행을 읽는 법 → 오늘부터의 개운 습관</span></li>
+        <li><span class="k">기대</span><span>연재 칼럼을 읽던 독자가 얼굴을 마주하고 이해하는 시간</span></li>
+      </ul>
+
+      <h4><span>03</span> 웰니스 · 오행 아로마 힐링워크숍</h4>
+      <p>하루에도 수십 명의 감정을 받아내는 민원 응대·고객 응대 담당자를 위한 힐링 세션입니다. <b>영덕군청 민원처리과 특강</b>에서 다듬은 내용으로, 감정노동으로 타는 기운을 오행의 언어로 설명하고 향·색·호흡으로 스스로를 회복하는 루틴을 함께 만듭니다.</p>
+      <ul class="fold__list">
+        <li><span class="k">대상</span><span>지자체 민원처리과·민원실, 콜센터·고객센터, 공공기관 대민 창구, 복지·문화 행사</span></li>
+        <li><span class="k">구성</span><span>감정노동은 어떤 기운을 태우는가 → 응대 후 3분 회복 루틴 → 팀 단위 힐링 습관</span></li>
+        <li><span class="k">기대</span><span>“오늘도 버텼다”가 “오늘은 이렇게 풀었다”로 바뀌는 자리</span></li>
+      </ul>
+
+      <h4><span>04</span> 임원·소그룹 · 오행 큐레이션</h4>
+      <p>참석자의 생년월일을 미리 받아 한 사람 한 사람의 오행 프로파일을 준비해 갑니다. 개인의 결을 짚고, 그 사람들이 한 팀이 될 때 어디가 맞물리고 어디가 부딪히는지까지 이야기합니다.</p>
+      <ul class="fold__list">
+        <li><span class="k">대상</span><span>임원 워크숍, 소규모 리더 그룹, 가족·친목 모임, 1일 클래스</span></li>
+        <li><span class="k">구성</span><span>개인 오행 프로파일 해설 → 팀 조합 진단 → 각자의 회복 루틴과 역할 조정</span></li>
+        <li><span class="k">기대</span><span>“우리 팀에 왜 이 사람이 필요한지”가 보이는 자리</span></li>
+      </ul>
+      <p class="fold__note">🔒 맞춤형은 참석자 생년월일을 강연 준비 목적으로만 받고, 강연이 끝나면 폐기합니다. 사전에 동의 절차와 수집 범위를 함께 정합니다.</p>
+
+      <h3>출강 절차 3단계</h3>
+      <div class="steps">
+        <div class="step"><span class="step__no">01</span><div><p class="step__t">문의</p><p class="step__d">카카오채널·전화·메일로 일시, 장소, 인원, 원하는 주제를 알려 주세요.</p></div></div>
+        <div class="step"><span class="step__no">02</span><div><p class="step__t">맞춤 구성</p><p class="step__d">대상과 시간에 맞춰 주제·교안·실습을 짜고, 그에 맞는 견적을 보내 드립니다.</p></div></div>
+        <div class="step"><span class="step__no">03</span><div><p class="step__t">현장 출강</p><p class="step__d">강연 당일, 그 조직의 언어로 진행합니다. 대면·온라인 모두 가능합니다.</p></div></div>
+      </div>
+
+      <h3>강사 소개</h3>
+      <div class="who">
+        <div class="who__mark" aria-hidden="true">尹</div>
+        <div>
+          <p class="who__name">윤이세</p>
+          <p class="who__role">사주명리학자 · 동양철학 강연자 · 오행 웰니스 큐레이터 · 윤이세사주 대표</p>
+        </div>
+      </div>
+
+      <ul class="career">
+        <li><b>경북신문 『윤이세의 생활 사주명리』 연재 40편+</b> — 2026년 1월부터 매주 한 편</li>
+        <li><b>창암명리학회 수석 학술이사</b></li>
+        <li><b>울산광역시교육청 · 영덕군청 민원처리과</b> 등 공공기관·기업 특강</li>
+        <li><b>유튜브 ‘윤이세의 사주특별수사대’ 구독 2.7천 · 누적 조회 55만+</b></li>
+      </ul>
+
+      <p style="margin-top:14px">점(占)으로 소비되던 사주를 일상의 언어로 옮겨, 오행을 <b>기질·관계·회복의 언어</b>로 다시 쓰는 일을 합니다. 부산 전포동에서 상담실을 운영하며, 어려운 술어 대신 듣는 사람의 자리에서 출발하는 설명을 합니다.</p>
+      <p>필명 윤이세 · 대표 김나영 — 경북신문 칼럼니스트. 분야: 동양철학·음양오행, 생활 사주명리, 오행 웰니스, 기질과 스트레스, 관계와 소통, 오행 아로마 힐링워크숍.</p>
+      <p>연재 전체 보기 — <a href="https://www.kbsm.net/news/search.php?mode=&amp;search_order=%EC%9C%A4%EC%9D%B4%EC%84%B8" target="_blank" rel="noopener noreferrer">경북신문 윤이세 칼럼 ↗</a></p>
+
+      <div class="col-links" aria-label="글과 영상으로 먼저 만나기">
+        <a href="https://ksy7900-star.github.io/yoonise-oheng-aroma/story/">연재 칼럼 모아 보기 <i>→</i></a>
+        <a href="https://www.youtube.com/@yoonise_saju" target="_blank" rel="noopener noreferrer">유튜브 @yoonise_saju <i>→</i></a>
+        <a href="https://blog.naver.com/ksy7900so" target="_blank" rel="noopener noreferrer">네이버 블로그 <i>→</i></a>
+        <a href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타그램 <i>→</i></a>
+      </div>
+    </div>
+  </details>
+
+  <details class="fold" id="faq">
+    <summary>자주 묻는 질문 펼쳐보기 <em>4가지</em></summary>
+    <div class="fold__body">
+      <div class="faq">
+        <p class="faq__q">동양철학 강의는 어떤 것들을 포함하나요?</p>
+        <p class="faq__a"><b>동양철학 기반 강의</b>는 음양오행과 명리, 기질과 관계의 원리를 바탕으로 한 강의 전체를 말합니다. 기업의 <b>조직 소통·스트레스 관리·임직원 웰니스 특강</b>, 지자체·공공기관·도서관의 <b>생활 사주명리 인문학 강좌</b>, <b>오행 아로마 힐링워크숍</b>, 임원·소그룹 맞춤 특강까지 같은 뿌리에서 주제만 달리해 구성합니다. 사주·명리·운세 강의는 그중 한 갈래입니다.</p>
+
+        <p class="faq__q">운세 강의는 점을 보는 건가요? 웰니스 강의·오행 테라피·마음챙김과는 어떻게 다른가요?</p>
+        <p class="faq__a">미래를 단정하는 점이 아니라, 타고난 오행의 비율로 기질과 스트레스 반응을 설명하는 <b>자기이해의 강의</b>입니다. 오행 웰니스·오행 테라피는 그 설명을 향·색·호흡·습관 같은 회복 루틴으로 옮기는 실습이고, 마음챙김은 그 루틴을 매일 이어가는 방법으로 연결됩니다. 사주는 미래를 정하지 않고 선택을 돕는 참고로만 사용합니다.</p>
+
+        <p class="faq__q">기업 강의·지자체 강의는 어떤 형식으로 진행되나요?</p>
+        <p class="faq__a"><b>기업 특강</b>은 임직원 웰니스·조직 소통·스트레스 관리 주제의 강연형 또는 워크숍형으로, <b>지자체·공공기관·도서관·문화센터 강의</b>는 생활 사주명리 교양 강좌로 진행합니다. 대면과 온라인 모두 가능하며, 강연 시간과 인원에 맞춰 구성을 조정합니다. 일시·장소·인원·주제를 알려 주시면 제안과 견적을 함께 드립니다.</p>
+
+        <p class="faq__q">부산·경남 외 지역도 출강하나요?</p>
+        <p class="faq__a">네. 부산 사주 강의와 부산 명리학 강사 요청이 가장 많지만, 경남 특강을 비롯해 전국 출강이 가능합니다. 이동 일정과 강연 시간을 함께 조율해 안내드립니다.</p>
+      </div>
+    </div>
+  </details>
+
+</div>
 
 <footer class="foot">
   <b>엔와이트레이드</b> · 대표 김나영 · 사업자등록번호 219-07-67996<br>
