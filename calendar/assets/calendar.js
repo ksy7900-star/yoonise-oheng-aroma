@@ -2884,14 +2884,11 @@
     var has = !!inv.code;
     var box;
     if (has) {
+      /* 2026-11-28 — 긴 주소·버튼 3개를 걷어 내고 큰 공유 버튼 하나 + 작은 링크 복사 한 줄만 남긴다.
+         실제 동작은 예전 그대로: 공유 = OS 공유 창(카톡·문자·DM), 복사 = 링크 복사. */
       box = '<div class="invt__box">' +
-        '<p class="invt__label">내 초대 링크</p>' +
-        '<p class="invt__url" id="inviteUrl">' + esc(invLink()) + '</p>' +
-        '<div class="invt__acts">' +
-        '<button type="button" class="invt__btn invt__btn--gold" data-inv-copy>링크 복사</button>' +
-        '<button type="button" class="invt__btn" data-inv-share>카카오톡으로 보내기</button>' +
-        '</div>' +
-        '<button type="button" class="invt__more" data-inv-text>공유 문구 복사</button>' +
+        '<button type="button" class="invt__share" data-inv-share>📤 친구에게 공유하기</button>' +
+        '<button type="button" class="invt__copy" data-inv-copy>🔗 링크 복사</button>' +
         '</div>';
     } else {
       box = '<div class="invt__box invt__box--login">' +
