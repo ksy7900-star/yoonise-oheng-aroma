@@ -5931,6 +5931,9 @@ body.has-bonus .js-trial{ display: none !important; }
   font-family:inherit; font-size:12px; font-weight:700; color:var(--ink-2);
 }
 .sgift__more:active{transform:translateY(1px)}
+/* 2026-11-28 — 접수 완료 카드의 작은 문의 링크(💬 카톡으로 문의 남기기).
+   <a> 로 그려도 버튼과 같은 모양·가운데 정렬로 카드 밖으로 넘치지 않게 한다. */
+a.sgift__more{display:flex; align-items:center; justify-content:center; gap:4px; box-sizing:border-box; text-align:center; text-decoration:none}
 /* 작은 보조 선택지 — 72시간 안에 바로 결제하는 길 (#18832) */
 .sgift__quick{
   display:inline-flex; align-items:center; gap:4px;

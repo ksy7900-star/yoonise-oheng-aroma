@@ -5,7 +5,8 @@
    · 최초 사주 입력 시각은 서버(client_uid)가 남긴다 — 이 파일은 그 값을 받아 보여 준다.
    · 배너는 두 곳만: ① 달력 맨 위 카드 ② 맨 아래 '1년 전체 바로 열기' 버튼 위.
      달력 중간(#passBar 주변)에는 아무것도 넣지 않는다.
-   · 카카오톡 링크를 눌러도 '접수 완료'가 되지 않는다 — 운영자가 확인해야 바뀐다.
+   · 신청 버튼을 누르면 화면 안에서 '접수 완료'로 끝난다 — 카카오톡 채널로 자동 이동하지 않는다.
+     (2026-11-28 — 카톡 빈 창으로 튕겨 나가던 흐름을 없앴다. 서버 상태값·운영자 확인 절차는 그대로다.)
    ========================================================== */
 (function () {
   'use strict';
@@ -607,10 +608,16 @@
     var auto = !delivered && step <= 1 && !!d.consent_at &&
       (d.eligibility_source === 'payment_auto' || d.auto_applied === true);
     var needConsent = !delivered && !auto && d.status !== 'cancelled' && !d.consent_at;
+    /* 손님이 동의하고 신청 버튼을 누른 건(apply_clicked_at) — 운영자가 아직 '접수 확인'을 누르지
+       않아도 신청·동의·사주가 서버에 다 들어와 있다. 손님 화면은 카카오톡을 거치지 않고
+       바로 '접수 완료'로 보여 준다. 서버 상태값(eligible → submitted)은 운영자 몫 그대로 둔다.
+       (2026-11-28 — 캡처 `YG-2027-RSGM47`: 신청을 눌렀는데도 1단계에 머물던 문제) */
+    var received = !delivered && !needConsent && !auto && (step === 1 || (step === 0 && applied));
+    var shown = received && step === 0 ? 1 : step;
     var no = d.claim_no || '';
     var labels = auto ? ['자동 접수', '접수 완료', '준비 중', '전달 완료'] : STEP_LABEL;
     var steps = labels.map(function (label, i) {
-      var cls = i < step ? 'is-done' : (i === step ? 'is-now' : '');
+      var cls = i < shown ? 'is-done' : (i === shown ? 'is-now' : '');
       return '<li class="sgift__step ' + cls + '"><span class="sgift__step-n">' + (i + 1) + '</span>' +
         '<span class="sgift__step-t">' + label + '</span></li>';
     }).join('');
@@ -629,6 +636,10 @@
             ? '윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.'
             : '한 번만 동의해 주시면 윤이세가 사주를 읽고 가이드를 만들어 카카오톡으로 보내 드려요.') + '</p>' +
           '<p class="sgift__sub">동의하지 않아도 결제와 1년 이용권 사용에는 아무 영향이 없어요.</p>'
+        : (received
+        ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
+          '<h2 class="sgift__title" id="specialGiftTitle">✅ 맞춤 운세 가이드 신청이 접수되었어요</h2>' +
+          '<p class="sgift__desc">윤이세 선생님이 사주를 확인해 작성한 뒤, 이 화면과 카카오톡으로 보내드릴게요.</p>'
         : (step === 2
         ? '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
           '<h2 class="sgift__title" id="specialGiftTitle">가이드를 준비하고 있어요</h2>' +
@@ -647,21 +658,17 @@
             : '<p class="sgift__label">🎁 첫 3일(72시간) 특별 선물</p>' +
               '<h2 class="sgift__title" id="specialGiftTitle">특별 선물 대상자로 확인되었습니다!</h2>' +
               '<p class="sgift__desc">윤이세가 직접 전하는 2027년 맞춤 운세 활용 가이드를 신청해 주세요.</p>' +
-              '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 뒤 카카오톡으로 개별 전달해 드려요.</p>'))));
+              '<p class="sgift__sub">신청하신 가이드는 윤이세가 직접 검토한 뒤 카카오톡으로 개별 전달해 드려요.</p>')))));
 
     var statusLine = '';
     if (needConsent) {
-      statusLine = '<p class="sgift__state">위 동의에 체크하면 진행할 수 있어요. 동의 전에는 사주 자료가 서버에 저장되지 않아요.</p>';
+      statusLine = '<p class="sgift__state">동의 전에는 사주 자료가 서버에 저장되지 않아요.</p>';
     } else if (auto) {
       statusLine = '<p class="sgift__state">🟢 자동 접수 완료 — 결제와 함께 접수됐어요. 가이드가 준비되면 카카오톡으로 보내 드립니다.</p>';
-    } else if (d.status === 'submitted') {
-      statusLine = '<p class="sgift__state">신청이 접수됐어요. 윤이세가 확인하고 있어요.</p>';
     } else if (step === 2) {
       statusLine = '<p class="sgift__state">지금 윤이세가 가이드를 준비하고 있어요. 준비되면 카카오톡으로 보내 드립니다.</p>';
     } else if (delivered) {
       statusLine = '<p class="sgift__state">전달이 끝났어요. 더 궁금한 점은 카카오톡 채널로 남겨 주세요.</p>';
-    } else if (applied) {
-      statusLine = '<p class="sgift__state">카카오톡으로 신청번호를 보내 주세요. 윤이세가 확인한 뒤 <b>접수 완료</b>로 바뀝니다.</p>';
     }
 
     var noBox = '<div class="sgift__no"><span>신청번호</span><b id="specialClaimNo">' + esc(no) + '</b>' +
@@ -689,25 +696,26 @@
         '</div>'
       : '';
 
+    /* 카카오톡은 원할 때만 — 작은 보조 링크 하나. 메인 버튼은 신청 버튼뿐이다 (2026-11-28) */
+    var help = '<a class="sgift__more" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">💬 카톡으로 문의 남기기</a>';
     var btn = delivered
       ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기</a>'
-      : (auto
-        ? '<a class="sgift__buy" href="' + KAKAO + '" target="_blank" rel="noopener noreferrer">카카오톡 채널 열기 (선택)</a>'
-        : '<button type="button" class="sgift__buy" id="specialApply"' + (needConsent && !consented ? ' disabled' : '') + '>' +
-          (needConsent
-            ? (d.status === 'eligible' ? '🎁 동의하고 특별 가이드 신청하기' : '🎁 동의하고 특별 가이드 받기')
-            : (applied ? '🎁 카카오톡으로 다시 열기' : '🎁 카카오톡으로 특별 가이드 신청하기')) + '</button>');
+      : (needConsent
+        ? '<button type="button" class="sgift__buy" id="specialApply"' + (consented ? '' : ' disabled') + '>' +
+          (d.status === 'eligible' ? '🎁 동의하고 특별 가이드 신청하기' : '🎁 동의하고 특별 가이드 받기') + '</button>'
+        : (shown === 0
+          ? '<button type="button" class="sgift__buy" id="specialApply">🎁 특별 가이드 신청하기</button>'
+          : help));
 
-    var hint = delivered ? '' :
-      '<p class="sgift__hint">' + (auto
-        ? '가이드는 윤이세가 확인한 뒤 카카오톡으로 보내드려요. 문의는 카카오톡 채널로 남겨 주세요.'
-        : (needConsent && !consented
-          ? '위 동의에 체크하면 진행할 수 있어요.'
-          : (needConsent
-            ? '동의하면 사주 분석 자료가 서버에 저장되고, 가이드가 준비되는 대로 카카오톡으로 보내 드려요.'
-          : (applied
-            ? '버튼을 누르면 신청 문구가 다시 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.'
-            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')))) + '</p>';
+    var hint = needConsent
+      ? (consented
+        ? '<p class="sgift__hint">동의하고 버튼을 누르면 신청이 접수돼요. 카카오톡으로 따로 보내지 않으셔도 됩니다.</p>'
+        : '<p class="sgift__hint">위 동의에 체크하면 진행할 수 있어요.</p>')
+      : (auto
+        ? '<p class="sgift__hint">가이드는 윤이세가 확인한 뒤 카카오톡으로 보내드려요. 문의는 카카오톡 채널로 남겨 주세요.</p>'
+        : (shown === 0
+          ? '<p class="sgift__hint">버튼을 누르면 신청이 접수돼요. 카카오톡으로 따로 보내지 않으셔도 됩니다.</p>'
+          : ''));
 
     return head +
       '<ol class="sgift__steps">' + steps + '</ol>' +
@@ -1037,49 +1045,43 @@
     sendApply(d);
   }
 
-  /** 신청 문구 복사 + 카카오톡 채널 열기 (접수 전 'eligible' 건) */
+  /** 신청 접수 — 화면 안에서 끝난다. 카카오톡 채널로 넘기지 않는다 (2026-11-28)
+     동의·사주는 이미 서버에 있고, 이 호출이 apply_clicked_at 을 남긴다.
+     성공하면 카드를 다시 그려 '접수 완료'로 보여 주고, 손님은 앱에 그대로 머무른다. */
   function sendApply(d) {
-    var c = cal();
-    var code = (c && c.code) || {};
-    var msg = [
-      '[윤이세 특별 가이드 신청]',
-      '2027년 맞춤 운세 활용 가이드 신청합니다.',
-      '신청번호: ' + d.claim_no,
-      '결제 확인 정보: ' + (code.phone ? maskPhone(code.phone) : '휴대폰 번호 확인 완료'),
-      '궁금한 점 또는 요청사항(선택): '
-    ].join('\n');
-
-    var go = function (ok) {
-      if (!ok && window.YoonCalendar && window.YoonCalendar.toast) {
-        window.YoonCalendar.toast('복사가 막혀 있어요 — 신청번호를 길게 눌러 직접 복사해 주세요');
-      }
-      if (window.YoonCalendar && window.YoonCalendar.openNoRef) window.YoonCalendar.openNoRef(KAKAO);
-      else window.open(KAKAO, '_blank', 'noopener');
+    applyBusy(true);
+    var fail = function () {
+      renderClaim();                       // 카드 상태를 그대로 되돌린다(버튼 이름·비활성 포함)
+      toast('잠시 뒤 다시 눌러 주세요 — 신청을 접수하지 못했어요');
     };
-
     rpc('special_guide_mark_applied', { p_client_uid: ensureUid(), p_claim_no: d.claim_no })
       .then(function (r) {
-        if (r && r.apply_clicked_at) {
+        if (!r || r.ok === false) { fail(); return; }
+        if (r.apply_clicked_at) {
           d.apply_clicked_at = r.apply_clicked_at;
           if (mem.claim) mem.claim.apply_clicked_at = r.apply_clicked_at;
         }
-        if (window.YoonCalendar && window.YoonCalendar.copyText) {
-          window.YoonCalendar.copyText(msg, go);
-        } else {
-          try { navigator.clipboard.writeText(msg).then(function () { go(true); }, function () { go(false); }); }
-          catch (e) { go(false); }
-        }
+        try { localStorage.setItem(CLAIM_KEY, JSON.stringify(mem.claim || d)); } catch (e) { }
         renderClaim();
-      }, function () {
-        if (window.YoonCalendar && window.YoonCalendar.copyText) window.YoonCalendar.copyText(msg, go);
-        else go(false);
-      });
+        /* 접수 완료 카드가 화면 밖으로 밀렸을 때만 한 번 끌어올린다 */
+        var card = $('#specialGift');
+        setTimeout(function () {
+          if (!card || card.hidden) return;
+          var box = card.getBoundingClientRect();
+          if (box.top < 0 || box.bottom > window.innerHeight) { try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { } }
+        }, 140);
+      }, fail);
   }
 
-  function maskPhone(d) {
-    var f = String(d || '').replace(/[^0-9]/g, '');
-    if (f.length < 8) return '휴대폰 번호 확인 완료';
-    return f.slice(0, 3) + '-****-' + f.slice(-4);
+  /** 신청 버튼의 '접수하는 중' 표시 — 화면을 다시 그리면(renderClaim) 저절로 돌아온다 */
+  function applyBusy(on) {
+    var btn = $('#specialApply');
+    if (!btn || btn.tagName !== 'BUTTON') return;
+    if (on) {
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      btn.textContent = '신청을 접수하는 중…';
+    }
   }
 
   /* ── 혜택 자세히 보기 팝업 ───────────────────────────── */
@@ -1382,7 +1384,7 @@
         h.textContent = mem.consentChecked
           ? (alreadyIn
             ? '동의하면 사주 분석 자료가 서버에 저장되고, 가이드가 준비되는 대로 카카오톡으로 보내 드려요.'
-            : '버튼을 누르면 신청 문구가 복사되고 카카오톡 채널이 열려요. 채팅창에 붙여 넣어 보내 주세요.')
+            : '동의하고 버튼을 누르면 신청이 접수돼요. 카카오톡으로 따로 보내지 않으셔도 됩니다.')
           : '위 동의에 체크하면 진행할 수 있어요.';
       }
     });
