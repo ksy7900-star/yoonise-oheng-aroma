@@ -2303,7 +2303,7 @@
       '<p class="fhow__note">초대받은 친구도 7일 무료 + 액운 태우기 <b>+1회</b></p>' +
       '<p class="fhow__note">5명부터는 1:1 상담 할인도 함께 드려요</p>' +
       '<button type="button" class="fhow__go fhow__go--share" data-inv-quick>📤 바로 친구에게 보내기</button>' +
-      '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
+      '<button type="button" class="fhow__go" data-open-invite>친구 공유하기 (초대) <span aria-hidden="true">→</span></button>' +
       '</section>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">②</span><span class="fhow__t">인스타그램 후기</span></p>' +
@@ -2618,7 +2618,7 @@
       '<div class="mben__grid" data-mben-grid>' + mbCardsHTML(st, rules) + '</div>' +
       '<p class="mben__lead">소중한 인연을 이어주신 감사의 마음을 담아, 타이밍 달력 정식 회원님께 <b>특별한 혜택</b>을 드립니다.</p>' +
       '<button type="button" class="fhow__go fhow__go--share" data-inv-quick>📤 바로 친구에게 보내기</button>' +
-      '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
+      '<button type="button" class="fhow__go" data-open-invite>친구 공유하기 (초대) <span aria-hidden="true">→</span></button>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기</span></p>' +
       '<p class="fhow__d">나의 타이밍을 공유하고 <b>특별한 혜택</b>을 받아보세요. 마음에 드는 사진과 나만의 사용 소감을 함께 올려 주세요.</p>' +
@@ -6306,7 +6306,7 @@
       '<p class="invitecard__t">🎁 친구 초대하면 무료로 열려요</p>' +
       '<p class="invitecard__d"><b>1명</b> +2주 · <b>3명</b> +1개월 · <b>5명</b> +3개월+상담 1만원 · <b>7명</b> +6개월+반값</p>' +
       /* 2026-11-26 #23095 — 이 버튼도 케미 화면이 아니라 초대 화면(내 링크 만들기)으로 */
-      '<button type="button" class="invitecard__go" data-open-invite>내 초대 링크 만들기 →</button>' +
+      '<button type="button" class="invitecard__go" data-open-invite>친구 공유하기 (초대) →</button>' +
       '</div>';
   }
   /** 잠금 팝업 하단 — 결제 버튼 아래, 부담 없는 친구 초대 링크 (2026-11-21) */
