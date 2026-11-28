@@ -4813,6 +4813,8 @@ body.is-result .installbar { margin-top: 12px; }
   background: linear-gradient(135deg, #B98A44 0%, #F0D79B 46%, #C79A4E 100%); color: #2A1B08;
 }
 .invitecard--shop { margin: 4px 2px 10px; }
+/* 2026-11-28 — 결제창에서 금액 비교 아래·결제 버튼 위로 올린 자리 (아래 여백은 휴대폰 번호 칸이 갖는다) */
+.invitecard--up { margin: 12px 2px 0; }
 .invitecard--year { margin-top: 12px; }
 
 /* ==========================================================

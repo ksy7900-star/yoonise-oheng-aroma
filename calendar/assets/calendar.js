@@ -6314,6 +6314,22 @@
     return inviteCardHTML('invitecard--lock');
   }
 
+  /* 2026-11-28 윤희 님 — 결제창의 초대 카드를 맨 아래에서 **금액 비교 아래·결제 버튼 위**로.
+     금액이 큰 글씨로 먼저 보이는 화면이라, 맨 아래 초대 카드는 스크롤 밖에 묻혀 있었다.
+     · inviteSlotHTML() : 결제창 본문에 카드가 들어갈 자리만 표시(없는 화면은 예전처럼 맨 아래)
+     · withInviteCard() : 그 자리에 카드를 끼워 넣고, 자리가 없으면 맨 아래에 붙인다 */
+  var INVITE_SLOT = '<div data-invite-slot></div>';
+  function inviteSlotHTML() {
+    return state.unlocked ? '' : INVITE_SLOT;
+  }
+  function withInviteCard(html) {
+    if (state.unlocked) return html;
+    var out = String(html || '');
+    if (out.indexOf(INVITE_SLOT) >= 0)
+      return out.replace(INVITE_SLOT, inviteCardHTML('invitecard--shop invitecard--up'));
+    return out + inviteCardHTML('invitecard--shop');
+  }
+
   /** 잠금 팝업 머리 — 스크롤이 생겨도 날짜가 상단 버튼 아래에서 잘리지 않게
      한 덩어리로 묶어 sticky 로 붙인다 (2026-11-21) */
   function lockHeadHTML(info, eyebrow) {
@@ -7887,6 +7903,8 @@
        부제는 '날짜별 흐름'까지만 짧게 남긴다. */
     return '<p class="shop__sub">2027년 1년 내내 날짜별 조심·기운UP·실속 흐름</p>' +
       passCompareHTML() +
+      /* 2026-11-28 — 친구 초대 카드는 금액 비교 바로 아래, 휴대폰 번호·결제 버튼 위 */
+      inviteSlotHTML() +
       /* 2026-11-23 심플 결제 — 카드 주 버튼 하나 + 작은 계좌이체·코드 링크만.
          계좌이체를 고르면 안내 안에 '입금 확인 카톡 보내기'가 나오므로 큰 카톡 버튼은 두지 않는다. */
       passPayActionsHTML();
@@ -8208,7 +8226,7 @@
   function switchConsultTier(k) {
     if (!shopBody || !CONSULT_PRODUCTS[k] || k === consultTier) return;
     consultTier = k;
-    shopBody.innerHTML = consultShopHTML() + shopCodeLinkHTML('consult') + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.innerHTML = withInviteCard(consultShopHTML() + shopCodeLinkHTML('consult'));
     shopBody.scrollTop = 0;
     var nb = shopBody.querySelector('[data-consult-tier="' + k + '"]');
     if (nb) { try { nb.focus({ preventScroll: true }); } catch (e) { nb.focus(); } }
@@ -9007,7 +9025,7 @@
   function switchShop(kind) {
     if (!shopBody || !TIER_NAME[kind] || kind === shopKind) return;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind) + shopCodeLinkHTML(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.innerHTML = withInviteCard(shopHTMLFor(kind) + shopCodeLinkHTML(kind));
     shopBody.scrollTop = 0;
     vibrate(12);
     sfxTap(1);
@@ -9029,7 +9047,7 @@
     if (!shopEl.hidden) stopBowl();            // 앞 팝업의 싱잉볼 잔향을 남기지 않는다
     shopLastFocus = document.activeElement;
     shopKind = kind;
-    shopBody.innerHTML = shopHTMLFor(kind) + shopCodeLinkHTML(kind) + (state.unlocked ? '' : inviteCardHTML('invitecard--shop'));
+    shopBody.innerHTML = withInviteCard(shopHTMLFor(kind) + shopCodeLinkHTML(kind));
     shopEl.hidden = false;
     if (window.BackNav) window.BackNav.open('shop', closeShop);         // 휴대폰 뒤로가기 → 이 팝업부터 닫기
     document.body.classList.add('is-modal-open');
