@@ -582,9 +582,25 @@
     var seen = !!guide && isDismissed(d);
     card.hidden = !!guide ? seen : close;
     if (tg) {
-      /* 감정서를 받은 뒤에는 다시 열기가 보관 버튼 몫 — 신청서만 예전처럼 한 줄로 남긴다 */
-      if (guide) showToggle(null);
-      else showToggle(close ? 'claim' : null, delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기');
+      if (guide) {
+        /* 2026-11-28 — 정식 회원 특별 혜택 배너 바로 위 한 줄 버튼은 감정서를 받은 뒤에도 남긴다.
+           큰 도착 카드를 한 번 열어 보거나 X 로 닫으면 카드만 접히고, 이 버튼이 '나의 2027 맞춤
+           가이드 보기'로 계속 서 있어 다시 열 길이 사라지지 않는다. (카드가 아직 펼쳐져 있을 때만
+           자리가 겹치지 않게 숨긴다) */
+        if (seen) {
+          showToggle('claim', '🎁 나의 2027 맞춤 가이드 보기');
+          tg.setAttribute('aria-controls', 'specialGuideModal');   // 이 한 줄은 감정서 팝업을 연다
+          tg.setAttribute('aria-haspopup', 'dialog');
+        } else {
+          showToggle(null);
+          tg.setAttribute('aria-controls', 'specialGift');
+          tg.removeAttribute('aria-haspopup');
+        }
+      } else {
+        showToggle(close ? 'claim' : null, delivered ? '🎁 전달 완료 보기' : '🎁 특별 선물 신청서 보기');
+        tg.setAttribute('aria-controls', 'specialGift');
+        tg.removeAttribute('aria-haspopup');
+      }
     }
 
     var body = $('#specialGiftBody');
@@ -1299,6 +1315,13 @@
           if (window.YoonCalendar && typeof window.YoonCalendar.openShop === 'function') window.YoonCalendar.openShop('pass');
           return;
         }
+        /* 2026-11-28 — 2027 맞춤 가이드가 도착한 정식 회원: 이 한 줄이 곧 감정서 다시 열기.
+           (가이드가 없는 일반 신청서 상태에서는 예전처럼 카드를 펼친다) */
+        if (!guideOf(mem.claim)) {
+          var cg = cachedClaim();
+          if (cg && guideOf(cg)) mem.claim = cg;
+        }
+        if (guideOf(mem.claim)) { openGuide(); return; }
         setClosed(false);
         refresh();
         return;

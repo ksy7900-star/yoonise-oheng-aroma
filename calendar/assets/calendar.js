@@ -2302,6 +2302,7 @@
       }).join('') + '</ul>' +
       '<p class="fhow__note">초대받은 친구도 7일 무료 + 액운 태우기 <b>+1회</b></p>' +
       '<p class="fhow__note">5명부터는 1:1 상담 할인도 함께 드려요</p>' +
+      '<button type="button" class="fhow__go fhow__go--share" data-inv-quick>📤 바로 친구에게 보내기</button>' +
       '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
       '</section>' +
       '<section class="fhow__card">' +
@@ -2616,6 +2617,7 @@
       mbRefsLine(st, 'benefit') +
       '<div class="mben__grid" data-mben-grid>' + mbCardsHTML(st, rules) + '</div>' +
       '<p class="mben__lead">소중한 인연을 이어주신 감사의 마음을 담아, 타이밍 달력 정식 회원님께 <b>특별한 혜택</b>을 드립니다.</p>' +
+      '<button type="button" class="fhow__go fhow__go--share" data-inv-quick>📤 바로 친구에게 보내기</button>' +
       '<button type="button" class="fhow__go" data-open-invite>내 초대 링크 만들기 <span aria-hidden="true">→</span></button>' +
       '<section class="fhow__card">' +
       '<p class="fhow__head"><span class="fhow__n" aria-hidden="true">✦</span><span class="fhow__t">인스타그램 후기</span></p>' +
@@ -2972,6 +2974,17 @@
     }
     invCopyText();
   }
+  /** 📤 원터치 보내기 (2026-11-28) — 무료 이용법·정식 회원 혜택 팝업의 '친구 초대' 칸에서
+      초대 화면을 거치지 않고 곧장 공유 창을 연다. 코드를 아직 못 받았으면 먼저 받아 온다.
+      받는 사람 흐름(?ref=)·공유 문구·기존 버튼은 그대로다. */
+  var invQuickAt = 0;
+  function invQuickShare() {
+    var now = Date.now();
+    if (now - invQuickAt < 700) return;        // 두 번 눌러도 공유 창이 겹쳐 열리지 않게
+    invQuickAt = now;
+    if (inv.code) { invShare(); return; }
+    invLoadCode(function () { invShare(); });
+  }
 
   /* ── 📸 인스타그램 후기 참여 화면 (한 화면 4단계) ───────── */
   /* 📸 인스타그램 후기 — **한 곳 설정** (2026-11-26 #23131)
@@ -3259,6 +3272,7 @@
     if (!t || !t.closest) return false;
     var openInv = t.closest('[data-open-invite]');
     if (openInv) { e.preventDefault(); openInvite(); return true; }
+    if (t.closest('[data-inv-quick]')) { e.preventDefault(); invQuickShare(); return true; }
     var openIg = t.closest('[data-open-insta]');
     if (openIg) { e.preventDefault(); openInsta(); return true; }
     if (t.closest('[data-inv-close]')) { e.preventDefault(); closeInvite(); return true; }
