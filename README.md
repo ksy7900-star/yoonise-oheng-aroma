@@ -4495,10 +4495,11 @@ B안(종이에 인주 스며드는 '착!')의 뼈대에 어택과 타격감을 �
 | 구분 | 결과 |
 | --- | --- |
 | 구문 | esprima 파싱 오류 0 |
-| 로직 (`work/special-guide-apply-20261128/test-apply-flow.py`, quickjs + 가짜 RPC) | **30/30** — 캡처 상태(eligible+apply_clicked_at) → 접수 완료 카드·2단계·카톡 버튼 없음, 신청 클릭 → `consent → saju → mark_applied` 1회·`window.open` 0회·접수 완료 전환, 접수 실패 → 신청 상태 복귀+토스트, 자동 접수·동의 없음·준비 중 회귀 |
+| 로직 (`work/special-guide-apply-20261128/test-apply-flow.py`, quickjs + 가짜 RPC) | **32/32** — 캡처 상태(eligible+apply_clicked_at) → 접수 완료 카드·2단계·카톡 버튼 없음, 신청 클릭 → `consent → saju → mark_applied` 1회·`window.open` 0회·접수 완료 전환, 접수 실패 → 신청 상태 복귀+토스트, 자동 접수·동의 없음·준비 중 회귀 |
 | 화면 (Playwright 390×844 · Android UA · Supabase 가로채기) | **18/18** — 동의 체크 → 신청 클릭 후 제목 `✅ 맞춤 운세 가이드 신청이 접수되었어요` · 현재 단계 `접수 완료` · 신청번호 표시 · 큰 카톡 버튼 0 · 작은 문의 링크 1 · URL 그대로 · 팝업 0 · `mark_applied` 1회 · 새로 고침 뒤에도 접수 완료 유지 · 콘솔·pageerror 0 |
 | 스크린샷 | `work/special-guide-apply-20261128/01-before-apply.png` · `02-after-apply.png` · `02-after-apply-card.png` · `03-reloaded.png` |
-| 라이브 | `?v=20261128e` · `sw.js VERSION=20261128e` · `special-guide.js?v=20261128e` |
+| 라이브 (Playwright 390×844 · Supabase 가로채기 · `work/special-guide-apply-20261128/live-check.py`) | **9/9** — 동의 → 신청 탭 후 제목 `✅ 맞춤 운세 가이드 신청이 접수되었어요` · 현재 단계 `접수 완료` · URL 그대로 · 팝업 0 · 큰 카톡 버튼 0 · 작은 문의 링크 1 · `mark_applied` 1회 · 콘솔 0 · 스크린샷 `04-live-after-apply.png` |
+| 배포 | 커밋 `68c431c` · `?v=20261128e` · `sw.js VERSION=20261128e` · `special-guide.js?v=20261128e` (라이브 본문에서 `카톡으로 문의 남기기`·`동의하고 버튼을 누르면 신청이 접수돼요` 확인) |
 
 ### 3. 남은 판단
 - 손님 화면은 `접수 완료`인데 서버 상태값은 `eligible`(+`apply_clicked_at`)로 남는다. 운영자 목록의 `접수 확인`을 **자동으로 `submitted`** 로 바꿀지는 정책 결정 — 지금 코드는 손님 화면만 바꿨고 DB 는 건드리지 않았다.
