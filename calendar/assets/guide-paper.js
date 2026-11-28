@@ -1,26 +1,33 @@
 /* ==========================================================
-   📜 감정서 종이 렌더러 — 1080×1440 (3:4) · 페이지 · PDF · 공유 (2026-11-26 v3)
+   📜 감정서 종이 렌더러 — A4 세로 1240×1754 · 페이지 · PDF · 공유 (2026-11-28 v4 · B안)
    · 두 감정서가 **같은 렌더러**를 쓴다.
        ① 관리자 '서비스용 감정서 직접 만들기' (/calendar/yoon-key/)
        ② 첫 3일(72시간) 특별 혜택 감정서 (손님 달력 앱 · 관리자 상세)
    · 원본은 언제나 '글'이다. 화면에서 고친 최종본(관리자 수정본)을 그대로 받아
      페이지 이미지 · PDF · 공유 파일을 모두 이 한 곳에서 만든다.
      그래서 화면에서 고친 글이 저장물에서 초안으로 되돌아가지 않는다.
-   · 표지 전용 페이지도, 직인만 있는 페이지도 없다 (2026-11-26 #22071).
+
+   ── B안 (2026-11-28 #27105 — "표지는 확 들어오는데 나머진 너무 길고 글도 작다") ──
+     · **한 장에 한 주제.** 소제목(1.~5.)은 반드시 새 장에서 시작한다(1장 1주제 카드형).
+         표지 1장 + 본문 6장(인사말·총평 / 1 / 2 / 3 / 4 / 5+직인+상담) = 모두 7장.
+     · 본문 54px(42px 대비 +28.6%) · 줄 86px(1.6배) · 좌우 여백 76px → 폰에서 한 줄 20자 남짓.
+     · 각 장 맨 위에 소제목(번호는 금색) → **핵심 한 줄**(연한 금색 상자, 굵게) → 짧은 문단 2~3개.
+     · 문단은 쪼개지 않는다(한 문단이 한 장보다 길 때만 줄 단위). 문장 중간에서 잘리지 않는다.
+     · 남는 자리는 문단 사이 여백으로 고르게 나눠(최대 90px) 아래를 비우지 않는다.
+     · ① ② ③ 은 번호와 본문을 같은 기준선에 놓고, 번호 폭만큼 본문을 들여 쓴다(겹침 0).
+
+   · 표지 전용 장은 표지 하나뿐이고, 직인만 있는 장은 없다 (2026-11-26 #22071).
        1장 위: 제목 → 개인 사주 원국(4기둥·대운/세운 없음, 상자 안 첫 줄에 이름·성별·생년월일·시각)
-              → 도입부 → 본문   (2026-11-26 #22228 — 원국 위 두 줄은 지운다, 고객 정보는 상자 안 한 줄로)
+              → 인사말 → 총평   (2026-11-26 #22228 — 원국 위 두 줄은 지운다, 고객 정보는 상자 안 한 줄로)
        마지막 장: 마무리 문단 + ‘윤이세’ 이름 왼쪽 · 실제 직인(yoonise-seal.png) 오른쪽을 한 묶음으로
               본문 오른쪽 끝에 붙인다 (#22228 — 가운데 정렬·이름 앞 ‘—’ 없음)
-     약 1,450자 기준 3~4장, 본문 42px · 줄 1.5배 · 좌우 여백 68px.
-   · 페이지 나눔은 문단(블록) 단위이고, 한 문단이 길면 줄 단위로만 나눈다.
-     문장 중간에서 잘리지 않고, 마지막 장에 서명만 홀로 남지 않는다.
    ========================================================== */
 (function (global) {
   'use strict';
 
   /* ── 종이 크기 — A4 세로 비율 1240×1754 (표지·본문 같은 규격) ── */
   var W = 1240, H = 1754;
-  var M = { x: 74, top: 64, bottom: 52 };
+  var M = { x: 76, top: 84, bottom: 64 };
 
   var C = {
     bg: '#FBF7F0', ink: '#2A2622', body: '#332D27', soft: '#8C8279',
@@ -30,19 +37,22 @@
   var SANS = '"Pretendard","Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif';
   var SERIF = '"Nanum Myeongjo","NanumMyeongjo","Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","SamsungMyeongjo","Batang","바탕",serif';
 
-  /* 본문 42px · 줄 63px(1.5배) — A4 폭에서 한 줄 30자 남짓 */
+  /* B안(2026-11-28) — 폰에서 읽히는 크기.
+     본문 54px(42px 대비 +28.6%) · 줄 86px(1.6배) → A4 폭에서 한 줄 20자 남짓.
+     소제목 56px · 핵심 한 줄(lead) 52px 굵게 + 연한 금색 상자. */
   var F = {
     brand: '800 17px ' + SANS,
-    title: '600 42px ' + SERIF,
-    for: '400 26px ' + SANS,
-    meta: '600 24px ' + SANS,
-    greet: '500 34px ' + SANS, greetB: '700 34px ' + SANS,
+    title: '600 46px ' + SERIF,
+    for: '400 28px ' + SANS,
+    meta: '600 26px ' + SANS,
+    greet: '500 40px ' + SANS, greetB: '700 40px ' + SANS,
     chap: '800 14px ' + SANS,
-    head: '700 40px ' + SERIF, headB: '700 40px ' + SERIF,
-    body: '400 42px ' + SANS, bodyB: '700 42px ' + SANS,
-    item: '400 42px ' + SANS, itemB: '700 42px ' + SANS,
-    sign: '600 38px ' + SERIF,
-    foot: '600 15px ' + SANS,
+    head: '700 56px ' + SERIF, headB: '700 56px ' + SERIF,
+    lead: '700 52px ' + SANS, leadB: '800 52px ' + SANS,
+    body: '400 54px ' + SANS, bodyB: '700 54px ' + SANS,
+    item: '400 54px ' + SANS, itemB: '700 54px ' + SANS,
+    sign: '600 40px ' + SERIF,
+    foot: '600 16px ' + SANS,
     chartK: '800 16px ' + SANS,
     chartN: '600 14px ' + SANS,
     chartPos: '700 15px ' + SANS,
@@ -53,7 +63,7 @@
     chartNote: '600 15px ' + SANS,
     chartMeta: '700 20px ' + SANS
   };
-  var LH = { title: 54, for: 36, meta: 32, greet: 62, head: 52, body: 63, item: 63, chap: 22 };
+  var LH = { title: 58, for: 38, meta: 34, greet: 66, head: 78, lead: 82, body: 86, item: 94, chap: 22 };
 
   /* 오행 색 — 관리자 원국 표와 같은 오방색 */
   var EL = {
@@ -77,8 +87,8 @@
   /* 1:1 상담 신청서 — 감정서 마지막 장 버튼이 가리키는 곳 (QR 없이 바로 연결) */
   var APPLY_URL = 'https://ksy7900-star.github.io/yoonise-oheng-aroma/apply/';
   var CTA_LABEL = '윤이세 1:1 맞춤 상담 알아보기 →';
-  var CTA_BTN_Y = 320;               /* 상담 블록 위에서 잰 버튼 위치 */
-  var CTA_BTN_H = 68;
+  var CTA_BTN_Y = 330;               /* 상담 블록 위에서 잰 버튼 위치 */
+  var CTA_BTN_H = 76;
   var CTA_BOTTOM = CTA_BTN_Y + CTA_BTN_H + 8;
 
   var SEAL_DEFAULT = 'assets/yoonise-seal.png';
@@ -107,6 +117,8 @@
       else if (/^안녕하세요,/.test(t)) type = 'greet';
       else if (/^[1-5]\.\s/.test(t)) type = 'head';
       else if (/^[①②③④⑤]/.test(t)) type = 'item';
+      /* 한 줄 전체가 굵은 글씨면 그 장의 '핵심 한 줄' — 상자 안에 크게 둔다 */
+      else if (/^\*\*[^*]+\*\*$/.test(t)) type = 'lead';
       else if (/^[—–―-]?\s*윤이세\s*$/.test(t)) type = 'sign';
       out.push({ type: type, text: t, runs: runsOf(t) });
       seen += 1;
@@ -157,7 +169,7 @@
       for (var i = 0; i < t.length; i++) {
         var f = r.b ? bold : reg;
         m.font = f;
-        chars.push({ c: t.charAt(i), b: !!r.b, w: m.measureText(t.charAt(i)).width });
+        chars.push({ c: t.charAt(i), b: !!r.b, k: r.k || null, w: m.measureText(t.charAt(i)).width });
       }
     });
     var lines = [], line = [], lineW = 0;
@@ -188,7 +200,7 @@
     return lines.map(function (ln) {
       var segs = [], cur = null;
       ln.forEach(function (ch) {
-        if (!cur || cur.b !== ch.b) { cur = { b: ch.b, t: '' }; segs.push(cur); }
+        if (!cur || cur.b !== ch.b || cur.k !== (ch.k || null)) { cur = { b: ch.b, k: ch.k || null, t: '' }; segs.push(cur); }
         cur.t += ch.c;
       });
       if (segs.length) segs[segs.length - 1].t = segs[segs.length - 1].t.replace(/\s+$/, '');
@@ -225,7 +237,7 @@
       var cx = align === 'center' ? x - total / 2 : (align === 'right' ? x - total : x);
       segs.forEach(function (sg) {
         c.font = sg.b ? bold : reg;
-        c.fillStyle = color;
+        c.fillStyle = sg.k || sg.c || color;
         c.textAlign = 'left';
         try { c.letterSpacing = (ls || 0) + 'px'; } catch (e) { }
         c.fillText(sg.t, cx, by);
@@ -394,10 +406,10 @@
       var tl = wrapPlain(m, title, maxW - 40, F.title);
       if (tl.length > 2) tl = [tl[0], tl.slice(1).join(' ')];
       tl.forEach(function (t) {
-        ops.push({ y: y + 34, draw: textOp([{ t: t, b: false }], W / 2, 0, F.title, F.title, C.ink, 'center', 0) });
+        ops.push({ y: y + 37, draw: textOp([{ t: t, b: false }], W / 2, 0, F.title, F.title, C.ink, 'center', 0) });
         y += LH.title;
       });
-      y += 12;
+      y += 26;
     }
     var saju = opts.saju || null;
     if (saju && saju.pillars) {
@@ -423,16 +435,17 @@
   }
 
   /* ── 블록 → 줄 단위 그리기 단위 ─────────────────────────
-     각 단위는 높이(h)와 draw(c, y) 만 가진다. 페이지 나눔은 이 높이만 본다. */
+     각 단위는 높이(h)와 draw(c, y) 만 가진다. 페이지 나눔은 이 높이만 본다.
+     B안(2026-11-28) — 소제목마다 새 장, 문단은 쪼개지 않는다. */
   function blockUnits(m, b) {
     var maxW = W - M.x * 2;
-    var before = 0, after = 0, units = [];
+    var units = [];
 
     if (b.type === 'greet') {
       wrap(m, b.runs, maxW, F.greet, F.greetB).forEach(function (ln) {
-        units.push({ h: LH.greet, draw: lineOp(ln.segs, M.x, LH.greet, 30, F.greet, F.greetB, C.ink, 'left', 0) });
+        units.push({ h: LH.greet, draw: lineOp(ln.segs, M.x, LH.greet, 40, F.greet, F.greetB, C.ink, 'left', 0) });
       });
-      return { units: units, before: 4, after: 16 };
+      return { units: units, before: 0, after: 20 };
     }
     if (b.type === 'chap') {
       units.push({ h: LH.chap, draw: function (c, y) {
@@ -444,46 +457,75 @@
       return { units: units, before: 16, after: 6 };
     }
     if (b.type === 'head') {
-      var hi = 0;
-      wrap(m, b.runs, maxW, F.head, F.headB).forEach(function (ln) {
-        units.push({ h: LH.head, draw: (function (ln2, first) {
-          return function (c, y) {
-            if (first) {
-              c.fillStyle = C.gold; c.globalAlpha = .7;
-              c.fillRect(M.x, y + 2, 34, 2);
-              c.globalAlpha = 1;
+      /* 소제목 — 번호는 금색, 제목은 먹색. 둘째 줄부터는 번호 폭만큼 들여 쓴다(걸이 들여쓰기). */
+      var txt = String(b.text || '');
+      var numM = txt.match(/^([1-9]\.)\s+([\s\S]+)$/);
+      var numW = 0, titleRuns = b.runs;
+      if (numM) {
+        m.font = F.headB; numW = m.measureText(numM[1] + ' ').width;
+        titleRuns = [{ t: numM[2], b: true }];
+      }
+      wrap(m, titleRuns, maxW - numW, F.head, F.headB).forEach(function (ln, i) {
+        units.push({ h: LH.head, draw: function (c, y) {
+          if (i === 0) {
+            c.fillStyle = C.gold; c.globalAlpha = .55;
+            c.fillRect(M.x, y + 2, 46, 3);
+            c.globalAlpha = 1;
+            if (numM) {
+              lineOp([{ t: numM[1], b: true }], M.x, LH.head, 56, F.head, F.headB, C.goldDeep, 'left', -0.6)(c, y);
             }
-            lineOp(ln2.segs, M.x, LH.head, 38, F.head, F.headB, C.ink, 'left', 0)(c, y);
-          };
-        })(ln, hi++ === 0) });
+          }
+          lineOp(ln.segs, M.x + numW, LH.head, 56, F.head, F.headB, C.ink, 'left', -0.6)(c, y);
+        } });
       });
-      return { units: units, before: 20, after: 10 };
+      return { units: units, before: 8, after: 34 };
+    }
+    if (b.type === 'lead') {
+      /* 핵심 한 줄 — 연한 금색 상자 안에 굵게. 이 장에서 가장 먼저 읽히는 문장. */
+      var padX = 36, padY = 24, barW = 5;
+      var lw = maxW - padX - 16;
+      var llines = wrap(m, b.runs, lw, F.lead, F.leadB);
+      var boxH = llines.length * LH.lead + padY * 2;
+      units.push({ h: boxH, draw: function (c, y) {
+        roundRect(c, M.x, y, maxW, boxH, 16);
+        c.fillStyle = '#F7EDD8'; c.fill();
+        c.strokeStyle = 'rgba(176,141,87,.34)'; c.lineWidth = 1.4; c.stroke();
+        c.fillStyle = C.gold;
+        c.fillRect(M.x + 16, y + padY - 4, barW, boxH - padY * 2 + 8);
+        llines.forEach(function (ln, i) {
+          lineOp(ln.segs, M.x + padX + 8, LH.lead, 52, F.lead, F.leadB, C.ink, 'left', 0)(c, y + padY + i * LH.lead);
+        });
+      } });
+      return { units: units, before: 0, after: 32 };
     }
     if (b.type === 'item') {
+      /* ① ② ③ — 번호는 글자와 같은 기준선에 놓는다(겹침 0).
+         번호 폭을 재서 본문을 그만큼 들여 쓴다. */
       var rs = b.runs.slice(), mark = '';
       if (rs.length && rs[0].t) {
         var s0 = rs[0].t;
         if (/^[①②③④⑤]/.test(s0)) {
           mark = s0.charAt(0);
-          rs[0] = { t: s0.slice(1), b: rs[0].b };
+          rs[0] = { t: s0.slice(1).replace(/^\s+/, ''), b: rs[0].b, k: rs[0].k };
           if (!rs[0].t) rs.shift();
         }
       }
-      var indent = 46, lh = LH.item;
+      var mw = 0;
+      if (mark) { m.font = F.item; mw = m.measureText(mark).width; }
+      var indent = mark ? Math.round(mw) + 18 : 0;
       var first = true;
       wrap(m, rs, maxW - indent, F.item, F.itemB).forEach(function (ln) {
-        units.push({ h: lh, draw: (function (ln2, isFirst) {
+        units.push({ h: LH.item, draw: (function (ln2, isFirst) {
           return function (c, y) {
             if (isFirst && mark) {
-              c.font = F.item; c.fillStyle = C.body; c.textAlign = 'left';
-              c.fillText(mark, M.x, y);
+              lineOp([{ t: mark, b: true }], M.x, LH.item, 54, F.item, F.itemB, C.goldDeep, 'left', 0)(c, y);
             }
-            lineOp(ln2.segs, M.x + indent, lh, 42, F.item, F.itemB, C.body, 'left', 0)(c, y);
+            lineOp(ln2.segs, M.x + indent, LH.item, 54, F.item, F.itemB, C.body, 'left', 0)(c, y);
           };
         })(ln, first) });
         first = false;
       });
-      return { units: units, before: 0, after: 10 };
+      return { units: units, before: 8, after: 18 };
     }
     if (b.type === 'sign') {
       /* 마지막 장 — '윤이세'(왼쪽) + 직인(오른쪽)을 한 묶음으로 본문 오른쪽 끝에 붙인다 (#22228) */
@@ -511,13 +553,13 @@
         }
         drawCta(c, y);
       } };
-      return { units: [u], before: 26, after: 0, cta: { x: M.x, y: CTA_BTN_Y, w: W - M.x * 2, h: CTA_BTN_H } };
+      return { units: [u], before: 30, after: 0, cta: { x: M.x, y: CTA_BTN_Y, w: W - M.x * 2, h: CTA_BTN_H } };
     }
     /* body */
     wrap(m, b.runs, maxW, F.body, F.bodyB).forEach(function (ln) {
-      units.push({ h: LH.body, draw: lineOp(ln.segs, M.x, LH.body, 42, F.body, F.bodyB, C.body, 'left', 0) });
+      units.push({ h: LH.body, draw: lineOp(ln.segs, M.x, LH.body, 54, F.body, F.bodyB, C.body, 'left', 0) });
     });
-    return { units: units, before: 0, after: 10 };
+    return { units: units, before: 0, after: 22 };
   }
 
   var SIGN = { seal: null };
@@ -539,119 +581,98 @@
     return Promise.resolve();
   }
 
-  /* ── 페이지 나눔 ────────────────────────────────────────
-     마지막 문단과 서명·직인은 반드시 같은 장에 둔다 — 직인만 남는 장을 만들지 않는다. */
-  function paginate(m, list, headH, k) {
-    var pages = [], cur = null;
-    var bottom = H - M.bottom;
-    var startY = M.top + (headH || 0);
-    function limitFor(i) {
-      if (!k) return bottom;
-      var room = (bottom - M.top) - (i === 0 ? (headH || 0) : 0);
-      return (i === 0 ? M.top + (headH || 0) : M.top) + room * k;
-    }
-    function open(start) { cur = { ops: [], y: start == null ? M.top : start, filled: 0 }; pages.push(cur); }
-    open(startY);
-
-    var signBlock = null;
-    list.forEach(function (b) { if (b.type === 'sign') signBlock = b; });
-
-    list.forEach(function (b, bi) {
-      var lim = limitFor(pages.length - 1);
-      if (b.type === 'sign') {
-        var Bs = blockUnits(m, b), hs = 0;
-        Bs.units.forEach(function (u) { hs += u.h; });
-        var limS = limitFor(pages.length - 1);
-        cur.textEnd = cur.y;                 /* 서명 앞까지의 글 끝 — 마지막 장 밀도 계산에 쓴다 */
-        var y0 = cur.y + Bs.before;
-        var low = limS - hs - 8;
-        if (y0 < low && (low - y0) <= 240) y0 = low;   /* 남는 자리가 조금이면 아래에 붙인다 */
-        if (y0 + hs > limS) {
-          if (cur.filled > 0) { open(); y0 = M.top + Bs.before; }
-        }
-        var signTop = y0;
-        Bs.units.forEach(function (u) { cur.ops.push({ y: y0, h: u.h, draw: u.draw }); y0 += u.h; });
-        cur.y = y0;
-        cur.filled += 1;
-        if (Bs.cta) {
-          /* 상담 버튼 자리 — PDF 링크·앱 링크가 이 사각형 위에 얹힌다 */
-          cur.cta = { x: Bs.cta.x, y: signTop + Bs.cta.y, w: Bs.cta.w, h: Bs.cta.h };
-        }
-        return;
-      }
-      var B = blockUnits(m, b);
-      /* 이 블록이 마지막 본문이고 뒤에 서명이 오면, 둘이 같이 들어갈 자리를 미리 본다 */
-      var tail = 0;
-      if (signBlock && bi === list.length - 2) {
-        var SB = blockUnits(m, signBlock);
-        tail = SB.before;
-        SB.units.forEach(function (u) { tail += u.h; });
-      }
-      var remain = B.units.slice();
-      var firstChunk = true;
-      var guard = 0;
-      while (remain.length && guard++ < 400) {
-        lim = limitFor(pages.length - 1);
-        var beforeY = firstChunk ? B.before : 0;
-        var avail = lim - (cur.y + beforeY) - (remain.length === B.units.length ? tail : 0);
-        var fit = 0, acc = 0;
-        for (var i = 0; i < remain.length; i++) {
-          if (acc + remain[i].h > avail) break;
-          acc += remain[i].h; fit += 1;
-        }
-        /* 소제목이 종이 맨 아래에 홀로 남지 않게 — 제목 + 본문 두 줄은 같이 들어가야 한다 */
-        if (firstChunk && b.type === 'head') {
-          var need = acc + B.after + 100;
-          if (cur.y + beforeY + need > lim && cur.filled > 0) { open(); continue; }
-        }
-        /* 한 줄만 남기고 넘기는 모양을 피한다 — 두 줄 미만이면 통째로 다음 장 */
-        var orphan = (fit > 0 && fit < remain.length && fit < 2 && remain.length >= 3);
-        if (fit === 0 || orphan) {
-          if (cur.filled > 0) { open(); continue; }
-          fit = 1;
-        }
-        cur.y += beforeY;
-        for (var kk = 0; kk < fit; kk++) {
-          var u = remain[kk];
-          cur.ops.push({ y: cur.y, h: u.h, draw: u.draw });
-          cur.y += u.h;
-        }
-        cur.filled += fit;
-        remain = remain.slice(fit);
-        firstChunk = false;
-        if (remain.length) { open(); }
-      }
-      cur.y += (remain.length ? 0 : B.after);
-    });
-    return pages;
-  }
-
-  /** 자연스러운 나눔 — 마지막 장이 너무 비면, 같은 장 수 안에서 고르게 나눠 본다 */
+  /* ── 페이지 나눔 — B안 (2026-11-28) ────────────────────────
+     · 한 장에 한 주제. 소제목(`1.`~`5.`)은 반드시 새 장에서 시작한다.
+     · 문단은 쪼개지 않는다. 한 문단이 한 장보다 길 때만 줄 단위로 나눈다.
+     · 서명·직인·1:1 상담 블록은 마지막 장에 통째로, 아래쪽에 붙인다.
+     · 남는 자리는 문단 사이 여백으로 고르게 나눠 준다(최대 90px). */
   function layoutPages(m, list, headH) {
-    var natural = paginate(m, list, headH);
-    if (natural.length < 3) return natural;
     var bottom = H - M.bottom;
-    function fill(pg, i) {
-      var top0 = i === 0 ? M.top + headH : M.top;
-      return (pg.y - top0) / (bottom - top0);
+    var pages = [];
+
+    function openPage(startY) {
+      var p = { ops: [], y: startY, starts: [], filled: 0 };
+      pages.push(p);
+      return p;
     }
-    function textFill(pg, i) {
-      var top0 = i === 0 ? M.top + headH : M.top;
-      var end = pg.textEnd || pg.y;
-      return (end - top0) / (bottom - top0);
+    function breathe(p) {
+      if (!p || p.signTop != null) return;
+      var left = bottom - p.y;
+      if (left < 30 || p.starts.length < 2) return;
+      var n = p.starts.length - 1;
+      var per = Math.min(90, left / (n + 1));
+      if (per < 4) return;
+      var add = 0, si = 1;
+      for (var i = 0; i < p.ops.length; i++) {
+        if (si < p.starts.length && i === p.starts[si]) { add += per; si++; }
+        p.ops[i].y += add;
+      }
+      p.y += add;
     }
-    var last = textFill(natural[natural.length - 1], natural.length - 1);
-    if (last >= 0.34) return natural;
-    var best = natural;
-    var ks = [0.95, 0.92, 0.89, 0.86, 0.83];
-    for (var i = 0; i < ks.length; i++) {
-      var alt = paginate(m, list, headH, ks[i]);
-      if (alt.length !== natural.length) continue;
-      var f = textFill(alt[alt.length - 1], alt.length - 1);
-      if (f > textFill(best[best.length - 1], best.length - 1)) best = alt;
-      if (f >= 0.5) break;          /* 고르게 나뉘었으면 거기서 멈춘다 — 아래를 비우지 않게 */
+    function put(p, B) {
+      p.y += B.before;
+      p.starts.push(p.ops.length);
+      B.units.forEach(function (u) { p.ops.push({ y: p.y, h: u.h, draw: u.draw }); p.y += u.h; });
+      p.y += B.after;
+      p.filled += 1;
     }
-    return best;
+    function heightOf(B) {
+      var h = 0;
+      B.units.forEach(function (u) { h += u.h; });
+      return h;
+    }
+
+    /* 소제목마다 한 묶음 — 묶음의 첫 블록이 새 장을 연다 */
+    var groups = [], cur = null;
+    list.forEach(function (b) {
+      if (!cur || b.type === 'head') { cur = []; groups.push(cur); }
+      cur.push(b);
+    });
+    if (!groups.length) groups.push([]);
+
+    var page = openPage(M.top + (headH || 0));
+    groups.forEach(function (g, gi) {
+      if (gi > 0) { breathe(page); page = openPage(M.top); }
+      g.forEach(function (b) {
+        var B = blockUnits(m, b);
+        var hs = heightOf(B);
+
+        if (b.type === 'sign') {
+          if (page.signTop != null) { breathe(page); page = openPage(M.top); }
+          if (page.ops.length && page.y + B.before + hs > bottom) { breathe(page); page = openPage(M.top); }
+          var y0 = page.y + B.before;
+          if (bottom - (y0 + hs) <= 220) y0 = bottom - hs;     /* 남는 자리가 적으면 아래에 붙인다 */
+          if (y0 < M.top) y0 = M.top;                          /* 한 장보다 크면 어쩔 수 없이 위에서 */
+          page.signTop = y0;
+          B.units.forEach(function (u) { page.ops.push({ y: y0, h: u.h, draw: u.draw }); y0 += u.h; });
+          page.y = y0;
+          page.filled += 1;
+          if (B.cta) page.cta = { x: B.cta.x, y: page.signTop + B.cta.y, w: B.cta.w, h: B.cta.h };
+          return;
+        }
+
+        if (page.signTop != null) { breathe(page); page = openPage(M.top); }
+
+        /* 이 장에 다 들어가지 않으면 — 다음 장으로 통째로 넘긴다 */
+        if (page.ops.length && page.y + B.before + hs > bottom) {
+          breathe(page); page = openPage(M.top);
+        }
+        /* 그래도 안 들어가면(한 문단이 한 장보다 길다) — 줄 단위로만 나눈다 */
+        if (page.y + B.before + hs > bottom) {
+          var yy = page.y + B.before;
+          B.units.forEach(function (u) {
+            if (page.ops.length && yy + u.h > bottom) { breathe(page); page = openPage(M.top); yy = page.y; }
+            page.ops.push({ y: yy, h: u.h, draw: u.draw });
+            yy += u.h;
+          });
+          page.y = yy;
+          return;
+        }
+        put(page, B);
+      });
+    });
+    breathe(page);
+    return pages;
   }
 
   /* ── 종이 한 장 그리기 ────────────────────────────────── */
@@ -685,25 +706,25 @@
   function drawCta(c, y) {
     var mid = W / 2, inner = W - M.x * 2;
     /* 구분선 */
-    c.fillStyle = C.hair; c.fillRect(M.x, y + 118, inner, 1);
+    c.fillStyle = C.hair; c.fillRect(M.x, y + 112, inner, 1);
     /* 라벨 */
-    c.font = '800 16px ' + SANS; c.fillStyle = C.gold; c.textAlign = 'center';
-    try { c.letterSpacing = '6px'; } catch (e) { }
-    c.fillText('PRIVATE CONSULTATION', mid + 3, y + 150);
+    c.font = '800 18px ' + SANS; c.fillStyle = C.gold; c.textAlign = 'center';
+    try { c.letterSpacing = '7px'; } catch (e) { }
+    c.fillText('PRIVATE CONSULTATION', mid + 4, y + 150);
     try { c.letterSpacing = '0px'; } catch (e) { }
     /* 제목 두 줄 */
-    c.font = '600 34px ' + SERIF; c.fillStyle = C.ink;
-    c.fillText('당신의 방향이 조금 더', mid, y + 196);
-    c.fillText('선명해지도록', mid, y + 234);
+    c.font = '600 41px ' + SERIF; c.fillStyle = C.ink;
+    c.fillText('당신의 방향이 조금 더', mid, y + 198);
+    c.fillText('선명해지도록', mid, y + 244);
     /* 안내 두 줄 */
-    c.font = '400 23px ' + SANS; c.fillStyle = '#6B6157';
-    c.fillText('지금 고민하고 있는 선택이 있다면,', mid, y + 272);
-    c.fillText('윤이세와 함께 조금 더 깊이 살펴보세요.', mid, y + 302);
+    c.font = '400 25px ' + SANS; c.fillStyle = '#6B6157';
+    c.fillText('지금 고민하고 있는 선택이 있다면,', mid, y + 284);
+    c.fillText('윤이세와 함께 조금 더 깊이 살펴보세요.', mid, y + 313);
     /* 네이비 버튼 */
     var bx = M.x, by = y + CTA_BTN_Y, bw = inner, bh = CTA_BTN_H;
-    roundRect(c, bx, by, bw, bh, 14);
+    roundRect(c, bx, by, bw, bh, 16);
     c.fillStyle = '#16233A'; c.fill();
-    c.font = '800 27px ' + SANS; c.fillStyle = '#E9C98D';
+    c.font = '800 30px ' + SANS; c.fillStyle = '#E9C98D';
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText(CTA_LABEL, mid, by + bh / 2 + 1);
     c.textBaseline = 'alphabetic';
@@ -715,9 +736,7 @@
     if (no === 1 && head) head.ops.forEach(function (op) { op.draw(c, op.y); });
     page.ops.forEach(function (op) { op.draw(c, op.y); });
     /* 꼬리 — 반복되는 머리글 대신 아래에 작게 한 줄만 */
-    var fy = H - 48;
-    c.fillStyle = C.hairSoft;
-    c.fillRect(M.x, fy - 24, W - M.x * 2, 1);
+    var fy = H - 52;
     c.font = F.foot; c.fillStyle = 'rgba(140,130,121,.9)';
     c.textAlign = 'left';
     c.fillText('윤이세사주', M.x, fy);
