@@ -349,12 +349,16 @@
   }
 
   /* 도착 안내를 닫았거나 이미 열어 본 감정서 — 2027 카드 아래 보관 버튼으로만 남긴다.
-     실제 감정서(승인된 본문)를 받은 고객에게만 보인다. */
+     실제 감정서(승인된 본문)를 받은 고객에게만 보인다.
+     2026-11-28 윤희 님 — 위쪽 한 줄 버튼(🎁 나의 2027 맞춤 감정서 보기)이 계속 서 있어
+     같은 감정서를 두 번 보여 주던 중복을 없앤다. 위 버튼이 없는 예외에만 보관 버튼을 남긴다. */
   function syncArchive() {
     var el = $('#sgArchive');
     if (!el) return;
+    var tg = $('#specialGiftToggle');
+    var topShown = !!(tg && !tg.hidden);          // 위쪽 한 줄 버튼이 서 있으면 아래 보관 버튼은 접는다
     var d = mem.claim || cachedClaim();
-    if (!guideOf(d) && !guideOf(cachedClaim())) { el.hidden = true; return; }
+    if (topShown || (!guideOf(d) && !guideOf(cachedClaim()))) { el.hidden = true; return; }
     var gone = isDismissed(d) || (cachedClaim() && isDismissed(cachedClaim()));
     el.hidden = !gone;
   }
@@ -588,7 +592,8 @@
            가이드 보기'로 계속 서 있어 다시 열 길이 사라지지 않는다. (카드가 아직 펼쳐져 있을 때만
            자리가 겹치지 않게 숨긴다) */
         if (seen) {
-          showToggle('claim', '🎁 나의 2027 맞춤 가이드 보기');
+          /* 2026-11-28 윤희 님 — 이 한 줄의 이름을 화면의 감정서와 같은 말로 맞춘다 */
+          showToggle('claim', '🎁 나의 2027 맞춤 감정서 보기');
           tg.setAttribute('aria-controls', 'specialGuideModal');   // 이 한 줄은 감정서 팝업을 연다
           tg.setAttribute('aria-haspopup', 'dialog');
         } else {
