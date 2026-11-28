@@ -727,7 +727,8 @@
   }
   function trialStartISO() {
     if (!FREE_TRIAL_ENABLED || state.unlocked || !state.todayISO || !state.res) return '';
-    if (loginGateOn()) return '';              // 연결 전에는 무료 체험을 시작하지 않는다 (2026-11-27)
+    /* 2026-11-28 #26500 — 연결 전에도 7일 무료 체험은 그대로 시작한다.
+       (먼저 운세·달력을 보여 주고, 기록 저장은 연결 카드로 이어서 권한다) */
     if (trialStartMemo) return trialStartMemo;
     var v = '';
     try { v = localStorage.getItem(TRIAL_KEY) || ''; } catch (e) { v = ''; }
@@ -1069,7 +1070,8 @@
   function isLockedDay(iso) {
     if (TEST_OPEN_ALL) return false;          // 지인 테스트 — 날짜를 다 눌러 볼 수 있게
     if (state.unlocked) return false;
-    if (loginGateOn()) return true;           // 🔐 연결 전에는 날짜를 열지 않는다 (2026-11-27)
+    /* 2026-11-28 #26500 — 연결 전이라고 날짜를 통째로 잠그지 않는다.
+       미로그인 손님도 7일 무료 체험 흐름 그대로(아래 trialWindow) 쓴다. */
     if (!FREE_TRIAL_ENABLED) return false;
     var w = trialWindow();
     if (!w) return false;
@@ -5521,10 +5523,19 @@
       try { home.parent.insertBefore(p, home.next || null); } catch (e) { }
     }
   }
+  /* 🔑 2026-11-28 #26500 · #26512 — 관문은 이제 '가림막'이 아니라 '기록 저장 권유 카드'다.
+     · body.is-login-gated 로 달력·TODAY 를 감추던 것을 멈춘다(생년월일을 넣으면 운세·달력이 먼저 열린다).
+     · 카드(#loginGate)만 TODAY 아래에 한 장 두고, 보지 않고 지나가도 화면은 그대로 열려 있다.
+     · 연결을 마치고 돌아오면(was → off) 예전처럼 한 번 다시 그려 체험·잠금 상태를 맞춘다. */
+  var gateWasOn = false;
   function applyLoginGate() {
     var on = loginGateOn();
-    var was = document.body.classList.contains('is-login-gated');
-    document.body.classList.toggle('is-login-gated', on);
+    var was = gateWasOn;
+    gateWasOn = on;
+    /* 예전 화면(캐시)에 남은 가림막 클래스가 있으면 한 번 지운다 — 새로 감추지는 않는다 */
+    if (document.body.classList.contains('is-login-gated')) {
+      document.body.classList.remove('is-login-gated');
+    }
     var card = $('#loginGate');
     if (card) card.hidden = !on;
     if (!on) {

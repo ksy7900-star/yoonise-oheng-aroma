@@ -36,13 +36,18 @@
   }
   function isKakao() { return /KAKAOTALK/i.test(ua()); }
   function isNaverInapp() { return /NAVER\(inapp/i.test(ua()); }
+  /* 2026-11-28 #26500 — 스레드·인스타그램·페이스북 인앱도 '설치 창이 안 뜨는' 껍데기다.
+     예전엔 이 셋을 크롬으로 오인해 엉뚱한 '앱 설치' 안내를 띄웠다. */
+  function isThreads() { return /Barcelona/i.test(ua()); }
+  function isInstagram() { return /Instagram/i.test(ua()); }
+  function isFacebook() { return /FBAN|FBAV/i.test(ua()); }
   function isIOS() {
     return /iPhone|iPad|iPod/i.test(ua()) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
   function isAndroid() { return /Android/i.test(ua()); }
   function isSamsung() { return /SamsungBrowser/i.test(ua()); }
-  function isInapp() { return isKakao() || isNaverInapp(); }
+  function isInapp() { return isKakao() || isNaverInapp() || isThreads() || isInstagram() || isFacebook(); }
 
   function hideBar() {
     bar.hidden = true;
@@ -142,11 +147,16 @@
   }
   function contentFor(kind) {
     if (kind === 'inapp') {
-      var where = isKakao() ? '카톡' : '네이버';
+      /* 2026-11-28 #26500 — 어느 인앱에서 열었는지 정확히 밝힌다(스레드·인스타그램·페이스북 포함) */
+      var where = isThreads() ? '스레드'
+        : isInstagram() ? '인스타그램'
+        : isKakao() ? '카톡'
+        : isNaverInapp() ? '네이버'
+        : '페이스북';
       var toBrowser = isIOS() ? '사파리' : '크롬';
-      /* 2026-11-24 — 안드로이드 카톡에서는 '크롬으로 바로 열기' 원터치 버튼 하나만 크게 둔다.
-         iOS 는 기존처럼 카톡의 '브라우저에서 열기' 로 넘긴다. */
-      var chromeBtn = (isKakao() && isAndroid())
+      /* 안드로이드 인앱은 '크롬으로 바로 열기' 원터치 하나, iOS 인앱은 사파리로 여는 자리 안내.
+         (2026-11-24 카톡 안드로이드 원터치 · 2026-11-28 스레드·인스타까지 넓힘) */
+      var chromeBtn = isAndroid()
         ? '<a class="install__copy install__ext install__chrome" href="' + chromeIntent() + '" data-install-chrome>' +
           '<span aria-hidden="true">🌐</span> 크롬으로 바로 열기 →</a>'
         : '';
@@ -154,11 +164,14 @@
         ? '<button type="button" class="install__copy install__ext" data-install-external>' +
           '<span aria-hidden="true">↗</span> 브라우저에서 열기</button>'
         : '';
+      var howto = chromeBtn
+        ? '아래 <b>크롬으로 바로 열기</b>를 누르면 크롬에서 열려요.<br>크롬에서 한 번 더 누르면 홈 화면에 꺼내 둘 수 있어요.'
+        : (extBtn
+            ? '아래 <b>브라우저에서 열기</b>를 누르거나, 오른쪽 위(<b>···</b>) 메뉴에서 <b>사파리로 열기</b>를 눌러 주세요.<br>열린 사파리에서 한 번 더 누르면 끝이에요.'
+            : '오른쪽 위(<b>···</b>)나 아래 <b>···</b> 메뉴에서 <b>사파리로 열기</b>를 눌러 주세요.<br>열린 사파리에서 한 번 더 누르면 끝이에요.');
       return '<p class="install__eyebrow">INSTALL</p>' +
         '<h2 class="install__t" id="installTitle">' + where + ' 안에선 설치 창이 안 떠요</h2>' +
-        '<p class="install__d">' + (chromeBtn
-          ? '아래 <b>크롬으로 바로 열기</b>를 누르면 크롬에서 열려요.<br>크롬에서 한 번 더 누르면 홈 화면에 꺼내 둘 수 있어요.'
-          : '우측 메뉴(<b>⋮</b> / <b>···</b>)에서 <b>\'다른 브라우저로 열기\'</b>를 누른 뒤 꺼내 두세요.<br>열린 ' + toBrowser + ' 화면에서 한 번 더 누르면 끝이에요.') + '</p>' +
+        '<p class="install__d">' + howto + '</p>' +
         chromeBtn + extBtn +
         '<p class="install__hint">버튼이 안 열리면 아래 주소를 복사해 ' + toBrowser + ' 주소창에 붙여 넣어 주세요.</p>' +
         ((chromeBtn || extBtn) ? COPY_BTN_SUB : COPY_BTN);
