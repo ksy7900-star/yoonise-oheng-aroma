@@ -462,6 +462,21 @@ button{font-family:inherit;cursor:pointer}
 .fee--dark{color:rgba(247,241,228,.58);margin-top:14px}
 .fee--dark b{color:rgba(247,241,228,.82)}
 
+/* ── 강연 현장 사진 ─────────────────────── */
+.onsite{max-width:760px;margin:14px auto 0;padding:0 20px}
+.onsite figure{
+  margin:0;border-radius:20px;overflow:hidden;background:var(--paper);
+  border:1px solid rgba(185,151,91,.26);box-shadow:var(--shadow);
+}
+.onsite img{width:100%;height:auto;display:block;aspect-ratio:4/3;object-fit:cover}
+.onsite figcaption{padding:13px 16px 15px;background:linear-gradient(180deg,#FFFDF8 0%,#FBF4E7 100%)}
+.onsite figcaption b{
+  display:block;font-family:var(--serif);font-size:13.5px;font-weight:600;
+  color:var(--ink);letter-spacing:-.02em;line-height:1.5;
+}
+.onsite figcaption span{display:block;margin-top:3px;font-size:11.5px;line-height:1.65;color:var(--ink-soft)}
+.onsite figcaption em{display:block;margin-top:7px;font-style:normal;font-size:10px;line-height:1.6;color:var(--ink-mute)}
+
 /* ── 이런 자리에 ─────────────────────────── */
 .places{display:grid;gap:10px;margin-top:18px}
 @media (min-width:620px){.places{grid-template-columns:1fr 1fr}}
@@ -546,6 +561,18 @@ button{font-family:inherit;cursor:pointer}
   </ul>
   <p class="proof__note">교육 현장과 민원 창구에서 실제로 진행한 강연을, 우리 조직의 언어로 다시 만들어 드립니다.</p>
 </section>
+
+<div class="onsite" role="group" aria-label="강연 현장 사진">
+  <figure>
+    <img src="./img/lecture-2026-yeongdeok-workshop.jpg" width="1240" height="930" loading="lazy" decoding="async"
+         alt="2026년 영덕군 민원담당 공무원 힐링워크숍에서 오행 아로마 큐레이션 특강을 진행하는 윤이세">
+    <figcaption>
+      <b>2026 영덕군 민원담당 공무원 힐링워크숍</b>
+      <span>오행 아로마 큐레이션 특강 · 경북 영덕 한옥 강연장</span>
+      <em>사진 속 청중의 얼굴은 초상권 보호를 위해 흐리게 처리했습니다.</em>
+    </figcaption>
+  </figure>
+</div>
 
 <main class="wrap">
 
