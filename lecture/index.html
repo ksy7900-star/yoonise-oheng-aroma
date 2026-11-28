@@ -424,6 +424,44 @@ button{font-family:inherit;cursor:pointer}
 .proof__list span{display:block;margin-top:3px;font-size:10px;font-weight:600;color:var(--ink-mute)}
 .proof__note{margin-top:11px;text-align:center;font-size:11px;line-height:1.7;color:var(--ink-mute)}
 
+/* ── 카테고리·권위 ───────────────────────── */
+.hero__cat{
+  position:relative;margin-top:14px;display:inline-flex;align-items:center;gap:7px;
+  padding:6px 12px;border-radius:999px;background:rgba(231,211,168,.14);
+  border:1px solid rgba(231,211,168,.30);font-size:11.5px;font-weight:800;
+  color:#E7D3A8;letter-spacing:-.01em;line-height:1.5;
+}
+.hero__auth{
+  position:relative;margin-top:16px;padding:12px 14px;border-radius:12px;
+  background:rgba(247,241,228,.06);border:1px solid rgba(247,241,228,.15);
+  font-size:11.5px;line-height:1.78;color:rgba(247,241,228,.76);letter-spacing:-.01em;
+}
+.hero__auth b{color:#F7F1E4;font-weight:700}
+.hero__auth span{display:block;margin-top:3px;color:rgba(247,241,228,.62);font-size:11px}
+
+/* ── 숫자로 보는 이력 ─────────────────────── */
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+@media (min-width:560px){.nums{grid-template-columns:repeat(4,1fr)}}
+.nums li{
+  padding:14px 10px 13px;border-radius:13px;background:var(--paper);
+  border:1px solid var(--line-soft);box-shadow:var(--shadow-soft);text-align:center;
+}
+.nums b{
+  display:block;font-family:var(--serif);font-size:18px;font-weight:600;
+  color:var(--ink);letter-spacing:-.03em;line-height:1.25;
+}
+.nums span{display:block;margin-top:4px;font-size:10.5px;font-weight:600;color:var(--ink-mute);line-height:1.5}
+
+/* ── 강의비 안내(작은 글씨) ───────────────── */
+.fee{
+  margin-top:16px;display:flex;align-items:flex-start;gap:8px;
+  font-size:11px;line-height:1.75;color:var(--ink-mute);letter-spacing:-.01em;
+}
+.fee i{font-style:normal;opacity:.8}
+.fee b{font-weight:700;color:var(--ink-soft)}
+.fee--dark{color:rgba(247,241,228,.58);margin-top:14px}
+.fee--dark b{color:rgba(247,241,228,.82)}
+
 /* ── 이런 자리에 ─────────────────────────── */
 .places{display:grid;gap:10px;margin-top:18px}
 @media (min-width:620px){.places{grid-template-columns:1fr 1fr}}
@@ -483,12 +521,14 @@ button{font-family:inherit;cursor:pointer}
 <header class="hero">
   <p class="hero__eyebrow">YOONISE · LECTURE &amp; WORKSHOP</p>
   <h1 class="hero__title">사주명리로<br><em>사람과 조직의 기운</em>을 읽습니다</h1>
+  <p class="hero__cat">공공기관 · 지자체 · 기업 맞춤형 오행 웰니스 특강</p>
   <p class="hero__def"><b>사주·명리·운세 강의</b> — 타고난 여덟 글자의 오행 비율로 기질과 스트레스 반응을 읽고, 일상에서 바로 쓰는 회복 루틴으로 옮기는 사주명리 웰니스 강의입니다.</p>
   <p class="hero__sub">기업 특강·임직원 웰니스, 지자체·공공기관·도서관·문화센터 강의, 소그룹·임원 명리학 특강까지. 사주와 명리를 ‘점’이 아닌 내 삶의 언어로 번역하는 시간을 만듭니다.</p>
+  <p class="hero__auth"><b>경북신문 『윤이세의 생활 사주명리』 연재</b> · <b>창암명리학회 수석 학술이사</b><span>공공기관·지자체 특강 출강 — 울산광역시교육청 · 영덕군청 민원처리과 등</span></p>
   <ul class="hero__facts">
-    <li>경북신문 『윤이세의 생활 사주명리』 연재</li>
+    <li>경북신문 연재 40편+</li>
     <li>창암명리학회 수석 학술이사</li>
-    <li>울산교육청·영덕군청 민원처리과 특강</li>
+    <li>유튜브 구독 2.7천 · 누적 조회 55만+</li>
     <li>부산 · 울산 · 경남(부울경) · 전국 출강</li>
   </ul>
   <div class="hero__btns">
@@ -498,13 +538,13 @@ button{font-family:inherit;cursor:pointer}
 </header>
 
 <section class="proof" aria-label="강연 레퍼런스">
-  <p class="proof__k">이미 공공기관·교육청이 선택한 강연</p>
+  <p class="proof__k">신문 연재 · 학회 직함 · 공공기관 출강</p>
   <ul class="proof__list">
-    <li><b>울산교육청</b><span>교육청 특강 진행</span></li>
-    <li><b>영덕군청 민원처리과</b><span>공공기관 특강 진행</span></li>
+    <li><b>경북신문 연재 40편+</b><span>『윤이세의 생활 사주명리』 매주 한 편</span></li>
     <li><b>창암명리학회</b><span>수석 학술이사</span></li>
+    <li><b>울산광역시교육청 · 영덕군청</b><span>민원처리과 등 공공기관 특강 — 대표 사례</span></li>
   </ul>
-  <p class="proof__note">민원 창구·교육 현장에서 실제로 진행한 강연을, 우리 조직의 언어로 다시 만들어 드립니다.</p>
+  <p class="proof__note">교육 현장과 민원 창구에서 실제로 진행한 강연을, 우리 조직의 언어로 다시 만들어 드립니다.</p>
 </section>
 
 <main class="wrap">
@@ -597,6 +637,8 @@ button{font-family:inherit;cursor:pointer}
       </article>
 
     </div>
+
+    <p class="fee"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다. 예산 범위를 알려 주시면 그 안에서 구성을 맞춰 드립니다.</span></p>
   </section>
 
   <!-- ───────── 03 · 강사 소개 ───────── -->
@@ -614,13 +656,20 @@ button{font-family:inherit;cursor:pointer}
       </div>
 
       <p class="profile__body">경북신문에 <b>『윤이세의 생활 사주명리』</b>를 연재하는 사주명리학자이자 <b>창암명리학회 수석 학술이사</b>입니다. 점(占)으로 소비되던 사주를 일상의 언어로 옮겨, 오행을 <b>기질·관계·회복의 언어</b>로 다시 쓰는 일을 하고 있습니다.</p>
-      <p class="profile__body">부산 전포동에서 상담실을 운영하며, 같은 이야기를 강연장에서 더 크게 나눕니다. <b>울산교육청, 영덕군청 민원처리과</b>을 비롯한 공공기관·기업 특강에서 쌓은 자리 경험으로, 어려운 술어 대신 듣는 사람의 자리에서 출발하는 설명을 합니다 — 그것이 윤이세의 강의 방식입니다.</p>
+      <p class="profile__body">부산 전포동에서 상담실을 운영하며, 같은 이야기를 강연장에서 더 크게 나눕니다. <b>울산광역시교육청, 영덕군청 민원처리과</b>를 비롯한 공공기관·기업 특강에서 쌓은 자리 경험으로, 어려운 술어 대신 듣는 사람의 자리에서 출발하는 설명을 합니다 — 그것이 윤이세의 강의 방식입니다.</p>
+
+      <ul class="nums" aria-label="이력 요약">
+        <li><b>40편+</b><span>경북신문 연재</span></li>
+        <li><b>수석</b><span>창암명리학회 학술이사</span></li>
+        <li><b>2.7천</b><span>유튜브 구독</span></li>
+        <li><b>55만+</b><span>누적 조회</span></li>
+      </ul>
 
       <ul class="facts">
         <li><span class="k">이름</span><span>필명 윤이세 · 대표 김나영 — 경북신문 칼럼니스트</span></li>
         <li><span class="k">학회</span><span>창암명리학회 수석 학술이사</span></li>
-        <li><span class="k">출강</span><span>울산교육청 특강 · 영덕군청 민원처리과 특강 등 공공기관·기업·기관 강연</span></li>
-        <li><span class="k">연재</span><span>경북신문 『윤이세의 생활 사주명리』 — 2026년 1월부터 매주 한 편, 40편 연재<br><a href="https://www.kbsm.net/news/search.php?mode=&amp;search_order=%EC%9C%A4%EC%9D%B4%EC%84%B8" target="_blank" rel="noopener noreferrer">경북신문에서 윤이세 칼럼 전체 보기 ↗</a></span></li>
+        <li><span class="k">출강</span><span>울산광역시교육청 특강 · 영덕군청 민원처리과 특강 등 공공기관·기업·기관 강연</span></li>
+        <li><span class="k">연재</span><span>경북신문 『윤이세의 생활 사주명리』 — 2026년 1월부터 매주 한 편, 40편 넘게 연재<br><a href="https://www.kbsm.net/news/search.php?mode=&amp;search_order=%EC%9C%A4%EC%9D%B4%EC%84%B8" target="_blank" rel="noopener noreferrer">경북신문에서 윤이세 칼럼 전체 보기 ↗</a></span></li>
       <li><span class="k">분야</span><span>생활 사주명리, 오행 웰니스, 기질과 스트레스, 관계와 소통</span></li>
       <li><span class="k">채널</span><span>유튜브 ‘윤이세의 사주특별수사대’ 운영 · 인스타그램 · 네이버 블로그</span></li>
       <li><span class="k">사업자</span><span>엔와이트레이드(N.Y.TRADE) · 대표 김나영 · 부산광역시 부산진구 전포대로 250, 1904호</span></li>
@@ -632,6 +681,7 @@ button{font-family:inherit;cursor:pointer}
       <a href="https://blog.naver.com/ksy7900so" target="_blank" rel="noopener noreferrer">네이버 블로그 <i>→</i></a>
       <a href="https://www.instagram.com/life.saju_yoonise/" target="_blank" rel="noopener noreferrer">인스타그램 <i>→</i></a>
     </div>
+    </article>
   </section>
 
   <!-- ───────── 04 · 이런 자리에 ───────── -->
@@ -694,7 +744,7 @@ button{font-family:inherit;cursor:pointer}
       </details>
       <details>
         <summary>실제로 어디에서 특강을 하셨나요?</summary>
-        <div class="faq__a"><b>울산교육청</b>, <b>영덕군청 민원처리과</b>을 비롯한 공공기관·기업·기관 특강에서 사주 강의와 명리학 특강을 진행했습니다. <b>창암명리학회 수석 학술이사</b>로 활동하고 있으며, 경북신문 『윤이세의 생활 사주명리』를 연재 중입니다. 기업·기관별 사례는 문의하실 때 함께 안내드립니다.</div>
+        <div class="faq__a"><b>울산광역시교육청</b>, <b>영덕군청 민원처리과</b>를 비롯한 공공기관·기업·기관 특강에서 사주 강의와 명리학 특강을 진행했습니다. <b>창암명리학회 수석 학술이사</b>로 활동하고 있으며, 경북신문 『윤이세의 생활 사주명리』를 연재 중입니다. 기업·기관별 사례는 문의하실 때 함께 안내드립니다.</div>
       </details>
     </div>
   </section>
@@ -704,6 +754,7 @@ button{font-family:inherit;cursor:pointer}
     <p class="contact__eyebrow">06 · CONTACT</p>
     <h2 class="contact__title" id="contactTitle">강연 문의는<br>이렇게 보내 주세요</h2>
     <p class="contact__sub">사주명리 강연 섭외는 일정과 형식만 알려 주시면 됩니다. 그 자리에 맞는 구성과 견적을 함께 제안해 드립니다.</p>
+    <p class="fee fee--dark"><i aria-hidden="true">·</i><span><b>강의 비용</b>은 기관·기업 규모, 인원 및 일정에 따라 별도 협의합니다.</span></p>
 
     <ul class="contact__list">
       <li><a href="https://pf.kakao.com/_hxfbCG/chat" target="_blank" rel="noopener noreferrer"><i aria-hidden="true">💬</i>카카오채널 ‘윤이세사주’ <em>1:1 문의</em></a></li>
