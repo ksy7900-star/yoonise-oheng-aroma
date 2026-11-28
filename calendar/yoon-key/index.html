@@ -3619,6 +3619,225 @@ body.locked{overflow:hidden}
 })();
 </script>
 
+<!-- ↩️ 휴대폰 뒤로가기 (2026-11-28) — 바로 튕겨 나가지 않게 한 단계씩 닫는다
+     · 히스토리 항목은 하나만 쓴다(pushState 센티널 1장). 팝업마다 쌓지 않으므로
+       X·닫기로 닫아도 유령 항목이 남지 않는다. 열림/닫힘은 화면(DOM) 상태로만 판단한다.
+     · 뒤로가기 1회 = ① 겹침 창 → ② 상세 카드 → ③ 펼친 카드 → ④ 다른 탭 → ⑤ 첫 화면 안내
+     · 첫 화면에서는 안내만 띄우고, 2초 안에 한 번 더 누를 때만 실제로 나간다.
+     · 잠금 화면에서는 그대로 나간다(앱 안에서만 붙잡는다). 키보드가 올라와 있으면
+       뒤로가기는 키보드만 닫는다. 기존 닫기 버튼·탭 전환 로직은 그대로 부른다. -->
+<script>
+(function () {
+  'use strict';
+
+  var BUILD = '20261128e';
+  var EXIT_MSG = '뒤로가기를 한 번 더 누르면 닫힙니다';
+  var EXIT_GAP = 2000;      // ms — 이 안에 한 번 더 누르면 나간다
+  var EXIT_STEPS = 6;       // 스스로 뒤로 갈 때 최대 항목 수 (안전장치)
+
+  var seq = 0;              // 센티널 상태 번호
+  var armed = false;        // 지금 히스토리 항목이 우리 센티널인가
+  var base = '';            // 센티널을 걸 때 쓰는 주소(해시 없이)
+  var lastRoot = 0;         // 첫 화면에서 마지막으로 뒤로가기를 누른 시각
+  var leaving = 0;          // 스스로 페이지를 떠나는 중 (남은 되돌림 횟수)
+  var lastY = 0;            // 보던 자리 — 뒤로가기로 닫을 때 화면이 튀지 않게
+  var tEl = null, tT = 0;
+  var started = false;
+
+  function visible(el) {
+    if (!el || !el.getClientRects) return false;
+    try { return el.getClientRects().length > 0; } catch (e) { return false; }
+  }
+  function appOpen() {
+    var a = document.getElementById('app');
+    return !!a && !a.hidden;
+  }
+
+  /* ── 글자를 입력하는 칸인가 — 키보드가 올라와 있으면 뒤로가기는 키보드부터 ── */
+  function isEditable(el) {
+    if (!el || !el.tagName) return false;
+    var tag = el.tagName.toLowerCase();
+    if (tag === 'textarea') return true;
+    if (tag === 'input') {
+      var t = (el.type || 'text').toLowerCase();
+      return ['button', 'submit', 'reset', 'checkbox', 'radio', 'file', 'range',
+        'color', 'image'].indexOf(t) < 0;
+    }
+    return !!el.isContentEditable;
+  }
+
+  /* ── 안내 토스트 — 화면에 이미 있는 .sgtoast 모양을 그대로 쓴다(2초) ── */
+  function toast(msg) {
+    if (!tEl) {
+      tEl = document.createElement('div');
+      tEl.className = 'sgtoast';
+      tEl.setAttribute('role', 'status');
+      tEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(tEl);
+    }
+    tEl.textContent = msg;
+    tEl.classList.remove('is-on');
+    void tEl.offsetWidth;
+    tEl.classList.add('is-on');
+    clearTimeout(tT);
+    tT = setTimeout(function () { tEl.classList.remove('is-on'); }, EXIT_GAP);
+  }
+
+  /* ── 히스토리에 우리 항목 하나를 건다 ── */
+  function arm() {
+    if (!window.history || typeof window.history.pushState !== 'function') return;
+    try {
+      seq += 1;
+      window.history.pushState({ ykBack: seq }, '', base || (window.location.pathname + window.location.search));
+      armed = true;
+    } catch (e) { armed = false; }
+  }
+
+  /* ── 닫은 뒤 보던 자리로 (같은 문서 안 이동이라 브라우저는 맨 위로 되돌린다) ── */
+  function hold(y) {
+    if (!y) return;
+    var put = function () { try { window.scrollTo(0, y); } catch (e) { } };
+    put();
+    try { window.requestAnimationFrame(put); } catch (e) { }
+    setTimeout(put, 80);
+  }
+
+  /* ── ① 겹침 창 — 감정서 미리보기 · 보내기 방식 선택 (.gpov) ── */
+  function closeOverlay() {
+    var ov = document.querySelector('.gpov');
+    if (!ov || !visible(ov)) return false;
+    var x = ov.querySelector('.gpov__x');
+    if (x) { try { x.click(); } catch (e) { } }
+    if (!document.querySelector('.gpov')) return true;
+    /* 닫기 버튼이 없는 창이면 바깥(배경)을 누른 것과 같게 */
+    try { ov.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window })); } catch (e) { }
+    if (!document.querySelector('.gpov')) return true;
+    return false;
+  }
+
+  /* ── ② 상세 카드 — 특별 가이드 상세(#sgDetail). 기존 닫기 버튼을 그대로 누른다 ── */
+  function closeDetailCard() {
+    var d = document.getElementById('sgDetail');
+    if (!d || d.hidden || !visible(d)) return false;
+    var x = document.getElementById('sgClose');
+    if (x) { try { x.click(); } catch (e) { } }
+    if (!d.hidden) d.hidden = true;      /* 닫기 버튼 없이 열린 카드의 마지막 길 */
+    return true;
+  }
+
+  /* ── ③ 펼친 카드 — 신청서 상세(<details>) · 아침의 질문 고치기 줄 ── */
+  function closeExpanded() {
+    var open = [], i;
+    var ds = document.querySelectorAll('details[open]');
+    for (i = 0; i < ds.length; i++) if (visible(ds[i])) open.push(ds[i]);
+    var bs = document.querySelectorAll('.mqr__edit');
+    for (i = 0; i < bs.length; i++) if (!bs[i].hidden && visible(bs[i])) open.push(bs[i]);
+    if (!open.length) return false;
+    var el = open[open.length - 1];      /* 화면에서 마지막에 펼친 것부터 */
+    if (el.tagName && el.tagName.toLowerCase() === 'details') {
+      try { el.open = false; } catch (e) { }
+    } else {
+      el.hidden = true;
+      var li = el.closest ? el.closest('.mqr') : null;
+      var head = li ? li.querySelector('.mqr__head') : null;
+      if (head) head.setAttribute('aria-expanded', 'false');
+    }
+    return true;
+  }
+
+  /* ── ④ 다른 탭 — '코드 발급' 기본 화면으로 (기존 탭 전환을 그대로 누른다) ── */
+  function currentTab() {
+    var b = document.querySelector('.tabs button[role="tab"][aria-selected="true"]');
+    return (b && b.id) ? b.id.replace(/^tabBtn/, '').toLowerCase() : 'issue';
+  }
+  function backToIssue() {
+    if (currentTab() === 'issue') return false;
+    var b = document.getElementById('tabBtnIssue');
+    if (!b) return false;
+    try { b.click(); } catch (e) { return false; }
+    try { window.scrollTo(0, 0); } catch (e) { }
+    return true;
+  }
+
+  function onPop() {
+    /* 스스로 페이지를 떠나는 중 — 같은 문서 항목이 더 남아 있으면 한 번 더 물러난다 */
+    if (leaving > 0) {
+      leaving -= 1;
+      if (leaving > 0) { try { window.history.back(); } catch (e) { } }
+      return;
+    }
+    armed = false;
+
+    /* 잠금 화면에서는 그대로 나간다 */
+    if (!appOpen()) {
+      lastRoot = 0;
+      leaving = EXIT_STEPS;
+      lastY = 0;
+      try { window.history.back(); } catch (e) { }
+      setTimeout(function () { leaving = 0; }, 1200);
+      return;
+    }
+
+    var y = lastY;
+
+    /* 키보드가 올라와 있으면 키보드만 닫는다 (기존 시스템 동작 유지) */
+    var ae = document.activeElement;
+    if (ae && isEditable(ae)) {
+      try { ae.blur(); } catch (e) { }
+      arm();
+      hold(y);
+      return;
+    }
+
+    if (closeOverlay()) { lastRoot = 0; arm(); hold(y); return; }
+    if (closeDetailCard()) { lastRoot = 0; arm(); hold(y); return; }
+    if (closeExpanded()) { lastRoot = 0; arm(); hold(y); return; }
+    if (backToIssue()) { lastRoot = 0; arm(); return; }
+
+    /* 첫 화면 — 실수 이탈 방지 (한 번은 안내, 2초 안에 두 번째면 나간다) */
+    var now = Date.now();
+    if (lastRoot && (now - lastRoot) <= EXIT_GAP) {
+      lastRoot = 0;
+      leaving = EXIT_STEPS;
+      try { window.history.back(); } catch (e) { }
+      setTimeout(function () { leaving = 0; }, 1200);
+      return;
+    }
+    lastRoot = now;
+    toast(EXIT_MSG);
+    arm();
+    hold(y);
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    try { base = window.location.pathname + window.location.search; } catch (e) { base = ''; }
+    /* 같은 문서 안에서 뒤로가기를 누를 때 화면이 맨 위(0)로 튀지 않게 */
+    try { window.history.scrollRestoration = 'manual'; } catch (e) { }
+    window.addEventListener('scroll', function () {
+      lastY = window.scrollY || document.documentElement.scrollTop || 0;
+    }, { passive: true });
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('pageshow', function (e) {
+      if (!e || !e.persisted) return;
+      leaving = 0; lastRoot = 0;
+      if (appOpen() && !armed) arm();
+    });
+    /* 잠금을 풀고 앱이 열릴 때 센티널을 건다(잠금 화면에서는 걸지 않는다) */
+    document.addEventListener('yoonkeyopen', function () {
+      leaving = 0; lastRoot = 0;
+      if (!armed) arm();
+    });
+    if (appOpen()) arm();
+    window.YoonKeyBack = { version: BUILD, armed: function () { return armed; } };
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
 
 </body>
 </html>
