@@ -441,20 +441,20 @@
    * 문장은 미리 써 둔 표에서 고른다 — 같은 사주면 같은 달은 항상 같은 말.
    */
   var MONTH_WARN = {
-    chung:   { key: 'chung',   title: '판이 흔들리는 달',      why: '부딪히기 쉬워요 · 계약·이사는 신중히' },
+    chung:   { key: 'chung',   title: '일이 흔들리는 달',      why: '부딪히기 쉬워요 · 계약·이사는 미루기' },
     hyeong:  { key: 'hyeong',  title: '서류·절차가 엉키는 달', why: '확인 또 확인 · 잔금과 약속 정리' },
-    bokkeum: { key: 'bokkeum', title: '같은 자리가 겹치는 달', why: '일이 두 번 돌아가요 · 서두르지 말기' },
+    bokkeum: { key: 'bokkeum', title: '같은 일이 두 번 오는 달', why: '일이 두 번 돌아가요 · 서두르지 말기' },
     hae:     { key: 'hae',     title: '말이 엇갈리는 달',      why: '문자보다 대면 · 부탁은 분명하게' },
-    over:    { key: 'over',    title: '기운이 넘치는 달',      why: '지르지 말고 속도를 늦추세요' },
+    over:    { key: 'over',    title: '기운이 센 달',      why: '무리하지 말고 속도를 늦추세요' },
     hot:     { key: 'hot',     title: '예민해지기 쉬운 달',    why: '말과 계약 조심 · 감정적인 대화는 피하기' },
-    soft:    { key: 'soft',    title: '잔잔하게 흔들리는 달',  why: '중요한 결정은 하루 두고 보기' }
+    soft:    { key: 'soft',    title: '작게 흔들리는 달',  why: '중요한 결정은 하루 두고 보기' }
   };
   var MONTH_GOOD = {
-    gwiyin: { key: 'gwiyin', title: '귀인이 붙는 달',        why: '먼저 연락하고 부탁하기 좋아요' },
-    hap:    { key: 'hap',    title: '사람·일이 붙는 달',      why: '미팅·제안을 꺼내기 좋아요' },
-    fill:   { key: 'fill',   title: '비어 있던 기운이 오는 달', why: '새 시작·새 사람에게 열려 있기' },
+    gwiyin: { key: 'gwiyin', title: '귀인이 함께하는 달',        why: '먼저 연락하고 부탁하기 좋아요' },
+    hap:    { key: 'hap',    title: '사람과 일이 이어지는 달',      why: '미팅·제안을 꺼내기 좋아요' },
+    fill:   { key: 'fill',   title: '모자라던 기운이 채워지는 달', why: '새 시작·새 사람에게 열려 있기' },
     doc:    { key: 'doc',    title: '문서·돈이 트이는 달',    why: '계약·정산·지원서에 힘이 실려요' },
-    flow:   { key: 'flow',   title: '소통이 넉넉한 달',     why: '먼저 손 내밀면 붙는 달' }
+    flow:   { key: 'flow',   title: '소통이 넉넉한 달',     why: '먼저 손 내밀면 이어지는 달' }
   };
 
   /** 그날이 속한 월건(月建) — 12절기가 달을 연다. */
